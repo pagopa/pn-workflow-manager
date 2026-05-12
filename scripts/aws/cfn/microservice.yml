@@ -10,15 +10,7 @@ Parameters:
   AlarmSNSTopicArn:
     Type: String
     Description: ARN of alarm topic
-
-  WebApiDnsName:
-    Type: String
-    Description: 'The DNS name used for WEB rest API.'
   
-  CorsAllowedDomains:
-    Type: String
-    Description: 'Comma separated list of domains allowed to make cross origin request'
-
   ContainerImageUri:
     Type: String
     Description: 'Exact container image URI with full repository and image digest'
@@ -36,7 +28,7 @@ Parameters:
     Description: 'The name of the ECS cluster where the microservice is going to be deployed'
 
   SubnetsIds:
-    Type: String
+    Type: CommaDelimitedList
     Description: 'subnets ids comma separated list. Where to deploy the microservice'
 
   VpcId:
@@ -51,41 +43,357 @@ Parameters:
     Type: String
     Description: 'Load balancer listener where HTTP endpoints is going to be registered'
 
-  ApplicationLoadBalancerDomain:
+  # Instance parameters
+  # 256 (.25 vCPU) - Available memory values: 0.5GB, 1GB, 2GB
+  # 512 (.5 vCPU) - Available memory values: 1GB, 2GB, 3GB, 4GB
+  # 1024 (1 vCPU) - Available memory values: 2GB, 3GB, 4GB, 5GB, 6GB, 7GB, 8GB
+  # 2048 (2 vCPU) - Available memory values: Between 4GB and 16GB in 1GB increments
+  # 4096 (4 vCPU) - Available memory values: Between 8GB and 30GB in 1GB increments
+  CpuValue:
+    Type: Number
+    Default: 1024
+    Description: Fargate virtual CPU quantity 1024 equals one vCPU (Validator task)
+  
+  # 0.5GB, 1GB, 2GB - Available cpu values: 256 (.25 vCPU)
+  # 1GB, 2GB, 3GB, 4GB - Available cpu values: 512 (.5 vCPU)
+  # 2GB, 3GB, 4GB, 5GB, 6GB, 7GB, 8GB - Available cpu values: 1024 (1 vCPU)
+  # Between 4GB and 16GB in 1GB increments - Available cpu values: 2048 (2 vCPU)
+  # Between 8GB and 30GB in 1GB increments - Available cpu values: 4096 (4 vCPU)
+  MemoryAmount:
     Type: String
-    Description: 'Base URL of the load balancer where the service is going to be reachable'
+    Default: 2GB
+    Description: memory amount reserved to the task pod (Validator task)
+    AllowedValues: [ 2GB, 4GB, 6GB, 8GB ]
+  
+  # Autoscaling parameters
+  AutoscalingCheckPeriod:
+    Default: 60
+    Type: Number
+    Description: minimum autoscaling number of tasks
+  
+  AutoscalingThreshold:
+    Default: 70
+    Type: Number
+  
+  AlbSecurityGroup:
+    Type: String
+    Description: 'Application load balancer security group'
+  
+  ApplicativeEnvFileChecksum:
+    Type: String
+    Default: ''
+    Description: 'Applicative environment variable file checksum'
+  
+  MinTasksNumber:
+    Default: 2
+    Type: Number
+    Description: minimum autoscaling number of tasks (task)
+  
+  MaxTasksNumber:
+    Default: 6
+    Type: Number
+    Description: maximum autoscaling number of tasks (task)
+  
+  AutoscalingDataPointN:
+    Default: 1
+    Type: Number
+    Description: activate when N datapoint on M (task)
+  
+  AutoscalingDataPointM:
+    Default: 1
+    Type: Number
+    Description: activate when N datapoint on M (task)
 
-  NetworkLoadBalancerLink:
+  ApplicationLoadBalancerMetricsDimensionName:
     Type: String
-    Description: 'network load balancer link for API-GW'
+    Description: Application load balancer dimension name
+
+    # --- SQS Queues ---
+  ConsumedQueueMessagePerMinute:
+    Type: Number
+    Description: Weight to assign to queue number of visible messages metric (Workflow task)
   
-  LogsKinesisSourceStreamArn:
+  # Logging parameters
+  WireTapLogActivation:
     Type: String
-    Description: 'Kinesis stream that receive logs'
+    Default: false
+    Description: Activation of wire logs
+    AllowedValues:
+      - true
+      - false
   
-  Version:
+  PnCronAnalyzer:
     Type: String
-    Description: 'keep track of used projects commitIds'
+    Default: '-'
+    Description: Cron for which you send the metric to CloudWatch
+  
+  # EFS parameters
+  FargateEFSFileSystemID:
+    Type: String
+    Description: "EFS Filesystem"
+  
+  MountEfs:
+    Type: String
+    Default: "false"
+    AllowedValues:
+      - "true"
+      - "false"
+    
+  # Heath Check parameters
+  HealthCheckInterval:
+    Description: Seconds between two health check
+    Type: Number
+    Default: 60
+  
+  HealthCheckTimeout:
+    Description: health check timeout seconds
+    Type: Number
+    Default: 5
+  
+  HealthyThresholdCount:
+    Description: |
+      The number of consecutive health checks successes required before considering
+      an unhealthy target healthy.
+    Type: Number
+    Default: 5
+  
+  UnhealthyThresholdCount:
+    Description: |
+      The number of consecutive health check failures required before considering a target unhealthy.
+    Type: Number
+    Default: 2
+
+  # Log group parameters
+  EcsWorkflowLogGroup:
+    Type: String
+    Description: 'Ecs log group name (Workflow task)'
+  
+  WorkflowManagerActionsQueueName:
+    Type: String
+    Description: 'Queue to pull for actions event'
+  
+  WorkflowManagerActionsQueueURL:
+    Type: String
+    Description: 'URL of the workflow manager actions queue'
+  
+  WorkflowManagerActionsQueueARN:
+    Type: String
+    Description: 'ARN of the workflow manager actions queue'
+    
+  WorkflowManagerActionsQueueAlarmARN:
+    Type: String
+    Description: 'pn-workflow-manager actions queue alarm ARN'
+    
+  WorkflowManagerActionsQueueAgeAlarmARN:
+    Type: String
+    Description: 'pn-workflow-manager actions queue age alarm ARN'
+
+  ActionQueueDetailType:
+    Type: CommaDelimitedList
+    Default: ''
+    Description: 'List of action detail type to accept in event bridge rule'
+  
+  LogAlarmStrategy:
+    Type: String
+    Default: 'FATAL'
+
+  AutoscalingDataPointWorkflowN:
+    Default: 1
+    Type: Number
+    Description: activate when N datapoint on M (Workflow task)
+  
+  AutoscalingDataPointWorkflowM:
+    Default: 1
+    Type: Number
+    Description: activate when N datapoint on M (Workflow task)
 
 Resources:
-
-  # PN-TemplateBeMs microservice
-  TemplateBeMsMicroservice:
+  WorkflowManagerMicroservice:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/ecs-service.yaml"
       Parameters:
-        MicroServiceUniqueName: !Sub '${ProjectName}-template-ms-be'
-        CpuValue: 512
-        MemoryAmount: 2GB
+        MicroServiceUniqueName: !Sub '${ProjectName}-workflow-manager'
+        CpuValue: !Ref CpuValue
+        MemoryAmount: !Ref MemoryAmount
+        HealthCheckTimeout: !Ref HealthCheckTimeout
+        HealthCheckInterval: !Ref HealthCheckInterval
+        HealthyThresholdCount: !Ref HealthyThresholdCount
+        UnhealthyThresholdCount: !Ref UnhealthyThresholdCount
+        AutoscalingStrategy: CUSTOM
+        AutoscalingThreshold: !Ref AutoscalingThreshold
+        AutoscalingCheckPeriod: !Ref AutoscalingCheckPeriod
+        MinTasksNumber: !Ref MinTasksNumber
+        MaxTasksNumber: !Ref MaxTasksNumber
+        AutoscalingDataPointN: !Ref AutoscalingDataPointN
+        AutoscalingDataPointM: !Ref AutoscalingDataPointM
         AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
+        EfsFilesystem: !Ref FargateEFSFileSystemID
+        WireTapLogActivation: !Ref WireTapLogActivation
+        MountEfs: !Ref MountEfs
         ContainerImageURI: !Sub '${ContainerImageUri}'
         ContainerEnvEntry1: !Sub 'AWS_REGIONCODE=${AWS::Region}'
-        MappedPaths: '/template-ms-be/*'
+        ContainerEnvEntry2: !Sub 'PN_CRON_ANALYZER=${PnCronAnalyzer}'
+        ContainerEnvEntry3: !Sub 'WIRE_TAP_LOG=${WireTapLogActivation}'
+        ContainerEnvEntry7: !Sub 'PN_WORKFLOW_MANAGER_TOPICS_WORKFLOWMANAGERACTIONQUEUE=${WorkflowManagerActionsQueueName}'
+        ContainerEnvEntry8: !Sub 'PN_WORKFLOW_MANAGER_EVENTBUS_NAME=arn:aws:events:${AWS::Region}:${AWS::AccountId}:event-bus/${ProjectName}-CoreEventBus'
+        ContainerEnvEntry9: 'PN_WORKFLOW_MANAGER_EVENTBUS_SOURCE=pn-workflow-manager'
+        ContainerEnvEntry10: 'PN_WORKFLOW_MANAGER_EVENTBUS_OUTCOMEEVENTDETAILTYPE=WorkflowManagerOutcomeEvent'
+        ApplicativeEnvFileChecksum: !Ref ApplicativeEnvFileChecksum
+        JavaToolOptions: '-Dreactor.netty.ioWorkerCount=50'
+        MappedPaths: '/workflow-manager-not-available'
         ECSClusterName: !Ref ECSClusterName
-        Subnets: !Ref SubnetsIds
+        Subnets: !Join [ ',', !Ref SubnetsIds ]
         VpcId: !Ref VpcId
         EcsDefaultSecurityGroup: !Ref EcsDefaultSecurityGroup
         LoadBalancerListenerArn: !Ref ApplicationLoadBalancerListenerArn
         LoadbalancerRulePriority: !Ref MicroserviceNumber
-        CloudwatchLogKinesisStreamArn: !Ref LogsKinesisSourceStreamArn
+        TaskRoleManagedPolicyArn: !Ref WorkflowManagerMicroserviceTaskManagedPolicy
+        AlbSecurityGroup: !Ref AlbSecurityGroup
+        EcsLogGroup: !Ref EcsWorkflowLogGroup
+        LogAlarmStrategyV1: !Ref LogAlarmStrategy
+
+  ## Dashboard
+  WorkflowManagerMicroserviceCloudWatchDashboard:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/microservice-cloudwatch-dashboard.yaml"
+      Parameters:
+        DashboardName: !Sub "${ProjectName}-workflow-manager"
+        AlarmArns: !Join
+          - ','
+          - - !GetAtt WorkflowManagerMicroservice.Outputs.FatalLogsMetricAlarmArn
+            - !Ref WorkflowManagerActionsQueueAlarmARN
+            - !Ref WorkflowManagerActionsQueueAgeAlarmARN
+        QueueArns: !Join
+          - ','
+          - - !Ref WorkflowManagerActionsQueueARN
+        LogGroupsNames: !Join
+          - ','
+          - - !Sub '/aws/ecs/${ProjectName}-workflow-manager'
+  
+  # Grant operational rights to PN-Workflow-Manager microservice
+  WorkflowManagerMicroserviceTaskManagedPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - sqs:ChangeMessageVisibility
+              - sqs:ChangeMessageVisibilityBatch
+              - sqs:DeleteMessage
+              - sqs:DeleteMessageBatch
+              - sqs:GetQueueAttributes
+              - sqs:GetQueueUrl
+              - sqs:ReceiveMessage
+              - sqs:SendMessage
+              - sqs:SendMessageBatch
+            Resource:
+              - !Ref WorkflowManagerActionsQueueARN
+
+  EventBusEnqueueRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: events.amazonaws.com
+            Condition:
+              StringEquals:
+                aws:SourceAccount: !Ref "AWS::AccountId"
+        Version: "2012-10-17"
+      Policies:
+        - PolicyName: !Sub ${ProjectName}-actionmanager-2-workflow-manager-actions-queue-eventBusRulePolicy
+          PolicyDocument:
+            Statement:
+              - Sid: putEvents
+                Action:
+                  - sqs:SendMessage
+                Effect: Allow
+                Resource:
+                  - !Ref WorkflowManagerActionsQueueARN
+
+  PnCoreEventBusActionManagerToWorkflowManagerActionsQueueRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: Route ActionManager events to workflow manager actions queue
+      RoleArn: !GetAtt "EventBusEnqueueRole.Arn"
+      EventBusName: !Sub '${ProjectName}-CoreEventBus'
+      EventPattern:
+        detail-type: ["ActionManagerEventOutcome"]
+        detail:
+          routingActionType: !Ref ActionQueueDetailType
+      Targets:
+        - Id: !Sub '${ProjectName}-CoreEventBus-ActionManager2WorkflowManagerActionsQueue'
+          Arn: !Ref WorkflowManagerActionsQueueARN
+          InputPath: $.detail.body
+          DeadLetterConfig:  
+            Arn: !Sub arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:pn-CoreEventBus-DLQ #TODO deve essere univoco?
+
+  ScheduledActionsQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues:
+        - !Ref WorkflowManagerActionsQueueURL
+      PolicyDocument:
+        Statement:
+          - Sid: AllowEventBridgeToSendMessage
+            Effect: Allow
+            Principal:
+              Service: events.amazonaws.com
+            Action: sqs:SendMessage
+            Resource: !Ref WorkflowManagerActionsQueueARN
+            Condition:
+              ArnEquals:
+                aws:SourceArn: !GetAtt PnCoreEventBusActionManagerToWorkflowManagerActionsQueueRule.Arn
+
+  #### Alarm for custom metric Autoscaling
+  AlarmCustomAutoscalingWorkflow:
+    Type: "AWS::CloudWatch::Alarm"
+    Properties:
+      AlarmName: !Sub "${ProjectName}-workflow-manager-autoscaling-custom"
+      AlarmDescription: "Trigger scaling based on custom metric"
+      DatapointsToAlarm: !Ref AutoscalingDataPointWorkflowN
+      ComparisonOperator: "GreaterThanOrEqualToThreshold"
+      Metrics:
+        - Id: m1
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: QueueName
+                  Value: !Ref "WorkflowManagerActionsQueueName"
+              Namespace: "AWS/SQS"
+              MetricName: "ApproximateNumberOfMessagesVisible"
+            Period: !Ref AutoscalingCheckPeriod
+            Stat: Average
+          ReturnData: False
+        - Id: m2
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: TargetGroup
+                  Value: !GetAtt WorkflowManagerMicroservice.Outputs.TargetGroupName
+                - Name: LoadBalancer
+                  Value: !Ref ApplicationLoadBalancerMetricsDimensionName
+              Namespace: "AWS/ApplicationELB"
+              MetricName: "HealthyHostCount"
+            Period: !Ref AutoscalingCheckPeriod
+            Stat: Average
+          ReturnData: False
+        - Id: code
+          Expression: !Sub "IF(m2==0, 101, (100*(m1)) / (${ConsumedQueueMessagePerMinute} * m2) )"
+          Label: !Sub "${ProjectName}-workflow-manager-queue-custom-metric"
+          ReturnData: False
+        - Id: e1
+          Expression: "code"
+          Label: !Sub "${ProjectName}-workflow-manager-autoscale-custom-metric" 
+      EvaluationPeriods: !Ref AutoscalingDataPointWorkflowM
+      Threshold: 60
+      AlarmActions:
+        - !GetAtt WorkflowManagerMicroservice.Outputs.ScaleUpPolicy
+      OKActions:
+        - !GetAtt WorkflowManagerMicroservice.Outputs.ScaleDownPolicy

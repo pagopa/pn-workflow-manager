@@ -15,20 +15,75 @@ Parameters:
   TemplateBucketBaseUrl:
     Type: String
     Description: URL da cui caricare i frammenti di template di infrastruttura
-  
-  Version:
+    
+  AlarmSNSTopicName:
     Type: String
-    Description: 'keep track of used projects commitIds'
-  
-  CdcKinesisSourceStreamArn:
-    Type: String
-    Description: 'Where to send CDC'
+    Description: ''
 
+  #Log
+  LogRetention:
+    Type: Number
+    Default: 14
+  
+  LogsKinesisSourceStreamArn:
+    Type: String
+    Description: 'Where to send Logs'
+  
 Resources:
-    NullResource:
-        Type: AWS::CloudFormation::WaitConditionHandle
+  WorkflowManagerLogGroup:
+    Type: AWS::CloudFormation::Stack
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/log-group.yaml"
+      Parameters:
+        LogGroupName: !Sub '${ProjectName}-workflow-manager'
+        LogsKinesisSourceStreamArn: !Ref LogsKinesisSourceStreamArn
+        LogGroupRetention: !Ref LogRetention
+
+  # Internal queues
+  WorkflowManagerActionsQueue:
+    Type: AWS::CloudFormation::Stack
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/sqs-queue.yaml"
+      Parameters:
+        QueueName: !Sub '${ProjectName}-workflow-manager_actions'
+        AlarmSNSTopicName: !Ref AlarmSNSTopicName
+        VisibilityTimeout: 60
+        MaxReceiveCount: 10
+        DelaySeconds: 1
+
+  #Log Group
+  PnNotificationCostServiceLogGroup:
+    Type: AWS::CloudFormation::Stack
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/log-group.yaml"
+      Parameters:
+        LogGroupName: !Sub '${ProjectName}-notification-cost-service'
+        LogsKinesisSourceStreamArn: !Ref LogsKinesisSourceStreamArn
+        LogGroupRetention: !Ref LogRetention
 
 Outputs:
-    SampleOutput:
-      Description: A Sample Output
-      Value: 'na'
+  # Scheduled Actions
+  WorkflowManagerActionsQueueName:
+    Value: !GetAtt WorkflowManagerActionsQueue.Outputs.QueueName
+    Description: pn-workflow-manager actions queue name
+  WorkflowManagerActionsQueueURL:
+    Value: !GetAtt WorkflowManagerActionsQueue.Outputs.QueueURL
+    Description: pn-workflow-manager actions queue URL
+  WorkflowManagerActionsQueueARN:
+    Value: !GetAtt WorkflowManagerActionsQueue.Outputs.QueueARN
+    Description: pn-workflow-manager actions queue ARN
+  WorkflowManagerActionsQueueAlarmARN:
+    Value: !GetAtt WorkflowManagerActionsQueue.Outputs.SqsDLQAlarmArn
+    Description: pn-workflow-manager actions queue dlq alarm queue
+  WorkflowManagerActionsQueueAgeAlarmARN:
+    Value: !GetAtt WorkflowManagerActionsQueue.Outputs.SqsAgeAlarmArn
+    Description: pn-workflow-manager actions queue age alarm ARN
+  # Log groups
+  EcsWorkflowLogGroup:
+    Value: !GetAtt WorkflowManagerLogGroup.Outputs.LogGroupName
