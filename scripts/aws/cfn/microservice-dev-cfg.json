@@ -9,6 +9,6 @@
     "WireTapLogActivation": "false",
     "MountEfs": "false",
     "PnCronAnalyzer": "-",
-    "ActionQueueDetailType": "START_INFORMAL_WORKFLOW"
+    "ActionQueueDetailType": "POST_ACCEPTED_PROCESSING_COMPLETED"
   }
 }
