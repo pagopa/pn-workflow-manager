@@ -1,4 +1,4 @@
-package it.pagopa.pn.template.config.springbootcfg;
+package it.pagopa.pn.workflowmanager.config.springbootcfg;
 
 import io.awspring.cloud.sqs.config.SqsListenerConfigurer;
 import io.awspring.cloud.sqs.config.SqsMessageListenerContainerFactory;
@@ -31,7 +31,9 @@ public class SqsTracingConfig {
     SqsMessageListenerContainerFactory<Object> factory(SqsAsyncClient sqsAsyncClient, ObservationRegistry observationRegistry) {
         return SqsMessageListenerContainerFactory.builder()
                 .sqsAsyncClient(sqsAsyncClient)
-                .configure(options -> options.observationRegistry(observationRegistry))
+                .configure(options -> options
+                    .observationRegistry(observationRegistry)
+                )
                 .build();
     }
 }

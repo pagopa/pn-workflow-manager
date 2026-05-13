@@ -1,4 +1,4 @@
-package it.pagopa.pn.template.config.springbootcfg;
+package it.pagopa.pn.workflowmanager.config.springbootcfg;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import it.pagopa.pn.commons.utils.metrics.SpringAnalyzer;

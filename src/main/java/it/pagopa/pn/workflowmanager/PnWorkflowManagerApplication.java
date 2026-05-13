@@ -1,4 +1,4 @@
-package it.pagopa.pn.template;
+package it.pagopa.pn.workflowmanager;
 
 import it.pagopa.pn.commons.configs.listeners.TaskIdApplicationListener;
 import org.springframework.boot.SpringApplication;
