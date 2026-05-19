@@ -168,31 +168,96 @@ Parameters:
     Type: String
     Description: 'Ecs log group name (Workflow task)'
   
-  WorkflowManagerActionsQueueName:
+  WorkflowManagerActionQueueName:
     Type: String
     Description: 'Queue to pull for actions event'
   
-  WorkflowManagerActionsQueueURL:
+  WorkflowManagerActionQueueURL:
     Type: String
     Description: 'URL of the workflow manager actions queue'
   
-  WorkflowManagerActionsQueueARN:
+  WorkflowManagerActionQueueARN:
     Type: String
     Description: 'ARN of the workflow manager actions queue'
     
-  WorkflowManagerActionsQueueAlarmARN:
+  WorkflowManagerActionQueueAlarmARN:
     Type: String
     Description: 'pn-workflow-manager actions queue alarm ARN'
     
-  WorkflowManagerActionsQueueAgeAlarmARN:
+  WorkflowManagerActionQueueAgeAlarmARN:
     Type: String
     Description: 'pn-workflow-manager actions queue age alarm ARN'
+  
+  WorkflowManagerAnalogEventQueueName:
+    Type: String
+    Description: 'Queue to pull for analog events'
+  
+  WorkflowManagerAnalogEventQueueURL:
+    Type: String
+    Description: 'URL of the workflow manager analog event queue'
+  
+  WorkflowManagerAnalogEventQueueARN:
+    Type: String
+    Description: 'ARN of the workflow manager analog event queue'
+    
+  WorkflowManagerAnalogEventQueueAlarmARN:
+    Type: String
+    Description: 'pn-workflow-manager analog event queue alarm ARN'
+    
+  WorkflowManagerAnalogEventQueueAgeAlarmARN:
+    Type: String
+    Description: 'pn-workflow-manager analog event queue age alarm ARN'
+  
+  WorkflowManagerDigitalEventQueueName:
+    Type: String
+    Description: 'Queue to pull for digital events'
+  
+  WorkflowManagerDigitalEventQueueURL:
+    Type: String
+    Description: 'URL of the workflow manager digital event queue'
+  
+  WorkflowManagerDigitalEventQueueARN:
+    Type: String
+    Description: 'ARN of the workflow manager digital event queue'
+    
+  WorkflowManagerDigitalEventQueueAlarmARN:
+    Type: String
+    Description: 'pn-workflow-manager digital event queue alarm ARN'
+    
+  WorkflowManagerDigitalEventQueueAgeAlarmARN:
+    Type: String
+    Description: 'pn-workflow-manager digital event queue age alarm ARN'
+
+  WorkflowManagerIoEventQueueName:
+    Type: String
+    Description: 'Queue to pull for Io events'
+  
+  WorkflowManagerIoEventQueueURL:
+    Type: String
+    Description: 'URL of the workflow manager Io event queue'
+  
+  WorkflowManagerIoEventQueueARN:
+    Type: String
+    Description: 'ARN of the workflow manager Io event queue'
+    
+  WorkflowManagerIoEventQueueAlarmARN:
+    Type: String
+    Description: 'pn-workflow-manager Io event queue alarm ARN'
+    
+  WorkflowManagerIoEventQueueAgeAlarmARN:
+    Type: String
+    Description: 'pn-workflow-manager Io event queue age alarm ARN'
+
 
   ActionQueueDetailType:
     Type: CommaDelimitedList
-    Default: ''
     Description: 'List of action detail type to accept in event bridge rule'
-  
+
+  InformalCommunicationType:
+    Type: CommaDelimitedList
+    Default: 'INFORMAL'
+    Description: 'Informal communication type'
+
   LogAlarmStrategy:
     Type: String
     Default: 'FATAL'
@@ -206,6 +271,10 @@ Parameters:
     Default: 1
     Type: Number
     Description: activate when N datapoint on M (Workflow task)
+
+  WorkflowManagerCxId:
+    Type: String
+    Description: 'Client ID for workflow manager, used to route events from event bus to workflow manager queue'
 
 Resources:
   WorkflowManagerMicroservice:
@@ -235,10 +304,11 @@ Resources:
         ContainerEnvEntry1: !Sub 'AWS_REGIONCODE=${AWS::Region}'
         ContainerEnvEntry2: !Sub 'PN_CRON_ANALYZER=${PnCronAnalyzer}'
         ContainerEnvEntry3: !Sub 'WIRE_TAP_LOG=${WireTapLogActivation}'
-        ContainerEnvEntry7: !Sub 'PN_WORKFLOW_MANAGER_TOPICS_WORKFLOWMANAGERACTIONQUEUE=${WorkflowManagerActionsQueueName}'
-        ContainerEnvEntry8: !Sub 'PN_WORKFLOW_MANAGER_EVENTBUS_NAME=arn:aws:events:${AWS::Region}:${AWS::AccountId}:event-bus/${ProjectName}-CoreEventBus'
-        ContainerEnvEntry9: 'PN_WORKFLOW_MANAGER_EVENTBUS_SOURCE=pn-workflow-manager'
-        ContainerEnvEntry10: 'PN_WORKFLOW_MANAGER_EVENTBUS_OUTCOMEEVENTDETAILTYPE=WorkflowManagerOutcomeEvent'
+        ContainerEnvEntry4: !Sub 'PN_WORKFLOW_MANAGER_TOPICS_WORKFLOWMANAGERDIGITALQUEUE=${WorkflowManagerDigitalEventQueueName}'
+        ContainerEnvEntry5: !Sub 'PN_WORKFLOW_MANAGER_TOPICS_WORKFLOWMANAGERANALOGQUEUE=${WorkflowManagerAnalogEventQueueName}'
+        ContainerEnvEntry6: !Sub 'PN_WORKFLOW_MANAGER_TOPICS_WORKFLOWMANAGERIOQUEUE=${WorkflowManagerIoEventQueueName}'
+        ContainerEnvEntry7: !Sub 'PN_WORKFLOW_MANAGER_TOPICS_WORKFLOWMANAGERACTIONQUEUE=${WorkflowManagerActionQueueName}'
+        ContainerEnvEntry8: !Sub 'PN_WORKFLOW_MANAGER_CXID=${WorkflowManagerCxId}'
         ApplicativeEnvFileChecksum: !Ref ApplicativeEnvFileChecksum
         JavaToolOptions: '-Dreactor.netty.ioWorkerCount=50'
         MappedPaths: '/workflow-manager-not-available'
@@ -263,11 +333,20 @@ Resources:
         AlarmArns: !Join
           - ','
           - - !GetAtt WorkflowManagerMicroservice.Outputs.FatalLogsMetricAlarmArn
-            - !Ref WorkflowManagerActionsQueueAlarmARN
-            - !Ref WorkflowManagerActionsQueueAgeAlarmARN
+            - !Ref WorkflowManagerActionQueueAlarmARN
+            - !Ref WorkflowManagerActionQueueAgeAlarmARN
+            - !Ref WorkflowManagerAnalogEventQueueAlarmARN
+            - !Ref WorkflowManagerAnalogEventQueueAgeAlarmARN
+            - !Ref WorkflowManagerDigitalEventQueueAlarmARN
+            - !Ref WorkflowManagerDigitalEventQueueAgeAlarmARN
+            - !Ref WorkflowManagerIoEventQueueAlarmARN
+            - !Ref WorkflowManagerIoEventQueueAgeAlarmARN
         QueueArns: !Join
           - ','
-          - - !Ref WorkflowManagerActionsQueueARN
+          - - !Ref WorkflowManagerActionQueueARN
+            - !Ref WorkflowManagerAnalogEventQueueARN
+            - !Ref WorkflowManagerDigitalEventQueueARN
+            - !Ref WorkflowManagerIoEventQueueARN
         LogGroupsNames: !Join
           - ','
           - - !Sub '/aws/ecs/${ProjectName}-workflow-manager'
@@ -289,9 +368,11 @@ Resources:
               - sqs:GetQueueUrl
               - sqs:ReceiveMessage
               - sqs:SendMessage
-              - sqs:SendMessageBatch
             Resource:
-              - !Ref WorkflowManagerActionsQueueARN
+              - !Ref WorkflowManagerActionQueueARN
+              - !Ref WorkflowManagerAnalogEventQueueARN
+              - !Ref WorkflowManagerDigitalEventQueueARN
+              - !Ref WorkflowManagerIoEventQueueARN
 
   EventBusEnqueueRole:
     Type: AWS::IAM::Role
@@ -307,7 +388,7 @@ Resources:
                 aws:SourceAccount: !Ref "AWS::AccountId"
         Version: "2012-10-17"
       Policies:
-        - PolicyName: !Sub ${ProjectName}-actionmanager-2-workflow-manager-actions-queue-eventBusRulePolicy
+        - PolicyName: !Sub ${ProjectName}-EventBusEnqueueRolePolicy
           PolicyDocument:
             Statement:
               - Sid: putEvents
@@ -315,30 +396,47 @@ Resources:
                   - sqs:SendMessage
                 Effect: Allow
                 Resource:
-                  - !Ref WorkflowManagerActionsQueueARN
+                  - !Ref WorkflowManagerActionQueueARN
+                  - !Ref WorkflowManagerAnalogEventQueueARN
+                  - !Ref WorkflowManagerDigitalEventQueueARN
+                  - !Ref WorkflowManagerIoEventQueueARN
 
-  PnCoreEventBusActionManagerToWorkflowManagerActionsQueueRule:
+  PnCoreEventBusToWorkflowManagerActionQueueRule:
     Type: AWS::Events::Rule
     Properties:
-      Description: Route ActionManager events to workflow manager actions queue
+      Description: Route Action events to workflow manager action queue
       RoleArn: !GetAtt "EventBusEnqueueRole.Arn"
       EventBusName: !Sub '${ProjectName}-CoreEventBus'
       EventPattern:
         detail-type: ["ActionManagerEventOutcome"]
         detail:
           routingActionType: !Ref ActionQueueDetailType
+          communicationType: !Ref InformalCommunicationType
       Targets:
-        - Id: !Sub '${ProjectName}-CoreEventBus-ActionManager2WorkflowManagerActionsQueue'
-          Arn: !Ref WorkflowManagerActionsQueueARN
+        - Arn: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:PnCoreEventBusMatchedEventLogger
+          Id: !Sub ${ProjectName}-Logger-ActionToWorkflowManagerQueue
+          InputTransformer:
+            InputPathsMap:
+              "timestamp": "$.time"
+            InputTemplate: |
+              {
+                  "timestamp": <timestamp>,
+                  "ruleArn": <aws.events.rule-arn>,
+                  "ruleName": <aws.events.rule-name>,
+                  "ingestionTime": <aws.events.event.ingestion-time>,
+                  "originalEvent": <aws.events.event.json>
+              }
+        - Id: !Sub '${ProjectName}-CoreEventBus-ActionEventToWorkflowManagerActionQueue'
+          Arn: !Ref WorkflowManagerActionQueueARN
           InputPath: $.detail.body
           DeadLetterConfig:  
-            Arn: !Sub arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:pn-CoreEventBus-DLQ #TODO deve essere univoco?
+            Arn: !Sub arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:pn-CoreEventBus-DLQ
 
-  ScheduledActionsQueuePolicy:
+  EventBridgeToScheduledActionsQueuePolicy:
     Type: AWS::SQS::QueuePolicy
     Properties:
       Queues:
-        - !Ref WorkflowManagerActionsQueueURL
+        - !Ref WorkflowManagerActionQueueURL
       PolicyDocument:
         Statement:
           - Sid: AllowEventBridgeToSendMessage
@@ -346,10 +444,151 @@ Resources:
             Principal:
               Service: events.amazonaws.com
             Action: sqs:SendMessage
-            Resource: !Ref WorkflowManagerActionsQueueARN
+            Resource: !Ref WorkflowManagerActionQueueARN
             Condition:
               ArnEquals:
-                aws:SourceArn: !GetAtt PnCoreEventBusActionManagerToWorkflowManagerActionsQueueRule.Arn
+                aws:SourceArn: !GetAtt PnCoreEventBusToWorkflowManagerActionQueueRule.Arn
+  
+  PnCoreEventBusToWorkflowManagerAnalogEventQueue:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: Route Analog Events to workflow manager analog event queue
+      RoleArn: !GetAtt "EventBusEnqueueRole.Arn"
+      EventBusName: !Sub '${ProjectName}-CoreEventBus'
+      EventPattern:
+        detail-type: [ "PaperChannelOutcomeEvent" ]
+        detail:
+          clientId: [ !Ref WorkflowManagerCxId ]
+      Targets:
+        - Arn: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:PnCoreEventBusMatchedEventLogger
+          Id: !Sub ${ProjectName}-Logger-AnalogToWorkflowManagerQueue
+          InputTransformer:
+            InputPathsMap:
+              "timestamp": "$.time"
+            InputTemplate: |
+              {
+                  "timestamp": <timestamp>,
+                  "ruleArn": <aws.events.rule-arn>,
+                  "ruleName": <aws.events.rule-name>,
+                  "ingestionTime": <aws.events.event.ingestion-time>,
+                  "originalEvent": <aws.events.event.json>
+              }
+        - Id: !Sub '${ProjectName}-CoreEventBus-AnalogEventToWorkflowManagerQueue'
+          Arn: !Ref WorkflowManagerAnalogEventQueueARN
+          InputPath: $.detail
+          DeadLetterConfig:
+            Arn: !Sub arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:pn-CoreEventBus-DLQ
+
+  EventBridgeToWorkflowManagerAnalogEventQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues:
+        - !Ref WorkflowManagerAnalogEventQueueURL
+      PolicyDocument:
+        Statement:
+          - Sid: AllowEventBridgeToSendMessage
+            Effect: Allow
+            Principal:
+              Service: events.amazonaws.com
+            Action: sqs:SendMessage
+            Resource: !Ref WorkflowManagerAnalogEventQueueARN
+            Condition:
+              ArnEquals:
+                aws:SourceArn: !GetAtt PnCoreEventBusToWorkflowManagerAnalogEventQueue.Arn
+
+  PnCoreEventBusToWorkflowManagerDigitalEventQueue:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: Route Digital Events to workflow manager digital event queue
+      RoleArn: !GetAtt "EventBusEnqueueRole.Arn"
+      EventBusName: !Sub '${ProjectName}-CoreEventBus'
+      EventPattern:
+        detail-type: [ "ExternalChannelOutcomeEvent" ]
+        detail:
+          clientId: [ !Ref WorkflowManagerCxId ]
+      Targets:
+        - Arn: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:PnCoreEventBusMatchedEventLogger
+          Id: !Sub ${ProjectName}-Logger-DigitalToWorkflowManagerQueue
+          InputTransformer:
+            InputPathsMap:
+              "timestamp": "$.time"
+            InputTemplate: |
+              {
+                  "timestamp": <timestamp>,
+                  "ruleArn": <aws.events.rule-arn>,
+                  "ruleName": <aws.events.rule-name>,
+                  "ingestionTime": <aws.events.event.ingestion-time>,
+                  "originalEvent": <aws.events.event.json>
+              }
+        - Id: !Sub '${ProjectName}-CoreEventBus-DigitalEventToWorkflowManagerQueue'
+          Arn: !Ref WorkflowManagerDigitalEventQueueARN
+          InputPath: $.detail
+          DeadLetterConfig:
+            Arn: !Sub arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:pn-CoreEventBus-DLQ
+
+  EventBridgeToWorkflowManagerDigitalEventQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues:
+        - !Ref WorkflowManagerDigitalEventQueueURL
+      PolicyDocument:
+        Statement:
+          - Sid: AllowEventBridgeToSendMessage
+            Effect: Allow
+            Principal:
+              Service: events.amazonaws.com
+            Action: sqs:SendMessage
+            Resource: !Ref WorkflowManagerDigitalEventQueueARN
+            Condition:
+              ArnEquals:
+                aws:SourceArn: !GetAtt PnCoreEventBusToWorkflowManagerDigitalEventQueue.Arn
+
+  PnCoreEventBusToWorkflowManagerIoEventQueue:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: Route Io Events to workflow manager Io event queue
+      RoleArn: !GetAtt "EventBusEnqueueRole.Arn"
+      EventBusName: !Sub '${ProjectName}-CoreEventBus'
+      EventPattern:
+        detail-type: [ "IoConnectorOutcomeEvent" ]
+        detail:
+          clientId: [ !Ref WorkflowManagerCxId ]
+      Targets:
+        - Arn: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:PnCoreEventBusMatchedEventLogger
+          Id: !Sub ${ProjectName}-Logger-IoToWorkflowManagerQueue
+          InputTransformer:
+            InputPathsMap:
+              "timestamp": "$.time"
+            InputTemplate: |
+              {
+                  "timestamp": <timestamp>,
+                  "ruleArn": <aws.events.rule-arn>,
+                  "ruleName": <aws.events.rule-name>,
+                  "ingestionTime": <aws.events.event.ingestion-time>,
+                  "originalEvent": <aws.events.event.json>
+              }
+        - Id: !Sub '${ProjectName}-CoreEventBus-IoEventToWorkflowManagerQueue'
+          Arn: !Ref WorkflowManagerIoEventQueueARN
+          InputPath: $.detail
+          DeadLetterConfig:
+            Arn: !Sub arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:pn-CoreEventBus-DLQ
+
+  EventBridgeToWorkflowManagerIoEventQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues:
+        - !Ref WorkflowManagerIoEventQueueURL
+      PolicyDocument:
+        Statement:
+          - Sid: AllowEventBridgeToSendMessage
+            Effect: Allow
+            Principal:
+              Service: events.amazonaws.com
+            Action: sqs:SendMessage
+            Resource: !Ref WorkflowManagerIoEventQueueARN
+            Condition:
+              ArnEquals:
+                aws:SourceArn: !GetAtt PnCoreEventBusToWorkflowManagerIoEventQueue.Arn
 
   #### Alarm for custom metric Autoscaling
   AlarmCustomAutoscalingWorkflow:
@@ -365,13 +604,46 @@ Resources:
             Metric:
               Dimensions:
                 - Name: QueueName
-                  Value: !Ref "WorkflowManagerActionsQueueName"
+                  Value: !Ref "WorkflowManagerActionQueueName"
               Namespace: "AWS/SQS"
               MetricName: "ApproximateNumberOfMessagesVisible"
             Period: !Ref AutoscalingCheckPeriod
             Stat: Average
           ReturnData: False
         - Id: m2
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: QueueName
+                  Value: !Ref "WorkflowManagerAnalogEventQueueName"
+              Namespace: "AWS/SQS"
+              MetricName: "ApproximateNumberOfMessagesVisible"
+            Period: !Ref AutoscalingCheckPeriod
+            Stat: Average
+          ReturnData: False
+        - Id: m3
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: QueueName
+                  Value: !Ref "WorkflowManagerDigitalEventQueueName"
+              Namespace: "AWS/SQS"
+              MetricName: "ApproximateNumberOfMessagesVisible"
+            Period: !Ref AutoscalingCheckPeriod
+            Stat: Average
+          ReturnData: False
+        - Id: m4
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: QueueName
+                  Value: !Ref "WorkflowManagerIoEventQueueName"
+              Namespace: "AWS/SQS"
+              MetricName: "ApproximateNumberOfMessagesVisible"
+            Period: !Ref AutoscalingCheckPeriod
+            Stat: Average
+          ReturnData: False
+        - Id: m5
           MetricStat:
             Metric:
               Dimensions:
@@ -385,7 +657,7 @@ Resources:
             Stat: Average
           ReturnData: False
         - Id: code
-          Expression: !Sub "IF(m2==0, 101, (100*(m1)) / (${ConsumedQueueMessagePerMinute} * m2) )"
+          Expression: !Sub "IF(m5==0, 101, (100*(m1+m2+m3+m4)) / (${ConsumedQueueMessagePerMinute} * m5) )"
           Label: !Sub "${ProjectName}-workflow-manager-queue-custom-metric"
           ReturnData: False
         - Id: e1

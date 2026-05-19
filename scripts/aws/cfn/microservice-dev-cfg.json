@@ -9,6 +9,7 @@
     "WireTapLogActivation": "false",
     "MountEfs": "false",
     "PnCronAnalyzer": "-",
-    "ActionQueueDetailType": "POST_ACCEPTED_PROCESSING_COMPLETED"
+    "ActionQueueDetailType": "POST_ACCEPTED_PROCESSING_COMPLETED",
+    "WorkflowManagerCxId": "pn-workflow-manager"
   }
 }

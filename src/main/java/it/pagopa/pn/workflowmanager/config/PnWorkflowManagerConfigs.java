@@ -17,18 +17,14 @@ import org.springframework.validation.annotation.Validated;
 @Slf4j
 public class PnWorkflowManagerConfigs {
     private Topics topics;
-    private EventBus eventBus;
+    private String cxId;
 
     @Data
     public static class Topics {
         private String pnWorkflowManagerActionQueue;
-    }
-
-    @Data
-    public static class EventBus {
-        private String name;
-        private String source;
-        private String outcomeEventDetailType;
+        private String pnWorkflowManagerDigitalQueue;
+        private String pnWorkflowManagerAnalogQueue;
+        private String pnWorkflowManagerIoQueue;
     }
 
     @PostConstruct

@@ -18,11 +18,11 @@ import static it.pagopa.pn.workflowmanager.middleware.queue.consumer.handler.uti
 public class ActionConsumer {
 
     @SqsListener(value = "${pn.workflow-manager.topics.pn-workflow-manager-action-queue}")
-    public void pnWorkflowManagerActionConsumer(Message<Action> message) {
+    public void workflowManagerActionConsumer(Message<Action> message) {
         setMdc(message);
         final String processName = "WORKFLOW_ACTIONS_INBOUND";
         try {
-            log.info("Handle action pnDeliveryPushActionsInboundConsumer, with content {}", message);
+            log.info("Handle action workflowManagerActionConsumer, with content {}", message);
             log.logStartingProcess(processName);
 
             log.logEndingProcess(processName);

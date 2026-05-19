@@ -46,11 +46,6 @@
 			<artifactId>pn-model</artifactId>
 			<version>2.12.0-SPRINGBOOT3</version>
 		</dependency>
-		
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
-		</dependency>
 
 		<dependency>
 			<groupId>io.swagger</groupId>
@@ -171,7 +166,49 @@
 							<modelPackage>${project.groupId}.deliverypushworkflow.generated.openapi.msclient.delivery.model</modelPackage>
 						</configuration>
 					</execution>
-				</executions>
+
+                    <!-- OPEN API CLIENT PN-PAPER-CHANNEL -->
+                    <execution>
+                        <id>generate-client-pn-paperchannel</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <phase>generate-resources</phase>
+                        <configuration>
+                            <inputSpec>https://raw.githubusercontent.com/pagopa/pn-paper-channel/2e75e268974f8773caf96385ea83dba1816383bc/docs/openapi/api-internal-v1.yaml</inputSpec>
+                            <templateDirectory>${project.build.directory}/dependency-resources/scripts/openapi/templates/7.4.0/client</templateDirectory>
+                            <generatorName>java</generatorName>
+                            <library>resttemplate</library>
+                            <generateApiDocumentation>false</generateApiDocumentation>
+                            <generateApiTests>false</generateApiTests>
+                            <generateModelTests>false</generateModelTests>
+                            <additionalProperties>removeEnumValuePrefix=false</additionalProperties>
+                            <typeMappings>
+                                <typeMapping>OffsetDateTime=Instant</typeMapping>
+                            </typeMappings>
+                            <importMappings>
+                                <importMapping>java.time.OffsetDateTime=java.time.Instant</importMapping>
+                            </importMappings>
+                            <configOptions>
+                                <useJakartaEe>true</useJakartaEe>
+                                <swaggerAnnotations>false</swaggerAnnotations>
+                                <openApiNullable>false</openApiNullable>
+                                <dateLibrary>java8</dateLibrary>
+                                <annotationLibrary>none</annotationLibrary>
+                                <documentationProvider>source</documentationProvider>
+                                <openApiNullable>false</openApiNullable>
+                                <useAbstractionForFiles>true</useAbstractionForFiles>
+                                <useBeanValidation>false</useBeanValidation>
+                                <skipDefaultInterface>false</skipDefaultInterface>
+                                <useTags>true</useTags>
+                                <additionalModelTypeAnnotations>@com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY)</additionalModelTypeAnnotations>
+                            </configOptions>
+                            <modelPackage>${project.groupId}.deliverypushworkflow.generated.openapi.msclient.paperchannel.model</modelPackage>
+                            <apiPackage>${project.groupId}.deliverypushworkflow.generated.openapi.msclient.paperchannel.api</apiPackage>
+                        </configuration>
+                    </execution>
+
+                </executions>
 			</plugin>			 		 
 		</plugins>
 	</build>
