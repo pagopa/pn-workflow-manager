@@ -14,7 +14,7 @@ import static it.pagopa.pn.workflowmanager.middleware.queue.consumer.handler.uti
 @CustomLog
 @RequiredArgsConstructor
 public class AnalogEventConsumer {
-    @SqsListener(value = "${pn.workflow-manager.topics.pn-workflow-manager-analog-queue}")
+    @SqsListener(value = "${pn.workflow-manager.topics.analog-queue}")
     public void workflowManagerAnalogEventConsumer(Message<PaperChannelUpdate> message) {
         setMdc(message);
         final String processName = "ANALOG_EVENT_INBOUND";

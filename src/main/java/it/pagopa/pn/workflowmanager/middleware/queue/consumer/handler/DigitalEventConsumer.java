@@ -14,7 +14,7 @@ import static it.pagopa.pn.workflowmanager.middleware.queue.consumer.handler.uti
 @CustomLog
 @RequiredArgsConstructor
 public class DigitalEventConsumer {
-    @SqsListener(value = "${pn.workflow-manager.topics.pn-workflow-manager-digital-queue}")
+    @SqsListener(value = "${pn.workflow-manager.topics.digital-queue}")
     public void workflowManagerDigitalEventConsumer(Message<String> message) {
         setMdc(message);
         final String processName = "DIGITAL_EVENT_INBOUND";

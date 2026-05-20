@@ -21,10 +21,10 @@ public class PnWorkflowManagerConfigs {
 
     @Data
     public static class Topics {
-        private String pnWorkflowManagerActionQueue;
-        private String pnWorkflowManagerDigitalQueue;
-        private String pnWorkflowManagerAnalogQueue;
-        private String pnWorkflowManagerIoQueue;
+        private String actionQueue;
+        private String digitalQueue;
+        private String analogQueue;
+        private String ioQueue;
     }
 
     @PostConstruct
