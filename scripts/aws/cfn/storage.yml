@@ -15,20 +15,152 @@ Parameters:
   TemplateBucketBaseUrl:
     Type: String
     Description: URL da cui caricare i frammenti di template di infrastruttura
-  
-  Version:
+    
+  AlarmSNSTopicName:
     Type: String
-    Description: 'keep track of used projects commitIds'
-  
-  CdcKinesisSourceStreamArn:
-    Type: String
-    Description: 'Where to send CDC'
+    Description: ''
 
+  #Log
+  LogRetention:
+    Type: Number
+    Default: 14
+  
+  LogsKinesisSourceStreamArn:
+    Type: String
+    Description: 'Where to send Logs'
+  
 Resources:
-    NullResource:
-        Type: AWS::CloudFormation::WaitConditionHandle
+  #Log Group
+  WorkflowManagerLogGroup:
+    Type: AWS::CloudFormation::Stack
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/log-group.yaml"
+      Parameters:
+        LogGroupName: !Sub '${ProjectName}-workflow-manager'
+        LogsKinesisSourceStreamArn: !Ref LogsKinesisSourceStreamArn
+        LogGroupRetention: !Ref LogRetention
+
+  # Queues
+  WorkflowManagerActionQueue:
+    Type: AWS::CloudFormation::Stack
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/sqs-queue.yaml"
+      Parameters:
+        QueueName: !Sub '${ProjectName}-workflow-manager_action'
+        AlarmSNSTopicName: !Ref AlarmSNSTopicName
+        VisibilityTimeout: 60
+        MaxReceiveCount: 10
+        DelaySeconds: 1
+
+  WorkflowManagerAnalogEventQueue:
+    Type: AWS::CloudFormation::Stack
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/sqs-queue.yaml"
+      Parameters:
+        QueueName: !Sub '${ProjectName}-workflow-manager_analog_event'
+        AlarmSNSTopicName: !Ref AlarmSNSTopicName
+        VisibilityTimeout: 60
+        MaxReceiveCount: 10
+        DelaySeconds: 1
+
+  WorkflowManagerDigitalEventQueue:
+    Type: AWS::CloudFormation::Stack
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/sqs-queue.yaml"
+      Parameters:
+        QueueName: !Sub '${ProjectName}-workflow-manager_digital_event'
+        AlarmSNSTopicName: !Ref AlarmSNSTopicName
+        VisibilityTimeout: 60
+        MaxReceiveCount: 10
+        DelaySeconds: 1
+
+  WorkflowManagerIoEventQueue:
+    Type: AWS::CloudFormation::Stack
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/sqs-queue.yaml"
+      Parameters:
+        QueueName: !Sub '${ProjectName}-workflow-manager_io_event'
+        AlarmSNSTopicName: !Ref AlarmSNSTopicName
+        VisibilityTimeout: 60
+        MaxReceiveCount: 10
+        DelaySeconds: 1
 
 Outputs:
-    SampleOutput:
-      Description: A Sample Output
-      Value: 'na'
+  # Queues
+  WorkflowManagerActionQueueName:
+    Value: !GetAtt WorkflowManagerActionQueue.Outputs.QueueName
+    Description: pn-workflow-manager action queue name
+  WorkflowManagerActionQueueURL:
+    Value: !GetAtt WorkflowManagerActionQueue.Outputs.QueueURL
+    Description: pn-workflow-manager action queue URL
+  WorkflowManagerActionQueueARN:
+    Value: !GetAtt WorkflowManagerActionQueue.Outputs.QueueARN
+    Description: pn-workflow-manager action queue ARN
+  WorkflowManagerActionQueueAlarmARN:
+    Value: !GetAtt WorkflowManagerActionQueue.Outputs.SqsDLQAlarmArn
+    Description: pn-workflow-manager action queue dlq alarm ARN
+  WorkflowManagerActionQueueAgeAlarmARN:
+    Value: !GetAtt WorkflowManagerActionQueue.Outputs.SqsAgeAlarmArn
+    Description: pn-workflow-manager action queue age alarm ARN
+
+  WorkflowManagerAnalogEventQueueName:
+    Value: !GetAtt WorkflowManagerAnalogEventQueue.Outputs.QueueName
+    Description: workflow-manager analog-event queue name
+  WorkflowManagerAnalogEventQueueURL:
+    Value: !GetAtt WorkflowManagerAnalogEventQueue.Outputs.QueueURL
+    Description: workflow-manager analog-event queue URL
+  WorkflowManagerAnalogEventQueueARN:
+    Value: !GetAtt WorkflowManagerAnalogEventQueue.Outputs.QueueARN
+    Description: workflow-manager analog-event queue ARN
+  WorkflowManagerAnalogEventQueueAlarmARN:
+    Value: !GetAtt WorkflowManagerAnalogEventQueue.Outputs.SqsDLQAlarmArn
+    Description: workflow-manager analog-event queue dlq alarm ARN
+  WorkflowManagerAnalogEventQueueAgeAlarmARN:
+    Value: !GetAtt WorkflowManagerAnalogEventQueue.Outputs.SqsAgeAlarmArn
+    Description: workflow-manager analog-event queue age alarm ARN
+
+  WorkflowManagerDigitalEventQueueName:
+    Value: !GetAtt WorkflowManagerDigitalEventQueue.Outputs.QueueName
+    Description: workflow-manager digital-event queue name
+  WorkflowManagerDigitalEventQueueURL:
+    Value: !GetAtt WorkflowManagerDigitalEventQueue.Outputs.QueueURL
+    Description: workflow-manager digital-event queue URL
+  WorkflowManagerDigitalEventQueueARN:
+    Value: !GetAtt WorkflowManagerDigitalEventQueue.Outputs.QueueARN
+    Description: workflow-manager digital-event queue ARN
+  WorkflowManagerDigitalEventQueueAlarmARN:
+    Value: !GetAtt WorkflowManagerDigitalEventQueue.Outputs.SqsDLQAlarmArn
+    Description: workflow-manager digital-event queue dlq alarm queue
+  WorkflowManagerDigitalEventQueueAgeAlarmARN:
+    Value: !GetAtt WorkflowManagerDigitalEventQueue.Outputs.SqsAgeAlarmArn
+    Description: workflow-manager digital-event queue age alarm ARN
+
+  WorkflowManagerIoEventQueueName:
+    Value: !GetAtt WorkflowManagerIoEventQueue.Outputs.QueueName
+    Description: workflow-manager io-event queue name
+  WorkflowManagerIoEventQueueURL:
+    Value: !GetAtt WorkflowManagerIoEventQueue.Outputs.QueueURL
+    Description: workflow-manager io-event queue URL
+  WorkflowManagerIoEventQueueARN:
+    Value: !GetAtt WorkflowManagerIoEventQueue.Outputs.QueueARN
+    Description: workflow-manager io-event queue ARN
+  WorkflowManagerIoEventQueueAlarmARN:
+    Value: !GetAtt WorkflowManagerIoEventQueue.Outputs.SqsDLQAlarmArn
+    Description: workflow-manager io-event queue dlq alarm ARN
+  WorkflowManagerIoEventQueueAgeAlarmARN:
+    Value: !GetAtt WorkflowManagerIoEventQueue.Outputs.SqsAgeAlarmArn
+    Description: workflow-manager io-event queue age alarm ARN
+
+  # Log groups
+  EcsWorkflowLogGroup:
+    Value: !GetAtt WorkflowManagerLogGroup.Outputs.LogGroupName

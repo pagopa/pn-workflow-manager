@@ -1,3 +1,15 @@
 {
-  "Parameters" : {}
+  "Parameters": {
+    "CpuValue": "2048",
+    "MemoryAmount": "4GB",
+    "MinTasksNumber": "1",
+    "MaxTasksNumber": "1",
+    "AutoscalingThreshold": "650",
+    "ConsumedQueueMessagePerMinute": "3000",
+    "WireTapLogActivation": "false",
+    "MountEfs": "false",
+    "PnCronAnalyzer": "-",
+    "ActionQueueDetailType": "POST_ACCEPTED_PROCESSING_COMPLETED",
+    "WorkflowManagerCxId": "pn-workflow-manager"
+  }
 }
