@@ -31,11 +31,9 @@
     "sonarqube-scanner": "^3.3.0"
   },
   "dependencies": {
-    "@aws-sdk/client-sqs": "^3.1004.0",
-    "@aws-sdk/node-http-handler": "^3.374.0",
+    "@aws-sdk/client-dynamodb": "^3.1068.0",
     "@aws-sdk/util-dynamodb": "^3.572.0",
-    "axios": "^1.6.8",
-    "config": "^4.2.0",
-    "uuid": "^9.0.1"
+    "axios": "^1.16.0",
+    "zlib-node": "^1.0.10"
   }
 }
