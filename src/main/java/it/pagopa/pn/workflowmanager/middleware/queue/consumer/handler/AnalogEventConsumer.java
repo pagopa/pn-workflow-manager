@@ -1,7 +1,7 @@
 package it.pagopa.pn.workflowmanager.middleware.queue.consumer.handler;
 
 import io.awspring.cloud.sqs.annotation.SqsListener;
-import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.paperchannel.model.PaperChannelUpdate;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.model.PaperChannelUpdate;
 import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;

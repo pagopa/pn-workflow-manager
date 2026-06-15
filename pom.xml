@@ -86,6 +86,16 @@
 			<scope>test</scope>
 		</dependency>
 
+		<dependency>
+			<groupId>com.fasterxml.jackson.datatype</groupId>
+			<artifactId>jackson-datatype-jsr310</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.fasterxml.jackson.dataformat</groupId>
+			<artifactId>jackson-dataformat-yaml</artifactId>
+		</dependency>
+
 	</dependencies>
 
 	<build>
@@ -129,7 +139,50 @@
 				<groupId>org.openapitools</groupId>
 				<artifactId>openapi-generator-maven-plugin</artifactId>
 				<version>7.4.0</version>
-				<executions>					
+				<executions>
+					<!-- OPEN API CAMPAIGNS MONITORING -->
+					<execution>
+						<phase>generate-resources</phase>
+						<id>pn-workflowmanager-campaigns-internal</id>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<configuration>
+							<typeMappings>
+								<typeMapping>Date=Instant</typeMapping>
+							</typeMappings>
+							<importMappings>
+								<importMapping>java.util.Date=java.time.Instant</importMapping>
+								<importMapping>Date=java.time.Instant</importMapping>
+							</importMappings>
+							<inputSpec>${project.basedir}/docs/openapi/campaigns-api-internal.yaml</inputSpec>
+							<generatorName>spring</generatorName>
+							<library>spring-boot</library>
+							<generateApiTests>false</generateApiTests>
+							<generateModelTests>false</generateModelTests>
+							<templateDirectory>${project.build.directory}/dependency-resources/scripts/openapi/templates/5.4.0/server</templateDirectory>
+							<configOptions>
+								<basePackage>${project.groupId}.workflowmanager.generated.openapi.server.v1</basePackage>
+								<modelPackage>${project.groupId}.workflowmanager.generated.openapi.server.v1.dto</modelPackage>
+								<apiPackage>${project.groupId}.workflowmanager.generated.openapi.server.v1.api</apiPackage>
+								<configPackage>${project.groupId}.workflowmanager.generated.openapi.server.v1.config</configPackage>
+								<useJakartaEe>true</useJakartaEe>
+								<swaggerAnnotations>false</swaggerAnnotations>
+								<openApiNullable>false</openApiNullable>
+								<annotationLibrary>none</annotationLibrary>
+								<documentationProvider>source</documentationProvider>
+								<useJakartaEe>true</useJakartaEe>
+								<swaggerAnnotations>false</swaggerAnnotations>
+								<dateLibrary>java11</dateLibrary>
+								<delegatePattern>true</delegatePattern>
+								<skipDefaultInterface>false</skipDefaultInterface>
+								<useTags>true</useTags>
+								<additionalModelTypeAnnotations>@lombok.Builder(toBuilder = true); @lombok.NoArgsConstructor; @lombok.AllArgsConstructor; @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY)</additionalModelTypeAnnotations>
+								<reactive>true</reactive>
+							</configOptions>
+						</configuration>
+					</execution>
+
 					<!-- OPEN API CLIENT PN-DELIVERY -->
 					<execution>
 						<phase>generate-resources</phase>
@@ -162,8 +215,8 @@
 								<skipDefaultInterface>false</skipDefaultInterface>
 								<useTags>true</useTags>
 							</configOptions>
-							<apiPackage>${project.groupId}.deliverypushworkflow.generated.openapi.msclient.delivery.api</apiPackage>
-							<modelPackage>${project.groupId}.deliverypushworkflow.generated.openapi.msclient.delivery.model</modelPackage>
+							<apiPackage>${project.groupId}.workflowmanager.generated.openapi.msclient.delivery.api</apiPackage>
+							<modelPackage>${project.groupId}.workflowmanager.generated.openapi.msclient.delivery.model</modelPackage>
 						</configuration>
 					</execution>
 
@@ -203,8 +256,8 @@
                                 <useTags>true</useTags>
                                 <additionalModelTypeAnnotations>@com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY)</additionalModelTypeAnnotations>
                             </configOptions>
-                            <modelPackage>${project.groupId}.deliverypushworkflow.generated.openapi.msclient.paperchannel.model</modelPackage>
-                            <apiPackage>${project.groupId}.deliverypushworkflow.generated.openapi.msclient.paperchannel.api</apiPackage>
+                            <modelPackage>${project.groupId}.workflowmanager.generated.openapi.msclient.paperchannel.model</modelPackage>
+                            <apiPackage>${project.groupId}.workflowmanager.generated.openapi.msclient.paperchannel.api</apiPackage>
                         </configuration>
                     </execution>
 

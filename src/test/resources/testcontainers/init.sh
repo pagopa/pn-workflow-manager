@@ -14,4 +14,16 @@ for qn in  $( echo $queues | tr " " "\n" ) ; do
         --queue-name $qn
 done
 
+echo "### CREATE TABLES ###"
+
+aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
+    dynamodb create-table \
+    --table-name pn-CampaignStatistics  \
+    --attribute-definitions \
+        AttributeName=campaignId,AttributeType=S \
+    --key-schema \
+        AttributeName=campaignId,KeyType=HASH \
+    --provisioned-throughput \
+        ReadCapacityUnits=10,WriteCapacityUnits=5
+
 echo "Initialization terminated"
