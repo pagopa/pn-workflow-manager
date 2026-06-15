@@ -36,7 +36,7 @@ Resources:
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
     Properties:
-      TableName: !Sub '${ProjectName}-WebhookStreams'
+      TableName: !Sub '${ProjectName}-CampaignStatistics'
       AttributeDefinitions:
         - AttributeName: "campaignId"
           AttributeType: "S"
@@ -44,9 +44,6 @@ Resources:
         - AttributeName: "campaignId"
           KeyType: "HASH"
       BillingMode: "PAY_PER_REQUEST"
-      TimeToLiveSpecification:
-        AttributeName: "ttl"
-        Enabled: true
       PointInTimeRecoverySpecification:
         PointInTimeRecoveryEnabled: true
 
