@@ -13,6 +13,7 @@ import static it.pagopa.pn.workflowmanager.middleware.queue.consumer.handler.uti
 @CustomLog
 @RequiredArgsConstructor
 public class IoEventConsumer {
+
     @SqsListener(value = "${pn.workflow-manager.topics.io-queue}")
     public void workflowManagerIoEventConsumer(Message<String> message) {
         setMdc(message);

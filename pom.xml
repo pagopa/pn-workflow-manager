@@ -158,27 +158,32 @@
 							<inputSpec>${project.basedir}/docs/openapi/campaigns-api-internal.yaml</inputSpec>
 							<generatorName>spring</generatorName>
 							<library>spring-boot</library>
+							<modelNameSuffix />
 							<generateApiTests>false</generateApiTests>
 							<generateModelTests>false</generateModelTests>
-							<templateDirectory>${project.build.directory}/dependency-resources/scripts/openapi/templates/5.4.0/server</templateDirectory>
 							<configOptions>
+								<discriminateByClassname>false</discriminateByClassname>
+								<generatedConstructorWithRequiredArgs>false</generatedConstructorWithRequiredArgs>
+								<useSpringBoot3>true</useSpringBoot3>
+								<dateLibrary>java11</dateLibrary>
+								<delegatePattern>true</delegatePattern>
+								<interfaceOnly>true</interfaceOnly>
+								<documentationProvider>source</documentationProvider>
+								<openApiNullable>false</openApiNullable>
+								<reactive>true</reactive>
+								<skipDefaultInterface>false</skipDefaultInterface>
+								<useTags>true</useTags>
 								<basePackage>${project.groupId}.workflowmanager.generated.openapi.server.v1</basePackage>
 								<modelPackage>${project.groupId}.workflowmanager.generated.openapi.server.v1.dto</modelPackage>
 								<apiPackage>${project.groupId}.workflowmanager.generated.openapi.server.v1.api</apiPackage>
 								<configPackage>${project.groupId}.workflowmanager.generated.openapi.server.v1.config</configPackage>
-								<useJakartaEe>true</useJakartaEe>
-								<swaggerAnnotations>false</swaggerAnnotations>
-								<openApiNullable>false</openApiNullable>
-								<annotationLibrary>none</annotationLibrary>
 								<documentationProvider>source</documentationProvider>
-								<useJakartaEe>true</useJakartaEe>
-								<swaggerAnnotations>false</swaggerAnnotations>
-								<dateLibrary>java11</dateLibrary>
-								<delegatePattern>true</delegatePattern>
-								<skipDefaultInterface>false</skipDefaultInterface>
-								<useTags>true</useTags>
-								<additionalModelTypeAnnotations>@lombok.Builder(toBuilder = true); @lombok.NoArgsConstructor; @lombok.AllArgsConstructor; @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY)</additionalModelTypeAnnotations>
-								<reactive>true</reactive>
+								<openApiNullable>false</openApiNullable>
+								<additionalModelTypeAnnotations>
+									@lombok.Builder(toBuilder = true);
+									@lombok.NoArgsConstructor;
+									@lombok.AllArgsConstructor;
+								</additionalModelTypeAnnotations>
 							</configOptions>
 						</configuration>
 					</execution>
