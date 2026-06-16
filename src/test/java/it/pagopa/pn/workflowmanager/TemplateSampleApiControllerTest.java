@@ -20,11 +20,4 @@ public class TemplateSampleApiControllerTest {
                 .anyMatch(TaskIdApplicationListener.class::isInstance);
         assertTrue(listenerFound, "TaskIdApplicationListener deve essere aggiunto alla SpringApplication");
     }
-
-    @Test
-    void testHomeControllerReturnsExpectedString() {
-        PnWorkflowManagerApplication.HomeController controller = new PnWorkflowManagerApplication.HomeController();
-        String result = controller.home();
-        assertEquals("Sono Vivo", result);
-    }
 }

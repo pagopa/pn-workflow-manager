@@ -7,4 +7,6 @@ public interface CampaignStatisticsEntityDao {
 
     Mono<CampaignStatisticsEntity> get(String campaignId);
 
+    Mono<CampaignStatisticsEntity> save(CampaignStatisticsEntity entity);
+
 }

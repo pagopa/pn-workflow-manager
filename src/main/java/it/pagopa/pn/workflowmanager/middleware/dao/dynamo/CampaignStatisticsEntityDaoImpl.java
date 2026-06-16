@@ -27,4 +27,9 @@ public class CampaignStatisticsEntityDaoImpl implements CampaignStatisticsEntity
         Key hashKey = Key.builder().partitionValue(campaignId).build();
         return Mono.fromFuture(table.getItem(hashKey));
     }
+
+    @Override
+    public Mono<CampaignStatisticsEntity> save(CampaignStatisticsEntity entity) {
+        return Mono.fromFuture(table.putItem(entity).thenApply(r -> entity));
+    }
 }

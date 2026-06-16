@@ -96,6 +96,27 @@
 			<artifactId>jackson-dataformat-yaml</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.mock-server</groupId>
+			<artifactId>mockserver-junit-jupiter</artifactId>
+			<version>5.15.0</version>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- Source: https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api -->
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-api</artifactId>
+			<version>6.0.3</version>
+			<scope>test</scope>
+		</dependency>
+
 	</dependencies>
 
 	<build>
@@ -160,12 +181,9 @@
 							<library>spring-boot</library>
 							<generateApiTests>false</generateApiTests>
 							<generateModelTests>false</generateModelTests>
-							<templateDirectory>${project.build.directory}/dependency-resources/scripts/openapi/templates/5.4.0/server</templateDirectory>
 							<configOptions>
-								<basePackage>${project.groupId}.workflowmanager.generated.openapi.server.v1</basePackage>
 								<modelPackage>${project.groupId}.workflowmanager.generated.openapi.server.v1.dto</modelPackage>
 								<apiPackage>${project.groupId}.workflowmanager.generated.openapi.server.v1.api</apiPackage>
-								<configPackage>${project.groupId}.workflowmanager.generated.openapi.server.v1.config</configPackage>
 								<useJakartaEe>true</useJakartaEe>
 								<swaggerAnnotations>false</swaggerAnnotations>
 								<openApiNullable>false</openApiNullable>
