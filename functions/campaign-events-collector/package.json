@@ -33,7 +33,6 @@
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.1068.0",
     "@aws-sdk/util-dynamodb": "^3.572.0",
-    "axios": "^1.16.0",
-    "zlib-node": "^1.0.10"
+    "axios": "^1.16.0"
   }
 }

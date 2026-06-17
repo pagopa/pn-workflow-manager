@@ -4,18 +4,23 @@ const proxyquire = require("proxyquire").noCallThru();
 
 const base64Json = (payload) => Buffer.from(JSON.stringify(payload)).toString("base64");
 
+/**
+ * Costruisce un record Kinesis nel formato reale usato da AWS (kinesis.data contiene il payload
+ * DynamoDB CDC serializzato in base64), coerente con kinesis.event.example.json.
+ */
 const makeRecord = ({
     eventID = "event-1",
     eventName = "INSERT",
-    parsedData,
-    payload = {}
+    parsedData
 }) => ({
     eventID,
-    eventName,
+    eventName: "aws:kinesis:record",
     kinesis: {
-        data: base64Json(payload)
-    },
-    dynamodb: parsedData ? { NewImage: { __mockParsedData: parsedData } } : undefined
+        data: base64Json({
+            eventName,
+            dynamodb: parsedData ? { NewImage: { __mockParsedData: parsedData } } : undefined
+        })
+    }
 });
 
 describe("eventHandler", () => {
@@ -24,7 +29,6 @@ describe("eventHandler", () => {
     let extractCampaignIdStub;
     let unmarshallStub;
     let docClientMock;
-    let fromStub;
     let dynamoDbClientStub;
     let consoleLogStub;
     let consoleWarnStub;
@@ -38,8 +42,7 @@ describe("eventHandler", () => {
         extractCampaignIdStub = sinon.stub();
         unmarshallStub = sinon.stub().callsFake((newImage) => newImage.__mockParsedData);
         docClientMock = { send: sinon.stub().resolves() };
-        fromStub = sinon.stub().returns(docClientMock);
-        dynamoDbClientStub = sinon.stub().callsFake(function DynamoDBClient() {});
+        dynamoDbClientStub = sinon.stub().returns(docClientMock);
 
         consoleLogStub = sinon.stub(console, "log");
         consoleWarnStub = sinon.stub(console, "warn");
@@ -49,8 +52,7 @@ describe("eventHandler", () => {
             "@aws-sdk/util-dynamodb": { unmarshall: unmarshallStub },
             "./lib/campaignUtils": { extractCampaignId: extractCampaignIdStub },
             "./lib/dbOperations": { updateCounters: updateCountersStub },
-            "@aws-sdk/client-dynamodb": { DynamoDBClient: dynamoDbClientStub },
-            "@aws-sdk/lib-dynamodb": { DynamoDBDocumentClient: { from: fromStub } }
+            "@aws-sdk/client-dynamodb": { DynamoDBClient: dynamoDbClientStub }
         }));
     });
 
@@ -174,9 +176,10 @@ describe("eventHandler", () => {
                 }),
                 {
                     eventID: "record-2",
-                    eventName: "INSERT",
+                    eventName: "aws:kinesis:record",
                     kinesis: {
-                        data: base64Json({})
+                        // kinesis.data contiene un INSERT senza dynamodb → deve essere scartato
+                        data: base64Json({ eventName: "INSERT" })
                     }
                 },
                 makeRecord({
@@ -400,6 +403,80 @@ describe("eventHandler", () => {
         expect(updateCountersStub.called).to.be.false;
         expect(consoleErrorStub.calledOnce).to.be.true;
         expect(consoleErrorStub.firstCall.args[0]).to.match(/Parsing error on record/);
+    });
+
+    describe("integration: kinesis.event.example.json", () => {
+        let handleEventReal;
+
+        beforeEach(() => {
+            // Usa il vero @aws-sdk/util-dynamodb (unmarshall reale) per testare con dati DynamoDB autentici.
+            // Si stubbano solo le dipendenze esterne (DB, HTTP).
+            handleEventReal = proxyquire("../app/eventHandler", {
+                "./lib/campaignUtils": { extractCampaignId: extractCampaignIdStub },
+                "./lib/dbOperations": { updateCounters: updateCountersStub },
+                "@aws-sdk/client-dynamodb": { DynamoDBClient: dynamoDbClientStub }
+            }).handleEvent;
+        });
+
+        it("skips a real Kinesis record without communicationType INFORMAL (ANALOG_SUCCESS_WORKFLOW)", async () => {
+            const exampleJson = require("./kinesis.event.example.json");
+
+            // Nel file di esempio kinesis.data è un oggetto JSON per leggibilità;
+            // in produzione è una stringa base64 → la codifichiamo qui come farebbe AWS.
+            const event = {
+                Records: exampleJson.Records.map((rec) => ({
+                    ...rec,
+                    kinesis: {
+                        ...rec.kinesis,
+                        data: base64Json(rec.kinesis.data)
+                    }
+                }))
+            };
+
+            const result = await handleEventReal(event);
+
+            // Il record ha category "ANALOG_SUCCESS_WORKFLOW" e nessun communicationType INFORMAL
+            // → deve essere scartato senza toccare DynamoDB
+            expect(result).to.deep.equal({ status: "SUCCESS", processedCampaigns: 0 });
+            expect(updateCountersStub.called).to.be.false;
+            expect(extractCampaignIdStub.called).to.be.false;
+        });
+
+        it("processes a real Kinesis record with communicationType INFORMAL and campaignId", async () => {
+            const exampleJson = require("./kinesis.event.example.json");
+
+            // Cloniamo il NewImage del record di esempio aggiungendo i campi necessari
+            // per superare il filtro INFORMAL e attivare il contatore REQUEST_ACCEPTED.
+            const enrichedData = {
+                ...exampleJson.Records[0].kinesis.data,
+                dynamodb: {
+                    NewImage: {
+                        ...exampleJson.Records[0].kinesis.data.dynamodb.NewImage,
+                        communicationType: { S: "INFORMAL" },
+                        campaignId: { S: "campaign-real-001" },
+                        category: { S: "REQUEST_ACCEPTED" },
+                        timestamp: { S: "2025-01-31T16:15:39.713731463Z" }
+                    }
+                }
+            };
+
+            const event = {
+                Records: [{
+                    ...exampleJson.Records[0],
+                    kinesis: {
+                        ...exampleJson.Records[0].kinesis,
+                        data: base64Json(enrichedData)
+                    }
+                }]
+            };
+
+            const result = await handleEventReal(event);
+
+            expect(result).to.deep.equal({ status: "SUCCESS", processedCampaigns: 1 });
+            expect(updateCountersStub.calledOnce).to.be.true;
+            expect(updateCountersStub.firstCall.args[2]).to.equal("campaign-real-001");
+            expect(updateCountersStub.firstCall.args[3].counters).to.deep.equal({ totalSent: 1 });
+        });
     });
 });
 
