@@ -26,7 +26,7 @@ const MetricCategories = {
     "WORKFLOW_ENDED_UNREACHED": "totalUnreached",
     "PAYMENT": "payed",
     "NOTIFICATION_VIEWED": "viewed",
-    "SEND_DIGITAL_MESSAGE": (channel) => `digitalSent_{channel}`,
+    "SEND_DIGITAL_MESSAGE": (channel) => `digitalSent_${channel}`,
     "SEND_COURTESY_MESSAGE": (channel) => `digitalSent_received_${channel}`,
     "SEND_ANALOG_MESSAGE": "analogSent_RS",
     "REACHED": (channel) => `digitalSent_${channel}`,
@@ -153,7 +153,7 @@ exports.handleEvent = async (event) => {
 
     // Esecuzione delle scritture atomiche cumulative su DynamoDB
     const updatePromises = Object.keys(campaignAggregates).map(campaignId =>
-        updateCounters(dynamoDb, STATS_TABLE, campaignId, campaignAggregates[campaignId])
+        updateCounters(docClient, STATS_TABLE, campaignId, campaignAggregates[campaignId])
     );
 
     await Promise.all(updatePromises);

@@ -1,0 +1,76 @@
+{
+  "Records": [
+    {
+      "kinesis": {
+        "data": {
+          "awsRegion": "eu-central-1",
+          "eventID": "2c19ee21-4cb5-4fcf-aadb-7aac6555b46f",
+          "eventName": "INSERT",
+          "userIdentity": null,
+          "recordFormat": "application/json",
+          "tableName": "pn-Timelines",
+          "dynamodb": {
+            "NewImage": {
+                "businessTimestamp": {
+                    "S": "2025-01-31T16:15:34Z"
+                },
+                "category": {
+                    "S": "ANALOG_SUCCESS_WORKFLOW"
+                },
+                "details": {
+                    "M": {
+                        "nextSourceAttemptsMade": {
+                            "N": 0
+                        },
+                        "recIndex": {
+                            "N": 0
+                        }
+                    }
+                },
+                "iun": {
+                    "S": "JLPV-MWRV-VEWT-202501-W-1"
+                },
+                "legalFactId": {
+                    "L": [
+                    ]
+                },
+                "notificationSentAt": {
+                    "S": "2025-01-31T15:57:33.945285668Z"
+                },
+                "paId": {
+                    "S": "5b994d4a-0fa8-47ac-9c7b-354f1d44a1ce"
+                },
+                "statusInfo": {
+                    "M": {
+                        "actual": {
+                            "S": "DELIVERED"
+                        },
+                        "statusChanged": {
+                            "BOOL": true
+                        },
+                        "statusChangeTimestamp": {
+                            "S": "2025-01-31T16:15:39.762656057Z"
+                        }
+                    }
+                },
+                "timelineElementId": {
+                    "S": "ANALOG_SUCCESS_WORKFLOW.IUN_JLPV-MWRV-VEWT-202501-W-1.RECINDEX_0"
+                },
+                "timestamp": {
+                    "S": "2025-01-31T16:15:39.713731463Z"
+                }
+            }
+          },
+          "eventSource": "aws:dynamodb"
+        }
+      },
+      "eventSource": "aws:kinesis",
+      "eventVersion": "1.0",
+      "eventID": "shardId-000000000004:49651151769547260642845689623061309776858789665900068930",
+      "eventName": "aws:kinesis:record",
+      "invokeIdentityArn": "arn:aws:iam::830192246553:role/PocWrite-PocActionEnqueuerLambdaRole-u7ogpX8zivgF",
+      "awsRegion": "eu-central-1",
+      "eventSourceARN": "arn:aws:kinesis:eu-central-1:830192246553:stream/pn-deleted-actions"
+    }
+  ]
+}
