@@ -42,9 +42,9 @@ exports.updateCounters = async (dynamoDb, statsTable, campaignId, aggregate) => 
 
     try {
         await dynamoDb.send(command);
-        console.log(`Successfully updated statistics for campaign: ${campaignId}. Counters: ${JSON.stringify(aggregate.counters)}`);
+        console.log(`Updated campaign data for: ${campaignId}. Counters: ${JSON.stringify(aggregate.counters)}`);
     } catch (dbError) {
-        console.error(`Failed atomic increment update for campaign ${campaignId}:`, dbError);
-        throw dbError; // Rilanciato per attivare le logiche di DLQ/Retry sull'intero Batch Kinesis
+        console.error(`Error updating ${campaignId} data. Counters: ${JSON.stringify(aggregate.counters)}`, dbError);
+        throw dbError;
     }
 };

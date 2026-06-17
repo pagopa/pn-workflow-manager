@@ -1,11 +1,17 @@
-const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
 const { unmarshall } = require("@aws-sdk/util-dynamodb");
 const { extractCampaignId } = require("./lib/campaignUtils");
 const { updateCounters } = require("./lib/dbOperations");
 
 // Inizializzazione del client DynamoDB fuori dall'handler per riuso delle connessioni nelle successive esecuzioni
-const dynamoDb = new DynamoDBClient({ region: process.env.AWS_REGION || "eu-south-1" });
 const STATS_TABLE = process.env.CAMPAIGN_STATISTICS_TABLE || "pn-CampaignStatistics";
+const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
+const { DynamoDBDocumentClient } = require("@aws-sdk/lib-dynamodb");
+
+const client = new DynamoDBClient({ region: process.env.REGION });
+const docClient = DynamoDBDocumentClient.from(client);
+
+
+
 const DIGITAL_CHANNELS = ["IO", "EMAIL", "PEC", "SMS"];
 const ANALOG_CHANNELS = ["RS"]; 
 const ALL_CHANNELS = [...DIGITAL_CHANNELS, ...ANALOG_CHANNELS];
@@ -96,7 +102,8 @@ exports.handleEvent = async (event) => {
                 case "REQUEST_REFUSED": campaignAggregates[campaignId].counters[MetricCategories["REQUEST_REFUSED"]] = (campaignAggregates[campaignId].counters[MetricCategories["REQUEST_REFUSED"]] || 0) + 1; break;
                 case "WORKFLOW_ENDED_UNDELIVERABLE": campaignAggregates[campaignId].counters[MetricCategories["WORKFLOW_ENDED_UNDELIVERABLE"]] = (campaignAggregates[campaignId].counters[MetricCategories["WORKFLOW_ENDED_UNDELIVERABLE"]] || 0) + 1; break;
                 case "WORKFLOW_DONE":
-                campaignAggregates[campaignId].counters[MetricCategories["WORKFLOW_DONE"]] = (campaignAggregates[campaignId].counters[MetricCategories["WORKFLOW_DONE"]] || 0) + 1;
+                    campaignAggregates[campaignId].counters[MetricCategories["WORKFLOW_DONE"]] =
+                            (campaignAggregates[campaignId].counters[MetricCategories["WORKFLOW_DONE"]] || 0) + 1;
 
                  // TODO
                  // Aggiungere logica per distinguere lo stato di partenza per decrementare i contatori totalUndeliverable, totalReached, unreached, ecc. in base al flusso di stato precedente se necessario.

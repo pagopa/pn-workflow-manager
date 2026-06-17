@@ -4,7 +4,6 @@ const axios = require("axios");
  * Funzione di utilità interna per l'estrazione o la decodifica del campaignId dai dettagli della timeline 
  * nel caso in cui non sia mappato al primo livello dell'Image.
  */
-
 async function getNotificationFromDelivery(responseBody) {
     const deliveryPrivateUrl = `${process?.env?.BASE_PATH || "http://localhost:8080"}/delivery-private/notifications/${responseBody.iun}`;
     try {
