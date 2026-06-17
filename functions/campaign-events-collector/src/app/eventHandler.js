@@ -5,10 +5,8 @@ const { updateCounters } = require("./lib/dbOperations");
 // Inizializzazione del client DynamoDB fuori dall'handler per riuso delle connessioni nelle successive esecuzioni
 const STATS_TABLE = process.env.CAMPAIGN_STATISTICS_TABLE || "pn-CampaignStatistics";
 const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
-const { DynamoDBDocumentClient } = require("@aws-sdk/lib-dynamodb");
 
 const client = new DynamoDBClient({ region: process.env.REGION });
-const docClient = DynamoDBDocumentClient.from(client);
 
 
 
@@ -40,19 +38,18 @@ exports.handleEvent = async (event) => {
 
     for (const cdcEvent of event.Records) {
         try {
-            // Decodifica del payload Kinesis (Base64)
-            const payloadString = Buffer.from(cdcEvent.kinesis.data, 'base64').toString('utf-8');
-            const kinesisEvent = JSON.parse(payloadString);
+            // Decodifica del payload Kinesis (Base64) — il DynamoDB CDC event è dentro kinesis.data
+            const kinesisEvent = JSON.parse(Buffer.from(cdcEvent.kinesis.data, 'base64').toString('utf-8'));
 
             // Verifichiamo che l'evento sia di tipo INSERT sulla tabella pn-Timelines
             // il controllo è superfluo visto che la lambda è triggerata da un flusso Kinesis dedicato
             //  agli eventi di timeline, lo mettiamo per robustezza
-            if (cdcEvent.eventName !== "INSERT" || !cdcEvent.dynamodb || !cdcEvent.dynamodb.NewImage) {
+            if (kinesisEvent.eventName !== "INSERT" || !kinesisEvent.dynamodb?.NewImage) {
                 continue;
             }
 
-            const newImage = cdcEvent.dynamodb.NewImage;
-            
+            const newImage = kinesisEvent.dynamodb.NewImage;
+
             const parsedData = unmarshall(newImage);
             console.log("Parsed timeline event:", {
                 timelineElementId: parsedData.timelineElementId,
@@ -125,8 +122,7 @@ exports.handleEvent = async (event) => {
                     campaignAggregates[campaignId].counters[MetricCategories["SEND_ANALOG_MESSAGE"]] = (campaignAggregates[campaignId].counters[MetricCategories["SEND_ANALOG_MESSAGE"]] || 0) + 1;
                 break;
                 case "REACHED":
-                    let timelineElementId = parsedData.timelineElementId;
-                    let tokens = timelineElementId.split("_");
+                    const tokens = timelineElementId.split("_");
                     if (tokens.length < 3) {
                         console.warn(`Unexpected timelineElementId format: ${timelineElementId} for record: ${cdcEvent.eventID}. Unable to extract channel. Skipping channel-specific metrics.`);
                         break;
@@ -153,7 +149,7 @@ exports.handleEvent = async (event) => {
 
     // Esecuzione delle scritture atomiche cumulative su DynamoDB
     const updatePromises = Object.keys(campaignAggregates).map(campaignId =>
-        updateCounters(docClient, STATS_TABLE, campaignId, campaignAggregates[campaignId])
+        updateCounters(client, STATS_TABLE, campaignId, campaignAggregates[campaignId])
     );
 
     await Promise.all(updatePromises);
