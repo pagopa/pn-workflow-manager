@@ -8,7 +8,7 @@
 		<relativePath />
 	</parent>
 	<artifactId>pn-workflow-manager</artifactId>
-	<version>1.0.0-RC.1</version>
+	<version>1.0.0</version>
 	<name>pn-workflow-manager</name>
 	<description>Pn-Workflow-Manager Microservice</description>
 	<scm>
