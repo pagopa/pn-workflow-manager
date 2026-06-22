@@ -4,7 +4,7 @@ info:
   title: 'Piattaforma Notifiche: API B2B monitoraggio campagne'
   x-summary: 'API B2B monitoraggio campagne'
   version: '2.3.0'
-  x-api-id: pn-stream-api-internal-b2b-stream # NO EXTERNAL
+  x-api-id: pn-workflow-manager-api-internal-b2b-campaign # NO EXTERNAL
   contact:
     name: 'SEND: supporto enti'
     url: https://pagopa.atlassian.net/servicedesk/customer/portal/5
@@ -26,7 +26,7 @@ tags:
     description: Metodi per la lettura degli eventi dagli stream
 
 paths:
-  /informal/{campaignId}/statistics:
+  /workflow-private/informal/{campaignId}/statistics:
     get:
       summary: Recupera le statistiche di una campagna
       description: Restituisce i contatori aggregati
@@ -85,6 +85,7 @@ components:
             - workflowDone
             - viewed
             - payed
+            - totalReached
           properties:
             sent:
               type: object
@@ -169,11 +170,11 @@ components:
               example: 1000
             payed:
               type: integer
-              description: Comunicazioni pagate (non mostrata in prima fase)
+              description: Comunicazioni pagate (non significativo in prima fase)
               example: 1000
             undeliverable:
               type: integer
-              description: Comunicazioni pagate (non mostrata in prima fase)
+              description: Comunicazioni non consegnabili (non significativo in prima fase)
               example: 1000
         lastCompletedTimestamp:
           type: string

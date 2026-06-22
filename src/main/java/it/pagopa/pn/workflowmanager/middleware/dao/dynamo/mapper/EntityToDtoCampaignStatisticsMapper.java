@@ -1,15 +1,10 @@
 package it.pagopa.pn.workflowmanager.middleware.dao.dynamo.mapper;
 
-import it.pagopa.pn.workflowmanager.generated.openapi.server.v1.dto.CampaignStatisticsResponse;
-import it.pagopa.pn.workflowmanager.generated.openapi.server.v1.dto.CampaignStatisticsResponseCounters;
-import it.pagopa.pn.workflowmanager.generated.openapi.server.v1.dto.CampaignStatisticsResponseCountersSent;
-import it.pagopa.pn.workflowmanager.generated.openapi.server.v1.dto.CampaignStatisticsResponseCountersReceived;
-import it.pagopa.pn.workflowmanager.generated.openapi.server.v1.dto.CampaignStatisticsResponseCountersSentAnalog;
-import it.pagopa.pn.workflowmanager.generated.openapi.server.v1.dto.CampaignStatisticsResponseCountersSentDigital;
+import it.pagopa.pn.workflowmanager.generated.openapi.server.v1.dto.*;
 import it.pagopa.pn.workflowmanager.middleware.dao.dynamo.entity.CampaignStatisticsEntity;
-import org.springframework.stereotype.Component;
 
-@Component
+import java.time.Instant;
+
 public class EntityToDtoCampaignStatisticsMapper {
 
     public static CampaignStatisticsResponse entityToDto(CampaignStatisticsEntity entity ) {
@@ -28,6 +23,12 @@ public class EntityToDtoCampaignStatisticsMapper {
 
         campaignStatisticsResponse.setCampaignId(entity.getCampaignId());
         campaignStatisticsResponse.setCounters(counters);
+
+        campaignStatisticsResponse.setLastCompletedTimestamp(
+                entity.getLastCompletedTimestamp() != null
+                        ? Instant.parse(entity.getLastCompletedTimestamp())
+                        : null
+        );
 
         return campaignStatisticsResponse;
     }

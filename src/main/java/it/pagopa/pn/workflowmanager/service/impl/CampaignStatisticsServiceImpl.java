@@ -24,27 +24,15 @@ public class CampaignStatisticsServiceImpl implements CampaignStatisticsService 
 
     @Override
     public Mono<CampaignStatisticsResponse> getCampaignStatistics(String campaignId) {
-        String msg = "getCampaignStatistics campaignId={} ";
-        String[] args = new String[]{campaignId};
-        generateAuditLog(PnAuditLogEventType.AUD_WH_READ, msg, args).log();
+        log.debug(MessageFormatter.arrayFormat("getCampaignStatistics campaignId={}", new Object[]{campaignId}).getMessage());
 
         return campaignStatisticsEntityDao.get(campaignId)
-                .switchIfEmpty(Mono.error(new PnCampaignStatisticsNotFoundException("Campaign with  id: " + campaignId + " not found ")))
+                .switchIfEmpty(Mono.error(new PnCampaignStatisticsNotFoundException("Campaign with id: " + campaignId + " not found ")))
                 .map(EntityToDtoCampaignStatisticsMapper::entityToDto)
                 .doOnSuccess(entity ->
-                        generateAuditLog(PnAuditLogEventType.AUD_WH_READ, msg, args).generateSuccess().log()
+                        log.info(MessageFormatter.arrayFormat("getCampaignStatistics campaignId={} result={}", new Object[]{campaignId, entity}).getMessage())
                 )
-                .doOnError(err -> generateAuditLog(PnAuditLogEventType.AUD_WH_READ, msg, args).generateFailure("error getting campaign statistics", err).log());
-    }
-
-    @NotNull
-    protected PnAuditLogEvent generateAuditLog(PnAuditLogEventType pnAuditLogEventType, String message, String[] arguments) {
-        String logMessage = MessageFormatter.arrayFormat(message, arguments).getMessage();
-        PnAuditLogBuilder auditLogBuilder = new PnAuditLogBuilder();
-        PnAuditLogEvent logEvent;
-        logEvent = auditLogBuilder.before(pnAuditLogEventType, "{}", logMessage)
-                .build();
-        return logEvent;
+                .doOnError(err -> log.error(MessageFormatter.arrayFormat("getCampaignStatistics campaignId={} error={}", new Object[]{campaignId, err.getMessage()}).getMessage()));
     }
 
 }

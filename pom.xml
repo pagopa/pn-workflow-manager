@@ -177,8 +177,6 @@
 								<modelPackage>${project.groupId}.workflowmanager.generated.openapi.server.v1.dto</modelPackage>
 								<apiPackage>${project.groupId}.workflowmanager.generated.openapi.server.v1.api</apiPackage>
 								<configPackage>${project.groupId}.workflowmanager.generated.openapi.server.v1.config</configPackage>
-								<documentationProvider>source</documentationProvider>
-								<openApiNullable>false</openApiNullable>
 								<additionalModelTypeAnnotations>
 									@lombok.Builder(toBuilder = true);
 									@lombok.NoArgsConstructor;

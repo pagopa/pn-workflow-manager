@@ -21,7 +21,7 @@ class CampaignStatisticsEntityDaoIT extends BaseTest.WithLocalStack {
     CampaignStatisticsEntityDao campaignStatisticsEntityDao;
 
     @Test
-    void getStream() {
+    void getCampaignStatistic() {
         campaignStatisticsEntityDao.save(new CampaignStatisticsEntity("campaignId1")).block();
         campaignStatisticsEntityDao.save(new CampaignStatisticsEntity("campaignId2")).block();
         CampaignStatisticsEntity campaignStatisticsEntityOne = campaignStatisticsEntityDao.get("campaignId1").block();

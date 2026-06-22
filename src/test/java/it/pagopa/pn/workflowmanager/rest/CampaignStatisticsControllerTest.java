@@ -32,13 +32,13 @@ class CampaignStatisticsControllerTest {
     private PnWorkflowManagerConfigs pnWorkflowManagerConfigs;
 
     @Test
-    void getEventStream() {
+    void getCampaignStatistics() {
         String streamId = UUID.randomUUID().toString();
         Mockito.when(service.getCampaignStatistics(Mockito.anyString()))
                 .thenReturn(Mono.just(new CampaignStatisticsResponse()));
 
         webTestClient.get()
-                .uri( ("/informal/{campaignId}/statistics").replace("{campaignId}", streamId) )
+                .uri( ("/workflow-private/informal/{campaignId}/statistics").replace("{campaignId}", streamId) )
                 .header(HttpHeaders.ACCEPT, "application/json")
                 .exchange()
                 .expectStatus().isOk()
@@ -49,13 +49,13 @@ class CampaignStatisticsControllerTest {
     }
 
     @Test
-    void getEventStreamKoRuntime() {
+    void getCampaignStatisticsKoRuntime() {
         String streamId = UUID.randomUUID().toString();
         Mockito.when(service.getCampaignStatistics(Mockito.anyString()))
                 .thenThrow(new NullPointerException());
 
         webTestClient.get()
-                .uri( ("/informal/{campaignId}/statistics").replace("{campaignId}", streamId) )
+                .uri( ("/workflow-private/informal/{campaignId}/statistics").replace("{campaignId}", streamId) )
                 .header(HttpHeaders.ACCEPT, "application/json")
                 .exchange()
                 .expectStatus().is5xxServerError()

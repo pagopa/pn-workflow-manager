@@ -23,7 +23,7 @@ public class CampaignStatisticsController implements CampaignStatisticsApi {
     @Override
     public Mono<ResponseEntity<CampaignStatisticsResponse>> getCampaignStatistics(String campaignId, ServerWebExchange exchange) {
         MDC.put(MDCUtils.MDC_PN_CTX_TOPIC, MdcKey.CAMPAIGN_STATISTICS_KEY);
-        log.info("[enter] getCampaignStatistics streamId={}", campaignId);
+        log.info("[enter] getCampaignStatistics campaignId={}", campaignId);
 
         return MDCUtils.addMDCToContextAndExecute(
             campaignStatisticsService.getCampaignStatistics(campaignId)
