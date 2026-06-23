@@ -10,6 +10,8 @@ class WorkflowManagerExceptionCodesTest {
     void testExceptionCodeConstant() {
         assertEquals("PN_DELIVERYPUSH_ACTIONTYPENOTSUPPORTED",
                 WorkflowManagerExceptionCodes.ERROR_CODE_DELIVERYPUSH_ACTIONTYPENOTSUPPORTED);
+        assertEquals("PN_DELIVERY_CAMPAIGN_NOT_FOUND",
+                WorkflowManagerExceptionCodes.ERROR_CODE_DELIVERY_CAMPAIGN_NOT_FOUND);
     }
 }
 
