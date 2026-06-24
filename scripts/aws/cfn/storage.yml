@@ -29,12 +29,24 @@ Parameters:
     Type: String
     Description: 'Where to send Logs'
 
-  CampaignEventsDeduplicationTtlDays:
-    Type: Number
-    Default: 7
-    Description: Retention window, in days, for campaign events deduplication locks
-
 Resources:
+  # CampaignStatistics table
+  CampaignStatisticsTable:
+    Type: AWS::DynamoDB::Table
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Properties:
+      TableName: !Sub '${ProjectName}-CampaignStatistics'
+      AttributeDefinitions:
+        - AttributeName: "campaignId"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "campaignId"
+          KeyType: "HASH"
+      BillingMode: "PAY_PER_REQUEST"
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+
   #Log Group
   WorkflowManagerLogGroup:
     Type: AWS::CloudFormation::Stack
@@ -118,6 +130,22 @@ Resources:
         Enabled: true
 
 Outputs:
+  # DynamoDB tables
+  CampaignStatisticsTableName:
+    Description: Name of dynamodb table containing campaign's statistics
+    Value: !Ref CampaignStatisticsTable
+  CampaignStatisticsTableArn:
+    Description: ARN of dynamodb table containing campaign's statistics
+    Value: !GetAtt CampaignStatisticsTable.Arn
+
+  CampaignEventsDeduplicationTableName:
+    Value: !Ref CampaignEventsDeduplicationTable
+    Description: campaign events deduplication DynamoDB table name
+
+  CampaignEventsDeduplicationTableArn:
+    Value: !GetAtt CampaignEventsDeduplicationTable.Arn
+    Description: campaign events deduplication DynamoDB table ARN
+
   # Queues
   WorkflowManagerActionQueueName:
     Value: !GetAtt WorkflowManagerActionQueue.Outputs.QueueName
@@ -183,10 +211,10 @@ Outputs:
     Value: !GetAtt WorkflowManagerIoEventQueue.Outputs.SqsAgeAlarmArn
     Description: workflow-manager io-event queue age alarm ARN
 
-  CampaignEventsDeduplicationTableName:
-    Value: !Ref CampaignEventsDeduplicationTable
-    Description: campaign events deduplication DynamoDB table name
-
   # Log groups
   EcsWorkflowLogGroup:
     Value: !GetAtt WorkflowManagerLogGroup.Outputs.LogGroupName
+
+  # Lambda names
+  CampaignEventsCollectorLambdaName:
+    Value: !Sub "${ProjectName}-campaign-events-collector"
