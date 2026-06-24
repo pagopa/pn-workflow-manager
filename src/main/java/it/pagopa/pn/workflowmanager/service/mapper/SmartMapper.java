@@ -19,7 +19,7 @@ import java.io.IOException;
 @Component
 @RequiredArgsConstructor
 public class SmartMapper {
-    private static ModelMapper modelMapper;
+    private static final ModelMapper modelMapper;
     private final ObjectMapper objectMapper;
 
     static Converter<TimelineElementInternal, TimelineElementInternal> timelineElementInternalTimestampConverter =

@@ -1,5 +1,8 @@
 package it.pagopa.pn.workflowmanager.dto.datavault;
 
+import lombok.Getter;
+
+@Getter
 public enum RecipientTypeInt {
     PF("PF"),
 
@@ -9,10 +12,6 @@ public enum RecipientTypeInt {
 
     RecipientTypeInt(String value) {
         this.value = value;
-    }
-
-    public String getValue() {
-        return value;
     }
 
     @Override

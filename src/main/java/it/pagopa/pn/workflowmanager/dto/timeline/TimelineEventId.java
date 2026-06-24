@@ -1,5 +1,8 @@
 package it.pagopa.pn.workflowmanager.dto.timeline;
 
+import lombok.Getter;
+
+@Getter
 public enum TimelineEventId {
 
     //Builder for event of timeline Element for Informal Notification
@@ -184,10 +187,6 @@ public enum TimelineEventId {
 
     TimelineEventId(String value) {
         this.value = value;
-    }
-
-    public String getValue() {
-        return value;
     }
 
 }
