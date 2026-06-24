@@ -18,6 +18,7 @@ import org.springframework.validation.annotation.Validated;
 public class PnWorkflowManagerConfigs {
     private Topics topics;
     private String cxId;
+    private String timelineClientBaseUrl;
 
     @Data
     public static class Topics {
@@ -29,6 +30,6 @@ public class PnWorkflowManagerConfigs {
 
     @PostConstruct
     public void init() {
-        log.info("PnNotificationCostServiceConfigs={}", this);
+        log.info("PnWorkflowManagerConfigs={}", this);
     }
 }
