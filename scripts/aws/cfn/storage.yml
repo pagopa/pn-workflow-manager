@@ -28,7 +28,12 @@ Parameters:
   LogsKinesisSourceStreamArn:
     Type: String
     Description: 'Where to send Logs'
-  
+
+  CampaignEventsDeduplicationTtlDays:
+    Type: Number
+    Default: 7
+    Description: Retention window, in days, for campaign events deduplication locks
+
 Resources:
   #Log Group
   WorkflowManagerLogGroup:
@@ -95,6 +100,23 @@ Resources:
         MaxReceiveCount: 10
         DelaySeconds: 1
 
+  CampaignEventsDeduplicationTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      TableName: pn-CampaignEventsDeduplication
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: timelineElementId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: timelineElementId
+          KeyType: HASH
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+
 Outputs:
   # Queues
   WorkflowManagerActionQueueName:
@@ -160,6 +182,10 @@ Outputs:
   WorkflowManagerIoEventQueueAgeAlarmARN:
     Value: !GetAtt WorkflowManagerIoEventQueue.Outputs.SqsAgeAlarmArn
     Description: workflow-manager io-event queue age alarm ARN
+
+  CampaignEventsDeduplicationTableName:
+    Value: !Ref CampaignEventsDeduplicationTable
+    Description: campaign events deduplication DynamoDB table name
 
   # Log groups
   EcsWorkflowLogGroup:

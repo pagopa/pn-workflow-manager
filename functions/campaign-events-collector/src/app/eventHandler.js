@@ -1,9 +1,15 @@
 const { unmarshall } = require("@aws-sdk/util-dynamodb");
 const { extractCampaignId } = require("./lib/campaignUtils");
-const { updateCounters } = require("./lib/dbOperations");
+const {
+    acquireDeduplicationLock,
+    removeDeduplicationLocks,
+    updateCounters
+} = require("./lib/dbOperations");
 
 // Inizializzazione del client DynamoDB fuori dall'handler per riuso delle connessioni nelle successive esecuzioni
 const STATS_TABLE = process.env.CAMPAIGN_STATISTICS_TABLE || "pn-CampaignStatistics";
+const DEDUP_TABLE = process.env.CAMPAIGN_EVENTS_DEDUPLICATION_TABLE || "pn-CampaignEventsDeduplication";
+const DEDUP_TTL_DAYS = Number(process.env.CAMPAIGN_EVENTS_DEDUPLICATION_TTL_DAYS || 7);
 const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
 
 const client = new DynamoDBClient({ region: process.env.REGION });
@@ -13,6 +19,7 @@ const client = new DynamoDBClient({ region: process.env.REGION });
 const DIGITAL_CHANNELS = ["IO", "EMAIL", "PEC", "SMS"];
 const ANALOG_CHANNELS = ["RS"]; 
 const ALL_CHANNELS = [...DIGITAL_CHANNELS, ...ANALOG_CHANNELS];
+const CONDITIONAL_CHECK_FAILED = "ConditionalCheckFailedException";
 
 
 const MetricCategories = { 
@@ -35,6 +42,7 @@ exports.handleEvent = async (event) => {
     
     // Mappa per aggregare gli incrementi cumulativi per campagna all'interno del batch
     const campaignAggregates = {};
+    const dedupTtlSeconds = Math.floor(Date.now() / 1000) + (DEDUP_TTL_DAYS * 24 * 60 * 60);
 
     for (const cdcEvent of event.Records) {
         try {
@@ -76,10 +84,26 @@ exports.handleEvent = async (event) => {
                 continue;
             }
 
+            const category = parsedData.category;
+            const timelineElementId = parsedData.timelineElementId;
+
+            try {
+                await acquireDeduplicationLock(client, DEDUP_TABLE, timelineElementId, dedupTtlSeconds);
+            } catch (dedupErr) {
+                if (dedupErr?.name === CONDITIONAL_CHECK_FAILED) {
+                    console.log(`Duplicate event detected for timelineElementId: ${timelineElementId}. Skipping.`);
+                    continue;
+                }
+
+                dedupErr.isFatal = true;
+                throw dedupErr;
+            }
+
             // Inizializzazione della struttura di aggregazione per la campagna corrente
             if (!campaignAggregates[campaignId]) {
                 campaignAggregates[campaignId] = {
                     counters: {},
+                    timelineElementIds: [],
                     lastTimestamp: parsedData.timestamp
                 };
             }
@@ -90,9 +114,6 @@ exports.handleEvent = async (event) => {
             }
 
             //  categorie metriche globali
-            
-            const category = parsedData.category;
-            const timelineElementId = parsedData.timelineElementId;
             let channel
             switch (category) {
                 case "REQUEST_ACCEPTED": campaignAggregates[campaignId].counters[MetricCategories["REQUEST_ACCEPTED"]] = (campaignAggregates[campaignId].counters[MetricCategories["REQUEST_ACCEPTED"]] || 0) + 1; break;
@@ -141,17 +162,40 @@ exports.handleEvent = async (event) => {
                     console.log(`Unhandled category: ${category} for campaign: ${campaignId}`);
 
             }
+
+            campaignAggregates[campaignId].timelineElementIds.push(timelineElementId);
         } catch (err) {
+            if (err?.isFatal) {
+                throw err;
+            }
             console.error(`Parsing error on record: ${JSON.stringify(cdcEvent)}. Error:`, err);
             // In caso di errore irreversibile sul singolo record, l'esecuzione prosegue per non bloccare l'intero batch
         }
     }
 
-    // Esecuzione delle scritture atomiche cumulative su DynamoDB
-    const updatePromises = Object.keys(campaignAggregates).map(campaignId =>
-        updateCounters(client, STATS_TABLE, campaignId, campaignAggregates[campaignId])
+    // Esecuzione delle scritture atomiche cumulative su DynamoDB.
+    const campaignIds = Object.keys(campaignAggregates);
+    const updateResults = await Promise.allSettled(
+        campaignIds.map(async (campaignId) => {
+            await updateCounters(client, STATS_TABLE, campaignId, campaignAggregates[campaignId]);
+            return campaignId;
+        })
     );
 
-    await Promise.all(updatePromises);
-    return { status: "SUCCESS", processedCampaigns: Object.keys(campaignAggregates).length };
+    const failedCampaigns = updateResults.flatMap((result, index) => (
+        result.status === "rejected"
+            ? [{ campaignId: campaignIds[index], reason: result.reason }]
+            : []
+    ));
+
+    if (failedCampaigns.length > 0) {
+        for (const { campaignId } of failedCampaigns) {
+            const timelineElementIds = campaignAggregates[campaignId]?.timelineElementIds || [];
+            await removeDeduplicationLocks(client, DEDUP_TABLE, timelineElementIds);
+        }
+
+        throw failedCampaigns[0].reason;
+    }
+
+    return { status: "SUCCESS", processedCampaigns: campaignIds.length };
 };
