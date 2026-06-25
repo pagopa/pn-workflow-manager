@@ -2,8 +2,8 @@ package it.pagopa.pn.workflowmanager.dto.timeline;
 
 import org.junit.jupiter.api.Test;
 
-import static it.pagopa.pn.workflowmanager.dto.informalnotification.AnalogDeliveryTypeInt.RS;
-import static it.pagopa.pn.workflowmanager.dto.informalnotification.DigitalChannelsInt.APPIO;
+import static it.pagopa.pn.workflowmanager.dto.notification.informalnotification.AnalogDeliveryTypeInt.RS;
+import static it.pagopa.pn.workflowmanager.dto.notification.informalnotification.DigitalChannelsInt.APPIO;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class TimelineEventIdBuilderTest {

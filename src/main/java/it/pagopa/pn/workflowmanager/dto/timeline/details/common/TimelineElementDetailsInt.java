@@ -9,4 +9,3 @@ public interface TimelineElementDetailsInt {
 
     void setCategoryType(String category);
 }
-

@@ -3,7 +3,7 @@ package it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.timeline
 import it.pagopa.pn.commons.exceptions.PnHttpResponseException;
 import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.timelineservice.api.TimelineControllerApi;
 import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.timelineservice.model.*;
-import it.pagopa.pn.workflowmanager.dto.notification.NotificationInt;
+import it.pagopa.pn.workflowmanager.dto.notification.common.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.AddTimelineElementResponse;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt;
@@ -16,9 +16,6 @@ import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
-
-import static it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCodes.ERROR_CODE_TIMELINESERVICE_TIMELINE_ELEMENT_NOT_PRESENT;
 
 @CustomLog
 @RequiredArgsConstructor

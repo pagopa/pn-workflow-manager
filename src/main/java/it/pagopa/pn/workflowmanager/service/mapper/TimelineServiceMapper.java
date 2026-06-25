@@ -1,7 +1,7 @@
 package it.pagopa.pn.workflowmanager.service.mapper;
 
 import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.timelineservice.model.*;
-import it.pagopa.pn.workflowmanager.dto.notification.NotificationInt;
+import it.pagopa.pn.workflowmanager.dto.notification.common.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.StatusInfoInternal;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt;

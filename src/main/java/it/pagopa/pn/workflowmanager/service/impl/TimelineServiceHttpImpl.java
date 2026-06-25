@@ -2,7 +2,7 @@ package it.pagopa.pn.workflowmanager.service.impl;
 
 
 import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.timelineservice.model.NotificationHistoryResponse;
-import it.pagopa.pn.workflowmanager.dto.notification.NotificationInt;
+import it.pagopa.pn.workflowmanager.dto.notification.common.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.AddTimelineElementResponse;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt;
@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
+
 import java.time.Instant;
 import java.util.Collections;
 import java.util.HashSet;

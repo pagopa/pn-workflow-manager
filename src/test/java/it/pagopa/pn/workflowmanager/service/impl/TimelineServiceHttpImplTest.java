@@ -1,6 +1,6 @@
 package it.pagopa.pn.workflowmanager.service.impl;
 
-import it.pagopa.pn.workflowmanager.dto.notification.NotificationInt;
+import it.pagopa.pn.workflowmanager.dto.notification.common.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.AddTimelineElementResponse;
 import it.pagopa.pn.workflowmanager.dto.timeline.StatusInfoInternal;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
@@ -15,7 +15,10 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -234,6 +237,112 @@ class TimelineServiceHttpImplTest {
         Set<TimelineElementInternal> result = timelineServiceHttp.getTimelineByIunTimelineId(iun, timelineId, confidentialInfoRequired);
 
         assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void getTimelineAndStatusHistoryReturnsExpectedResponse() {
+        String iun = "iun123";
+        int recipients = 2;
+        Instant createdAt = Instant.now();
+        it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.timelineservice.model.NotificationHistoryResponse expectedResponse =
+                new it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.timelineservice.model.NotificationHistoryResponse();
+
+        Mockito.when(timelineClient.getTimelineAndStatusHistory(iun, recipients, createdAt))
+                .thenReturn(expectedResponse);
+
+        var result = timelineServiceHttp.getTimelineAndStatusHistory(iun, recipients, createdAt);
+
+        assertNotNull(result);
+        assertEquals(expectedResponse, result);
+        Mockito.verify(timelineClient).getTimelineAndStatusHistory(iun, recipients, createdAt);
+    }
+
+    @Test
+    void getTimelineElementReturnsEmptyWhenClientReturnsNull() {
+        String iun = "iun123";
+        String timelineId = "timeline123";
+
+        Mockito.when(timelineClient.getTimelineElement(iun, timelineId, false))
+                .thenReturn(null);
+
+        Optional<TimelineElementInternal> result = timelineServiceHttp.getTimelineElement(iun, timelineId);
+
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void getTimelineElementStronglyReturnsEmptyWhenClientReturnsNull() {
+        String iun = "iun123";
+        String timelineId = "timeline123";
+
+        Mockito.when(timelineClient.getTimelineElement(iun, timelineId, true))
+                .thenReturn(null);
+
+        Optional<TimelineElementInternal> result = timelineServiceHttp.getTimelineElementStrongly(iun, timelineId);
+
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void getTimelineElementDetailsReturnsEmptyWhenClientReturnsNull() {
+        String iun = "iun123";
+        String timelineId = "timeline123";
+
+        Mockito.when(timelineClient.getTimelineElementDetails(iun, timelineId))
+                .thenReturn(null);
+
+        Optional<TimelineElementDetailsInt> result = timelineServiceHttp.getTimelineElementDetails(
+                iun, timelineId, TimelineElementDetailsInt.class);
+
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void getTimelineElementDetailForSpecificRecipientReturnsEmptyWhenClientReturnsNull() {
+        String iun = "iun123";
+        int recIndex = 0;
+        boolean confidentialInfoRequired = true;
+        TimelineElementCategoryInt category = TimelineElementCategoryInt.INFORMAL_NOTIFICATION_VIEWED;
+
+        Mockito.when(timelineClient.getTimelineElementDetailForSpecificRecipient(
+                        iun, recIndex, confidentialInfoRequired, category))
+                .thenReturn(null);
+
+        Optional<TimelineElementDetailsInt> result = timelineServiceHttp.getTimelineElementDetailForSpecificRecipient(
+                iun, recIndex, confidentialInfoRequired, category, TimelineElementDetailsInt.class);
+
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void getTimelineElementForSpecificRecipientReturnsEmptyWhenClientReturnsNull() {
+        String iun = "iun123";
+        int recIndex = 1;
+        TimelineElementCategoryInt category = TimelineElementCategoryInt.INFORMAL_NOTIFICATION_VIEWED;
+
+        Mockito.when(timelineClient.getTimelineElementForSpecificRecipient(iun, recIndex, category))
+                .thenReturn(null);
+
+        Optional<TimelineElementInternal> result = timelineServiceHttp.getTimelineElementForSpecificRecipient(
+                iun, recIndex, category);
+
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void addTimelineElementUpdatesElementIdWithResponse() {
+        TimelineElementInternal element = getTimelineElementInternal();
+        NotificationInt notification = new NotificationInt();
+        String newElementId = "newElementId123";
+
+        Mockito.when(timelineClient.addTimelineElement(element, notification))
+                .thenReturn(new AddTimelineElementResponse(newElementId, false));
+
+        AddTimelineElementResponse result = timelineServiceHttp.addTimelineElement(element, notification);
+
+        assertFalse(result.isDuplicate());
+        assertEquals(newElementId, element.getElementId());
+        assertEquals(newElementId, result.getTimelineElementId());
     }
 
     private TimelineElementInternal getTimelineElementInternal() {
