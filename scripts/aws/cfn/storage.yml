@@ -28,7 +28,7 @@ Parameters:
   LogsKinesisSourceStreamArn:
     Type: String
     Description: 'Where to send Logs'
-  
+
 Resources:
   # CampaignStatistics table
   CampaignStatisticsTable:
@@ -112,6 +112,23 @@ Resources:
         MaxReceiveCount: 10
         DelaySeconds: 1
 
+  CampaignEventsDeduplicationTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      TableName: pn-CampaignEventsDeduplication
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: timelineElementId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: timelineElementId
+          KeyType: HASH
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+
 Outputs:
   # DynamoDB tables
   CampaignStatisticsTableName:
@@ -119,7 +136,15 @@ Outputs:
     Value: !Ref CampaignStatisticsTable
   CampaignStatisticsTableArn:
     Description: ARN of dynamodb table containing campaign's statistics
-    Value: !Sub '${CampaignStatisticsTable.Arn}'
+    Value: !GetAtt CampaignStatisticsTable.Arn
+
+  CampaignEventsDeduplicationTableName:
+    Value: !Ref CampaignEventsDeduplicationTable
+    Description: campaign events deduplication DynamoDB table name
+
+  CampaignEventsDeduplicationTableArn:
+    Value: !GetAtt CampaignEventsDeduplicationTable.Arn
+    Description: campaign events deduplication DynamoDB table ARN
 
   # Queues
   WorkflowManagerActionQueueName:
