@@ -1,6 +1,6 @@
 const { expect } = require("chai");
 const sinon = require("sinon");
-const proxyquire = require("proxyquire").noCallThru();
+const proxyquire = require("proxyquire").noCallThru().noPreserveCache();
 
 const base64Json = (payload) => Buffer.from(JSON.stringify(payload)).toString("base64");
 
@@ -30,6 +30,7 @@ describe("eventHandler", () => {
     let updateCountersStub;
     let extractCampaignIdStub;
     let unmarshallStub;
+    let configStub;
     let docClientMock;
     let dynamoDbClientStub;
     let consoleLogStub;
@@ -40,6 +41,7 @@ describe("eventHandler", () => {
         process.env.CAMPAIGN_STATISTICS_TABLE = "statistics-table";
         process.env.CAMPAIGN_EVENTS_DEDUPLICATION_TABLE = "dedup-table";
         process.env.CAMPAIGN_EVENTS_DEDUPLICATION_TTL_DAYS = "7";
+        process.env.deduplicationManagementEnabled = "true";
         process.env.REGION = "eu-west-1";
 
         acquireDeduplicationLockStub = sinon.stub().resolves();
@@ -47,6 +49,7 @@ describe("eventHandler", () => {
         updateCountersStub = sinon.stub().resolves();
         extractCampaignIdStub = sinon.stub();
         unmarshallStub = sinon.stub().callsFake((newImage) => newImage.__mockParsedData);
+        configStub = { get: sinon.stub().withArgs("RUN_TOLLERANCE_IN_MILLIS").returns(3000) };
         docClientMock = { send: sinon.stub().resolves() };
         dynamoDbClientStub = sinon.stub().returns(docClientMock);
 
@@ -56,6 +59,7 @@ describe("eventHandler", () => {
 
         ({ handleEvent } = proxyquire("../app/eventHandler", {
             "@aws-sdk/util-dynamodb": { unmarshall: unmarshallStub },
+            config: configStub,
             "./lib/campaignUtils": { extractCampaignId: extractCampaignIdStub },
             "./lib/dbOperations": {
                 acquireDeduplicationLock: acquireDeduplicationLockStub,
@@ -71,6 +75,7 @@ describe("eventHandler", () => {
         delete process.env.CAMPAIGN_STATISTICS_TABLE;
         delete process.env.CAMPAIGN_EVENTS_DEDUPLICATION_TABLE;
         delete process.env.CAMPAIGN_EVENTS_DEDUPLICATION_TTL_DAYS;
+        delete process.env.deduplicationManagementEnabled;
         delete process.env.REGION;
     });
 
@@ -467,6 +472,170 @@ describe("eventHandler", () => {
         expect(removeDeduplicationLocksStub.called).to.be.false;
     });
 
+    it("stops campaign updates when the Lambda is close to timeout and unlocks pending campaigns", async () => {
+        const remainingTimeStub = sinon.stub();
+        remainingTimeStub.onCall(0).returns(10_000);
+        remainingTimeStub.onCall(1).returns(10_000);
+        remainingTimeStub.onCall(2).returns(10_000);
+        remainingTimeStub.onCall(3).returns(1_000);
+
+        const event = {
+            Records: [
+                makeRecord({
+                    eventID: "record-1",
+                    parsedData: {
+                        timelineElementId: "timeline-1",
+                        category: "REQUEST_ACCEPTED",
+                        communicationType: "INFORMAL",
+                        campaignId: "campaign-1",
+                        timestamp: "2026-01-01T10:00:00.000Z"
+                    }
+                }),
+                makeRecord({
+                    eventID: "record-2",
+                    parsedData: {
+                        timelineElementId: "timeline-2",
+                        category: "REQUEST_ACCEPTED",
+                        communicationType: "INFORMAL",
+                        campaignId: "campaign-2",
+                        timestamp: "2026-01-01T11:00:00.000Z"
+                    }
+                })
+            ]
+        };
+
+        let thrownError;
+        try {
+            await handleEvent(event, { getRemainingTimeInMillis: remainingTimeStub });
+        } catch (error) {
+            thrownError = error;
+        }
+
+        expect(thrownError).to.exist;
+        expect(thrownError.name).to.equal("TimeoutGuardTriggered");
+        expect(updateCountersStub.calledOnce).to.be.true;
+        expect(updateCountersStub.firstCall.args[2]).to.equal("campaign-1");
+        expect(removeDeduplicationLocksStub.calledOnce).to.be.true;
+        expect(removeDeduplicationLocksStub.firstCall.args[2]).to.deep.equal(["timeline-2"]);
+    });
+
+    it("still stops for timeout when deduplication management is disabled", async () => {
+        process.env.deduplicationManagementEnabled = "false";
+        delete require.cache[require.resolve("../app/eventHandler")];
+
+        ({ handleEvent } = proxyquire("../app/eventHandler", {
+            "@aws-sdk/util-dynamodb": { unmarshall: unmarshallStub },
+            config: configStub,
+            "./lib/campaignUtils": { extractCampaignId: extractCampaignIdStub },
+            "./lib/dbOperations": {
+                acquireDeduplicationLock: acquireDeduplicationLockStub,
+                removeDeduplicationLocks: removeDeduplicationLocksStub,
+                updateCounters: updateCountersStub
+            },
+            "@aws-sdk/client-dynamodb": { DynamoDBClient: dynamoDbClientStub }
+        }));
+
+        const remainingTimeStub = sinon.stub();
+        remainingTimeStub.onCall(0).returns(10_000);
+        remainingTimeStub.onCall(1).returns(10_000);
+        remainingTimeStub.onCall(2).returns(10_000);
+        remainingTimeStub.onCall(3).returns(1_000);
+
+        const event = {
+            Records: [
+                makeRecord({
+                    eventID: "record-1",
+                    parsedData: {
+                        timelineElementId: "timeline-1",
+                        category: "REQUEST_ACCEPTED",
+                        communicationType: "INFORMAL",
+                        campaignId: "campaign-1",
+                        timestamp: "2026-01-01T10:00:00.000Z"
+                    }
+                }),
+                makeRecord({
+                    eventID: "record-2",
+                    parsedData: {
+                        timelineElementId: "timeline-2",
+                        category: "REQUEST_ACCEPTED",
+                        communicationType: "INFORMAL",
+                        campaignId: "campaign-2",
+                        timestamp: "2026-01-01T11:00:00.000Z"
+                    }
+                })
+            ]
+        };
+
+        let thrownError;
+        try {
+            await handleEvent(event, { getRemainingTimeInMillis: remainingTimeStub });
+        } catch (error) {
+            thrownError = error;
+        }
+
+        expect(thrownError).to.exist;
+        expect(thrownError.name).to.equal("TimeoutGuardTriggered");
+        expect(updateCountersStub.calledOnce).to.be.true;
+        expect(removeDeduplicationLocksStub.called).to.be.false;
+    });
+
+    it("processes duplicate events when deduplication management is disabled", async () => {
+        process.env.deduplicationManagementEnabled = "false";
+        delete require.cache[require.resolve("../app/eventHandler")];
+
+        ({ handleEvent } = proxyquire("../app/eventHandler", {
+            "@aws-sdk/util-dynamodb": { unmarshall: unmarshallStub },
+            config: configStub,
+            "./lib/campaignUtils": { extractCampaignId: extractCampaignIdStub },
+            "./lib/dbOperations": {
+                acquireDeduplicationLock: acquireDeduplicationLockStub,
+                removeDeduplicationLocks: removeDeduplicationLocksStub,
+                updateCounters: updateCountersStub
+            },
+            "@aws-sdk/client-dynamodb": { DynamoDBClient: dynamoDbClientStub }
+        }));
+
+        const event = {
+            Records: [
+                makeRecord({
+                    eventID: "record-1",
+                    parsedData: {
+                        timelineElementId: "timeline-1",
+                        category: "REQUEST_ACCEPTED",
+                        communicationType: "INFORMAL",
+                        campaignId: "campaign-1",
+                        timestamp: "2026-01-01T10:00:00.000Z"
+                    }
+                }),
+                makeRecord({
+                    eventID: "record-2",
+                    parsedData: {
+                        timelineElementId: "timeline-1",
+                        category: "REQUEST_ACCEPTED",
+                        communicationType: "INFORMAL",
+                        campaignId: "campaign-1",
+                        timestamp: "2026-01-01T11:00:00.000Z"
+                    }
+                })
+            ]
+        };
+
+        const result = await handleEvent(event);
+
+        expect(result).to.deep.equal({ status: "SUCCESS", processedCampaigns: 1 });
+        expect(acquireDeduplicationLockStub.called).to.be.false;
+        expect(removeDeduplicationLocksStub.called).to.be.false;
+        expect(updateCountersStub.calledOnce).to.be.true;
+        expect(updateCountersStub.firstCall.args[3]).to.deep.include({
+            counters: { totalSent: 2 },
+            lastTimestamp: "2026-01-01T11:00:00.000Z"
+        });
+        expect(updateCountersStub.firstCall.args[3].timelineElementIds).to.deep.equal([
+            "timeline-1",
+            "timeline-1"
+        ]);
+    });
+
     it("compensates deduplication locks when a campaign update fails", async () => {
         updateCountersStub.callsFake(async (client, table, campaignId) => {
             if (campaignId === "campaign-fail") {
@@ -519,6 +688,7 @@ describe("eventHandler", () => {
             // Usa il vero @aws-sdk/util-dynamodb (unmarshall reale) per testare con dati DynamoDB autentici.
             // Si stubbano solo le dipendenze esterne (DB, HTTP).
             handleEventReal = proxyquire("../app/eventHandler", {
+                config: configStub,
                 "./lib/campaignUtils": { extractCampaignId: extractCampaignIdStub },
                 "./lib/dbOperations": {
                     acquireDeduplicationLock: acquireDeduplicationLockStub,

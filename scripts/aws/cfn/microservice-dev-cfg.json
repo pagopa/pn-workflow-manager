@@ -11,6 +11,7 @@
     "PnCronAnalyzer": "-",
     "ActionQueueDetailType": "POST_ACCEPTED_PROCESSING_COMPLETED",
     "WorkflowManagerCxId": "pn-workflow-manager",
-    "CampaignEventsDeduplicationTtlDays": "7"
+    "CampaignEventsDeduplicationTtlDays": "7",
+    "DeduplicationManagementEnabled": "true"
   }
 }

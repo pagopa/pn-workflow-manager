@@ -33,6 +33,7 @@
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.1068.0",
     "@aws-sdk/util-dynamodb": "^3.572.0",
-    "axios": "^1.16.0"
+    "axios": "^1.16.0",
+    "config": "^4.2.0"
   }
 }

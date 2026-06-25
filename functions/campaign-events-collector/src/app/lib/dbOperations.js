@@ -14,10 +14,16 @@ const MAX_BATCH_DELETE_ITEMS = 25;
  * @param {string} campaignId - ID della campagna
  * @param {Object} aggregate - Oggetto aggregato con counters e lastTimestamp
  */
-exports.updateCounters = async (dynamoDb, statsTable, campaignId, aggregate) => {
+exports.updateCounters = async (dynamoDb, statsTable, campaignId, aggregate, isTimedOut) => {
     const counterKeys = Object.keys(aggregate.counters);
 
     if (counterKeys.length === 0) return;
+
+    if (typeof isTimedOut === "function" && isTimedOut()) {
+        const timeoutError = new Error("Stopping campaign update because Lambda is close to timeout.");
+        timeoutError.name = "TimeoutGuardTriggered";
+        throw timeoutError;
+    }
 
     // Costruzione dinamica dell'espressione ADD per l'incremento atomico dei contatori modificati
     let updateExpression = "ADD " + counterKeys.map((key, index) => `#c${index} :val${index}`).join(", ");

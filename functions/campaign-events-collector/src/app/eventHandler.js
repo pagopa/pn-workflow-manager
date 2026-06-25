@@ -1,4 +1,5 @@
 const { unmarshall } = require("@aws-sdk/util-dynamodb");
+const config = require("config");
 const { extractCampaignId } = require("./lib/campaignUtils");
 const {
     acquireDeduplicationLock,
@@ -10,6 +11,9 @@ const {
 const STATS_TABLE = process.env.CAMPAIGN_STATISTICS_TABLE || "pn-CampaignStatistics";
 const DEDUP_TABLE = process.env.CAMPAIGN_EVENTS_DEDUPLICATION_TABLE || "pn-CampaignEventsDeduplication";
 const DEDUP_TTL_DAYS = Number(process.env.CAMPAIGN_EVENTS_DEDUPLICATION_TTL_DAYS || 7);
+const DEDUPLICATION_MANAGEMENT_ENABLED = !["false", "0", "off"].includes(
+    String(process.env.DEDUPLICATION_MANAGEMENT_ENABLED).trim().toLowerCase()
+);
 const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
 
 const client = new DynamoDBClient({ region: process.env.REGION });
@@ -20,7 +24,7 @@ const DIGITAL_CHANNELS = ["IO", "EMAIL", "PEC", "SMS"];
 const ANALOG_CHANNELS = ["RS"]; 
 const ALL_CHANNELS = [...DIGITAL_CHANNELS, ...ANALOG_CHANNELS];
 const CONDITIONAL_CHECK_FAILED = "ConditionalCheckFailedException";
-
+const TIMEOUT_GUARD_TRIGGERED = "TimeoutGuardTriggered";
 
 const MetricCategories = { 
     "REQUEST_ACCEPTED": "totalSent",
@@ -37,14 +41,28 @@ const MetricCategories = {
     "REACHED": (channel) => `digitalSent_${channel}`,
 };  
 
-exports.handleEvent = async (event) => {
+const TOLLERANCE_IN_MILLIS = config.get("RUN_TOLLERANCE_IN_MILLIS");
+
+const isTimeToLeave = (context) =>
+    typeof context?.getRemainingTimeInMillis === "function"
+        ? context.getRemainingTimeInMillis() < TOLLERANCE_IN_MILLIS
+        : false;
+
+exports.handleEvent = async (event, context) => {
     console.log(`Processing batch of ${event.Records.length} records from Kinesis stream.`);
+
+    const isTimedOut = () => isTimeToLeave(context);
     
     // Mappa per aggregare gli incrementi cumulativi per campagna all'interno del batch
     const campaignAggregates = {};
     const dedupTtlSeconds = Math.floor(Date.now() / 1000) + (DEDUP_TTL_DAYS * 24 * 60 * 60);
 
     for (const cdcEvent of event.Records) {
+        if (isTimedOut()) {
+            console.warn("Stopping record processing because Lambda is close to timeout.");
+            break;
+        }
+
         try {
             // Decodifica del payload Kinesis (Base64) — il DynamoDB CDC event è dentro kinesis.data
             const kinesisEvent = JSON.parse(Buffer.from(cdcEvent.kinesis.data, 'base64').toString('utf-8'));
@@ -73,9 +91,6 @@ exports.handleEvent = async (event) => {
                 continue;
             }
 
-            
-
-
             // Risoluzione dinamica del campaignId. 
             // Se non presente nell'evento di timeline, si assume una fallback o estrazione da logica applicativa correlata.
             const campaignId = parsedData.campaignId || await extractCampaignId(parsedData);
@@ -87,16 +102,18 @@ exports.handleEvent = async (event) => {
             const category = parsedData.category;
             const timelineElementId = parsedData.timelineElementId;
 
-            try {
-                await acquireDeduplicationLock(client, DEDUP_TABLE, timelineElementId, dedupTtlSeconds);
-            } catch (dedupErr) {
-                if (dedupErr?.name === CONDITIONAL_CHECK_FAILED) {
-                    console.log(`Duplicate event detected for timelineElementId: ${timelineElementId}. Skipping.`);
-                    continue;
-                }
+            if (DEDUPLICATION_MANAGEMENT_ENABLED) {
+                try {
+                    await acquireDeduplicationLock(client, DEDUP_TABLE, timelineElementId, dedupTtlSeconds);
+                } catch (dedupErr) {
+                    if (dedupErr?.name === CONDITIONAL_CHECK_FAILED) {
+                        console.log(`Duplicate event detected for timelineElementId: ${timelineElementId}. Skipping.`);
+                        continue;
+                    }
 
-                dedupErr.isFatal = true;
-                throw dedupErr;
+                    dedupErr.isFatal = true;
+                    throw dedupErr;
+                }
             }
 
             // Inizializzazione della struttura di aggregazione per la campagna corrente
@@ -175,23 +192,49 @@ exports.handleEvent = async (event) => {
 
     // Esecuzione delle scritture atomiche cumulative su DynamoDB.
     const campaignIds = Object.keys(campaignAggregates);
-    const updateResults = await Promise.allSettled(
-        campaignIds.map(async (campaignId) => {
-            await updateCounters(client, STATS_TABLE, campaignId, campaignAggregates[campaignId]);
-            return campaignId;
-        })
-    );
+    const failedCampaigns = [];
+    const timedOutCampaignIds = [];
+    for (let index = 0; index < campaignIds.length; index++) {
+        const campaignId = campaignIds[index];
 
-    const failedCampaigns = updateResults.flatMap((result, index) => (
-        result.status === "rejected"
-            ? [{ campaignId: campaignIds[index], reason: result.reason }]
-            : []
-    ));
+        if (isTimedOut()) {
+            console.warn("Stopping campaign updates because Lambda is close to timeout.");
+            timedOutCampaignIds.push(...campaignIds.slice(index));
+            break;
+        }
+
+        try {
+            await updateCounters(client, STATS_TABLE, campaignId, campaignAggregates[campaignId], isTimedOut);
+        } catch (error) {
+            if (error?.name === TIMEOUT_GUARD_TRIGGERED) {
+                console.warn(`Timeout guard triggered while updating campaign: ${campaignId}.`);
+                timedOutCampaignIds.push(...campaignIds.slice(index));
+                break;
+            }
+
+            failedCampaigns.push({ campaignId, reason: error });
+        }
+    }
+
+    if (timedOutCampaignIds.length > 0) {
+        if (DEDUPLICATION_MANAGEMENT_ENABLED) {
+            for (const campaignId of timedOutCampaignIds) {
+                const timelineElementIds = campaignAggregates[campaignId]?.timelineElementIds || [];
+                await removeDeduplicationLocks(client, DEDUP_TABLE, timelineElementIds);
+            }
+        }
+
+        const timeoutError = new Error("Stopping campaign-events-collector because Lambda is close to timeout.");
+        timeoutError.name = TIMEOUT_GUARD_TRIGGERED;
+        throw timeoutError;
+    }
 
     if (failedCampaigns.length > 0) {
-        for (const { campaignId } of failedCampaigns) {
-            const timelineElementIds = campaignAggregates[campaignId]?.timelineElementIds || [];
-            await removeDeduplicationLocks(client, DEDUP_TABLE, timelineElementIds);
+        if (DEDUPLICATION_MANAGEMENT_ENABLED) {
+            for (const { campaignId } of failedCampaigns) {
+                const timelineElementIds = campaignAggregates[campaignId]?.timelineElementIds || [];
+                await removeDeduplicationLocks(client, DEDUP_TABLE, timelineElementIds);
+            }
         }
 
         throw failedCampaigns[0].reason;

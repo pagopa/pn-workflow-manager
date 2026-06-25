@@ -349,6 +349,14 @@ Parameters:
     Default: 7
     Description: Retention window, in days, for campaign events deduplication locks
 
+  DeduplicationManagementEnabled:
+    Type: String
+    Default: true
+    Description: Enable management of campaign events deduplication
+    AllowedValues:
+      - true
+      - false
+
 Resources:
   WorkflowManagerMicroservice:
     Type: AWS::CloudFormation::Stack
@@ -776,6 +784,7 @@ Resources:
           CAMPAIGN_STATISTICS_TABLE: !Sub '${CampaignStatisticsTableName}'
           CAMPAIGN_EVENTS_DEDUPLICATION_TABLE: !Sub '${CampaignEventsDeduplicationTableName}'
           CAMPAIGN_EVENTS_DEDUPLICATION_TTL_DAYS: !Sub '${CampaignEventsDeduplicationTtlDays}'
+          DEDUPLICATION_MANAGEMENT_ENABLED: !Sub '${DeduplicationManagementEnabled}'
       TracingConfig:
         Mode: Active
       Layers:
