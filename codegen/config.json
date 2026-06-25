@@ -1,0 +1,16 @@
+{
+    "openapi": [
+        {
+            "intendedUsage": "B2B",
+            "commonFiles": [],
+            "openapiFiles": [
+                "campaigns-api-internal.yaml"
+            ],
+            "servicePath": "workflow-manager",
+            "generateBundle": true,
+            "mergeBeforeBundleGeneration": true
+        }
+    ],
+    "openapiBundlePresenceCheck": []
+}
+    

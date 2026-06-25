@@ -1,6 +1,5 @@
 package it.pagopa.pn.workflowmanager.handler;
 
-import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.paperchannel.model.PaperChannelUpdate;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.handler.AnalogEventConsumer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,8 +23,8 @@ class AnalogEventConsumerTest {
 
     @Test
     void testWorkflowManagerAnalogEventConsumer_success() {
-        PaperChannelUpdate update = mock(PaperChannelUpdate.class);
-        Message<PaperChannelUpdate> message = MessageBuilder.withPayload(update)
+        it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.model.PaperChannelUpdate update = mock(it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.model.PaperChannelUpdate.class);
+        Message<it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.model.PaperChannelUpdate> message = MessageBuilder.withPayload(update)
                 .setHeader("aws_messageId", "msg-analog-001")
                 .setHeader("X-Amzn-Trace-Id", "trace-analog-001")
                 .setHeader("iun", "IUN-ANALOG-001")
@@ -36,8 +35,8 @@ class AnalogEventConsumerTest {
 
     @Test
     void testWorkflowManagerAnalogEventConsumer_noHeaders() {
-        PaperChannelUpdate update = mock(PaperChannelUpdate.class);
-        Message<PaperChannelUpdate> message = MessageBuilder.withPayload(update).build();
+        it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.model.PaperChannelUpdate update = mock(it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.model.PaperChannelUpdate.class);
+        Message<it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.model.PaperChannelUpdate> message = MessageBuilder.withPayload(update).build();
 
         assertDoesNotThrow(() -> analogEventConsumer.workflowManagerAnalogEventConsumer(message));
     }
