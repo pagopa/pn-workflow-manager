@@ -1,7 +1,6 @@
 package it.pagopa.pn.workflowmanager.middleware.queue.consumer.handler;
 
 import io.awspring.cloud.sqs.annotation.SqsListener;
-import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.paperchannel.model.PaperChannelUpdate;
 import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
@@ -14,6 +13,7 @@ import static it.pagopa.pn.workflowmanager.middleware.queue.consumer.handler.uti
 @CustomLog
 @RequiredArgsConstructor
 public class DigitalEventConsumer {
+
     @SqsListener(value = "${pn.workflow-manager.topics.digital-queue}")
     public void workflowManagerDigitalEventConsumer(Message<String> message) {
         setMdc(message);

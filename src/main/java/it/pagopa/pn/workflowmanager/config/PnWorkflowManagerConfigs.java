@@ -17,6 +17,7 @@ import org.springframework.validation.annotation.Validated;
 @Slf4j
 public class PnWorkflowManagerConfigs {
     private Topics topics;
+    private Dao dao;
     private String cxId;
 
     @Data
@@ -25,6 +26,11 @@ public class PnWorkflowManagerConfigs {
         private String digitalQueue;
         private String analogQueue;
         private String ioQueue;
+    }
+
+    @Data
+    public static class Dao {
+        private String campaignStatisticsTableName;
     }
 
     @PostConstruct

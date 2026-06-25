@@ -18,12 +18,4 @@ public class PnWorkflowManagerApplication {
         return app;
     }
 
-    @RestController
-    public static class HomeController {
-
-        @GetMapping("")
-        public String home() {
-            return "Sono Vivo";
-        }
-    }
 }
