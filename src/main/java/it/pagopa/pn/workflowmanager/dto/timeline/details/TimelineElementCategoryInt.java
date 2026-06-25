@@ -19,8 +19,8 @@ public enum TimelineElementCategoryInt {
     WORKFLOW_ENDED_REACHED(WorkflowEndedReachedDetailsInt.class,  TimelineElementCategoryInt.VERSION_10),
     WORKFLOW_ENDED_UNREACHED(WorkflowEndedUnreachedDetailsInt.class,  TimelineElementCategoryInt.VERSION_10),
     WORKFLOW_ENDED_UNDELIVERABLE(WorkflowEndedUndeliverableDetailsInt.class,  TimelineElementCategoryInt.VERSION_10),
-    WORKFLOW_DONE(WorkflowDoneDetailsInt.class,  TimelineElementCategoryInt.VERSION_10),
-    INFORMAL_NOTIFICATION_VIEWED(InformalNotificationViewedDetailsInt.class,  TimelineElementCategoryInt.VERSION_10),
+    WORKFLOW_DONE_REACHED(WorkflowDoneReachedDetailsInt.class, TimelineElementCategoryInt.VERSION_10),
+    WORKFLOW_DONE_UNREACHED(WorkflowDoneUnreachedDetailsInt.class, TimelineElementCategoryInt.VERSION_10),    INFORMAL_NOTIFICATION_VIEWED(InformalNotificationViewedDetailsInt.class,  TimelineElementCategoryInt.VERSION_10),
     COVERPAGE_CREATION_REQUEST(CoverpageCreationRequestDetailsInt.class, TimelineElementCategoryInt.VERSION_10);
 
 

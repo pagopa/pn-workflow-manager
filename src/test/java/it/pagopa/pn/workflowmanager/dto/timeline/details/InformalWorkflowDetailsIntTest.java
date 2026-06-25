@@ -49,8 +49,18 @@ class InformalWorkflowDetailsIntTest {
     }
 
     @Test
-    void workflowDoneToLog() {
-        WorkflowDoneDetailsInt details = WorkflowDoneDetailsInt.builder()
+    void workflowDoneReachedToLog() {
+        WorkflowDoneReachedDetailsInt details = WorkflowDoneReachedDetailsInt.builder()
+                .recIndex(4)
+                .sourceElementId("sourceElementId")
+                .build();
+
+        Assertions.assertEquals("recIndex=4 sourceElementId=sourceElementId", details.toLog());
+    }
+
+    @Test
+    void workflowDoneUnreachedToLog() {
+        WorkflowDoneUnreachedDetailsInt details = WorkflowDoneUnreachedDetailsInt.builder()
                 .recIndex(4)
                 .sourceElementId("sourceElementId")
                 .build();

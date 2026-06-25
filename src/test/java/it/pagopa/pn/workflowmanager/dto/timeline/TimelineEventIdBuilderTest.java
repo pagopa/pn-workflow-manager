@@ -245,15 +245,32 @@ class TimelineEventIdBuilderTest {
     }
 
     @Test
-    void buildWORKFLOW_DONETest() {
-        String timeLineEventIdExpected = "WORKFLOW_DONE.IUN_KWKU-JHXN-HJXM-202304-U-A.RECINDEX_0";
+    void buildWORKFLOW_DONE_REACHEDTest() {
+        String timeLineEventIdExpected = "WORKFLOW_DONE_REACHED.IUN_KWKU-JHXN-HJXM-202304-U-A.RECINDEX_0";
         String timeLineEventIdActual = new TimelineEventIdBuilder()
-                .withCategory(TimelineEventId.WORKFLOW_DONE.getValue())
+                .withCategory(TimelineEventId.WORKFLOW_DONE_REACHED.getValue())
                 .withIun(IUN)
                 .withRecIndex(0)
                 .build();
         assertThat(timeLineEventIdActual).isEqualTo(timeLineEventIdExpected);
-        String timeLineEventIdActualFromBuildEvent = TimelineEventId.WORKFLOW_DONE.buildEventId(EventId
+        String timeLineEventIdActualFromBuildEvent = TimelineEventId.WORKFLOW_DONE_REACHED.buildEventId(EventId
+                .builder()
+                .iun(IUN)
+                .recIndex(0)
+                .build());
+        assertThat(timeLineEventIdActualFromBuildEvent).isEqualTo(timeLineEventIdExpected);
+    }
+
+    @Test
+    void buildWORKFLOW_DONE_UNREACHEDTest() {
+        String timeLineEventIdExpected = "WORKFLOW_DONE_UNREACHED.IUN_KWKU-JHXN-HJXM-202304-U-A.RECINDEX_0";
+        String timeLineEventIdActual = new TimelineEventIdBuilder()
+                .withCategory(TimelineEventId.WORKFLOW_DONE_UNREACHED.getValue())
+                .withIun(IUN)
+                .withRecIndex(0)
+                .build();
+        assertThat(timeLineEventIdActual).isEqualTo(timeLineEventIdExpected);
+        String timeLineEventIdActualFromBuildEvent = TimelineEventId.WORKFLOW_DONE_UNREACHED.buildEventId(EventId
                 .builder()
                 .iun(IUN)
                 .recIndex(0)
