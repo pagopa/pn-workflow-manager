@@ -131,7 +131,8 @@ public class CampaignsParameterConsumer {
         return Objects.nonNull(workflowStep)
                 && Objects.nonNull(workflowStep.getChannel())
                 && Objects.nonNull(workflowStep.getRecipientType())
-                && Objects.nonNull(workflowStep.getTimeout())
+                && !workflowStep.getRecipientType().isEmpty()
+                && workflowStep.getRecipientType().stream().allMatch(Objects::nonNull)
                 && Objects.nonNull(workflowStep.getDesiredFeedback())
                 && Objects.nonNull(workflowStep.getIncludeAttachment());
     }
@@ -147,4 +148,3 @@ public class CampaignsParameterConsumer {
         return false;
     }
 }
-
