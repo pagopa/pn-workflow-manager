@@ -106,21 +106,4 @@ public class TimelineClientImpl implements TimelineClient {
 
         return timelineControllerApi.getTimelineAndStatusHistory(iun, recipients, createdAt);
     }
-
-    @Override
-    public Optional<CancellationRequestResponse> getNotificationCancellationRequested(String iun) {
-        log.logInvokingExternalService(CLIENT_NAME, GET_NOTIFICATION_CANCELLATION_REQUESTED);
-        try {
-            return Optional.ofNullable(timelineControllerApi.getCancellationRequest(iun));
-        } catch (PnHttpResponseException pnHttpResponseException) {
-            if (pnHttpResponseException.getStatusCode() == org.springframework.http.HttpStatus.NOT_FOUND.value()
-                    && pnHttpResponseException.getProblem().getErrors().getFirst().getCode().equals(ERROR_CODE_TIMELINESERVICE_TIMELINE_ELEMENT_NOT_PRESENT)) {
-                log.debug("Cancellation request not found for iun: {}. Returning empty optional.", iun);
-                return Optional.empty();
-            }
-            else {
-                throw pnHttpResponseException;
-            }
-        }
-    }
 }

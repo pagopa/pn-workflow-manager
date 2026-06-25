@@ -2,12 +2,8 @@ package it.pagopa.pn.workflowmanager.service.mapper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.pagopa.pn.commons.exceptions.PnInternalException;
-
-import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
-import it.pagopa.pn.workflowmanager.dto.timeline.details.common.ElementTimestampTimelineElementDetails;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.Converter;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.stereotype.Component;
@@ -22,24 +18,9 @@ public class SmartMapper {
     private static final ModelMapper modelMapper;
     private final ObjectMapper objectMapper;
 
-    static Converter<TimelineElementInternal, TimelineElementInternal> timelineElementInternalTimestampConverter =
-            ctx -> {
-                // se il detail estende l'interfaccia e l'elementTimestamp non è nullo, lo sovrascrivo nel source originale
-                if (ctx.getSource().getDetails() instanceof ElementTimestampTimelineElementDetails elementTimestampTimelineElementDetails
-                    && elementTimestampTimelineElementDetails.getElementTimestamp() != null)
-                {
-                    return ctx.getSource().toBuilder()
-                            .timestamp(elementTimestampTimelineElementDetails.getElementTimestamp())
-                            .build();
-                }
-
-                return ctx.getSource();
-            };
-
     static{
         modelMapper = new ModelMapper();
         modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
-        modelMapper.createTypeMap(TimelineElementInternal.class, TimelineElementInternal.class).setPostConverter(timelineElementInternalTimestampConverter);
     }
 
     /*

@@ -1,6 +1,5 @@
 package it.pagopa.pn.workflowmanager.service.impl;
 
-import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.timelineservice.model.CancellationRequestResponse;
 import it.pagopa.pn.workflowmanager.dto.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.AddTimelineElementResponse;
 import it.pagopa.pn.workflowmanager.dto.timeline.StatusInfoInternal;
@@ -250,89 +249,6 @@ class TimelineServiceHttpImplTest {
         element.setIngestionTimestamp(timestamp);
         element.setEventTimestamp(timestamp);
         return element;
-    }
-
-    @Test
-    void getNotificationCancellationRequestedTimestampReturnsTimestampWhenPresent() {
-        String iun = "iun123";
-        Instant expectedTimestamp = Instant.now();
-        CancellationRequestResponse cancellationRequestResponse = new CancellationRequestResponse();
-        cancellationRequestResponse.setTimestamp(expectedTimestamp);
-
-        Mockito.when(timelineClient.getNotificationCancellationRequested(iun))
-                .thenReturn(Optional.of(cancellationRequestResponse));
-
-        Optional<Instant> result = timelineServiceHttp.getNotificationCancellationRequestedTimestamp(iun);
-
-        assertTrue(result.isPresent());
-        assertEquals(expectedTimestamp, result.get());
-    }
-
-    @Test
-    void getNotificationCancellationRequestedTimestampReturnsEmptyWhenNotPresent() {
-        String iun = "iun123";
-
-        Mockito.when(timelineClient.getNotificationCancellationRequested(iun))
-                .thenReturn(Optional.empty());
-
-        Optional<Instant> result = timelineServiceHttp.getNotificationCancellationRequestedTimestamp(iun);
-
-        assertFalse(result.isPresent());
-    }
-
-    @Test
-    void getNotificationCancellationRequestedTimestampReturnsEmptyWhenTimestampIsNull() {
-        String iun = "iun123";
-        CancellationRequestResponse cancellationRequestResponse = new CancellationRequestResponse();
-        cancellationRequestResponse.setTimestamp(null);
-
-        Mockito.when(timelineClient.getNotificationCancellationRequested(iun))
-                .thenReturn(Optional.of(cancellationRequestResponse));
-
-        Optional<Instant> result = timelineServiceHttp.getNotificationCancellationRequestedTimestamp(iun);
-
-        assertFalse(result.isPresent());
-    }
-
-    @Test
-    void isNotificationCancellationRequestedReturnsTrueWhenPresent() {
-        String iun = "iun123";
-        Instant timestamp = Instant.now();
-        CancellationRequestResponse cancellationRequestResponse = new CancellationRequestResponse();
-        cancellationRequestResponse.setTimestamp(timestamp);
-
-        Mockito.when(timelineClient.getNotificationCancellationRequested(iun))
-                .thenReturn(Optional.of(cancellationRequestResponse));
-
-        boolean result = timelineServiceHttp.isNotificationCancellationRequested(iun);
-
-        assertTrue(result);
-    }
-
-    @Test
-    void isNotificationCancellationRequestedReturnsFalseWhenNotPresent() {
-        String iun = "iun123";
-
-        Mockito.when(timelineClient.getNotificationCancellationRequested(iun))
-                .thenReturn(Optional.empty());
-
-        boolean result = timelineServiceHttp.isNotificationCancellationRequested(iun);
-
-        assertFalse(result);
-    }
-
-    @Test
-    void isNotificationCancellationRequestedReturnsFalseWhenTimestampIsNull() {
-        String iun = "iun123";
-        CancellationRequestResponse cancellationRequestResponse = new CancellationRequestResponse();
-        cancellationRequestResponse.setTimestamp(null);
-
-        Mockito.when(timelineClient.getNotificationCancellationRequested(iun))
-                .thenReturn(Optional.of(cancellationRequestResponse));
-
-        boolean result = timelineServiceHttp.isNotificationCancellationRequested(iun);
-
-        assertFalse(result);
     }
 
 }

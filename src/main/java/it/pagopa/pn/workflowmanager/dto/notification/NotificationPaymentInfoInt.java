@@ -10,5 +10,4 @@ import lombok.*;
 @ToString
 public class NotificationPaymentInfoInt {
     private PagoPaInt pagoPA;
-    private F24Int f24;
 }
