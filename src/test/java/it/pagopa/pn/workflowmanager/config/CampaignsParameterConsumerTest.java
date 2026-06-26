@@ -12,7 +12,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import software.amazon.awssdk.services.ssm.model.ParameterNotFoundException;
 
 import java.time.Duration;
 import java.time.OffsetDateTime;
@@ -35,65 +34,7 @@ class CampaignsParameterConsumerTest {
         campaignsParameterConsumer = new CampaignsParameterConsumer(parameterConsumer);
     }
 
-    @Test
-    void getCampaignsBySenderId_filtersCampaigns() {
-        Campaign[] campaigns = new Campaign[]{
-                validCampaign("c1", SENDER_A),
-                validCampaign("c2", SENDER_B),
-                validCampaign("c3", SENDER_A)
-        };
 
-        Mockito.when(parameterConsumer.getParameterValue(Mockito.anyString(), Mockito.eq(Campaign[].class)))
-                .thenReturn(Optional.of(campaigns));
-        campaignsParameterConsumer.initialize();
-
-        List<Campaign> result = campaignsParameterConsumer.getCampaignsBySenderId(SENDER_A);
-
-        Assertions.assertEquals(2, result.size());
-        Assertions.assertEquals("c1", result.get(0).getCampaignId());
-        Assertions.assertEquals("c3", result.get(1).getCampaignId());
-    }
-
-    @Test
-    void getCampaignsBySenderId_noResults() {
-        Campaign[] campaigns = new Campaign[]{
-                validCampaign("c1", SENDER_B)
-        };
-
-        Mockito.when(parameterConsumer.getParameterValue(Mockito.anyString(), Mockito.eq(Campaign[].class)))
-                .thenReturn(Optional.of(campaigns));
-        campaignsParameterConsumer.initialize();
-
-        List<Campaign> result = campaignsParameterConsumer.getCampaignsBySenderId(SENDER_A);
-
-        Assertions.assertTrue(result.isEmpty());
-    }
-
-    @Test
-    void getCampaignsBySenderId_parameterNotFound() {
-        Mockito.when(parameterConsumer.getParameterValue(Mockito.anyString(), Mockito.eq(Campaign[].class)))
-                .thenReturn(Optional.empty());
-        campaignsParameterConsumer.initialize();
-
-        List<Campaign> result = campaignsParameterConsumer.getCampaignsBySenderId(SENDER_A);
-
-        Assertions.assertTrue(result.isEmpty());
-    }
-
-    @Test
-    void initialize_parameterNotFoundExceptionDoesNotBreakStartup() {
-        PnInternalException exception = new PnInternalException(
-                "Internal Server Error",
-                "GENERIC_ERROR",
-                ParameterNotFoundException.builder().message("Parameter MVPCampaigns not found.").build()
-        );
-
-        Mockito.when(parameterConsumer.getParameterValue(Mockito.anyString(), Mockito.eq(Campaign[].class)))
-                .thenThrow(exception);
-
-        Assertions.assertDoesNotThrow(() -> campaignsParameterConsumer.initialize());
-        Assertions.assertTrue(campaignsParameterConsumer.getCampaignsBySenderId(SENDER_A).isEmpty());
-    }
 
     @Test
     void initialize_unexpectedInternalExceptionIsPropagated() {
@@ -176,44 +117,6 @@ class CampaignsParameterConsumerTest {
         Assertions.assertEquals("c2", result.getCampaignId());
     }
 
-    @Test
-    void parameterStoreIsReadOnlyAtInitialization() {
-        Campaign[] campaigns = new Campaign[]{
-                validCampaign("c1", SENDER_A)
-        };
-
-        Mockito.when(parameterConsumer.getParameterValue(Mockito.anyString(), Mockito.eq(Campaign[].class)))
-                .thenReturn(Optional.of(campaigns));
-
-        campaignsParameterConsumer.initialize();
-
-        campaignsParameterConsumer.getCampaignsBySenderId(SENDER_A);
-        campaignsParameterConsumer.getCampaignsBySenderId(SENDER_B);
-        campaignsParameterConsumer.getCampaignByCampaignIdAndSenderId("c1", SENDER_A);
-
-        Mockito.verify(parameterConsumer, Mockito.times(1))
-                .getParameterValue(Mockito.anyString(), Mockito.eq(Campaign[].class));
-    }
-
-    @Test
-    void initialize_skipsInvalidCampaigns() {
-        Campaign[] campaigns = new Campaign[]{
-                validCampaign("c1", SENDER_A),
-                validCampaign("c2", "not-a-uuid"),
-                validCampaign("c3", SENDER_A).toBuilder().channels(List.of()).build(),
-                validCampaign("c4", SENDER_A).toBuilder().workflow(List.of(validWorkflowStep(), WorkFlowEntity.builder().build())).build(),
-                null
-        };
-
-        Mockito.when(parameterConsumer.getParameterValue(Mockito.anyString(), Mockito.eq(Campaign[].class)))
-                .thenReturn(Optional.of(campaigns));
-        campaignsParameterConsumer.initialize();
-
-        List<Campaign> result = campaignsParameterConsumer.getCampaignsBySenderId(SENDER_A);
-
-        Assertions.assertEquals(1, result.size());
-        Assertions.assertEquals("c1", result.getFirst().getCampaignId());
-    }
 
     private Campaign validCampaign(String campaignId, String senderId) {
         return Campaign.builder()

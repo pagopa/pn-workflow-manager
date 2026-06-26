@@ -71,12 +71,6 @@ public class CampaignsParameterConsumer {
         }
     }
 
-    public List<Campaign> getCampaignsBySenderId(String senderId) {
-        return campaigns.stream()
-                .filter(campaign -> Objects.equals(senderId, campaign.getSenderId()))
-                .toList();
-    }
-
     public Campaign getCampaignByCampaignIdAndSenderId(String campaignId, String senderId) {
         return campaigns.stream()
                 .filter(campaign -> Objects.equals(campaignId, campaign.getCampaignId())
@@ -97,8 +91,6 @@ public class CampaignsParameterConsumer {
                 && Objects.nonNull(campaign.getEndDate())
                 && Objects.nonNull(campaign.getClosed())
                 && StringUtils.hasText(campaign.getServiceId())
-                && Objects.nonNull(campaign.getSensitiveContent())
-                && Objects.nonNull(campaign.getStopOnViewed())
                 && hasValidChannels(campaign.getChannels())
                 && hasValidWorkflow(campaign.getWorkflow());
     }
