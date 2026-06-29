@@ -1,5 +1,7 @@
 package it.pagopa.pn.workflowmanager.dto.timeline.details;
 
+import it.pagopa.pn.workflowmanager.dto.timeline.details.common.NotificationRequestAcceptedDetailsInt;
+import it.pagopa.pn.workflowmanager.dto.timeline.details.common.RequestRefusedDetailsInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.common.TimelineElementDetailsInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.informal.*;
 import lombok.Getter;
@@ -20,8 +22,11 @@ public enum TimelineElementCategoryInt {
     WORKFLOW_ENDED_UNREACHED(WorkflowEndedUnreachedDetailsInt.class,  TimelineElementCategoryInt.VERSION_10),
     WORKFLOW_ENDED_UNDELIVERABLE(WorkflowEndedUndeliverableDetailsInt.class,  TimelineElementCategoryInt.VERSION_10),
     WORKFLOW_DONE_REACHED(WorkflowDoneReachedDetailsInt.class, TimelineElementCategoryInt.VERSION_10),
-    WORKFLOW_DONE_UNREACHED(WorkflowDoneUnreachedDetailsInt.class, TimelineElementCategoryInt.VERSION_10),    INFORMAL_NOTIFICATION_VIEWED(InformalNotificationViewedDetailsInt.class,  TimelineElementCategoryInt.VERSION_10),
-    COVERPAGE_CREATION_REQUEST(CoverpageCreationRequestDetailsInt.class, TimelineElementCategoryInt.VERSION_10);
+    WORKFLOW_DONE_UNREACHED(WorkflowDoneUnreachedDetailsInt.class, TimelineElementCategoryInt.VERSION_10),
+    INFORMAL_NOTIFICATION_VIEWED(InformalNotificationViewedDetailsInt.class,  TimelineElementCategoryInt.VERSION_10),
+    COVERPAGE_CREATION_REQUEST(CoverpageCreationRequestDetailsInt.class, TimelineElementCategoryInt.VERSION_10),
+    REQUEST_ACCEPTED(NotificationRequestAcceptedDetailsInt.class, TimelineElementCategoryInt.VERSION_10),
+    REQUEST_REFUSED(RequestRefusedDetailsInt.class, TimelineElementCategoryInt.VERSION_10);
 
 
     private final Class<? extends TimelineElementDetailsInt> detailsJavaClass;

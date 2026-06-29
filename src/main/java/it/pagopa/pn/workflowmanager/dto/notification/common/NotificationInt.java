@@ -33,4 +33,6 @@ public class NotificationInt {
     private List<String> additionalLanguages;
     private UsedServicesInt usedServices;
     private String idempotenceToken;
+    private String campaignId;
+    private CommunicationType communicationType;
 }

@@ -2,9 +2,9 @@ package it.pagopa.pn.workflowmanager.dto.notification.common;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import it.pagopa.pn.commons.utils.qr.models.RecipientTypeInt;
 import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.address.PhysicalAddressInt;
-import it.pagopa.pn.workflowmanager.dto.ext.datavault.RecipientTypeInt;
 import lombok.*;
 
 import java.util.List;
@@ -24,4 +24,9 @@ public class NotificationRecipientInt {
     private PhysicalAddressInt physicalAddress;
     private List<NotificationPaymentInfoInt> payments;
     private RecipientTypeInt recipientType;
+    private String email;
+    private String phoneNumber;
+    private String messageId;
+    private NotificationMessageInt message;
+    private List<String> additionalLanguages;
 }

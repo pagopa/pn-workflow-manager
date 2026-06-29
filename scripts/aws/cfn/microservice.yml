@@ -102,7 +102,7 @@ Parameters:
   ApplicationLoadBalancerDomain:
     Type: String
     Description: 'Base URL of the load balancer where the service is going to be reachable'
-
+  
   AutoscalingDataPointM:
     Default: 1
     Type: Number
@@ -315,6 +315,7 @@ Resources:
         ContainerEnvEntry8: !Sub 'PN_WORKFLOWMANAGER_CXID=${WorkflowManagerCxId}'
         ContainerEnvEntry9: !Sub 'PN_WORKFLOWMANAGER_DELIVERYBASEURL=http://${ApplicationLoadBalancerDomain}:8080'
         ContainerEnvEntry10: !Sub 'PN_WORKFLOWMANAGER_TIMELINECLIENTBASEURL=http://${ApplicationLoadBalancerDomain}:8080'
+        ContainerEnvEntry11: !Sub 'PN_WORKFLOWMANAGER_ACTIONMANAGERBASEURL=http://${ApplicationLoadBalancerDomain}:8080'
         ApplicativeEnvFileChecksum: !Ref ApplicativeEnvFileChecksum
         JavaToolOptions: '-Dreactor.netty.ioWorkerCount=50'
         MappedPaths: '/workflow-manager-not-available'

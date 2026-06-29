@@ -2,6 +2,8 @@ package it.pagopa.pn.workflowmanager.dto.notification.common;
 
 import lombok.*;
 
+import java.time.Instant;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
@@ -13,4 +15,6 @@ public class PagoPaInt {
     private String creditorTaxId;
     private Boolean applyCost;
     private NotificationDocumentInt attachment;
+    private Integer amount;
+    private Instant dueDate;
 }

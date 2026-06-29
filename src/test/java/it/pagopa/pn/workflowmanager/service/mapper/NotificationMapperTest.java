@@ -3,10 +3,10 @@ package it.pagopa.pn.workflowmanager.service.mapper;
 import it.pagopa.pn.commons.utils.qr.models.RecipientTypeInt;
 import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.delivery.model.*;
 import it.pagopa.pn.workflowmanager.dto.address.PhysicalAddressInt;
-import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.CommunicationType;
-import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
-import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationPaymentInfoInt;
-import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
+import it.pagopa.pn.workflowmanager.dto.notification.common.CommunicationType;
+import it.pagopa.pn.workflowmanager.dto.notification.common.NotificationInt;
+import it.pagopa.pn.workflowmanager.dto.notification.common.NotificationPaymentInfoInt;
+import it.pagopa.pn.workflowmanager.dto.notification.common.NotificationRecipientInt;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -86,8 +86,8 @@ class NotificationMapperTest {
         Assertions.assertEquals("Codice Fiscale 01", recipient.getTaxId());
         Assertions.assertEquals(RecipientTypeInt.PF, recipient.getRecipientType());
         Assertions.assertEquals("123e4567-e89b-12d3-a456-426614174000", recipient.getMessageId());
-        Assertions.assertNotNull(recipient.getDigitalDomicile());
-        Assertions.assertEquals("pec@example.com", recipient.getDigitalDomicile().getAddress());
+        Assertions.assertNotNull(recipient.getInformalDigitalAddressInt());
+        Assertions.assertEquals("pec@example.com", recipient.getInformalDigitalAddressInt().getAddress());
         Assertions.assertNotNull(recipient.getPhysicalAddress());
         Assertions.assertEquals("Via Roma 10", recipient.getPhysicalAddress().getAddress());
         Assertions.assertEquals("Roma", recipient.getPhysicalAddress().getMunicipality());
@@ -216,8 +216,8 @@ class NotificationMapperTest {
         NotificationRecipientInt recipient = actual.getRecipients().getFirst();
         Assertions.assertNull(recipient.getPhysicalAddress(),
                 "Il physicalAddress deve essere null quando non viene fornito");
-        Assertions.assertNotNull(recipient.getDigitalDomicile(),
-                "Il digitalDomicile deve essere valorizzato");
+        Assertions.assertNotNull(recipient.getInformalDigitalAddressInt(),
+                "Il informalDigitalAddressInt deve essere valorizzato");
     }
 
     @Test

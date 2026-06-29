@@ -12,5 +12,4 @@ public class NotificationSenderInt {
     private String paId;
     private String paDenomination;
     private String paTaxId;
-    private Integer physicalCommunicationPriority;
 }

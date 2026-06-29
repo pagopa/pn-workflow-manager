@@ -3,7 +3,7 @@ package it.pagopa.pn.workflowmanager.service.impl;
 import it.pagopa.pn.commons.exceptions.PnHttpResponseException;
 import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.delivery.model.InformalSentNotificationV1;
-import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
+import it.pagopa.pn.workflowmanager.dto.notification.common.NotificationInt;
 import it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.delivery.PnDeliveryClient;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
