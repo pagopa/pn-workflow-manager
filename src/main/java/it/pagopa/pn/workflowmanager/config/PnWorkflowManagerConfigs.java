@@ -19,6 +19,7 @@ public class PnWorkflowManagerConfigs {
     private Topics topics;
     private String cxId;
     private String timelineClientBaseUrl;
+    private String ioConnectorBaseUrl;
 
     @Data
     public static class Topics {
