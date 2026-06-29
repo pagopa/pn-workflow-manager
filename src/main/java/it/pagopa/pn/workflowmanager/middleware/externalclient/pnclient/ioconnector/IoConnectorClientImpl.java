@@ -24,6 +24,7 @@ public class IoConnectorClientImpl implements IoConnectorClient {
     private final IoConnectorApi ioConnectorApi;
     private final PnWorkflowManagerConfigs cfg;
 
+    @Override
     public void sendMessage(IoMessageRequest ioMessageRequest) {
         log.logInvokingExternalService(CLIENT_NAME, SEND_MESSAGE);
 
