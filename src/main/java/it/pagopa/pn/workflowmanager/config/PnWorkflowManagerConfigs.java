@@ -18,6 +18,7 @@ import org.springframework.validation.annotation.Validated;
 public class PnWorkflowManagerConfigs {
     private Topics topics;
     private String cxId;
+    private String deliveryBaseUrl;
 
     @Data
     public static class Topics {
