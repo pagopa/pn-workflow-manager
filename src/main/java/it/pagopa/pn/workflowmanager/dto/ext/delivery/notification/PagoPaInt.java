@@ -1,0 +1,20 @@
+package it.pagopa.pn.workflowmanager.dto.ext.delivery.notification;
+
+import lombok.*;
+
+import java.time.Instant;
+
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Builder(toBuilder = true)
+@EqualsAndHashCode
+@ToString
+public class PagoPaInt {
+    private String noticeCode;
+    private String creditorTaxId;
+    private Boolean applyCost;
+    private NotificationDocumentInt attachment;
+    private Integer amount;
+    private Instant dueDate;
+}

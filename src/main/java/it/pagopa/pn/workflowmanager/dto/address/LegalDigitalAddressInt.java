@@ -1,0 +1,32 @@
+package it.pagopa.pn.workflowmanager.dto.address;
+
+import lombok.*;
+import lombok.experimental.SuperBuilder;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@SuperBuilder(toBuilder = true)
+@EqualsAndHashCode(callSuper = true)
+@ToString
+public class LegalDigitalAddressInt extends DigitalAddressInt{
+    
+    @Getter
+    public enum LEGAL_DIGITAL_ADDRESS_TYPE{
+        PEC("PEC"),
+        SERCQ("SERCQ");
+
+        private final String value;
+
+        LEGAL_DIGITAL_ADDRESS_TYPE(String value) {
+            this.value = value;
+        }
+
+        @Override
+        public String toString() {
+            return String.valueOf(value);
+        }
+    }
+
+    private LEGAL_DIGITAL_ADDRESS_TYPE type;
+}
