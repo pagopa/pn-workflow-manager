@@ -67,19 +67,20 @@ public class NotificationMapper {
         return list;
     }
 
-    private static List<NotificationRecipientInt> mapNotificationRecipientInformal(List<InformalNotificationRecipientV1> recipients) {
+    private static List<NotificationRecipientInt> mapNotificationRecipientInformal(List<FullInformalNotificationRecipientV1> recipients) {
         List<NotificationRecipientInt> list = new ArrayList<>();
 
         if (recipients == null) {
             return list;
         }
-        for (InformalNotificationRecipientV1 recipient : recipients) {
+        for (FullInformalNotificationRecipientV1 recipient : recipients) {
             NotificationRecipientInt.NotificationRecipientIntBuilder recipientIntBuilder = NotificationRecipientInt.builder()
                     .taxId(recipient.getTaxId())
                     .internalId(recipient.getInternalId())
                     .denomination(recipient.getDenomination())
                     .recipientType(RecipientTypeInt.valueOf(recipient.getRecipientType().name()))
                     .messageId(recipient.getMessageId().toString())
+                    .message(mapNotificationMessageInt(recipient.getMessage()))
                     .email(recipient.getEmail())
                     .additionalLanguages(recipient.getAdditionalLanguages())
                     .phoneNumber(recipient.getPhoneNumber());
@@ -130,6 +131,8 @@ public class NotificationMapper {
                             .pagoPA(PagoPaInt.builder()
                                     .creditorTaxId(pagoPa.getCreditorTaxId())
                                     .noticeCode(pagoPa.getNoticeCode())
+                                    .amount(pagoPa.getAmount())
+                                    .dueDate(pagoPa.getDueDate())
                                     .attachment(pagoPa.getAttachment() != null ? NotificationDocumentInt.builder()
                                             .ref(NotificationDocumentInt.Ref.builder()
                                                     .key(pagoPa.getAttachment().getRef().getKey())
@@ -144,6 +147,35 @@ public class NotificationMapper {
         }
 
         return list;
+    }
+
+    private static NotificationMessageInt mapNotificationMessageInt(NewMessageRequest message) {
+        if (message == null) {
+            return null;
+        }
+
+        NotificationMessageInt.NotificationMessageIntBuilder builder = NotificationMessageInt.builder()
+                .primaryMessage(
+                        LocalizedMessageInt.builder()
+                                .language(message.getPrimaryMessage().getLanguage())
+                                .subject(message.getPrimaryMessage().getSubject())
+                                .longBody(message.getPrimaryMessage().getLongBody())
+                                .shortBody(message.getPrimaryMessage().getShortBody())
+                                .build()
+                );
+
+        if(message.getAdditionalMessage() != null) {
+            builder.additionalMessage(
+                    LocalizedMessageInt.builder()
+                            .language(message.getAdditionalMessage().getLanguage())
+                            .subject(message.getAdditionalMessage().getSubject())
+                            .longBody(message.getAdditionalMessage().getLongBody())
+                            .shortBody(message.getAdditionalMessage().getShortBody())
+                            .build()
+            );
+        }
+
+        return builder.build();
     }
 
 }
