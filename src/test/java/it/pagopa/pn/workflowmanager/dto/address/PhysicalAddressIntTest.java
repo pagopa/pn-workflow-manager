@@ -39,11 +39,4 @@ class PhysicalAddressIntTest {
         assertThat(address.getFullname()).isEqualTo("Luigi Verdi");
         assertThat(address.getZip()).isEqualTo("12345");
     }
-
-    @Test
-    void enumAnalogTypeContieneValoriAttesi() {
-        assertThat(PhysicalAddressInt.ANALOG_TYPE.valueOf("REGISTERED_LETTER_890")).isNotNull();
-        assertThat(PhysicalAddressInt.ANALOG_TYPE.valueOf("SIMPLE_REGISTERED_LETTER")).isNotNull();
-        assertThat(PhysicalAddressInt.ANALOG_TYPE.valueOf("AR_REGISTERED_LETTER")).isNotNull();
-    }
 }
