@@ -20,6 +20,7 @@ public class PnWorkflowManagerConfigs {
     private String cxId;
     private String deliveryBaseUrl;
     private String timelineClientBaseUrl;
+    private String templateEngineBaseUrl;
 
     @Data
     public static class Topics {
