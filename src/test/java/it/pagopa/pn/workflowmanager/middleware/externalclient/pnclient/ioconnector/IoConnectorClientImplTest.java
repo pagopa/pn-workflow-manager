@@ -34,6 +34,7 @@ class IoConnectorClientImplTest {
     @BeforeEach
     void setUp() {
         when(cfg.getCxId()).thenReturn("cx-id");
+        when(cfg.getIoPollingMaxMins()).thenReturn(5);
     }
 
     @Test
@@ -69,6 +70,7 @@ class IoConnectorClientImplTest {
         assertEquals("77777777777", sent.getPaymentData().getCreditorTaxId());
         assertEquals(Boolean.TRUE, sent.getPaymentData().getInvalidAfterDueDate());
         assertEquals("302012345678901234", sent.getPaymentData().getNoticeCode());
+        assertEquals(5, sent.getPollingMaxMins());
     }
 
     @Test

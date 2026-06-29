@@ -43,6 +43,7 @@ public class IoConnectorClientImpl implements IoConnectorClient {
             messageRequest.setDueDate(paymentInfo.getDueDate() != null ? paymentInfo.getDueDate().toString() : null);
             messageRequest.setPaymentData(mapToIoPayment(paymentInfo));
         }
+        messageRequest.setPollingMaxMins(cfg.getIoPollingMaxMins());
         ioConnectorApi.sendIOMessage(cfg.getCxId(), messageRequest);
     }
 

@@ -22,6 +22,8 @@ public class PnWorkflowManagerConfigs {
     private String timelineClientBaseUrl;
     private String ioConnectorBaseUrl;
 
+    private Integer ioPollingMaxMins;
+
     @Data
     public static class Topics {
         private String actionQueue;
