@@ -21,6 +21,7 @@ public class PnWorkflowManagerConfigs {
     private String deliveryBaseUrl;
     private String timelineClientBaseUrl;
     private String ioConnectorBaseUrl;
+    private String templateEngineBaseUrl;
 
     private Integer ioPollingMaxMins;
 
