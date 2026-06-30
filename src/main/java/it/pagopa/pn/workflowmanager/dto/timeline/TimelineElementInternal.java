@@ -1,7 +1,7 @@
 package it.pagopa.pn.workflowmanager.dto.timeline;
 
 import it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt;
-import it.pagopa.pn.workflowmanager.dto.timeline.details.common.TimelineElementDetailsInt;
+import it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementDetailsInt;
 import lombok.*;
 import org.jetbrains.annotations.NotNull;
 import java.time.Instant;

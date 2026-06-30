@@ -1,9 +1,9 @@
 package it.pagopa.pn.workflowmanager.dto.ext.delivery.notification;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import it.pagopa.pn.commons.utils.qr.models.RecipientTypeInt;
 import it.pagopa.pn.workflowmanager.dto.address.LegalDigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.address.PhysicalAddressInt;
+
 import lombok.*;
 
 import java.util.List;

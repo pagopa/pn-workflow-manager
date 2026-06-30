@@ -1,4 +1,4 @@
-package it.pagopa.pn.workflowmanager.dto.timeline.details.common;
+package it.pagopa.pn.workflowmanager.dto.timeline.details;
 
 public interface TimelineElementDetailsInt {
     /**
@@ -9,4 +9,3 @@ public interface TimelineElementDetailsInt {
 
     void setCategoryType(String category);
 }
-

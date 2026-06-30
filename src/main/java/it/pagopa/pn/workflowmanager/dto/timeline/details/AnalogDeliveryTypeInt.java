@@ -1,16 +1,14 @@
-package it.pagopa.pn.workflowmanager.dto.datavault;
+package it.pagopa.pn.workflowmanager.dto.timeline.details;
 
 import lombok.Getter;
 
 @Getter
-public enum RecipientTypeInt {
-    PF("PF"),
-
-    PG("PG");
+public enum AnalogDeliveryTypeInt {
+    RS("RS");
 
     private final String value;
 
-    RecipientTypeInt(String value) {
+    AnalogDeliveryTypeInt(String value) {
         this.value = value;
     }
 

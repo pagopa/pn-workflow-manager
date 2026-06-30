@@ -5,7 +5,7 @@ import it.pagopa.pn.workflowmanager.dto.timeline.AddTimelineElementResponse;
 import it.pagopa.pn.workflowmanager.dto.timeline.StatusInfoInternal;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt;
-import it.pagopa.pn.workflowmanager.dto.timeline.details.common.TimelineElementDetailsInt;
+import it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementDetailsInt;
 import it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.timeline.TimelineClient;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
