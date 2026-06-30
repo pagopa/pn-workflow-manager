@@ -1,6 +1,6 @@
 package it.pagopa.pn.workflowmanager.service.impl;
 
-import it.pagopa.pn.workflowmanager.dto.notification.NotificationInt;
+import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.AddTimelineElementResponse;
 import it.pagopa.pn.workflowmanager.dto.timeline.StatusInfoInternal;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;

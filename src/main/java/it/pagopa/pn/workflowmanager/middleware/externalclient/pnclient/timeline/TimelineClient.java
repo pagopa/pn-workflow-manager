@@ -2,7 +2,7 @@ package it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.timeline
 
 import it.pagopa.pn.commons.log.PnLogger;
 import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.timelineservice.model.NotificationHistoryResponse;
-import it.pagopa.pn.workflowmanager.dto.notification.NotificationInt;
+import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.AddTimelineElementResponse;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt;
@@ -10,7 +10,6 @@ import it.pagopa.pn.workflowmanager.dto.timeline.details.common.TimelineElementD
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 
 public interface TimelineClient {
     String CLIENT_NAME = PnLogger.EXTERNAL_SERVICES.PN_TIMELINE_SERVICE;
