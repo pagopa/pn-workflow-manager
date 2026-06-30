@@ -1,6 +1,7 @@
 package it.pagopa.pn.workflowmanager.models.internal.campaign;
 
-import it.pagopa.pn.commons.utils.qr.models.RecipientTypeInt;
+
+import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.RecipientTypeInt;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
