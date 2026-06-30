@@ -65,6 +65,13 @@
 		</dependency>
 
 		<dependency>
+			<groupId>org.mock-server</groupId>
+			<artifactId>mockserver-junit-jupiter</artifactId>
+			<version> 5.14.0</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
 			<groupId>io.awspring.cloud</groupId>
 			<artifactId>spring-cloud-aws-starter-sqs</artifactId>
 		</dependency>
@@ -209,6 +216,45 @@
 							</configOptions>
 							<modelPackage>it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.timelineservice.model</modelPackage>
 							<apiPackage>it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.timelineservice.api</apiPackage>
+						</configuration>
+					</execution>
+
+					<!-- OPEN API CLIENT PN-ACTION-MANAGER -->
+					<execution>
+						<id>generate-client-pn-action-manager</id>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<phase>generate-resources</phase>
+						<configuration>
+							<inputSpec>https://raw.githubusercontent.com/pagopa/pn-action-manager/8a99d94fdb5e03f035a18c5a027b70f011eb4131/docs/openapi/api-private.yaml</inputSpec>
+							<templateDirectory>${project.build.directory}/dependency-resources/scripts/openapi/templates/7.4.0/client</templateDirectory>
+							<generatorName>java</generatorName>
+							<library>resttemplate</library>
+							<generateApiDocumentation>false</generateApiDocumentation>
+							<generateApiTests>false</generateApiTests>
+							<generateModelTests>false</generateModelTests>
+							<additionalProperties>removeEnumValuePrefix=false</additionalProperties>
+							<typeMappings>
+								<typeMapping>OffsetDateTime=Instant</typeMapping>
+							</typeMappings>
+							<importMappings>
+								<importMapping>java.time.OffsetDateTime=java.time.Instant</importMapping>
+							</importMappings>
+							<configOptions>
+								<useJakartaEe>true</useJakartaEe>
+								<swaggerAnnotations>false</swaggerAnnotations>
+								<openApiNullable>false</openApiNullable>
+								<dateLibrary>java8</dateLibrary>
+								<delegatePattern>true</delegatePattern>
+								<annotationLibrary>none</annotationLibrary>
+								<documentationProvider>source</documentationProvider>
+								<openApiNullable>false</openApiNullable>
+								<skipDefaultInterface>false</skipDefaultInterface>
+								<useTags>true</useTags>
+							</configOptions>
+							<modelPackage>${project.groupId}.deliverypushworkflow.generated.openapi.msclient.actionmanager.model</modelPackage>
+							<apiPackage>${project.groupId}.deliverypushworkflow.generated.openapi.msclient.actionmanager.api</apiPackage>
 						</configuration>
 					</execution>
 
