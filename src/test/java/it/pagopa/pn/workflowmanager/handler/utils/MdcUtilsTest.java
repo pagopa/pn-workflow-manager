@@ -1,6 +1,6 @@
 package it.pagopa.pn.workflowmanager.handler.utils;
 
-import it.pagopa.pn.workflowmanager.middleware.queue.consumer.handler.utils.MdcUtils;
+import it.pagopa.pn.workflowmanager.middleware.queue.consumer.utils.MdcUtils;
 import org.junit.jupiter.api.Test;
 import org.slf4j.MDC;
 import org.springframework.messaging.Message;

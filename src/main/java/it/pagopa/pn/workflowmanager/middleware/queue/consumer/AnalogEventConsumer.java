@@ -1,4 +1,4 @@
-package it.pagopa.pn.workflowmanager.middleware.queue.consumer.handler;
+package it.pagopa.pn.workflowmanager.middleware.queue.consumer;
 
 import io.awspring.cloud.sqs.annotation.SqsListener;
 import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.paperchannel.model.PaperChannelUpdate;
@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.Message;
 
-import static it.pagopa.pn.workflowmanager.middleware.queue.consumer.handler.utils.MdcUtils.setMdc;
+import static it.pagopa.pn.workflowmanager.middleware.queue.consumer.utils.MdcUtils.setMdc;
 
 
 @Configuration
