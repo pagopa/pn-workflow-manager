@@ -24,8 +24,8 @@ public class SchedulerServiceImpl implements SchedulerService {
     }
 
     @Override
-    public void scheduleEvent(String iun, Instant dateToSchedule, ActionType actionType, ActionDetails actionDetails) {
-        this.scheduleEvent(iun, null, dateToSchedule, actionType, null, actionDetails);
+    public void scheduleEvent(String iun, Integer recIndex, Instant dateToSchedule, ActionType actionType, ActionDetails actionDetails) {
+        this.scheduleEvent(iun, recIndex, dateToSchedule, actionType, null, actionDetails);
     }
 
     @Override

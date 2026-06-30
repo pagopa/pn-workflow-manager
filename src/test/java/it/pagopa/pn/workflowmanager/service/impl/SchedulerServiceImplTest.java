@@ -44,10 +44,11 @@ class SchedulerServiceImplTest {
     void scheduleEvent_withActionDetails_shouldAddAction() {
         String iun = "IUN01";
         Instant dateToSchedule = Instant.parse("2022-08-30T16:04:13.913859900Z");
+        Integer recIndex = 0;
         ActionType actionType = ActionType.END_WORKFLOW;
         ActionDetails actionDetails = Mockito.mock(ActionDetails.class);
 
-        schedulerService.scheduleEvent(iun, dateToSchedule, actionType, actionDetails);
+        schedulerService.scheduleEvent(iun, recIndex, dateToSchedule, actionType, actionDetails);
 
         Mockito.verify(actionsPool).addOnlyAction(any(Action.class));
     }
