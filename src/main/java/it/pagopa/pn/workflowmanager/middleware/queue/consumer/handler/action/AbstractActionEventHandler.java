@@ -1,7 +1,7 @@
 package it.pagopa.pn.workflowmanager.middleware.queue.consumer.handler.action;
 
 
-import it.pagopa.pn.workflowmanager.middleware.queue.consumer.dto.Action;
+import it.pagopa.pn.workflowmanager.dto.action.common.Action;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.handler.EventHandler;
 import lombok.extern.slf4j.Slf4j;
 
