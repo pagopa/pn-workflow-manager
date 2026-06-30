@@ -1,5 +1,7 @@
-package it.pagopa.pn.workflowmanager.middleware.queue.consumer.dto;
+package it.pagopa.pn.workflowmanager.dto.action.common;
 
+import it.pagopa.pn.workflowmanager.dto.action.ActionDetails;
+import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.CommunicationType;
 import lombok.*;
 
 import java.time.Instant;
@@ -26,6 +28,8 @@ public class Action {
     private String timelineId;
 
     private String timeslot;
+
+    private CommunicationType communicationType;
 
     private ActionDetails details;
 }

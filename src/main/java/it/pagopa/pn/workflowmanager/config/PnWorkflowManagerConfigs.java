@@ -18,8 +18,10 @@ import org.springframework.validation.annotation.Validated;
 public class PnWorkflowManagerConfigs {
     private Topics topics;
     private String cxId;
-    private String deliveryBaseUrl;
+    //external client
     private String timelineClientBaseUrl;
+    private String actionManagerBaseUrl;
+    private String deliveryBaseUrl;
     private String templateEngineBaseUrl;
 
     @Data

@@ -1,8 +1,8 @@
 package it.pagopa.pn.workflowmanager.handler;
 
+import it.pagopa.pn.workflowmanager.dto.action.common.Action;
+import it.pagopa.pn.workflowmanager.dto.action.common.ActionType;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.ActionConsumer;
-import it.pagopa.pn.workflowmanager.middleware.queue.consumer.dto.Action;
-import it.pagopa.pn.workflowmanager.middleware.queue.consumer.dto.ActionType;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.router.EventRouter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
