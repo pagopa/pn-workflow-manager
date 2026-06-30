@@ -2,7 +2,7 @@ package it.pagopa.pn.workflowmanager.config;
 
 import it.pagopa.pn.commons.abstractions.ParameterConsumer;
 import it.pagopa.pn.commons.exceptions.PnInternalException;
-import it.pagopa.pn.commons.utils.qr.models.RecipientTypeInt;
+import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.RecipientTypeInt;
 import it.pagopa.pn.workflowmanager.exceptions.PnCampaignNotFoundException;
 import it.pagopa.pn.workflowmanager.models.internal.campaign.Campaign;
 import it.pagopa.pn.workflowmanager.models.internal.campaign.ChannelType;
@@ -130,7 +130,6 @@ class CampaignsParameterConsumerTest {
                 .serviceId("service-" + campaignId)
                 .sensitiveContent(false)
                 .stopOnViewed(false)
-                .channels(List.of(ChannelType.IO, ChannelType.SMS))
                 .workflow(List.of(validWorkflowStep()))
                 .build();
     }
