@@ -23,6 +23,9 @@ public class PnWorkflowManagerConfigs {
     private String actionManagerBaseUrl;
     private String deliveryBaseUrl;
     private String templateEngineBaseUrl;
+    private String ioConnectorBaseUrl;
+
+    private Integer ioPollingMaxMins;
 
     @Data
     public static class Topics {
