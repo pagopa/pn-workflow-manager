@@ -1,14 +1,16 @@
-package it.pagopa.pn.workflowmanager.dto.informalnotification;
+package it.pagopa.pn.workflowmanager.dto.ext.delivery.notification;
 
 import lombok.Getter;
 
 @Getter
-public enum AnalogDeliveryTypeInt {
-    RS("RS");
+public enum RecipientTypeInt {
+    PF("PF"),
+
+    PG("PG");
 
     private final String value;
 
-    AnalogDeliveryTypeInt(String value) {
+    RecipientTypeInt(String value) {
         this.value = value;
     }
 

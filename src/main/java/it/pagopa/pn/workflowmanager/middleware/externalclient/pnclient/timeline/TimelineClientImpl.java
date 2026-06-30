@@ -7,7 +7,7 @@ import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationIn
 import it.pagopa.pn.workflowmanager.dto.timeline.AddTimelineElementResponse;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt;
-import it.pagopa.pn.workflowmanager.dto.timeline.details.common.TimelineElementDetailsInt;
+import it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementDetailsInt;
 import it.pagopa.pn.workflowmanager.service.mapper.TimelineServiceMapper;
 import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;

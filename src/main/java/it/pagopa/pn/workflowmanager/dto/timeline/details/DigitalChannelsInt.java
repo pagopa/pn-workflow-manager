@@ -1,4 +1,4 @@
-package it.pagopa.pn.workflowmanager.dto.informalnotification;
+package it.pagopa.pn.workflowmanager.dto.timeline.details;
 
 import lombok.Getter;
 

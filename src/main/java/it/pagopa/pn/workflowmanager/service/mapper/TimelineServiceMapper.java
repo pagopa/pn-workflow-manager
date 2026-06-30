@@ -5,7 +5,7 @@ import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationIn
 import it.pagopa.pn.workflowmanager.dto.timeline.StatusInfoInternal;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt;
-import it.pagopa.pn.workflowmanager.dto.timeline.details.common.TimelineElementDetailsInt;
+import it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementDetailsInt;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

@@ -7,7 +7,7 @@ import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationIn
 import it.pagopa.pn.workflowmanager.dto.timeline.AddTimelineElementResponse;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt;
-import it.pagopa.pn.workflowmanager.dto.timeline.details.common.TimelineElementDetailsInt;
+import it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementDetailsInt;
 import it.pagopa.pn.workflowmanager.service.mapper.TimelineServiceMapper;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.Assertions;
@@ -18,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Instant;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -268,6 +269,102 @@ class TimelineClientImplTest {
         assertThrows(RuntimeException.class, () ->
                 timelineServiceClient.getTimeline(iun, confidentialInfoRequired, strongly, timelineId)
         );
+    }
+
+    @Test
+    void getTimelineAndStatusHistory_returnsExpectedResponse() {
+        String iun = "iun123";
+        int recipients = 2;
+        Instant createdAt = Instant.now();
+        NotificationHistoryResponse expectedResponse = new NotificationHistoryResponse();
+
+        when(timelineControllerApi.getTimelineAndStatusHistory(iun, recipients, createdAt))
+                .thenReturn(expectedResponse);
+
+        NotificationHistoryResponse result = timelineServiceClient.getTimelineAndStatusHistory(iun, recipients, createdAt);
+
+        assertEquals(expectedResponse, result);
+        Mockito.verify(timelineControllerApi).getTimelineAndStatusHistory(iun, recipients, createdAt);
+    }
+
+    @Test
+    void getTimelineAndStatusHistory_throwsException() {
+        String iun = "iun123";
+        int recipients = 2;
+        Instant createdAt = Instant.now();
+
+        when(timelineControllerApi.getTimelineAndStatusHistory(iun, recipients, createdAt))
+                .thenThrow(new RuntimeException("Error fetching history"));
+
+        assertThrows(RuntimeException.class, () ->
+                timelineServiceClient.getTimelineAndStatusHistory(iun, recipients, createdAt)
+        );
+    }
+
+    @Test
+    void addTimelineElement_returnsSuccessResponse() {
+        TimelineElementInternal timelineElementInternal = Mockito.mock(TimelineElementInternal.class);
+        NotificationInt notificationInt = Mockito.mock(NotificationInt.class);
+        NewTimelineElement newTimelineElement = Mockito.mock(NewTimelineElement.class);
+        String elementId = "element123";
+        TimelineElementIdResponse idResponse = new TimelineElementIdResponse();
+        idResponse.setElementId(elementId);
+
+        when(timelineServiceMapper.getNewTimelineElement(timelineElementInternal, notificationInt))
+                .thenReturn(newTimelineElement);
+        when(timelineControllerApi.addTimelineElement(newTimelineElement))
+                .thenReturn(idResponse);
+
+        AddTimelineElementResponse result = timelineServiceClient.addTimelineElement(timelineElementInternal, notificationInt);
+
+        assertNotNull(result);
+        assertEquals(elementId, result.getTimelineElementId());
+        assertFalse(result.isDuplicate());
+        Mockito.verify(timelineControllerApi).addTimelineElement(newTimelineElement);
+    }
+
+    @Test
+    void getTimeline_filtersOutUnknownCategories() {
+        String iun = "iun123";
+        Boolean confidentialInfoRequired = false;
+        Boolean strongly = true;
+        String timelineId = null;
+
+        TimelineElement knownCategoryElement = new TimelineElement()
+                .category(TimelineCategory.SEND_DIGITAL_MESSAGE);
+        TimelineElement unknownCategoryElement = new TimelineElement()
+                .category(TimelineCategory.AAR_GENERATION);
+
+        TimelineElementInternal mappedElement = new TimelineElementInternal();
+
+        when(timelineControllerApi.getTimeline(iun, confidentialInfoRequired, strongly, timelineId))
+                .thenReturn(List.of(knownCategoryElement, unknownCategoryElement));
+        when(timelineServiceMapper.toTimelineElementInternal(knownCategoryElement))
+                .thenReturn(mappedElement);
+
+        List<TimelineElementInternal> result = timelineServiceClient.getTimeline(iun, confidentialInfoRequired, strongly, timelineId);
+
+        assertEquals(1, result.size());
+        Mockito.verify(timelineServiceMapper, Mockito.times(1)).toTimelineElementInternal(Mockito.any());
+    }
+
+    @Test
+    void getTimeline_returnsEmptyListWhenNoKnownCategories() {
+        String iun = "iun123";
+        Boolean confidentialInfoRequired = false;
+        Boolean strongly = false;
+        String timelineId = "timeline123";
+
+        TimelineElement unknownCategoryElement = new TimelineElement()
+                .category(TimelineCategory.NORMALIZED_ADDRESS);
+
+        when(timelineControllerApi.getTimeline(iun, confidentialInfoRequired, strongly, timelineId))
+                .thenReturn(List.of(unknownCategoryElement));
+
+        List<TimelineElementInternal> result = timelineServiceClient.getTimeline(iun, confidentialInfoRequired, strongly, timelineId);
+
+        assertTrue(result.isEmpty());
+        Mockito.verify(timelineServiceMapper, never()).toTimelineElementInternal(Mockito.any());
     }
 
 }

@@ -141,7 +141,17 @@ public enum TimelineEventId {
                     .build();
         }
     },
-    WORKFLOW_DONE("WORKFLOW_DONE"){
+    WORKFLOW_DONE_REACHED("WORKFLOW_DONE_REACHED"){
+        @Override
+        public String buildEventId(EventId eventId) {
+            return new TimelineEventIdBuilder()
+                    .withCategory(this.getValue())
+                    .withIun(eventId.getIun())
+                    .withRecIndex(eventId.getRecIndex())
+                    .build();
+        }
+    },
+    WORKFLOW_DONE_UNREACHED("WORKFLOW_DONE_UNREACHED"){
         @Override
         public String buildEventId(EventId eventId) {
             return new TimelineEventIdBuilder()
