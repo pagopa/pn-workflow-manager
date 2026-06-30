@@ -20,6 +20,9 @@ public class PnWorkflowManagerConfigs {
     private String cxId;
     private String deliveryBaseUrl;
     private String timelineClientBaseUrl;
+    private String ioConnectorBaseUrl;
+
+    private Integer ioPollingMaxMins;
 
     @Data
     public static class Topics {
