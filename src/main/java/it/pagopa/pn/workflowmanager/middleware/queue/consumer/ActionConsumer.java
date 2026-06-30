@@ -2,7 +2,7 @@ package it.pagopa.pn.workflowmanager.middleware.queue.consumer;
 
 import io.awspring.cloud.sqs.annotation.SqsListener;
 import it.pagopa.pn.commons.exceptions.PnInternalException;
-import it.pagopa.pn.workflowmanager.middleware.queue.consumer.dto.Action;
+import it.pagopa.pn.workflowmanager.dto.action.common.Action;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.router.EventRouter;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.utils.MdcUtils;
 import lombok.CustomLog;
