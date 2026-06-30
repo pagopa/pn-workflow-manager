@@ -1,26 +1,26 @@
 package it.pagopa.pn.workflowmanager.handler;
 
+import it.pagopa.pn.workflowmanager.middleware.queue.consumer.ActionConsumer;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.dto.Action;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.dto.ActionType;
-import it.pagopa.pn.workflowmanager.middleware.queue.consumer.handler.ActionConsumer;
-import org.junit.jupiter.api.BeforeEach;
+import it.pagopa.pn.workflowmanager.middleware.queue.consumer.router.EventRouter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith(SpringExtension.class)
 class ActionConsumerTest {
 
+    @InjectMocks
     private ActionConsumer actionConsumer;
-
-    @BeforeEach
-    void setUp() {
-        actionConsumer = new ActionConsumer();
-    }
+    @Mock
+    private EventRouter eventRouter;
 
     @Test
     void testWorkflowManagerActionConsumer_success() {

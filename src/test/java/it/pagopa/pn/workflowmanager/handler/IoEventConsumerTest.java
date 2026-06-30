@@ -1,6 +1,6 @@
 package it.pagopa.pn.workflowmanager.handler;
 
-import it.pagopa.pn.workflowmanager.middleware.queue.consumer.handler.IoEventConsumer;
+import it.pagopa.pn.workflowmanager.middleware.queue.consumer.IoEventConsumer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

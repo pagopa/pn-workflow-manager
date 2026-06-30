@@ -1,7 +1,7 @@
 package it.pagopa.pn.workflowmanager.handler;
 
 import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.paperchannel.model.PaperChannelUpdate;
-import it.pagopa.pn.workflowmanager.middleware.queue.consumer.handler.AnalogEventConsumer;
+import it.pagopa.pn.workflowmanager.middleware.queue.consumer.AnalogEventConsumer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
