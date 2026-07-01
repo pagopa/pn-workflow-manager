@@ -15,4 +15,6 @@ public class EventId {
     private Integer progressIndex;
     private String deliveryType;
     private String channel;
+    private String creditorTaxId;
+    private String noticeCode;
 }

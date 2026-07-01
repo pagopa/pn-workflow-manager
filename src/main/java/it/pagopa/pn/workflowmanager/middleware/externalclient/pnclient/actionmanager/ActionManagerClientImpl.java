@@ -9,7 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
-import static it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCodes.ERROR_CODE_DELIVERYPUSH_ACTION_CONFLICT;
+import static it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCodes.ERROR_CODE_WORKFLOWMANAGER_ACTION_CONFLICT;
 
 @RequiredArgsConstructor
 @CustomLog
@@ -24,7 +24,7 @@ public class ActionManagerClientImpl extends CommonBaseClient implements ActionM
             actionManagerApi.insertAction(action);
         } catch (PnHttpResponseException pnHttpResponseException) {
             if (pnHttpResponseException.getStatusCode() == HttpStatus.CONFLICT.value()
-                    && pnHttpResponseException.getProblem().getErrors().getFirst().getCode().equals(ERROR_CODE_DELIVERYPUSH_ACTION_CONFLICT)) {
+                    && pnHttpResponseException.getProblem().getErrors().getFirst().getCode().equals(ERROR_CODE_WORKFLOWMANAGER_ACTION_CONFLICT)) {
                 log.warn("Exception code ConditionalCheckFailed is expected for retry, letting flow continue actionId={}", action.getActionId());
             }
             else {

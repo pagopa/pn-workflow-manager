@@ -100,7 +100,7 @@ public enum TimelineEventId {
                     .build();
         }
     },
-    REACHED("REACHED"){
+    DELIVERED("DELIVERED"){
         @Override
         public String buildEventId(EventId eventId) {
             return new TimelineEventIdBuilder()
@@ -109,6 +109,28 @@ public enum TimelineEventId {
                     .withRecIndex(eventId.getRecIndex())
                     .withChannel(eventId.getChannel())
                     .build();
+        }
+    },
+    NOTIFICATION_PAID("NOTIFICATION_PAID") {
+        @Override
+        public String buildEventId(EventId eventId) {
+            return new TimelineEventIdBuilder()
+                    .withCategory(this.getValue())
+                    .withIun(eventId.getIun())
+                    .withPaymentCode(buildPaymentCode(eventId))
+                    .build();
+        }
+        private String buildPaymentCode(EventId eventId) {
+            String paymentCode;
+            //per pagamenti PagoPa
+            paymentCode = "PPA";
+            if (eventId.getNoticeCode() != null) {
+                paymentCode += eventId.getNoticeCode();
+            }
+            if (eventId.getCreditorTaxId() != null) {
+                paymentCode += eventId.getCreditorTaxId();
+            }
+            return paymentCode;
         }
     },
     WORKFLOW_ENDED_REACHED("WORKFLOW_ENDED_REACHED"){

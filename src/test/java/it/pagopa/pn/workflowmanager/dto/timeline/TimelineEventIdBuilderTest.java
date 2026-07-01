@@ -176,15 +176,15 @@ class TimelineEventIdBuilderTest {
 
     @Test
     void buildREACHEDTest() {
-        String timeLineEventIdExpected = "REACHED.IUN_KWKU-JHXN-HJXM-202304-U-A.RECINDEX_0.CHANNEL_APPIO";
+        String timeLineEventIdExpected = "DELIVERED.IUN_KWKU-JHXN-HJXM-202304-U-A.RECINDEX_0.CHANNEL_APPIO";
         String timeLineEventIdActual = new TimelineEventIdBuilder()
-                .withCategory(TimelineEventId.REACHED.getValue())
+                .withCategory(TimelineEventId.DELIVERED.getValue())
                 .withIun(IUN)
                 .withRecIndex(0)
                 .withChannel(APPIO.getValue())
                 .build();
         assertThat(timeLineEventIdActual).isEqualTo(timeLineEventIdExpected);
-        String timeLineEventIdActualFromBuildEvent = TimelineEventId.REACHED.buildEventId(EventId
+        String timeLineEventIdActualFromBuildEvent = TimelineEventId.DELIVERED.buildEventId(EventId
                 .builder()
                 .iun(IUN)
                 .recIndex(0)
@@ -208,6 +208,32 @@ class TimelineEventIdBuilderTest {
                 .recIndex(0)
                 .build());
         assertThat(timeLineEventIdActualFromBuildEvent).isEqualTo(timeLineEventIdExpected);
+    }
+
+    @Test
+    void buildNOTIFICATION_PAIDForPagoPaPaymentTest() {
+        //vecchia versione 123456789_notification_paid
+        String timeLineEventIdExpected = "NOTIFICATION_PAID.IUN_KWKU-JHXN-HJXM-202304-U-A.CODE_PPA30200010000001942177777777777";
+        String noticeCode = "302000100000019421"; //stringa di 18 caratteri
+        String creditorTaxId = "77777777777"; //stringa di 11 caratteri
+        String timeLineEventIdActual = new TimelineEventIdBuilder()
+                .withCategory(TimelineEventId.NOTIFICATION_PAID.getValue())
+                .withIun(IUN)
+                .withPaymentCode("PPA" + noticeCode + creditorTaxId)
+                .build();
+
+        assertThat(timeLineEventIdActual).isEqualTo(timeLineEventIdExpected);
+
+        String timeLineEventIdActualFromBuildEvent = TimelineEventId.NOTIFICATION_PAID.buildEventId(EventId
+                .builder()
+                .iun(IUN)
+                .noticeCode(noticeCode)
+                .creditorTaxId(creditorTaxId)
+                .build());
+
+
+        assertThat(timeLineEventIdActualFromBuildEvent).isEqualTo(timeLineEventIdExpected);
+
     }
 
     @Test
