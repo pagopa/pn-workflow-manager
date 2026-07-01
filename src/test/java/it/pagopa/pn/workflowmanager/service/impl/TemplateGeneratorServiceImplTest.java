@@ -28,7 +28,7 @@ class TemplateGeneratorServiceImplTest {
     }
 
     @ParameterizedTest
-    @MethodSource("provideIoMessageTemplateArguments")
+    @MethodSource("provideAdditionalLanguageArguments")
     void shouldGenerateIoMessageTemplate(
             List<String> additionalLanguages,
             LanguageEnum expectedLanguage
@@ -45,12 +45,30 @@ class TemplateGeneratorServiceImplTest {
         verify(templateEngineClient).ioMessageTemplate(Mockito.eq(expectedLanguage), Mockito.any());
     }
 
-    private static Stream<Arguments> provideIoMessageTemplateArguments() {
+    private static Stream<Arguments> provideAdditionalLanguageArguments() {
         return Stream.of(
                 Arguments.of(List.of(),  LanguageEnum.IT),
                 Arguments.of(List.of("EN", "DE"), LanguageEnum.EN),
                 Arguments.of(null, LanguageEnum.IT)
         );
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideAdditionalLanguageArguments")
+    void shouldGeneratePecTemplate(
+            List<String> additionalLanguages,
+            LanguageEnum expectedLanguage
+    ) {
+        NotificationInt notificationInt = buildNotification();
+        NotificationRecipientInt notificationRecipientInt = buildNotificationRecipient(additionalLanguages);
+        String expectedMessageTemplate = "template-content";
+
+        when(templateEngineClient.pecTemplate(Mockito.eq(expectedLanguage), Mockito.any())).thenReturn(expectedMessageTemplate);
+
+        String result = templateGeneratorService.generatePecTemplate(notificationInt, notificationRecipientInt, true);
+
+        assertEquals(expectedMessageTemplate, result);
+        verify(templateEngineClient).pecTemplate(Mockito.eq(expectedLanguage), Mockito.any());
     }
 
     private NotificationInt buildNotification() {
