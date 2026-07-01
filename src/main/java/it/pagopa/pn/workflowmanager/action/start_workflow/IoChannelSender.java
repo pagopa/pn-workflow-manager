@@ -1,5 +1,8 @@
 package it.pagopa.pn.workflowmanager.action.start_workflow;
 
+import it.pagopa.pn.commons.exceptions.PnInternalException;
+import it.pagopa.pn.commons.log.PnAuditLogEvent;
+import it.pagopa.pn.commons.log.PnAuditLogEventType;
 import it.pagopa.pn.workflowmanager.action.utils.ChannelSenderUtils;
 import it.pagopa.pn.workflowmanager.action.utils.WorkflowUtils;
 import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
@@ -10,16 +13,20 @@ import it.pagopa.pn.workflowmanager.dto.timeline.details.DigitalChannelsInt;
 import it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.ioconnector.IoConnectorClient;
 import it.pagopa.pn.workflowmanager.models.internal.campaign.Campaign;
 import it.pagopa.pn.workflowmanager.models.internal.campaign.ChannelType;
+import it.pagopa.pn.workflowmanager.service.AuditLogService;
 import it.pagopa.pn.workflowmanager.service.TemplateGeneratorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+
+import static it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCodes.ERROR_CODE_WORKFLOWMANAGER_SEND_ON_CHANNEL_ERROR;
 
 
 @Component
 @Slf4j
 @RequiredArgsConstructor
 public class IoChannelSender { //TODO: Implementa interfaccia ChannelSender
+    private final AuditLogService auditLogService;
     private final TemplateGeneratorService templateGeneratorService;
     private final IoConnectorClient ioConnectorClient;
     private final ChannelSenderUtils channelSenderUtils;
@@ -28,28 +35,43 @@ public class IoChannelSender { //TODO: Implementa interfaccia ChannelSender
     public void send(NotificationInt notification, Campaign campaign, int recIndex, int currentStep, ChannelType channel) {
         log.info("Sending message for notification {} to recipient {} via channel {}", notification.getIun(), recIndex, channel);
         NotificationRecipientInt recipient = notification.getRecipients().get(recIndex);
-        // TODO: capire se isIoUser serve.
-        String markdown = templateGeneratorService.generateIoMessageTemplate(notification, recipient, false);
         String requestId = ChannelSenderUtils.buildSendDigitalMessageEventId(notification.getIun(), recIndex, channel);
-        ioConnectorClient.sendMessage(
-            IoMessageRequest.builder()
-                .requestId(requestId)
-                .markdown(markdown)
-                .notificationInt(notification)
-                .notificationRecipientInt(recipient)
-                .campaign(campaign)
-                .build()
-        );
+        PnAuditLogEvent auditLogEvent = buildAuditLogEvent(notification.getIun(), recIndex, requestId);
+        try {
 
-        channelSenderUtils.saveSendDigitalMessageElement(
-                notification,
-                requestId,
-                recIndex,
-                ChannelSenderUtils.buildDigitalAddress(recipient.getTaxId(), InformalDigitalAddressInt.INFORMAL_DIGITAL_ADDRESS_TYPE.APPIO),
-                DigitalChannelsInt.APPIO,
-                null
-        );
+            // TODO: capire se isIoUser serve.
+            String markdown = templateGeneratorService.generateIoMessageTemplate(notification, recipient, false);
 
-        workflowUtils.scheduleTimeoutForCurrentChannel(notification.getIun(), recIndex, currentStep, campaign, channel);
+            ioConnectorClient.sendMessage(
+                    IoMessageRequest.builder()
+                            .requestId(requestId)
+                            .markdown(markdown)
+                            .notificationInt(notification)
+                            .notificationRecipientInt(recipient)
+                            .campaign(campaign)
+                            .build()
+            );
+
+            channelSenderUtils.saveSendDigitalMessageElement(
+                    notification,
+                    requestId,
+                    recIndex,
+                    ChannelSenderUtils.buildDigitalAddress(recipient.getTaxId(), InformalDigitalAddressInt.INFORMAL_DIGITAL_ADDRESS_TYPE.APPIO),
+                    DigitalChannelsInt.APPIO,
+                    null
+            );
+
+            workflowUtils.scheduleTimeoutForCurrentChannel(notification.getIun(), recIndex, currentStep, campaign, channel);
+            auditLogEvent.generateSuccess("Message sent succesfully").log();
+        } catch (Exception e) {
+            auditLogEvent.generateFailure("Error sending message", e).log();
+            throw new PnInternalException("Error sending message for notification " + notification.getIun() + " to recipient " + recIndex, ERROR_CODE_WORKFLOWMANAGER_SEND_ON_CHANNEL_ERROR, e);
+        }
+
+    }
+
+    private PnAuditLogEvent buildAuditLogEvent(String iun, int recIndex, String requestId) {
+        String msg = "Sending message for notification {} to recipient {} with requestId {}";
+        return auditLogService.buildAuditLogEvent(iun, recIndex, PnAuditLogEventType.AUD_COM_SEND_IO, msg, iun, recIndex, requestId);
     }
 }
