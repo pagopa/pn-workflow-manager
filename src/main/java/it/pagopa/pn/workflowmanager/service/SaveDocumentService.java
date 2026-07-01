@@ -7,6 +7,8 @@ import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRe
 public interface SaveDocumentService {
     String saveCoverpage(
             NotificationInt notification,
-            NotificationRecipientInt recipient
+            NotificationRecipientInt recipient,
+            String timelineElementId,
+            String recIndex
     );
 }

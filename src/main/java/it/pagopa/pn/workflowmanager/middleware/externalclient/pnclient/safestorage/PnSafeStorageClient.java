@@ -1,5 +1,6 @@
 package it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.safestorage;
 
+import it.pagopa.pn.commons.log.PnLogger;
 import it.pagopa.pn.workflowmanager.dto.safestorage.FileCreationWithContentRequest;
 import it.pagopa.pn.workflowmanager.dto.safestorage.UpdateFileMetadataResponseInt;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.safestorage.model.FileCreationRequest;
@@ -8,8 +9,7 @@ import it.pagopa.pn.workflowmanager.generated.openapi.msclient.safestorage.model
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.safestorage.model.UpdateFileMetadataRequest;
 
 public interface PnSafeStorageClient {
-    // TODO: String CLIENT_NAME = PnLogger.EXTERNAL_SERVICES.PN_SAFE_STORAGE;
-    String CLIENT_NAME = "pn-safe-storage";
+    String CLIENT_NAME = PnLogger.EXTERNAL_SERVICES.PN_SAFE_STORAGE;
 
     String CREATE_FILE = "CREATE FILE";
     String GET_FILE = "GET FILE";
