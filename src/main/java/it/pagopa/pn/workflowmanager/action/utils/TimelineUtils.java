@@ -51,7 +51,7 @@ public class TimelineUtils {
                 .build();
 
 
-        return buildTimeline(notification, TimelineElementCategoryInt.WORKFLOW_ENDED_REACHED, eventId, details);
+        return buildTimeline(notification, TimelineElementCategoryInt.WORKFLOW_ENDED_UNREACHED, eventId, details);
     }
 
     public static String getWorkflowEndedUnreachedTimelineElementId(Integer recIndex, String iun) {
