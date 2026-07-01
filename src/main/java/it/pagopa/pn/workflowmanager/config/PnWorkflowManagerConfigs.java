@@ -9,6 +9,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.validation.annotation.Validated;
 
+import java.util.List;
+
 @Configuration
 @ConfigurationProperties( prefix = "pn.workflow-manager")
 @Validated
@@ -18,6 +20,7 @@ import org.springframework.validation.annotation.Validated;
 public class PnWorkflowManagerConfigs {
     private Topics topics;
     private String cxId;
+    private List<String> pnSendMode;
     //external client
     private String timelineClientBaseUrl;
     private String actionManagerBaseUrl;

@@ -6,6 +6,8 @@ import org.springframework.boot.context.properties.bind.Bindable;
 import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.mock.env.MockEnvironment;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class PnWorkflowManagerConfigsTest {
@@ -19,7 +21,9 @@ class PnWorkflowManagerConfigsTest {
                 .withProperty("pn.workflow-manager.topics.digital-queue", "pn-workflow-manager-digital-event-queue")
                 .withProperty("pn.workflow-manager.topics.analog-queue", "pn-workflow-manager-analog-event-queue")
                 .withProperty("pn.workflow-manager.topics.action-queue", "pn-workflow-manager-action-queue")
-                .withProperty("pn.workflow-manager.topics.io-queue", "pn-workflow-manager-io-event-queue");
+                .withProperty("pn.workflow-manager.topics.io-queue", "pn-workflow-manager-io-event-queue")
+                .withProperty("pn.workflow-manager.pn-send-mode[0]", "2024-01-01T00:00:00Z;IGNORED;COVERPAGE|DOCUMENTS;DOCUMENTS;PAYMENTS")
+                .withProperty("pn.workflow-manager.pn-send-mode[1]", "2024-06-01T00:00:00Z;IGNORED;PAYMENTS;COVERPAGE;COVERPAGE|PAYMENTS");
 
         PnWorkflowManagerConfigs pnNotificationCostServiceConfigs = Binder.get(environment)
                 .bind("pn.workflow-manager", Bindable.of(PnWorkflowManagerConfigs.class))
@@ -35,6 +39,10 @@ class PnWorkflowManagerConfigsTest {
         Assertions.assertEquals("pn-workflow-manager-analog-event-queue", topics.getAnalogQueue());
         Assertions.assertEquals("pn-workflow-manager-action-queue", topics.getActionQueue());
         Assertions.assertEquals("pn-workflow-manager-io-event-queue", topics.getIoQueue());
+        Assertions.assertEquals(List.of(
+                "2024-01-01T00:00:00Z;IGNORED;COVERPAGE|DOCUMENTS;DOCUMENTS;PAYMENTS",
+                "2024-06-01T00:00:00Z;IGNORED;PAYMENTS;COVERPAGE;COVERPAGE|PAYMENTS"
+        ), pnNotificationCostServiceConfigs.getPnSendMode());
     }
 
 }
