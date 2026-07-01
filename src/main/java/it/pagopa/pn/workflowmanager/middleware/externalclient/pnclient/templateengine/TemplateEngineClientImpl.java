@@ -17,4 +17,9 @@ public class TemplateEngineClientImpl implements TemplateEngineClient {
         log.logInvokingExternalService(CLIENT_NAME, IO_MESSAGE_TEMPLATE);
         return templateApi.informalIoCommunication(language, informalCommunication);
     }
+
+    public String pecTemplate(LanguageEnum language, InformalCommunication informalCommunication) {
+        log.logInvokingExternalService(CLIENT_NAME, PEC_TEMPLATE);
+        return templateApi.informalPecCommunication(language, informalCommunication);
+    }
 }
