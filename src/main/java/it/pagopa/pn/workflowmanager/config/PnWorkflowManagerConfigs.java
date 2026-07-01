@@ -22,6 +22,11 @@ public class PnWorkflowManagerConfigs {
     private String timelineClientBaseUrl;
     private String actionManagerBaseUrl;
     private String deliveryBaseUrl;
+    private String templateEngineBaseUrl;
+    private String ioConnectorBaseUrl;
+    private String externalChannelsBaseUrl;
+
+    private Integer ioPollingMaxMins;
 
     @Data
     public static class Topics {
