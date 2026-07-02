@@ -4,10 +4,7 @@ import it.pagopa.pn.commons.abstractions.ParameterConsumer;
 import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.RecipientTypeInt;
 import it.pagopa.pn.workflowmanager.exceptions.PnCampaignNotFoundException;
-import it.pagopa.pn.workflowmanager.models.internal.campaign.Campaign;
-import it.pagopa.pn.workflowmanager.models.internal.campaign.ChannelType;
-import it.pagopa.pn.workflowmanager.models.internal.campaign.DesiredFeedbackType;
-import it.pagopa.pn.workflowmanager.models.internal.campaign.WorkFlowEntity;
+import it.pagopa.pn.workflowmanager.models.internal.campaign.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -48,7 +45,7 @@ class CampaignsParameterConsumerTest {
 
     @Test
     void getCampaignByCampaignIdAndSenderId_success() {
-        Campaign campaign = validCampaign("c1", SENDER_A);
+        Campaign campaign = validCampaign("c1", SENDER_A, CampaignStatus.IN_PROGRESS);
 
         Mockito.when(parameterConsumer.getParameterValue(Mockito.anyString(), Mockito.eq(Campaign[].class)))
                 .thenReturn(Optional.of(new Campaign[]{campaign}));
@@ -64,7 +61,7 @@ class CampaignsParameterConsumerTest {
     @Test
     void getCampaignByCampaignIdAndSenderId_notFoundByCampaignId() {
         Campaign[] campaigns = new Campaign[]{
-                validCampaign("c1", SENDER_A)
+                validCampaign("c1", SENDER_A, CampaignStatus.IN_PROGRESS)
         };
 
         Mockito.when(parameterConsumer.getParameterValue(Mockito.anyString(), Mockito.eq(Campaign[].class)))
@@ -78,7 +75,7 @@ class CampaignsParameterConsumerTest {
     @Test
     void getCampaignByCampaignIdAndSenderId_notFoundBySenderId() {
         Campaign[] campaigns = new Campaign[]{
-                validCampaign("c1", SENDER_B)
+                validCampaign("c1", SENDER_B, CampaignStatus.IN_PROGRESS)
         };
 
         Mockito.when(parameterConsumer.getParameterValue(Mockito.anyString(), Mockito.eq(Campaign[].class)))
@@ -102,9 +99,9 @@ class CampaignsParameterConsumerTest {
     @Test
     void getCampaignByCampaignIdAndSenderId_multipleCampaigns() {
         Campaign[] campaigns = new Campaign[]{
-                validCampaign("c1", SENDER_A),
-                validCampaign("c2", SENDER_A),
-                validCampaign("c3", SENDER_A)
+                validCampaign("c1", SENDER_A, CampaignStatus.IN_PROGRESS),
+                validCampaign("c2", SENDER_A, CampaignStatus.IN_PROGRESS),
+                validCampaign("c3", SENDER_A, CampaignStatus.IN_PROGRESS)
         };
 
         Mockito.when(parameterConsumer.getParameterValue(Mockito.anyString(), Mockito.eq(Campaign[].class)))
@@ -117,14 +114,24 @@ class CampaignsParameterConsumerTest {
         Assertions.assertEquals("c2", result.getCampaignId());
     }
 
+    @Test
+    void initialize_invalidCampaignStatus() {
+        Mockito.when(parameterConsumer.getParameterValue(Mockito.anyString(), Mockito.eq(Campaign[].class)))
+                .thenReturn(Optional.of(new Campaign[]{validCampaign("c1", SENDER_A, null)}));
 
-    private Campaign validCampaign(String campaignId, String senderId) {
+        campaignsParameterConsumer.initialize();
+
+        Assertions.assertThrows(PnCampaignNotFoundException.class,
+                () -> campaignsParameterConsumer.getCampaignByCampaignIdAndSenderId("c1", SENDER_A));
+    }
+
+    private Campaign validCampaign(String campaignId, String senderId, CampaignStatus status) {
         return Campaign.builder()
                 .campaignId(campaignId)
                 .senderId(senderId)
                 .title("Campaign " + campaignId)
                 .descriptionScope("Description " + campaignId)
-                .closed(false)
+                .status(status)
                 .startDate(OffsetDateTime.of(2025, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC))
                 .endDate(OffsetDateTime.of(2025, 1, 31, 0, 0, 0, 0, ZoneOffset.UTC))
                 .serviceId("service-" + campaignId)
