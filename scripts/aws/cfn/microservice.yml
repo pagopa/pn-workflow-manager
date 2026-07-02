@@ -318,6 +318,7 @@ Resources:
         ContainerEnvEntry11: !Sub 'PN_WORKFLOWMANAGER_ACTIONMANAGERBASEURL=http://${ApplicationLoadBalancerDomain}:8080'
         ContainerEnvEntry12: !Sub 'PN_WORKFLOWMANAGER_IOCONNECTORBASEURL=http://${ApplicationLoadBalancerDomain}:8080'
         ContainerEnvEntry13: !Sub 'PN_WORKFLOWMANAGER_TEMPLATEENGINEBASEURL=http://${ApplicationLoadBalancerDomain}:8080'
+        ContainerEnvEntry14: !Sub 'PN_WORKFLOWMANAGER_EXTERNALCHANNELSBASEURL=http://${ApplicationLoadBalancerDomain}:8080'
         ApplicativeEnvFileChecksum: !Ref ApplicativeEnvFileChecksum
         JavaToolOptions: '-Dreactor.netty.ioWorkerCount=50'
         MappedPaths: '/workflow-manager-not-available'

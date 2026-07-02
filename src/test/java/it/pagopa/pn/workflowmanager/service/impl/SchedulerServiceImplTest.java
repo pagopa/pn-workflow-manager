@@ -32,10 +32,11 @@ class SchedulerServiceImplTest {
     @Test
     void scheduleEvent_withCommunicationType_shouldAddAction() {
         String iun = "IUN01";
+        Integer recIndex = 0;
         Instant dateToSchedule = Instant.parse("2022-08-30T16:04:13.913859900Z");
         ActionType actionType = ActionType.END_WORKFLOW;
 
-        schedulerService.scheduleEvent(iun, dateToSchedule, actionType);
+        schedulerService.scheduleEvent(iun,recIndex, dateToSchedule, actionType);
 
         Mockito.verify(actionsPool).addOnlyAction(any(Action.class));
     }
@@ -43,6 +44,7 @@ class SchedulerServiceImplTest {
     @Test
     void scheduleEvent_withActionDetails_shouldAddAction() {
         String iun = "IUN01";
+        Integer recIndex = 0;
         Instant dateToSchedule = Instant.parse("2022-08-30T16:04:13.913859900Z");
         Integer recIndex = 0;
         ActionType actionType = ActionType.END_WORKFLOW;

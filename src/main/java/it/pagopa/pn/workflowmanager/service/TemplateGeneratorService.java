@@ -5,4 +5,5 @@ import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRe
 
 public interface TemplateGeneratorService {
     String generateIoMessageTemplate(NotificationInt notificationInt, NotificationRecipientInt notificationRecipientInt, boolean isIoUser);
+    String generatePecTemplate(NotificationInt notificationInt, NotificationRecipientInt notificationRecipientInt, boolean isIoUser);
 }

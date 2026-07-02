@@ -8,6 +8,10 @@ public interface TemplateEngineClient {
     String CLIENT_NAME = "pn-template-engine";
 
     String IO_MESSAGE_TEMPLATE = "IO MESSAGE TEMPLATE";
+    String PEC_TEMPLATE = "PEC TEMPLATE";
 
     String ioMessageTemplate(LanguageEnum language, InformalCommunication informalCommunication);
+
+    String pecTemplate(LanguageEnum language, InformalCommunication informalCommunication);
+
 }
