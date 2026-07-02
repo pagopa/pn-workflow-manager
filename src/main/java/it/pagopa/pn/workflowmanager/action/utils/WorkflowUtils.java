@@ -2,13 +2,11 @@ package it.pagopa.pn.workflowmanager.action.utils;
 
 import it.pagopa.pn.workflowmanager.dto.action.common.ActionType;
 import it.pagopa.pn.workflowmanager.dto.action.details.TimeoutWorkflowDetails;
-import it.pagopa.pn.workflowmanager.exceptions.PnWorkflowException;
-
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.RecipientTypeInt;
+import it.pagopa.pn.workflowmanager.exceptions.PnWorkflowException;
 import it.pagopa.pn.workflowmanager.models.internal.campaign.Campaign;
 import it.pagopa.pn.workflowmanager.models.internal.campaign.ChannelType;
 import it.pagopa.pn.workflowmanager.models.internal.campaign.WorkFlowEntity;
-import lombok.AllArgsConstructor;
 import it.pagopa.pn.workflowmanager.service.SchedulerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

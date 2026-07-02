@@ -3,23 +3,17 @@ package it.pagopa.pn.workflowmanager.action.utils;
 import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
 import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
-import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationSenderInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.*;
 import it.pagopa.pn.workflowmanager.service.TimelineService;
-import it.pagopa.pn.workflowmanager.dto.timeline.details.DigitalChannelsInt;
-import it.pagopa.pn.workflowmanager.dto.timeline.details.SendDigitalMessageDetailsInt;
-import it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Collections;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
@@ -464,6 +458,36 @@ class TimelineUtilsTest {
         Assertions.assertEquals(customSourceId, details.getSourceElementId());
     }
 
+    @Test
+    void buildSendDigitalMessageTimelineElement() {
+        String elementId = "send_digital_message_001";
+        int recIndex = 0;
+        InformalDigitalAddressInt informalDigitalAddressInt = InformalDigitalAddressInt.builder()
+                .address("address")
+                .type(InformalDigitalAddressInt.INFORMAL_DIGITAL_ADDRESS_TYPE.PEC)
+                .build();
+        DigitalChannelsInt digitalChannelsInt = DigitalChannelsInt.PEC;
+        DigitalAddressSourceInt digitalAddressSourceInt = DigitalAddressSourceInt.SPECIAL;
+        TimelineElementInternal actual = timelineUtils.buildSendDigitalMessageTimelineElement(
+                createNotification(),
+                elementId,
+                recIndex,
+                informalDigitalAddressInt,
+                digitalChannelsInt,
+                digitalAddressSourceInt
+        );
+        Assertions.assertEquals("TEST-IUN-001", actual.getIun());
+        Assertions.assertEquals(elementId, actual.getElementId());
+        Assertions.assertEquals("pa_02", actual.getPaId());
+        Assertions.assertEquals(TimelineElementCategoryInt.SEND_DIGITAL_MESSAGE, actual.getCategory());
+        Assertions.assertNotNull(actual.getDetails());
+        SendDigitalMessageDetailsInt detailsInt = (SendDigitalMessageDetailsInt) actual.getDetails();
+        Assertions.assertEquals(recIndex, detailsInt.getRecIndex());
+        Assertions.assertEquals(informalDigitalAddressInt, detailsInt.getDigitalAddress());
+        Assertions.assertEquals(digitalChannelsInt, detailsInt.getChannel());
+        Assertions.assertEquals(digitalAddressSourceInt, detailsInt.getDigitalAddressSource());
+    }
+
     private NotificationInt createNotification() {
         return NotificationInt.builder()
                 .iun(TEST_IUN)
@@ -496,36 +520,6 @@ class TimelineUtilsTest {
                 .category(category)
                 .details(details)
                 .build();
-    }
-
-    @Test
-    void buildSendDigitalMessageTimelineElement() {
-        String elementId = "send_digital_message_001";
-        int recIndex = 0;
-        InformalDigitalAddressInt informalDigitalAddressInt = InformalDigitalAddressInt.builder()
-                .address("address")
-                .type(InformalDigitalAddressInt.INFORMAL_DIGITAL_ADDRESS_TYPE.PEC)
-                .build();
-        DigitalChannelsInt digitalChannelsInt = DigitalChannelsInt.PEC;
-        DigitalAddressSourceInt digitalAddressSourceInt = DigitalAddressSourceInt.SPECIAL;
-        TimelineElementInternal actual = timelineUtils.buildSendDigitalMessageTimelineElement(
-                buildNotificationInt(),
-                elementId,
-                recIndex,
-                informalDigitalAddressInt,
-                digitalChannelsInt,
-                digitalAddressSourceInt
-        );
-        Assertions.assertEquals("001", actual.getIun());
-        Assertions.assertEquals(elementId, actual.getElementId());
-        Assertions.assertEquals("pa_02", actual.getPaId());
-        Assertions.assertEquals(TimelineElementCategoryInt.SEND_DIGITAL_MESSAGE, actual.getCategory());
-        Assertions.assertNotNull(actual.getDetails());
-        SendDigitalMessageDetailsInt detailsInt = (SendDigitalMessageDetailsInt) actual.getDetails();
-        Assertions.assertEquals(recIndex, detailsInt.getRecIndex());
-        Assertions.assertEquals(informalDigitalAddressInt, detailsInt.getDigitalAddress());
-        Assertions.assertEquals(digitalChannelsInt, detailsInt.getChannel());
-        Assertions.assertEquals(digitalAddressSourceInt, detailsInt.getDigitalAddressSource());
     }
 
 }

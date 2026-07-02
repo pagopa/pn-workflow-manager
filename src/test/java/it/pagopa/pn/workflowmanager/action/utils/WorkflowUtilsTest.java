@@ -1,13 +1,13 @@
 package it.pagopa.pn.workflowmanager.action.utils;
 
-import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.RecipientTypeInt;
 import it.pagopa.pn.workflowmanager.dto.action.common.ActionType;
+import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.RecipientTypeInt;
 import it.pagopa.pn.workflowmanager.exceptions.PnWorkflowException;
 import it.pagopa.pn.workflowmanager.models.internal.campaign.Campaign;
 import it.pagopa.pn.workflowmanager.models.internal.campaign.ChannelType;
 import it.pagopa.pn.workflowmanager.models.internal.campaign.WorkFlowEntity;
-import org.junit.jupiter.api.Assertions;
 import it.pagopa.pn.workflowmanager.service.SchedulerService;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,6 +17,10 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class WorkflowUtilsTest {
@@ -350,7 +354,6 @@ class WorkflowUtilsTest {
         when(workflowEntity.getTimeout()).thenReturn(Duration.ofMinutes(10));
 
         when(secondEntity.getChannel()).thenReturn(ChannelType.PEC);
-        when(secondEntity.getTimeout()).thenReturn(Duration.ofMinutes(5));
 
 
         assertDoesNotThrow(() -> workflowUtils.scheduleTimeoutForCurrentChannel(iun, recIndex, currentStepIdx, campaign, ChannelType.IO));

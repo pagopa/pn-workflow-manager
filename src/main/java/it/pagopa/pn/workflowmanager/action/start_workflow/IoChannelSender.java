@@ -3,6 +3,7 @@ package it.pagopa.pn.workflowmanager.action.start_workflow;
 import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.commons.log.PnAuditLogEvent;
 import it.pagopa.pn.commons.log.PnAuditLogEventType;
+import it.pagopa.pn.workflowmanager.action.ChannelSender;
 import it.pagopa.pn.workflowmanager.action.utils.ChannelSenderUtils;
 import it.pagopa.pn.workflowmanager.action.utils.WorkflowUtils;
 import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
@@ -25,7 +26,7 @@ import static it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCo
 @Component
 @Slf4j
 @RequiredArgsConstructor
-public class IoChannelSender { //TODO: Implementa interfaccia ChannelSender
+public class IoChannelSender implements ChannelSender {
     private final AuditLogService auditLogService;
     private final TemplateGeneratorService templateGeneratorService;
     private final IoConnectorClient ioConnectorClient;
