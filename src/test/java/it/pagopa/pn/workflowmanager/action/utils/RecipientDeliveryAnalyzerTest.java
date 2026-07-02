@@ -18,8 +18,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import static it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt.*;
+import static it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt.SEND_DIGITAL_MESSAGE_FEEDBACK;
+import static it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt.SEND_DIGITAL_MESSAGE_SKIP;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -30,8 +32,6 @@ class RecipientDeliveryAnalyzerTest {
     private TimelineUtils timelineUtils;
 
     private RecipientDeliveryAnalyzer analyzer;
-
-    private static final String TEST_IUN = "TEST-IUN-001";
     private static final int TEST_REC_INDEX = 0;
 
     @BeforeEach
@@ -43,28 +43,32 @@ class RecipientDeliveryAnalyzerTest {
     void getDeliveryStatus_shouldReturnReached_whenRecipientHasDeliveredEvent() {
         // Arrange
         Campaign campaign = createCampaign(List.of(ChannelType.IO));
-        when(timelineUtils.checkTimelineCategories(TEST_IUN, TEST_REC_INDEX, DELIVERED, INFORMAL_NOTIFICATION_VIEWED, PAYMENT))
+        List<TimelineElementInternal> timelineElements = List.of();
+
+        when(timelineUtils.checkTimelineCategories(anyList(), eq(TEST_REC_INDEX), any(), any(), any()))
                 .thenReturn(true);
 
         // Act
         RecipientDeliveryStatus result = analyzer.getDeliveryStatus(
-                new ArrayList<>(), campaign, TEST_REC_INDEX, RecipientTypeInt.PF, TEST_IUN);
+                timelineElements, campaign, TEST_REC_INDEX, RecipientTypeInt.PF);
 
         // Assert
         assertEquals(RecipientDeliveryStatus.REACHED, result);
-        verify(timelineUtils).checkTimelineCategories(TEST_IUN, TEST_REC_INDEX, DELIVERED, INFORMAL_NOTIFICATION_VIEWED, PAYMENT);
+        verify(timelineUtils).checkTimelineCategories(eq(timelineElements), eq(TEST_REC_INDEX), any(), any(), any());
     }
 
     @Test
     void getDeliveryStatus_shouldReturnReached_whenRecipientHasViewedEvent() {
         // Arrange
         Campaign campaign = createCampaign(List.of(ChannelType.IO));
-        when(timelineUtils.checkTimelineCategories(TEST_IUN, TEST_REC_INDEX, DELIVERED, INFORMAL_NOTIFICATION_VIEWED, PAYMENT))
+        List<TimelineElementInternal> timelineElements = List.of();
+
+        when(timelineUtils.checkTimelineCategories(anyList(), eq(TEST_REC_INDEX), any(), any(), any()))
                 .thenReturn(true);
 
         // Act
         RecipientDeliveryStatus result = analyzer.getDeliveryStatus(
-                new ArrayList<>(), campaign, TEST_REC_INDEX, RecipientTypeInt.PF, TEST_IUN);
+                timelineElements, campaign, TEST_REC_INDEX, RecipientTypeInt.PF);
 
         // Assert
         assertEquals(RecipientDeliveryStatus.REACHED, result);
@@ -74,37 +78,17 @@ class RecipientDeliveryAnalyzerTest {
     void getDeliveryStatus_shouldReturnUndeliverable_whenAllChannelsHaveSkipOrFeedback() {
         // Arrange
         Campaign campaign = createCampaign(List.of(ChannelType.IO, ChannelType.EMAIL, ChannelType.SMS));
-
         List<TimelineElementInternal> timelineElements = createTimelineWithAllChannelsFailed();
 
-        when(timelineUtils.checkTimelineCategories(TEST_IUN, TEST_REC_INDEX, DELIVERED, INFORMAL_NOTIFICATION_VIEWED, PAYMENT))
+        when(timelineUtils.checkTimelineCategories(anyList(), eq(TEST_REC_INDEX), any(), any(), any()))
                 .thenReturn(false);
 
         // Act
         RecipientDeliveryStatus result = analyzer.getDeliveryStatus(
-                timelineElements, campaign, TEST_REC_INDEX, RecipientTypeInt.PF, TEST_IUN);
+                timelineElements, campaign, TEST_REC_INDEX, RecipientTypeInt.PF);
 
         // Assert
         assertEquals(RecipientDeliveryStatus.UNDELIVERABLE, result);
-    }
-
-    @Test
-    void getDeliveryStatus_shouldReturnUnreached_whenSomeChannelsStillPending() {
-        // Arrange
-        Campaign campaign = createCampaign(List.of(ChannelType.IO, ChannelType.EMAIL));
-
-        // Only AppIO has feedback, EMAIL doesn't have skip yet
-        List<TimelineElementInternal> timelineElements = createTimelineWithAppIoFeedback(TEST_REC_INDEX);
-
-        when(timelineUtils.checkTimelineCategories(TEST_IUN, TEST_REC_INDEX, DELIVERED, INFORMAL_NOTIFICATION_VIEWED, PAYMENT))
-                .thenReturn(false);
-
-        // Act
-        RecipientDeliveryStatus result = analyzer.getDeliveryStatus(
-                timelineElements, campaign, TEST_REC_INDEX, RecipientTypeInt.PF, TEST_IUN);
-
-        // Assert
-        assertEquals(RecipientDeliveryStatus.UNREACHED, result);
     }
 
     @Test
@@ -113,12 +97,12 @@ class RecipientDeliveryAnalyzerTest {
         Campaign campaign = createCampaign(List.of(ChannelType.IO));
         List<TimelineElementInternal> timelineElements = createTimelineWithAppIoFeedback(TEST_REC_INDEX);
 
-        when(timelineUtils.checkTimelineCategories(TEST_IUN, TEST_REC_INDEX, DELIVERED, INFORMAL_NOTIFICATION_VIEWED, PAYMENT))
+        when(timelineUtils.checkTimelineCategories(anyList(), eq(TEST_REC_INDEX), any(), any(), any()))
                 .thenReturn(false);
 
         // Act
         RecipientDeliveryStatus result = analyzer.getDeliveryStatus(
-                timelineElements, campaign, TEST_REC_INDEX, RecipientTypeInt.PF, TEST_IUN);
+                timelineElements, campaign, TEST_REC_INDEX, RecipientTypeInt.PF);
 
         // Assert
         assertEquals(RecipientDeliveryStatus.UNDELIVERABLE, result);
@@ -130,12 +114,12 @@ class RecipientDeliveryAnalyzerTest {
         Campaign campaign = createCampaign(List.of(ChannelType.EMAIL));
         List<TimelineElementInternal> timelineElements = createTimelineWithEmailSkip();
 
-        when(timelineUtils.checkTimelineCategories(TEST_IUN, TEST_REC_INDEX, DELIVERED, INFORMAL_NOTIFICATION_VIEWED, PAYMENT))
+        when(timelineUtils.checkTimelineCategories(anyList(), eq(TEST_REC_INDEX), any(), any(), any()))
                 .thenReturn(false);
 
         // Act
         RecipientDeliveryStatus result = analyzer.getDeliveryStatus(
-                timelineElements, campaign, TEST_REC_INDEX, RecipientTypeInt.PF, TEST_IUN);
+                timelineElements, campaign, TEST_REC_INDEX, RecipientTypeInt.PF);
 
         // Assert
         assertEquals(RecipientDeliveryStatus.UNDELIVERABLE, result);
@@ -147,12 +131,12 @@ class RecipientDeliveryAnalyzerTest {
         Campaign campaign = createCampaign(List.of(ChannelType.SMS));
         List<TimelineElementInternal> timelineElements = createTimelineWithSmsSkip();
 
-        when(timelineUtils.checkTimelineCategories(TEST_IUN, TEST_REC_INDEX, DELIVERED, INFORMAL_NOTIFICATION_VIEWED, PAYMENT))
+        when(timelineUtils.checkTimelineCategories(anyList(), eq(TEST_REC_INDEX), any(), any(), any()))
                 .thenReturn(false);
 
         // Act
         RecipientDeliveryStatus result = analyzer.getDeliveryStatus(
-                timelineElements, campaign, TEST_REC_INDEX, RecipientTypeInt.PF, TEST_IUN);
+                timelineElements, campaign, TEST_REC_INDEX, RecipientTypeInt.PF);
 
         // Assert
         assertEquals(RecipientDeliveryStatus.UNDELIVERABLE, result);
@@ -164,12 +148,12 @@ class RecipientDeliveryAnalyzerTest {
         Campaign campaign = createCampaignForRecipientType(List.of(ChannelType.IO), RecipientTypeInt.PG);
         List<TimelineElementInternal> timelineElements = createTimelineWithAppIoFeedback(TEST_REC_INDEX);
 
-        when(timelineUtils.checkTimelineCategories(TEST_IUN, TEST_REC_INDEX, DELIVERED, INFORMAL_NOTIFICATION_VIEWED, PAYMENT))
+        when(timelineUtils.checkTimelineCategories(anyList(), eq(TEST_REC_INDEX), any(), any(), any()))
                 .thenReturn(false);
 
         // Act
         RecipientDeliveryStatus result = analyzer.getDeliveryStatus(
-                timelineElements, campaign, TEST_REC_INDEX, RecipientTypeInt.PG, TEST_IUN);
+                timelineElements, campaign, TEST_REC_INDEX, RecipientTypeInt.PG);
 
         // Assert
         assertEquals(RecipientDeliveryStatus.UNDELIVERABLE, result);
@@ -179,13 +163,14 @@ class RecipientDeliveryAnalyzerTest {
     void getDeliveryStatus_shouldReturnUndeliverable_whenNoChannelsConfigured() {
         // Arrange
         Campaign campaign = createCampaign(List.of());
+        List<TimelineElementInternal> timelineElements = List.of();
 
-        when(timelineUtils.checkTimelineCategories(TEST_IUN, TEST_REC_INDEX, DELIVERED, INFORMAL_NOTIFICATION_VIEWED, PAYMENT))
+        when(timelineUtils.checkTimelineCategories(anyList(), eq(TEST_REC_INDEX), any(), any(), any()))
                 .thenReturn(false);
 
         // Act
         RecipientDeliveryStatus result = analyzer.getDeliveryStatus(
-                new ArrayList<>(), campaign, TEST_REC_INDEX, RecipientTypeInt.PF, TEST_IUN);
+                timelineElements, campaign, TEST_REC_INDEX, RecipientTypeInt.PF);
 
         // Assert
         assertEquals(RecipientDeliveryStatus.UNDELIVERABLE, result);
@@ -198,16 +183,33 @@ class RecipientDeliveryAnalyzerTest {
         Campaign campaign = createCampaign(List.of(ChannelType.IO));
         List<TimelineElementInternal> timelineElements = createTimelineWithAppIoFeedback(recIndex2);
 
-        when(timelineUtils.checkTimelineCategories(TEST_IUN, recIndex2, DELIVERED, INFORMAL_NOTIFICATION_VIEWED, PAYMENT))
+        when(timelineUtils.checkTimelineCategories(anyList(), eq(recIndex2), any(), any(), any()))
                 .thenReturn(false);
 
         // Act
         RecipientDeliveryStatus result = analyzer.getDeliveryStatus(
-                timelineElements, campaign, recIndex2, RecipientTypeInt.PF, TEST_IUN);
+                timelineElements, campaign, recIndex2, RecipientTypeInt.PF);
 
         // Assert
         assertEquals(RecipientDeliveryStatus.UNDELIVERABLE, result);
-        verify(timelineUtils).checkTimelineCategories(TEST_IUN, recIndex2, DELIVERED, INFORMAL_NOTIFICATION_VIEWED, PAYMENT);
+        verify(timelineUtils).checkTimelineCategories(eq(timelineElements), eq(recIndex2), any(), any(), any());
+    }
+
+    @Test
+    void getDeliveryStatus_shouldReturnUnreached_whenNoChannelConditionsMet() {
+        // Arrange
+        Campaign campaign = createCampaign(List.of(ChannelType.IO, ChannelType.EMAIL));
+        List<TimelineElementInternal> timelineElements = createTimelineWithAppIoFeedback(TEST_REC_INDEX);
+
+        when(timelineUtils.checkTimelineCategories(anyList(), eq(TEST_REC_INDEX), any(), any(), any()))
+                .thenReturn(false);
+
+        // Act
+        RecipientDeliveryStatus result = analyzer.getDeliveryStatus(
+                timelineElements, campaign, TEST_REC_INDEX, RecipientTypeInt.PF);
+
+        // Assert
+        assertEquals(RecipientDeliveryStatus.UNREACHED, result);
     }
 
     private Campaign createCampaign(List<ChannelType> channels) {

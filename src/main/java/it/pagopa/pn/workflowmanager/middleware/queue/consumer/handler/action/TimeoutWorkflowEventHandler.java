@@ -5,11 +5,14 @@ import it.pagopa.pn.workflowmanager.action.timeoutworkflow.TimeoutWorkflowAction
 import it.pagopa.pn.workflowmanager.action.utils.TimelineUtils;
 import it.pagopa.pn.workflowmanager.dto.action.common.Action;
 import it.pagopa.pn.workflowmanager.dto.action.details.TimeoutWorkflowDetails;
+import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.router.SupportedEventType;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.utils.MdcUtils;
 import lombok.CustomLog;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 @CustomLog
@@ -33,7 +36,9 @@ public class TimeoutWorkflowEventHandler extends AbstractActionEventHandler {
             log.debug("Handle action of type TIMEOUT_WORKFLOW, with payload {}", action);
             MdcUtils.addIunAndRecIndexAndCorrIdToMdc(action.getIun(), action.getRecipientIndex(), action.getActionId());
             log.logStartingProcess(processName);
+            List<TimelineElementInternal> timelineElements = timelineUtils.getTimelineElementInternals(action.getIun()).toList();
             checkWorkflowDoneOrExecute(
+                    timelineElements,
                     action,
                     a -> timeoutWorkflowActionHandler.timeoutWorkflowAction(
                             action.getIun(),

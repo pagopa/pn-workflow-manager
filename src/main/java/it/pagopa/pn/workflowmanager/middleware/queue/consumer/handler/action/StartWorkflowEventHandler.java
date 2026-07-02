@@ -6,11 +6,14 @@ import it.pagopa.pn.workflowmanager.action.startworkflow.StartWorkflowActionHand
 import it.pagopa.pn.workflowmanager.action.utils.TimelineUtils;
 import it.pagopa.pn.workflowmanager.dto.action.common.Action;
 import it.pagopa.pn.workflowmanager.dto.action.details.StartWorkflowDetails;
+import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.router.SupportedEventType;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.utils.MdcUtils;
 import lombok.CustomLog;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 @CustomLog
@@ -35,7 +38,9 @@ public class StartWorkflowEventHandler extends AbstractActionEventHandler {
             log.debug("Handle action of type START_WORKFLOW, with payload {}", action);
             MdcUtils.addIunAndRecIndexAndCorrIdToMdc(action.getIun(), action.getRecipientIndex(), action.getActionId());
             log.logStartingProcess(processName);
+            List<TimelineElementInternal> timelineElements = timelineUtils.getTimelineElementInternals(action.getIun()).toList();
             checkWorkflowDoneOrExecute(
+                    timelineElements,
                     action,
                     a -> startWorkflowActionHandler.startWorkflowAction(
                             action.getIun(),

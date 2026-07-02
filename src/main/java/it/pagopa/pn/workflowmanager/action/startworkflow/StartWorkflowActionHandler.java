@@ -23,14 +23,11 @@ public class StartWorkflowActionHandler {
         log.info("Start informal notification workflow for recipient - iun {} id {} channel {}",
                 iun, recIndex, startWorkflowDetails.getChannel());
 
-        log.debug("Getting channel sender for channel {} - iun {}", startWorkflowDetails.getChannel(), iun);
         ChannelSender channelSender = channelSenderFactory.getChannelSender(startWorkflowDetails.getChannel());
 
-        log.debug("Retrieving notification for iun {}", iun);
         NotificationInt notificationInt = notificationService.getInformalNotificationByIun(iun);
 
-        log.debug("Retrieving campaign for campaignId {} senderId {} - iun {}",
-                notificationInt.getCampaignId(), notificationInt.getSender().getPaId(), iun);
+        log.debug("Retrieving campaign for campaignId {} - iun {}", notificationInt.getCampaignId(), iun);
         Campaign campaign = campaignService.getCampaignByCampaignIdAndSenderId(
                 notificationInt.getCampaignId(),
                 notificationInt.getSender().getPaId()

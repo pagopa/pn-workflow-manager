@@ -24,8 +24,8 @@ public class RecipientDeliveryAnalyzer {
 
     public RecipientDeliveryStatus getDeliveryStatus(List<TimelineElementInternal> timelineElements,
                                                      Campaign campaign,
-                                                     int recIndex, RecipientTypeInt recipientType, String iun) {
-        if (isRecipientReached(iun, recIndex)) {
+                                                     int recIndex, RecipientTypeInt recipientType) {
+        if (isRecipientReached(timelineElements,recIndex)) {
             return RecipientDeliveryStatus.REACHED;
         } else if (isRecipientUndeliverable(timelineElements, recIndex, campaign, recipientType)) {
             return RecipientDeliveryStatus.UNDELIVERABLE;
@@ -34,10 +34,9 @@ public class RecipientDeliveryAnalyzer {
         }
     }
 
-    private boolean isRecipientReached(String iun, int recIndex) {
-        return timelineUtils.checkTimelineCategories(iun, recIndex, DELIVERED, INFORMAL_NOTIFICATION_VIEWED, PAYMENT);
+    private boolean isRecipientReached(List<TimelineElementInternal> timelineElements, int recIndex) {
+        return timelineUtils.checkTimelineCategories(timelineElements, recIndex, DELIVERED, INFORMAL_NOTIFICATION_VIEWED, PAYMENT);
     }
-
 
     private boolean isRecipientUndeliverable(List<TimelineElementInternal> timelineElements, int recIndex,
                                              Campaign campaign, RecipientTypeInt recipientType) {

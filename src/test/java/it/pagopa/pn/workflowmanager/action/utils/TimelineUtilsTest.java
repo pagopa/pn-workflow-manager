@@ -13,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Set;
 
 import static it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt.*;
@@ -259,37 +260,35 @@ class TimelineUtilsTest {
     void checkTimelineCategories_shouldReturnTrue_whenCategoryExists() {
         // Arrange
         TimelineElementInternal element = createTimelineElement(DELIVERED, TEST_REC_INDEX);
-        when(timelineService.getTimeline(TEST_IUN, false)).thenReturn(Set.of(element));
+        List<TimelineElementInternal> timelineElements = List.of(element);
 
         // Act
-        boolean result = timelineUtils.checkTimelineCategories(TEST_IUN, TEST_REC_INDEX, DELIVERED);
+        boolean result = timelineUtils.checkTimelineCategories(timelineElements, TEST_REC_INDEX, DELIVERED);
 
         // Assert
         Assertions.assertTrue(result);
-        verify(timelineService).getTimeline(TEST_IUN, false);
     }
 
     @Test
     void checkTimelineCategories_shouldReturnFalse_whenCategoryDoesNotExist() {
         // Arrange
-        when(timelineService.getTimeline(TEST_IUN, false)).thenReturn(Set.of());
+        List<TimelineElementInternal> timelineElements = List.of();
 
         // Act
-        boolean result = timelineUtils.checkTimelineCategories(TEST_IUN, TEST_REC_INDEX, DELIVERED);
+        boolean result = timelineUtils.checkTimelineCategories(timelineElements, TEST_REC_INDEX, DELIVERED);
 
         // Assert
         Assertions.assertFalse(result);
-        verify(timelineService).getTimeline(TEST_IUN, false);
     }
 
     @Test
     void checkTimelineCategories_shouldReturnTrue_whenAnyOfMultipleCategoriesExists() {
         // Arrange
         TimelineElementInternal element = createTimelineElement(INFORMAL_NOTIFICATION_VIEWED, TEST_REC_INDEX);
-        when(timelineService.getTimeline(TEST_IUN, false)).thenReturn(Set.of(element));
+        List<TimelineElementInternal> timelineElements = List.of(element);
 
         // Act
-        boolean result = timelineUtils.checkTimelineCategories(TEST_IUN, TEST_REC_INDEX,
+        boolean result = timelineUtils.checkTimelineCategories(timelineElements, TEST_REC_INDEX,
                 DELIVERED, INFORMAL_NOTIFICATION_VIEWED, PAYMENT);
 
         // Assert
@@ -299,10 +298,10 @@ class TimelineUtilsTest {
     @Test
     void checkTimelineCategories_shouldReturnFalse_whenNoneOfMultipleCategoriesExists() {
         // Arrange
-        when(timelineService.getTimeline(TEST_IUN, false)).thenReturn(Set.of());
+        List<TimelineElementInternal> timelineElements = List.of();
 
         // Act
-        boolean result = timelineUtils.checkTimelineCategories(TEST_IUN, TEST_REC_INDEX,
+        boolean result = timelineUtils.checkTimelineCategories(timelineElements, TEST_REC_INDEX,
                 DELIVERED, INFORMAL_NOTIFICATION_VIEWED, PAYMENT);
 
         // Assert
@@ -314,10 +313,10 @@ class TimelineUtilsTest {
         // Arrange
         int differentRecIndex = 1;
         TimelineElementInternal element = createTimelineElement(DELIVERED, differentRecIndex);
-        when(timelineService.getTimeline(TEST_IUN, false)).thenReturn(Set.of(element));
+        List<TimelineElementInternal> timelineElements = List.of(element);
 
         // Act
-        boolean result = timelineUtils.checkTimelineCategories(TEST_IUN, TEST_REC_INDEX, DELIVERED);
+        boolean result = timelineUtils.checkTimelineCategories(timelineElements, TEST_REC_INDEX, DELIVERED);
 
         // Assert
         Assertions.assertFalse(result);
@@ -330,13 +329,43 @@ class TimelineUtilsTest {
         TimelineElementInternal element2 = createTimelineElement(PAYMENT, 1);
         TimelineElementInternal element3 = createTimelineElement(DELIVERED, TEST_REC_INDEX);
 
-        when(timelineService.getTimeline(TEST_IUN, false)).thenReturn(Set.of(element1, element2, element3));
+        List<TimelineElementInternal> timelineElements = List.of(element1, element2, element3);
 
         // Act
-        boolean result = timelineUtils.checkTimelineCategories(TEST_IUN, TEST_REC_INDEX, DELIVERED);
+        boolean result = timelineUtils.checkTimelineCategories(timelineElements, TEST_REC_INDEX, DELIVERED);
 
         // Assert
         Assertions.assertTrue(result);
+    }
+
+    @Test
+    void getTimelineElementInternals_shouldReturnStreamFromService() {
+        // Arrange
+        TimelineElementInternal element1 = createTimelineElement(DELIVERED, TEST_REC_INDEX);
+        TimelineElementInternal element2 = createTimelineElement(PAYMENT, TEST_REC_INDEX);
+        Set<TimelineElementInternal> timelineSet = Set.of(element1, element2);
+
+        when(timelineService.getTimeline(TEST_IUN, false)).thenReturn(timelineSet);
+
+        // Act
+        List<TimelineElementInternal> result = timelineUtils.getTimelineElementInternals(TEST_IUN).toList();
+
+        // Assert
+        Assertions.assertEquals(2, result.size());
+        verify(timelineService).getTimeline(TEST_IUN, false);
+    }
+
+    @Test
+    void getTimelineElementInternals_shouldReturnEmptyStream_whenTimelineIsEmpty() {
+        // Arrange
+        when(timelineService.getTimeline(TEST_IUN, false)).thenReturn(Set.of());
+
+        // Act
+        List<TimelineElementInternal> result = timelineUtils.getTimelineElementInternals(TEST_IUN).toList();
+
+        // Assert
+        Assertions.assertTrue(result.isEmpty());
+        verify(timelineService).getTimeline(TEST_IUN, false);
     }
 
     @Test

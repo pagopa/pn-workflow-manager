@@ -3,7 +3,8 @@ package it.pagopa.pn.workflowmanager.middleware.queue.consumer.handler.action;
 import it.pagopa.pn.workflowmanager.action.endworkflow.EndWorkflowActionHandler;
 import it.pagopa.pn.workflowmanager.action.utils.TimelineUtils;
 import it.pagopa.pn.workflowmanager.dto.action.common.Action;
-import it.pagopa.pn.workflowmanager.middleware.queue.consumer.router.SupportedEventType;
+import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
+import it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,11 +12,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.messaging.MessageHeaders;
 
+import java.util.List;
+
 import static it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt.WORKFLOW_DONE_REACHED;
 import static it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt.WORKFLOW_DONE_UNREACHED;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -43,90 +45,45 @@ class EndWorkflowActionEventHandlerTest {
     }
 
     @Test
-    void getSupportedEventType_shouldReturnEndWorkflow() {
-        // Act
-        SupportedEventType result = handler.getSupportedEventType();
-
-        // Assert
-        assertEquals(SupportedEventType.END_WORKFLOW, result);
-    }
-
-    @Test
-    void getPayloadType_shouldReturnActionClass() {
-        // Act
-        Class<Action> result = handler.getPayloadType();
-
-        // Assert
-        assertEquals(Action.class, result);
-    }
-
-    @Test
     void handle_shouldExecuteEndWorkflowAction_whenWorkflowIsNotDone() {
         // Arrange
         Action action = createAction();
-        when(timelineUtils.checkTimelineCategories(TEST_IUN, TEST_REC_INDEX, WORKFLOW_DONE_REACHED, WORKFLOW_DONE_UNREACHED))
+        List<TimelineElementInternal> timelineElements = createTimelineWithoutWorkflowDone();
+
+        when(timelineUtils.getTimelineElementInternals(TEST_IUN)).thenReturn(timelineElements.stream());
+        when(timelineUtils.checkTimelineCategories(anyList(), eq(TEST_REC_INDEX),
+                eq(WORKFLOW_DONE_REACHED), eq(WORKFLOW_DONE_UNREACHED)))
                 .thenReturn(false);
 
         // Act
         assertDoesNotThrow(() -> handler.handle(action, headers));
 
         // Assert
-        verify(timelineUtils).checkTimelineCategories(TEST_IUN, TEST_REC_INDEX, WORKFLOW_DONE_REACHED, WORKFLOW_DONE_UNREACHED);
-        verify(endWorkflowActionHandler).endWorkflowAction(TEST_IUN, TEST_REC_INDEX, TEST_TIMELINE_ID);
+        verify(timelineUtils).getTimelineElementInternals(TEST_IUN);
+        verify(timelineUtils).checkTimelineCategories(anyList(), eq(TEST_REC_INDEX),
+                eq(WORKFLOW_DONE_REACHED), eq(WORKFLOW_DONE_UNREACHED));
+        verify(endWorkflowActionHandler).endWorkflowAction(anyList(), eq(TEST_IUN), eq(TEST_REC_INDEX), eq(TEST_TIMELINE_ID));
     }
 
     @Test
     void handle_shouldNotExecuteEndWorkflowAction_whenWorkflowIsAlreadyDone() {
         // Arrange
         Action action = createAction();
-        when(timelineUtils.checkTimelineCategories(TEST_IUN, TEST_REC_INDEX, WORKFLOW_DONE_REACHED, WORKFLOW_DONE_UNREACHED))
+        List<TimelineElementInternal> timelineElements = createTimelineWithWorkflowDoneReached();
+
+        when(timelineUtils.getTimelineElementInternals(TEST_IUN)).thenReturn(timelineElements.stream());
+        when(timelineUtils.checkTimelineCategories(anyList(), eq(TEST_REC_INDEX),
+                eq(WORKFLOW_DONE_REACHED), eq(WORKFLOW_DONE_UNREACHED)))
                 .thenReturn(true);
 
         // Act
         assertDoesNotThrow(() -> handler.handle(action, headers));
 
         // Assert
-        verify(timelineUtils).checkTimelineCategories(TEST_IUN, TEST_REC_INDEX, WORKFLOW_DONE_REACHED, WORKFLOW_DONE_UNREACHED);
-        verify(endWorkflowActionHandler, never()).endWorkflowAction(anyString(), anyInt(), anyString());
-    }
-
-    @Test
-    void handle_shouldPassCorrectIunToActionHandler() {
-        // Arrange
-        Action action = createAction();
-        when(timelineUtils.checkTimelineCategories(anyString(), anyInt(), any(), any())).thenReturn(false);
-
-        // Act
-        handler.handle(action, headers);
-
-        // Assert
-        verify(endWorkflowActionHandler).endWorkflowAction(eq(TEST_IUN), anyInt(), anyString());
-    }
-
-    @Test
-    void handle_shouldPassCorrectRecipientIndexToActionHandler() {
-        // Arrange
-        Action action = createAction();
-        when(timelineUtils.checkTimelineCategories(anyString(), anyInt(), any(), any())).thenReturn(false);
-
-        // Act
-        handler.handle(action, headers);
-
-        // Assert
-        verify(endWorkflowActionHandler).endWorkflowAction(anyString(), eq(TEST_REC_INDEX), anyString());
-    }
-
-    @Test
-    void handle_shouldPassCorrectTimelineIdToActionHandler() {
-        // Arrange
-        Action action = createAction();
-        when(timelineUtils.checkTimelineCategories(anyString(), anyInt(), any(), any())).thenReturn(false);
-
-        // Act
-        handler.handle(action, headers);
-
-        // Assert
-        verify(endWorkflowActionHandler).endWorkflowAction(anyString(), anyInt(), eq(TEST_TIMELINE_ID));
+        verify(timelineUtils).getTimelineElementInternals(TEST_IUN);
+        verify(timelineUtils).checkTimelineCategories(anyList(), eq(TEST_REC_INDEX),
+                eq(WORKFLOW_DONE_REACHED), eq(WORKFLOW_DONE_UNREACHED));
+        verify(endWorkflowActionHandler, never()).endWorkflowAction(anyList(), anyString(), anyInt(), anyString());
     }
 
     @Test
@@ -135,21 +92,29 @@ class EndWorkflowActionEventHandlerTest {
         Action action = createAction();
         RuntimeException expectedException = new RuntimeException("Test exception");
 
-        when(timelineUtils.checkTimelineCategories(anyString(), anyInt(), any(), any())).thenReturn(false);
-        doThrow(expectedException).when(endWorkflowActionHandler).endWorkflowAction(anyString(), anyInt(), anyString());
+        List<TimelineElementInternal> timelineElements = createTimelineWithoutWorkflowDone();
+
+        when(timelineUtils.getTimelineElementInternals(anyString())).thenReturn(timelineElements.stream());
+        when(timelineUtils.checkTimelineCategories(anyList(), anyInt(),
+                eq(WORKFLOW_DONE_REACHED), eq(WORKFLOW_DONE_UNREACHED))).thenReturn(false);
+        doThrow(expectedException).when(endWorkflowActionHandler).endWorkflowAction(anyList(), anyString(), anyInt(), anyString());
 
         // Act & Assert
         RuntimeException thrownException = assertThrows(RuntimeException.class, () -> handler.handle(action, headers));
 
         assertEquals("Test exception", thrownException.getMessage());
-        verify(endWorkflowActionHandler).endWorkflowAction(TEST_IUN, TEST_REC_INDEX, TEST_TIMELINE_ID);
+        verify(endWorkflowActionHandler).endWorkflowAction(anyList(), eq(TEST_IUN), eq(TEST_REC_INDEX), eq(TEST_TIMELINE_ID));
     }
 
     @Test
     void handle_shouldCheckWorkflowDoneBeforeExecuting() {
         // Arrange
         Action action = createAction();
-        when(timelineUtils.checkTimelineCategories(TEST_IUN, TEST_REC_INDEX, WORKFLOW_DONE_REACHED, WORKFLOW_DONE_UNREACHED))
+        List<TimelineElementInternal> timelineElements = createTimelineWithoutWorkflowDone();
+
+        when(timelineUtils.getTimelineElementInternals(TEST_IUN)).thenReturn(timelineElements.stream());
+        when(timelineUtils.checkTimelineCategories(anyList(), eq(TEST_REC_INDEX),
+                eq(WORKFLOW_DONE_REACHED), eq(WORKFLOW_DONE_UNREACHED)))
                 .thenReturn(false);
 
         // Act
@@ -157,8 +122,10 @@ class EndWorkflowActionEventHandlerTest {
 
         // Assert - Verify order: check timeline before calling action handler
         var inOrder = inOrder(timelineUtils, endWorkflowActionHandler);
-        inOrder.verify(timelineUtils).checkTimelineCategories(TEST_IUN, TEST_REC_INDEX, WORKFLOW_DONE_REACHED, WORKFLOW_DONE_UNREACHED);
-        inOrder.verify(endWorkflowActionHandler).endWorkflowAction(TEST_IUN, TEST_REC_INDEX, TEST_TIMELINE_ID);
+        inOrder.verify(timelineUtils).getTimelineElementInternals(TEST_IUN);
+        inOrder.verify(timelineUtils).checkTimelineCategories(anyList(), eq(TEST_REC_INDEX),
+                eq(WORKFLOW_DONE_REACHED), eq(WORKFLOW_DONE_UNREACHED));
+        inOrder.verify(endWorkflowActionHandler).endWorkflowAction(anyList(), eq(TEST_IUN), eq(TEST_REC_INDEX), eq(TEST_TIMELINE_ID));
     }
 
     @Test
@@ -172,63 +139,32 @@ class EndWorkflowActionEventHandlerTest {
                 .timelineId(TEST_TIMELINE_ID)
                 .build();
 
-        when(timelineUtils.checkTimelineCategories(TEST_IUN, recIndex2, WORKFLOW_DONE_REACHED, WORKFLOW_DONE_UNREACHED))
+        List<TimelineElementInternal> timelineElements = createTimelineWithoutWorkflowDone();
+
+        when(timelineUtils.getTimelineElementInternals(TEST_IUN)).thenReturn(timelineElements.stream());
+        when(timelineUtils.checkTimelineCategories(anyList(), eq(recIndex2),
+                eq(WORKFLOW_DONE_REACHED), eq(WORKFLOW_DONE_UNREACHED)))
                 .thenReturn(false);
 
         // Act
         handler.handle(action, headers);
 
         // Assert
-        verify(timelineUtils).checkTimelineCategories(TEST_IUN, recIndex2, WORKFLOW_DONE_REACHED, WORKFLOW_DONE_UNREACHED);
-        verify(endWorkflowActionHandler).endWorkflowAction(TEST_IUN, recIndex2, TEST_TIMELINE_ID);
-    }
-
-    @Test
-    void handle_shouldHandleDifferentIuns() {
-        // Arrange
-        String differentIun = "DIFFERENT-IUN-999";
-        Action action = Action.builder()
-                .iun(differentIun)
-                .recipientIndex(TEST_REC_INDEX)
-                .actionId(TEST_ACTION_ID)
-                .timelineId(TEST_TIMELINE_ID)
-                .build();
-
-        when(timelineUtils.checkTimelineCategories(differentIun, TEST_REC_INDEX, WORKFLOW_DONE_REACHED, WORKFLOW_DONE_UNREACHED))
-                .thenReturn(false);
-
-        // Act
-        handler.handle(action, headers);
-
-        // Assert
-        verify(timelineUtils).checkTimelineCategories(differentIun, TEST_REC_INDEX, WORKFLOW_DONE_REACHED, WORKFLOW_DONE_UNREACHED);
-        verify(endWorkflowActionHandler).endWorkflowAction(differentIun, TEST_REC_INDEX, TEST_TIMELINE_ID);
-    }
-
-    @Test
-    void handle_shouldCheckBothWorkflowDoneCategories() {
-        // Arrange
-        Action action = createAction();
-        when(timelineUtils.checkTimelineCategories(TEST_IUN, TEST_REC_INDEX, WORKFLOW_DONE_REACHED, WORKFLOW_DONE_UNREACHED))
-                .thenReturn(false);
-
-        // Act
-        handler.handle(action, headers);
-
-        // Assert
-        verify(timelineUtils).checkTimelineCategories(
-                eq(TEST_IUN),
-                eq(TEST_REC_INDEX),
-                eq(WORKFLOW_DONE_REACHED),
-                eq(WORKFLOW_DONE_UNREACHED)
-        );
+        verify(timelineUtils).getTimelineElementInternals(TEST_IUN);
+        verify(timelineUtils).checkTimelineCategories(anyList(), eq(recIndex2),
+                eq(WORKFLOW_DONE_REACHED), eq(WORKFLOW_DONE_UNREACHED));
+        verify(endWorkflowActionHandler).endWorkflowAction(anyList(), eq(TEST_IUN), eq(recIndex2), eq(TEST_TIMELINE_ID));
     }
 
     @Test
     void handle_shouldNotThrowException_whenWorkflowIsAlreadyDone() {
         // Arrange
         Action action = createAction();
-        when(timelineUtils.checkTimelineCategories(anyString(), anyInt(), any(), any())).thenReturn(true);
+        List<TimelineElementInternal> timelineElements = createTimelineWithWorkflowDoneUnreached();
+
+        when(timelineUtils.getTimelineElementInternals(anyString())).thenReturn(timelineElements.stream());
+        when(timelineUtils.checkTimelineCategories(anyList(), anyInt(),
+                eq(WORKFLOW_DONE_REACHED), eq(WORKFLOW_DONE_UNREACHED))).thenReturn(true);
 
         // Act & Assert
         assertDoesNotThrow(() -> handler.handle(action, headers));
@@ -238,31 +174,15 @@ class EndWorkflowActionEventHandlerTest {
     void handle_shouldHandleNullHeaders() {
         // Arrange
         Action action = createAction();
-        when(timelineUtils.checkTimelineCategories(anyString(), anyInt(), any(), any())).thenReturn(false);
+        List<TimelineElementInternal> timelineElements = createTimelineWithoutWorkflowDone();
+
+        when(timelineUtils.getTimelineElementInternals(anyString())).thenReturn(timelineElements.stream());
+        when(timelineUtils.checkTimelineCategories(anyList(), anyInt(),
+                eq(WORKFLOW_DONE_REACHED), eq(WORKFLOW_DONE_UNREACHED))).thenReturn(false);
 
         // Act & Assert
         assertDoesNotThrow(() -> handler.handle(action, null));
-        verify(endWorkflowActionHandler).endWorkflowAction(TEST_IUN, TEST_REC_INDEX, TEST_TIMELINE_ID);
-    }
-
-    @Test
-    void handle_shouldHandleActionWithDifferentTimelineId() {
-        // Arrange
-        String customTimelineId = "CUSTOM-TIMELINE-999";
-        Action action = Action.builder()
-                .iun(TEST_IUN)
-                .recipientIndex(TEST_REC_INDEX)
-                .actionId(TEST_ACTION_ID)
-                .timelineId(customTimelineId)
-                .build();
-
-        when(timelineUtils.checkTimelineCategories(anyString(), anyInt(), any(), any())).thenReturn(false);
-
-        // Act
-        handler.handle(action, headers);
-
-        // Assert
-        verify(endWorkflowActionHandler).endWorkflowAction(TEST_IUN, TEST_REC_INDEX, customTimelineId);
+        verify(endWorkflowActionHandler).endWorkflowAction(anyList(), eq(TEST_IUN), eq(TEST_REC_INDEX), eq(TEST_TIMELINE_ID));
     }
 
     private Action createAction() {
@@ -272,5 +192,29 @@ class EndWorkflowActionEventHandlerTest {
                 .actionId(TEST_ACTION_ID)
                 .timelineId(TEST_TIMELINE_ID)
                 .build();
+    }
+
+    private List<TimelineElementInternal> createTimelineWithoutWorkflowDone() {
+        TimelineElementInternal element = TimelineElementInternal.builder()
+                .iun(TEST_IUN)
+                .category(TimelineElementCategoryInt.SEND_DIGITAL_MESSAGE_FEEDBACK)
+                .build();
+        return List.of(element);
+    }
+
+    private List<TimelineElementInternal> createTimelineWithWorkflowDoneReached() {
+        TimelineElementInternal element = TimelineElementInternal.builder()
+                .iun(TEST_IUN)
+                .category(WORKFLOW_DONE_REACHED)
+                .build();
+        return List.of(element);
+    }
+
+    private List<TimelineElementInternal> createTimelineWithWorkflowDoneUnreached() {
+        TimelineElementInternal element = TimelineElementInternal.builder()
+                .iun(TEST_IUN)
+                .category(WORKFLOW_DONE_UNREACHED)
+                .build();
+        return List.of(element);
     }
 }

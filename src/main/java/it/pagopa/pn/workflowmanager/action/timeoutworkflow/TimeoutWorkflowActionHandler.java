@@ -27,16 +27,14 @@ public class TimeoutWorkflowActionHandler {
     private final SchedulerService schedulerService;
 
     public void timeoutWorkflowAction(String iun, int recIndex, TimeoutWorkflowDetails timeoutWorkflowDetails) {
-        log.info("Start informal notification workflow for recipient - iun {} id {} channel {}",
+        log.info("Timeout informal notification workflow for recipient - iun {} id {} channel {}",
                 iun, recIndex, timeoutWorkflowDetails.getChannel());
 
-        log.debug("Retrieving notification for iun {}", iun);
         NotificationInt notificationInt = notificationService.getInformalNotificationByIun(iun);
 
         NotificationRecipientInt currentRecipient = notificationInt.getRecipients().get(recIndex);
 
-        log.debug("Retrieving campaign for campaignId {} senderId {} - iun {}",
-                notificationInt.getCampaignId(), notificationInt.getSender().getPaId(), iun);
+        log.debug("Retrieving campaign for campaignId {} - iun {}", notificationInt.getCampaignId(), iun);
         Campaign campaign = campaignService.getCampaignByCampaignIdAndSenderId(
                 notificationInt.getCampaignId(),
                 notificationInt.getSender().getPaId()

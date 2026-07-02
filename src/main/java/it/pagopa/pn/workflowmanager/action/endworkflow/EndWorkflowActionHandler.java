@@ -14,7 +14,6 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static it.pagopa.pn.workflowmanager.action.utils.TimelineUtils.*;
@@ -30,10 +29,9 @@ public class EndWorkflowActionHandler {
     private final RecipientDeliveryAnalyzer recipientDeliveryAnalyzer;
     private final TimelineService timelineService;
 
-    public void endWorkflowAction(String iun, int recIndex, String timelineId) {
+    public void endWorkflowAction(List<TimelineElementInternal> timelineElements,String iun, int recIndex, String timelineId) {
         log.info("End informal notification workflow for recipient - iun {} id {}", iun, recIndex);
 
-        log.debug("Retrieving notification for iun {}", iun);
         NotificationInt notificationInt = notificationService.getInformalNotificationByIun(iun);
 
         RecipientTypeInt currentRecipientType = notificationInt.getRecipients().get(recIndex).getRecipientType();
@@ -43,9 +41,8 @@ public class EndWorkflowActionHandler {
                 notificationInt.getCampaignId(),
                 notificationInt.getSender().getPaId());
 
-        List<TimelineElementInternal> timelineElementsList = new ArrayList<>();
         RecipientDeliveryStatus recipientDeliveryStatus = recipientDeliveryAnalyzer.getDeliveryStatus(
-                timelineElementsList, campaign, recIndex, currentRecipientType,notificationInt.getIun());
+                timelineElements,campaign, recIndex, currentRecipientType);
 
         log.info("Recipient delivery status for iun {} recIndex {}: {}", notificationInt.getIun(), recIndex, recipientDeliveryStatus);
         createAndPersistTimelineElement(recIndex, recipientDeliveryStatus, timelineId, notificationInt);

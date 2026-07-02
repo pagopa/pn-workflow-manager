@@ -23,8 +23,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -73,19 +75,19 @@ class WorkflowDoneActionHandlerTest {
 
         when(notificationService.getInformalNotificationByIun(TEST_IUN)).thenReturn(notification);
         when(campaignService.getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_PA_ID)).thenReturn(campaign);
-        when(recipientDeliveryAnalyzer.getDeliveryStatus(anyList(), eq(campaign), eq(TEST_REC_INDEX), 
-                eq(RecipientTypeInt.PF), eq(TEST_IUN))).thenReturn(RecipientDeliveryStatus.REACHED);
+        when(recipientDeliveryAnalyzer.getDeliveryStatus(eq(List.of(timelineElement)), eq(campaign), eq(TEST_REC_INDEX),
+                eq(RecipientTypeInt.PF))).thenReturn(RecipientDeliveryStatus.REACHED);
         when(timelineUtils.buildWorkflowDoneReachedTimelineElement(eq(TEST_REC_INDEX), eq(notification), 
                 anyString(), eq(TEST_TIMELINE_ID))).thenReturn(timelineElement);
 
         // Act
-        handler.doneWorkflowAction(TEST_IUN, TEST_REC_INDEX, TEST_TIMELINE_ID);
+        handler.doneWorkflowAction(List.of(timelineElement), TEST_IUN, TEST_REC_INDEX, TEST_TIMELINE_ID);
 
         // Assert
         verify(notificationService).getInformalNotificationByIun(TEST_IUN);
         verify(campaignService).getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_PA_ID);
-        verify(recipientDeliveryAnalyzer).getDeliveryStatus(anyList(), eq(campaign), eq(TEST_REC_INDEX), 
-                eq(RecipientTypeInt.PF), eq(TEST_IUN));
+        verify(recipientDeliveryAnalyzer).getDeliveryStatus(eq(List.of(timelineElement)),eq(campaign), eq(TEST_REC_INDEX),
+                eq(RecipientTypeInt.PF));
         verify(timelineUtils).buildWorkflowDoneReachedTimelineElement(eq(TEST_REC_INDEX), eq(notification), 
                 anyString(), eq(TEST_TIMELINE_ID));
         verify(timelineService).addTimelineElement(timelineElement, notification);
@@ -101,19 +103,19 @@ class WorkflowDoneActionHandlerTest {
 
         when(notificationService.getInformalNotificationByIun(TEST_IUN)).thenReturn(notification);
         when(campaignService.getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_PA_ID)).thenReturn(campaign);
-        when(recipientDeliveryAnalyzer.getDeliveryStatus(anyList(), eq(campaign), eq(TEST_REC_INDEX), 
-                eq(RecipientTypeInt.PF), eq(TEST_IUN))).thenReturn(RecipientDeliveryStatus.UNREACHED);
+        when(recipientDeliveryAnalyzer.getDeliveryStatus(eq(List.of(timelineElement)),eq(campaign), eq(TEST_REC_INDEX),
+                eq(RecipientTypeInt.PF))).thenReturn(RecipientDeliveryStatus.UNREACHED);
         when(timelineUtils.buildWorkflowDoneUnreachedTimelineElement(eq(TEST_REC_INDEX), eq(notification), 
                 anyString(), eq(TEST_TIMELINE_ID))).thenReturn(timelineElement);
 
         // Act
-        handler.doneWorkflowAction(TEST_IUN, TEST_REC_INDEX, TEST_TIMELINE_ID);
+        handler.doneWorkflowAction(List.of(timelineElement), TEST_IUN, TEST_REC_INDEX, TEST_TIMELINE_ID);
 
         // Assert
         verify(notificationService).getInformalNotificationByIun(TEST_IUN);
         verify(campaignService).getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_PA_ID);
-        verify(recipientDeliveryAnalyzer).getDeliveryStatus(anyList(), eq(campaign), eq(TEST_REC_INDEX), 
-                eq(RecipientTypeInt.PF), eq(TEST_IUN));
+        verify(recipientDeliveryAnalyzer).getDeliveryStatus(eq(List.of(timelineElement)),eq(campaign), eq(TEST_REC_INDEX),
+                eq(RecipientTypeInt.PF));
         verify(timelineUtils).buildWorkflowDoneUnreachedTimelineElement(eq(TEST_REC_INDEX), eq(notification), 
                 anyString(), eq(TEST_TIMELINE_ID));
         verify(timelineService).addTimelineElement(timelineElement, notification);
@@ -128,18 +130,18 @@ class WorkflowDoneActionHandlerTest {
 
         when(notificationService.getInformalNotificationByIun(TEST_IUN)).thenReturn(notification);
         when(campaignService.getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_PA_ID)).thenReturn(campaign);
-        when(recipientDeliveryAnalyzer.getDeliveryStatus(anyList(), eq(campaign), eq(TEST_REC_INDEX), 
-                eq(RecipientTypeInt.PF), eq(TEST_IUN))).thenReturn(RecipientDeliveryStatus.UNDELIVERABLE);
+        when(recipientDeliveryAnalyzer.getDeliveryStatus(eq(List.of()), eq(campaign), eq(TEST_REC_INDEX),
+                eq(RecipientTypeInt.PF))).thenReturn(RecipientDeliveryStatus.UNDELIVERABLE);
 
         // Act & Assert
          assertThrows(PnEventRouterException.class,
-                () -> handler.doneWorkflowAction(TEST_IUN, TEST_REC_INDEX, TEST_TIMELINE_ID));
+                () -> handler.doneWorkflowAction(List.of(), TEST_IUN, TEST_REC_INDEX, TEST_TIMELINE_ID));
 
 
         verify(notificationService).getInformalNotificationByIun(TEST_IUN);
         verify(campaignService).getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_PA_ID);
-        verify(recipientDeliveryAnalyzer).getDeliveryStatus(anyList(), eq(campaign), eq(TEST_REC_INDEX), 
-                eq(RecipientTypeInt.PF), eq(TEST_IUN));
+        verify(recipientDeliveryAnalyzer).getDeliveryStatus(eq(List.of()), eq(campaign), eq(TEST_REC_INDEX),
+                eq(RecipientTypeInt.PF));
         verifyNoInteractions(timelineService);
         verifyNoInteractions(timelineUtils);
     }
@@ -167,45 +169,20 @@ class WorkflowDoneActionHandlerTest {
 
         when(notificationService.getInformalNotificationByIun(TEST_IUN)).thenReturn(notification);
         when(campaignService.getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_PA_ID)).thenReturn(campaign);
-        when(recipientDeliveryAnalyzer.getDeliveryStatus(anyList(), eq(campaign), eq(TEST_REC_INDEX), 
-                eq(RecipientTypeInt.PG), eq(TEST_IUN))).thenReturn(RecipientDeliveryStatus.REACHED);
+        when(recipientDeliveryAnalyzer.getDeliveryStatus(eq(List.of(timelineElement)),eq(campaign), eq(TEST_REC_INDEX),
+                eq(RecipientTypeInt.PG))).thenReturn(RecipientDeliveryStatus.REACHED);
         when(timelineUtils.buildWorkflowDoneReachedTimelineElement(eq(TEST_REC_INDEX), eq(notification), 
                 anyString(), eq(TEST_TIMELINE_ID))).thenReturn(timelineElement);
 
         // Act
-        handler.doneWorkflowAction(TEST_IUN, TEST_REC_INDEX, TEST_TIMELINE_ID);
+        handler.doneWorkflowAction(List.of(timelineElement),TEST_IUN, TEST_REC_INDEX, TEST_TIMELINE_ID);
 
         // Assert
         ArgumentCaptor<RecipientTypeInt> recipientTypeCaptor = ArgumentCaptor.forClass(RecipientTypeInt.class);
-        verify(recipientDeliveryAnalyzer).getDeliveryStatus(anyList(), eq(campaign), eq(TEST_REC_INDEX), 
-                recipientTypeCaptor.capture(), eq(TEST_IUN));
+        verify(recipientDeliveryAnalyzer).getDeliveryStatus(eq(List.of(timelineElement)),eq(campaign), eq(TEST_REC_INDEX),
+                recipientTypeCaptor.capture());
         assertEquals(RecipientTypeInt.PG, recipientTypeCaptor.getValue());
     }
-
-    @Test
-    void doneWorkflowAction_shouldPassEmptyTimelineElementsList_toDeliveryAnalyzer() {
-        // Arrange
-        NotificationInt notification = createMockNotification();
-        Campaign campaign = createMockCampaign();
-        TimelineElementInternal timelineElement = createMockTimelineElement(TimelineElementCategoryInt.WORKFLOW_DONE_REACHED);
-
-        when(notificationService.getInformalNotificationByIun(TEST_IUN)).thenReturn(notification);
-        when(campaignService.getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_PA_ID)).thenReturn(campaign);
-        when(recipientDeliveryAnalyzer.getDeliveryStatus(anyList(), eq(campaign), eq(TEST_REC_INDEX), 
-                eq(RecipientTypeInt.PF), eq(TEST_IUN))).thenReturn(RecipientDeliveryStatus.REACHED);
-        when(timelineUtils.buildWorkflowDoneReachedTimelineElement(eq(TEST_REC_INDEX), eq(notification), 
-                anyString(), eq(TEST_TIMELINE_ID))).thenReturn(timelineElement);
-
-        // Act
-        handler.doneWorkflowAction(TEST_IUN, TEST_REC_INDEX, TEST_TIMELINE_ID);
-
-        // Assert
-        ArgumentCaptor<List<TimelineElementInternal>> listCaptor = ArgumentCaptor.forClass(List.class);
-        verify(recipientDeliveryAnalyzer).getDeliveryStatus(listCaptor.capture(), eq(campaign), 
-                eq(TEST_REC_INDEX), eq(RecipientTypeInt.PF), eq(TEST_IUN));
-        assertTrue(listCaptor.getValue().isEmpty());
-    }
-
 
     private NotificationInt createMockNotification() {
         NotificationSenderInt sender = NotificationSenderInt.builder()

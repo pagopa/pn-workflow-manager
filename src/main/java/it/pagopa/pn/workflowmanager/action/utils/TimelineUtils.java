@@ -11,10 +11,11 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
-
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Stream;
 
 @Component
 @AllArgsConstructor
@@ -152,11 +153,15 @@ public class TimelineUtils {
                 .build();
     }
 
-    public boolean checkTimelineCategories(String iun, int recIndex, TimelineElementCategoryInt... categories) {
-        List<TimelineElementInternal> timelineElements = List.copyOf(timelineService.getTimeline(iun, false));
+    public boolean checkTimelineCategories(List<TimelineElementInternal> timelineElements,
+                                           int recIndex, TimelineElementCategoryInt... categories) {
         return hasAnyTimelineCategory(timelineElements, recIndex, categories);
     }
 
+    public Stream<TimelineElementInternal> getTimelineElementInternals(String iun) {
+        Set<TimelineElementInternal> timeline = timelineService.getTimeline(iun, false);
+        return timeline.stream();
+    }
     private boolean hasAnyTimelineCategory(List<TimelineElementInternal> timelineElements, int recIndex,
                                            TimelineElementCategoryInt... categories) {
         return Arrays.stream(categories)
