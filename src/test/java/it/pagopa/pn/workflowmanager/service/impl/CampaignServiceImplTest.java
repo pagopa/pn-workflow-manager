@@ -1,7 +1,9 @@
 package it.pagopa.pn.workflowmanager.service.impl;
 
+import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.workflowmanager.config.CampaignsParameterConsumer;
 import it.pagopa.pn.workflowmanager.models.internal.campaign.Campaign;
+import it.pagopa.pn.workflowmanager.models.internal.campaign.CampaignStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -67,20 +69,6 @@ class CampaignServiceImplTest {
     }
 
     @Test
-    void getCampaignByCampaignIdAndSenderId_shouldReturnNull_whenCampaignDoesNotExist() {
-        // Arrange
-        when(campaignsParameterConsumer.getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_SENDER_ID))
-                .thenReturn(null);
-
-        // Act
-        Campaign result = service.getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_SENDER_ID);
-
-        // Assert
-        assertNull(result);
-        verify(campaignsParameterConsumer).getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_SENDER_ID);
-    }
-
-    @Test
     void getCampaignByCampaignIdAndSenderId_shouldHandleDifferentCampaignIds() {
         // Arrange
         String differentCampaignId = "CAMPAIGN-999";
@@ -137,7 +125,7 @@ class CampaignServiceImplTest {
         assertEquals(TEST_SERVICE_ID, result.getServiceId());
         assertNotNull(result.getStartDate());
         assertNotNull(result.getEndDate());
-        assertNotNull(result.getClosed());
+        assertNotNull(result.getStatus());
         assertNotNull(result.getSensitiveContent());
         assertNotNull(result.getStopOnViewed());
         verify(campaignsParameterConsumer).getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_SENDER_ID);
@@ -156,50 +144,6 @@ class CampaignServiceImplTest {
         
         assertEquals("Consumer error", thrownException.getMessage());
         verify(campaignsParameterConsumer).getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_SENDER_ID);
-    }
-
-    @Test
-    void getCampaignByCampaignIdAndSenderId_shouldHandleNullCampaignId() {
-        // Arrange
-        when(campaignsParameterConsumer.getCampaignByCampaignIdAndSenderId(null, TEST_SENDER_ID))
-                .thenReturn(null);
-
-        // Act
-        Campaign result = service.getCampaignByCampaignIdAndSenderId(null, TEST_SENDER_ID);
-
-        // Assert
-        assertNull(result);
-        verify(campaignsParameterConsumer).getCampaignByCampaignIdAndSenderId(null, TEST_SENDER_ID);
-    }
-
-    @Test
-    void getCampaignByCampaignIdAndSenderId_shouldHandleNullSenderId() {
-        // Arrange
-        when(campaignsParameterConsumer.getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, null))
-                .thenReturn(null);
-
-        // Act
-        Campaign result = service.getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, null);
-
-        // Assert
-        assertNull(result);
-        verify(campaignsParameterConsumer).getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, null);
-    }
-
-    @Test
-    void getCampaignByCampaignIdAndSenderId_shouldHandleEmptyStrings() {
-        // Arrange
-        String emptyCampaignId = "";
-        String emptySenderId = "";
-        when(campaignsParameterConsumer.getCampaignByCampaignIdAndSenderId(emptyCampaignId, emptySenderId))
-                .thenReturn(null);
-
-        // Act
-        Campaign result = service.getCampaignByCampaignIdAndSenderId(emptyCampaignId, emptySenderId);
-
-        // Assert
-        assertNull(result);
-        verify(campaignsParameterConsumer).getCampaignByCampaignIdAndSenderId(emptyCampaignId, emptySenderId);
     }
 
     @Test
@@ -232,6 +176,21 @@ class CampaignServiceImplTest {
         verifyNoMoreInteractions(campaignsParameterConsumer);
     }
 
+    @Test
+    void getCampaignByCampaignIdAndSenderId_shouldThrowException_whenCampaignStatusIsNotInProgress() {
+
+        Campaign campaign = createMockCampaign();
+        campaign.setStatus(CampaignStatus.DRAFT);
+        when(campaignsParameterConsumer.getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_SENDER_ID))
+                .thenReturn(campaign);
+
+        PnInternalException thrownException = assertThrows(PnInternalException.class,
+                () -> service.getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_SENDER_ID));
+
+        assertTrue(thrownException.getProblem().getDetail().contains("Campaign CAMPAIGN-001 has DRAFT status"));
+        verify(campaignsParameterConsumer).getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_SENDER_ID);
+    }
+
     private Campaign createMockCampaign() {
         return Campaign.builder()
                 .campaignId(TEST_CAMPAIGN_ID)
@@ -239,6 +198,7 @@ class CampaignServiceImplTest {
                 .title(TEST_TITLE)
                 .descriptionScope(TEST_DESCRIPTION)
                 .serviceId(TEST_SERVICE_ID)
+                .status(CampaignStatus.IN_PROGRESS)
                 .build();
     }
 
@@ -251,7 +211,7 @@ class CampaignServiceImplTest {
                 .serviceId(TEST_SERVICE_ID)
                 .startDate(OffsetDateTime.now())
                 .endDate(OffsetDateTime.now().plusDays(30))
-                .closed(false)
+                .status(CampaignStatus.IN_PROGRESS)
                 .senderContact("contact@example.com")
                 .sensitiveContent(false)
                 .stopOnViewed(true)

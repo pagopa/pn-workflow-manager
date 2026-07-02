@@ -83,7 +83,7 @@ public class CampaignsParameterConsumer {
                 && StringUtils.hasText(campaign.getDescriptionScope())
                 && Objects.nonNull(campaign.getStartDate())
                 && Objects.nonNull(campaign.getEndDate())
-                && Objects.nonNull(campaign.getClosed())
+                && Objects.nonNull(campaign.getStatus())
                 && StringUtils.hasText(campaign.getServiceId())
                 && hasValidWorkflow(campaign.getWorkflow());
     }
