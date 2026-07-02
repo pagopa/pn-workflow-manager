@@ -4,6 +4,7 @@ import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.workflowmanager.config.CampaignsParameterConsumer;
 import it.pagopa.pn.workflowmanager.models.internal.campaign.Campaign;
 import it.pagopa.pn.workflowmanager.models.internal.campaign.CampaignStatus;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -186,7 +187,7 @@ class CampaignServiceImplTest {
 
         PnInternalException thrownException = assertThrows(PnInternalException.class,
                 () -> service.getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_SENDER_ID));
-
+        Assertions.assertNotNull(thrownException.getProblem().getDetail());
         assertTrue(thrownException.getProblem().getDetail().contains("Campaign CAMPAIGN-001 has DRAFT status"));
         verify(campaignsParameterConsumer).getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_SENDER_ID);
     }
