@@ -36,13 +36,7 @@ public class PecChannelSender implements ChannelSender {
     @Override
     public void send(NotificationInt notification, Campaign campaign, int recIndex, int currentStep, ChannelType channel) {
         NotificationRecipientInt recipient = notification.getRecipients().get(recIndex);
-        List<WorkFlowEntity> recipientWorkflowSteps = campaign.getWorkflow() == null
-                ? List.of()
-                : campaign.getWorkflow().stream()
-                .filter(step -> step.getRecipientType() != null && step.getRecipientType().contains(recipient.getRecipientType()))
-                .toList();
-
-        WorkFlowEntity workflowStep = resolveWorkflowStep(campaign, recipientWorkflowSteps, currentStep, channel);
+        WorkFlowEntity workflowStep = resolveWorkflowStep(campaign, recipient, currentStep, channel);
 
         String messageText = templateGeneratorService.generatePecTemplate(notification, recipient, false);
 
@@ -88,7 +82,13 @@ public class PecChannelSender implements ChannelSender {
         );
     }
 
-    private WorkFlowEntity resolveWorkflowStep(Campaign campaign, List<WorkFlowEntity> workflowSteps, int currentStep, ChannelType channel) {
+    private WorkFlowEntity resolveWorkflowStep(Campaign campaign, NotificationRecipientInt recipient, int currentStep, ChannelType channel) {
+        List<WorkFlowEntity> workflowSteps = campaign.getWorkflow() == null
+                ? List.of()
+                : campaign.getWorkflow().stream()
+                .filter(step -> step.getRecipientType() != null && step.getRecipientType().contains(recipient.getRecipientType()))
+                .toList();
+
         if (workflowSteps.isEmpty() || currentStep < 0 || currentStep >= workflowSteps.size()) {
             String message = String.format("Step %d not configured for campaign=%s", currentStep, campaign.getCampaignId());
             throw new PnInternalException(message, ERROR_CODE_WORKFLOWMANAGER_CONFIGURATION_NOT_FOUND);
