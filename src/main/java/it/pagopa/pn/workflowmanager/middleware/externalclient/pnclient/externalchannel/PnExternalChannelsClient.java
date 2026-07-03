@@ -24,12 +24,14 @@ public interface PnExternalChannelsClient {
         List<String> fileKeys
     );
 
-    void sendNotificationEMAIL(String requestId,
-                                String mailBody,
-                                NotificationInt notificationInt,
-                                NotificationRecipientInt recipientInt,
-                                DigitalAddressInt digitalAddress,
-                                String aarKey,
-                                String quickAccessToken,
-                                DeliveryModeInt deliveryMode);
+    void sendNotificationEMAIL(
+            String requestId,
+            String mailBody,
+            NotificationInt notificationInt,
+            NotificationRecipientInt recipientInt,
+            DigitalAddressInt digitalAddress,
+            String aarKey,
+            String quickAccessToken,
+            DeliveryModeInt deliveryMode
+    );
 }
