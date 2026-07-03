@@ -1,17 +1,19 @@
 package it.pagopa.pn.workflowmanager.action.utils;
 
-
 import it.pagopa.pn.commons.exceptions.PnInternalException;
+import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
+import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.EventId;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineEventId;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.*;
 import it.pagopa.pn.workflowmanager.service.TimelineService;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
+
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
@@ -21,10 +23,36 @@ import java.util.stream.Stream;
 import static it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCodes.ERROR_CODE_TIMELINESERVICE_TIMELINE_ELEMENT_NOT_PRESENT;
 
 @Component
-@AllArgsConstructor
 @Slf4j
+@RequiredArgsConstructor
 public class TimelineUtils {
     private final TimelineService timelineService;
+
+    public TimelineElementInternal buildTimeline(NotificationInt notification,
+                                                 TimelineElementCategoryInt category,
+                                                 String elementId,
+                                                 @NotNull TimelineElementDetailsInt details) {
+
+        TimelineElementInternal.TimelineElementInternalBuilder timelineBuilder = TimelineElementInternal.builder();
+
+        return buildTimeline(notification, category, elementId, details, timelineBuilder);
+    }
+
+    private TimelineElementInternal buildTimeline(NotificationInt notification,
+                                                  TimelineElementCategoryInt category,
+                                                  String elementId,
+                                                  TimelineElementDetailsInt details,
+                                                  TimelineElementInternal.TimelineElementInternalBuilder timelineBuilder) {
+        return timelineBuilder
+                .iun(notification.getIun())
+                .category(category)
+                .timestamp(Instant.now())
+                .elementId(elementId)
+                .details(details)
+                .paId(notification.getSender().getPaId())
+                .notificationSentAt(notification.getSentAt())
+                .build();
+    }
 
     public TimelineElementInternal buildWorkflowEndedUndeliverableTimelineElement(Integer recIndex, NotificationInt notification,
                                                                               String eventId) {
@@ -130,30 +158,24 @@ public class TimelineUtils {
         );
     }
 
-    public TimelineElementInternal buildTimeline(NotificationInt notification,
-                                                 TimelineElementCategoryInt category,
-                                                 String elementId,
-                                                 @NotNull TimelineElementDetailsInt details) {
+    public TimelineElementInternal buildSendDigitalMessageTimelineElement(
+            NotificationInt notification,
+            String elementId,
+            int recIndex,
+            InformalDigitalAddressInt digitalAddress,
+            DigitalChannelsInt digitalAddressChannel,
+            DigitalAddressSourceInt digitalAddressSource
+    ){
+        log.debug("buildSendDigitalMessageTimelineElement - IUN={} and id={} and channel={}", notification.getIun(), recIndex, digitalAddressChannel);
 
-        TimelineElementInternal.TimelineElementInternalBuilder timelineBuilder = TimelineElementInternal.builder();
-
-        return buildTimeline(notification, category, elementId, details, timelineBuilder);
-    }
-
-    private TimelineElementInternal buildTimeline(NotificationInt notification,
-                                                 TimelineElementCategoryInt category,
-                                                 String elementId,
-                                                 TimelineElementDetailsInt details,
-                                                 TimelineElementInternal.TimelineElementInternalBuilder timelineBuilder) {
-        return timelineBuilder
-                .iun(notification.getIun())
-                .category(category)
-                .timestamp(Instant.now())
-                .elementId(elementId)
-                .details(details)
-                .paId(notification.getSender().getPaId())
-                .notificationSentAt(notification.getSentAt())
+        SendDigitalMessageDetailsInt detailsInt = SendDigitalMessageDetailsInt.builder()
+                .recIndex(recIndex)
+                .digitalAddress(digitalAddress)
+                .channel(digitalAddressChannel)
+                .digitalAddressSource(digitalAddressSource)
                 .build();
+
+        return buildTimeline(notification, TimelineElementCategoryInt.SEND_DIGITAL_MESSAGE, elementId, detailsInt);
     }
 
     public boolean checkTimelineCategories(List<TimelineElementInternal> timelineElements,
@@ -165,6 +187,7 @@ public class TimelineUtils {
         Set<TimelineElementInternal> timeline = timelineService.getTimeline(iun, false);
         return timeline.stream();
     }
+
     private boolean hasAnyTimelineCategory(List<TimelineElementInternal> timelineElements, int recIndex,
                                            TimelineElementCategoryInt... categories) {
         return Arrays.stream(categories)
