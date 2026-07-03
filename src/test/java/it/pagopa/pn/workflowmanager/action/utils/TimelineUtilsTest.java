@@ -1,10 +1,13 @@
 package it.pagopa.pn.workflowmanager.action.utils;
 
+import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
 import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationSenderInt;
+import it.pagopa.pn.workflowmanager.dto.timeline.EventId;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
+import it.pagopa.pn.workflowmanager.dto.timeline.TimelineEventId;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.*;
 import it.pagopa.pn.workflowmanager.service.TimelineService;
 import org.junit.jupiter.api.Assertions;
@@ -16,9 +19,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import static it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -456,6 +462,81 @@ class TimelineUtilsTest {
         // Assert
         WorkflowDoneUnreachedDetailsInt details = (WorkflowDoneUnreachedDetailsInt) result.getDetails();
         Assertions.assertEquals(customSourceId, details.getSourceElementId());
+    }
+
+    @Test
+    void retrieveCoverpageFileKeyReturnsFileKeyFromTimelineElement() {
+        String iun = "IUN_123";
+        int recIndex = 1;
+        String expectedTimelineId = TimelineEventId.COVERPAGE_CREATION_REQUEST.buildEventId(
+                EventId.builder()
+                        .iun(iun)
+                        .recIndex(recIndex)
+                        .build()
+        );
+        String expectedFileKey = "coverpage-file-key";
+
+        TimelineElementInternal timelineElement = TimelineElementInternal.builder()
+                .details(CoverpageCreationRequestDetailsInt.builder()
+                        .recIndex(recIndex)
+                        .fileKey(expectedFileKey)
+                        .build())
+                .build();
+
+        when(timelineService.getTimelineElement(iun, expectedTimelineId))
+                .thenReturn(Optional.of(timelineElement));
+
+        String result = timelineUtils.retrieveCoverpageFileKey(iun, recIndex);
+
+        assertEquals(expectedFileKey, result);
+        verify(timelineService).getTimelineElement(iun, expectedTimelineId);
+    }
+
+    @Test
+    void retrieveCoverpageFileKeyThrowsWhenTimelineElementIsMissing() {
+        String iun = "IUN_123";
+        int recIndex = 1;
+        String expectedTimelineId = TimelineEventId.COVERPAGE_CREATION_REQUEST.buildEventId(
+                EventId.builder()
+                        .iun(iun)
+                        .recIndex(recIndex)
+                        .build()
+        );
+
+        when(timelineService.getTimelineElement(iun, expectedTimelineId))
+                .thenReturn(Optional.empty());
+
+        assertThrows(
+                PnInternalException.class,
+                () -> timelineUtils.retrieveCoverpageFileKey(iun, recIndex)
+        );
+    }
+
+    @Test
+    void retrieveCoverpageFileKeyThrowsWhenFileKeyIsBlank() {
+        String iun = "IUN_123";
+        int recIndex = 1;
+        String expectedTimelineId = TimelineEventId.COVERPAGE_CREATION_REQUEST.buildEventId(
+                EventId.builder()
+                        .iun(iun)
+                        .recIndex(recIndex)
+                        .build()
+        );
+
+        TimelineElementInternal timelineElement = TimelineElementInternal.builder()
+                .details(CoverpageCreationRequestDetailsInt.builder()
+                        .recIndex(recIndex)
+                        .fileKey(" ")
+                        .build())
+                .build();
+
+        when(timelineService.getTimelineElement(iun, expectedTimelineId))
+                .thenReturn(Optional.of(timelineElement));
+
+        assertThrows(
+                PnInternalException.class,
+                () -> timelineUtils.retrieveCoverpageFileKey(iun, recIndex)
+        );
     }
 
     @Test
