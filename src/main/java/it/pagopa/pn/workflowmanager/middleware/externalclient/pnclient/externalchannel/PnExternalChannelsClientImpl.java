@@ -8,7 +8,6 @@ import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.address.LegalDigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
-import it.pagopa.pn.workflowmanager.dto.timeline.DeliveryModeInt;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.externalchannels.api.DigitalCourtesyMessagesApi;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.externalchannels.api.DigitalLegalMessagesApi;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.externalchannels.model.DigitalCourtesyMailRequest;
@@ -29,7 +28,6 @@ import static it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCo
 @RequiredArgsConstructor
 public class PnExternalChannelsClientImpl implements PnExternalChannelsClient {
     private static final String EVENT_TYPE_INFORMAL = "INFORMAL";
-    private static final String EVENT_TYPE_COURTESY = "COURTESY";
 
     private final PnWorkflowManagerConfigs cfg;
     private final DigitalLegalMessagesApi digitalLegalMessagesApi;
@@ -76,14 +74,12 @@ public class PnExternalChannelsClientImpl implements PnExternalChannelsClient {
                                       NotificationInt notificationInt,
                                       NotificationRecipientInt recipientInt,
                                       DigitalAddressInt digitalAddress,
-                                      String aarKey,
-                                      String quickAccessToken,
-                                      DeliveryModeInt deliveryMode) {
+                                      List<String> attachmentUrls) {
         try {
             log.logInvokingAsyncExternalService(CLIENT_NAME, COURTESY_NOTIFICATION_REQUEST + "[EMAIL]", requestId);
             log.debug("[enter] sendNotificationEMAIL address={} requestId={} recipient={}", LogUtils.maskNumber(digitalAddress.getAddress()), requestId, LogUtils.maskGeneric(recipientInt.getDenomination()));
 
-            DigitalCourtesyMailRequest digitalNotificationRequest = buildDigitalCourtesyMailRequest(requestId, mailBody, recipientInt, digitalAddress, aarKey);
+            DigitalCourtesyMailRequest digitalNotificationRequest = buildDigitalCourtesyMailRequest(requestId, mailBody, recipientInt, digitalAddress, attachmentUrls);
 
             digitalCourtesyMessagesApi.sendDigitalCourtesyMessage(requestId, cfg.getCxId(), digitalNotificationRequest);
 
@@ -94,19 +90,19 @@ public class PnExternalChannelsClientImpl implements PnExternalChannelsClient {
         }
     }
 
-    private static @NotNull DigitalCourtesyMailRequest buildDigitalCourtesyMailRequest(String requestId, String mailBody, NotificationRecipientInt recipientInt, DigitalAddressInt digitalAddress, String aarKey) {
+    private static @NotNull DigitalCourtesyMailRequest buildDigitalCourtesyMailRequest(String requestId, String mailBody, NotificationRecipientInt recipientInt, DigitalAddressInt digitalAddress, List<String> attachmentUrls) {
         DigitalCourtesyMailRequest digitalNotificationRequest = new DigitalCourtesyMailRequest();
         digitalNotificationRequest.setChannel(DigitalCourtesyMailRequest.ChannelEnum.EMAIL);
         digitalNotificationRequest.setRequestId(requestId);
         digitalNotificationRequest.setCorrelationId(requestId);
-        digitalNotificationRequest.setEventType(EVENT_TYPE_COURTESY);
+        digitalNotificationRequest.setEventType(EVENT_TYPE_INFORMAL);
         digitalNotificationRequest.setQos(DigitalCourtesyMailRequest.QosEnum.BATCH);
         digitalNotificationRequest.setReceiverDigitalAddress(digitalAddress.getAddress());
         digitalNotificationRequest.setClientRequestTimeStamp(Instant.now());
         digitalNotificationRequest.setMessageContentType(DigitalCourtesyMailRequest.MessageContentTypeEnum.TEXT_HTML);
         digitalNotificationRequest.setMessageText(mailBody);
         digitalNotificationRequest.setSubjectText(recipientInt.getMessage().getPrimaryMessage().getSubject());
-        digitalNotificationRequest.setAttachmentUrls(List.of(FileUtils.getKeyWithStoragePrefix(aarKey)));
+        digitalNotificationRequest.setAttachmentUrls(attachmentUrls.stream().map(FileUtils::getKeyWithStoragePrefix).toList());
         return digitalNotificationRequest;
     }
 }

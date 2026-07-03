@@ -8,7 +8,6 @@ import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.LocalizedMessa
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationMessageInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
-import it.pagopa.pn.workflowmanager.dto.timeline.DeliveryModeInt;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.externalchannels.api.DigitalCourtesyMessagesApi;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.externalchannels.api.DigitalLegalMessagesApi;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.externalchannels.model.DigitalCourtesyMailRequest;
@@ -206,9 +205,7 @@ class PnExternalChannelsClientImplTest {
                 notification,
                 recipient,
                 digitalAddress,
-                "aarKey",
-                "quickAccessToken",
-                DeliveryModeInt.DIGITAL
+                List.of("aarKey")
         );
 
         ArgumentCaptor<DigitalCourtesyMailRequest> requestCaptor = ArgumentCaptor.forClass(DigitalCourtesyMailRequest.class);
@@ -217,7 +214,7 @@ class PnExternalChannelsClientImplTest {
         DigitalCourtesyMailRequest sent = requestCaptor.getValue();
         assertEquals(requestId, sent.getRequestId());
         assertEquals(requestId, sent.getCorrelationId());
-        assertEquals("COURTESY", sent.getEventType());
+        assertEquals("INFORMAL", sent.getEventType());
         assertEquals(DigitalCourtesyMailRequest.MessageContentTypeEnum.TEXT_HTML, sent.getMessageContentType());
         assertEquals(DigitalCourtesyMailRequest.QosEnum.BATCH, sent.getQos());
         assertEquals(pecAddress, sent.getReceiverDigitalAddress());
@@ -254,7 +251,7 @@ class PnExternalChannelsClientImplTest {
 
         PnInternalException thrown = assertThrows(
                 PnInternalException.class,
-                () -> client.sendNotificationEMAIL(requestId, "body", notification, recipient, digitalAddress, "aarKey","quickAccessToken",DeliveryModeInt.DIGITAL)
+                () -> client.sendNotificationEMAIL(requestId, "body", notification, recipient, digitalAddress, List.of("aarKey"))
         );
 
         assertSame(apiException, thrown.getCause());
