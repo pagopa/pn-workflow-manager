@@ -2,8 +2,8 @@ package it.pagopa.pn.workflowmanager.dto.timeline;
 
 import it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementDetailsInt;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
-import org.jetbrains.annotations.NotNull;
 import java.time.Instant;
 
 @Getter
