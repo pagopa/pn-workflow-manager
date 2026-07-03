@@ -13,4 +13,8 @@ import lombok.NoArgsConstructor;
 public class DocumentCreationResponseActionDetails implements ActionDetails {
     private String key;
     private String documentCreationType;
+    private String iun;
+    private Integer recIndex;
+    private String documentType;
+    private String elementId;
 }
