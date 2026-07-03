@@ -559,7 +559,7 @@ class TimelineUtilsTest {
         );
         Assertions.assertEquals("TEST-IUN-001", actual.getIun());
         Assertions.assertEquals(elementId, actual.getElementId());
-        Assertions.assertEquals("pa_02", actual.getPaId());
+        Assertions.assertEquals(TEST_PA_ID, actual.getPaId());
         Assertions.assertEquals(TimelineElementCategoryInt.SEND_DIGITAL_MESSAGE, actual.getCategory());
         Assertions.assertNotNull(actual.getDetails());
         SendDigitalMessageDetailsInt detailsInt = (SendDigitalMessageDetailsInt) actual.getDetails();
