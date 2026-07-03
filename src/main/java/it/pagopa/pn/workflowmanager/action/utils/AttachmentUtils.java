@@ -8,7 +8,6 @@ import it.pagopa.pn.workflowmanager.utils.NotificationUtils;
 import it.pagopa.pn.workflowmanager.utils.PnSendMode;
 import it.pagopa.pn.workflowmanager.utils.PnSendModeUtils;
 import it.pagopa.pn.workflowmanager.utils.SendAttachmentMode;
-import it.pagopa.pn.workflowmanager.utils.TimelineUtils;
 import lombok.AllArgsConstructor;
 import lombok.CustomLog;
 import org.jetbrains.annotations.NotNull;
@@ -47,7 +46,7 @@ public class AttachmentUtils {
 
         List<String> attachments = new ArrayList<>();
 
-        // COVERPAGE è sempre inclusa se presente nel mode
+        // COVERPAGE è sempre il primo allegato se presente nel mode
         if (sendAttachmentMode.includes(AttachmentType.COVERPAGE)) {
             String coverpageFileKey = timelineUtils.retrieveCoverpageFileKey(notification.getIun(), recIndex);
             attachments.add(formatWithDocTag(

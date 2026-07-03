@@ -11,7 +11,6 @@ import it.pagopa.pn.workflowmanager.utils.NotificationUtils;
 import it.pagopa.pn.workflowmanager.utils.PnSendMode;
 import it.pagopa.pn.workflowmanager.utils.PnSendModeUtils;
 import it.pagopa.pn.workflowmanager.utils.SendAttachmentMode;
-import it.pagopa.pn.workflowmanager.utils.TimelineUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
