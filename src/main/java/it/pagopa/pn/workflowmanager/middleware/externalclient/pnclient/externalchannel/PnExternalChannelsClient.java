@@ -5,7 +5,6 @@ import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.address.LegalDigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
-import it.pagopa.pn.workflowmanager.dto.timeline.DeliveryModeInt;
 
 import java.util.List;
 
@@ -30,8 +29,6 @@ public interface PnExternalChannelsClient {
             NotificationInt notificationInt,
             NotificationRecipientInt recipientInt,
             DigitalAddressInt digitalAddress,
-            String aarKey,
-            String quickAccessToken,
-            DeliveryModeInt deliveryMode
+            List<String> attachmentUrls
     );
 }
