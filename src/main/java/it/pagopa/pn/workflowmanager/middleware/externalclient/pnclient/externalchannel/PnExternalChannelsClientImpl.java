@@ -1,20 +1,27 @@
 package it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.externalchannel;
 
 import it.pagopa.pn.commons.exceptions.PnInternalException;
+import it.pagopa.pn.commons.utils.LogUtils;
 import it.pagopa.pn.workflowmanager.action.utils.FileUtils;
 import it.pagopa.pn.workflowmanager.config.PnWorkflowManagerConfigs;
+import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.address.LegalDigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
+import it.pagopa.pn.workflowmanager.dto.timeline.DeliveryModeInt;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.externalchannels.api.DigitalCourtesyMessagesApi;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.externalchannels.api.DigitalLegalMessagesApi;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.externalchannels.model.DigitalCourtesyMailRequest;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.externalchannels.model.DigitalNotificationRequest;
 import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.util.List;
 
+import static it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCodes.ERROR_CODE_WORKFLOWMANAGER_SENDEMAILNOTIFICATIONFAILED;
 import static it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCodes.ERROR_CODE_WORKFLOWMANAGER_SENDPECNOTIFICATIONFAILED;
 
 @Component
@@ -22,8 +29,11 @@ import static it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCo
 @RequiredArgsConstructor
 public class PnExternalChannelsClientImpl implements PnExternalChannelsClient {
     private static final String EVENT_TYPE_INFORMAL = "INFORMAL";
+    private static final String EVENT_TYPE_COURTESY = "COURTESY";
+
     private final PnWorkflowManagerConfigs cfg;
     private final DigitalLegalMessagesApi digitalLegalMessagesApi;
+    private final DigitalCourtesyMessagesApi digitalCourtesyMessagesApi;
 
     @Override
     public void sendNotificationPEC(
@@ -58,5 +68,45 @@ public class PnExternalChannelsClientImpl implements PnExternalChannelsClient {
             log.error("error sending PEC notification for iun={}", notificationInt.getIun());
             throw new PnInternalException("error sending PEC notification", ERROR_CODE_WORKFLOWMANAGER_SENDPECNOTIFICATIONFAILED, e);
         }
+    }
+
+    @Override
+    public void sendNotificationEMAIL(String requestId,
+                                      String mailBody,
+                                      NotificationInt notificationInt,
+                                      NotificationRecipientInt recipientInt,
+                                      DigitalAddressInt digitalAddress,
+                                      String aarKey,
+                                      String quickAccessToken,
+                                      DeliveryModeInt deliveryMode) {
+        try {
+            log.logInvokingAsyncExternalService(CLIENT_NAME, COURTESY_NOTIFICATION_REQUEST + "[EMAIL]", requestId);
+            log.debug("[enter] sendNotificationEMAIL address={} requestId={} recipient={}", LogUtils.maskNumber(digitalAddress.getAddress()), requestId, LogUtils.maskGeneric(recipientInt.getDenomination()));
+
+            DigitalCourtesyMailRequest digitalNotificationRequest = buildDigitalCourtesyMailRequest(requestId, mailBody, recipientInt, digitalAddress, aarKey);
+
+            digitalCourtesyMessagesApi.sendDigitalCourtesyMessage(requestId, cfg.getCxId(), digitalNotificationRequest);
+
+            log.debug("[exit] sendNotificationEMAIL address={} requestId={} recipient={}", LogUtils.maskEmailAddress(digitalAddress.getAddress()), requestId, LogUtils.maskGeneric(recipientInt.getDenomination()));
+        } catch (Exception e) {
+            log.error("error sending EMAIL notification for iun={}", notificationInt.getIun());
+            throw new PnInternalException("error sending EMAIL notification", ERROR_CODE_WORKFLOWMANAGER_SENDEMAILNOTIFICATIONFAILED,e);
+        }
+    }
+
+    private static @NotNull DigitalCourtesyMailRequest buildDigitalCourtesyMailRequest(String requestId, String mailBody, NotificationRecipientInt recipientInt, DigitalAddressInt digitalAddress, String aarKey) {
+        DigitalCourtesyMailRequest digitalNotificationRequest = new DigitalCourtesyMailRequest();
+        digitalNotificationRequest.setChannel(DigitalCourtesyMailRequest.ChannelEnum.EMAIL);
+        digitalNotificationRequest.setRequestId(requestId);
+        digitalNotificationRequest.setCorrelationId(requestId);
+        digitalNotificationRequest.setEventType(EVENT_TYPE_COURTESY);
+        digitalNotificationRequest.setQos(DigitalCourtesyMailRequest.QosEnum.BATCH);
+        digitalNotificationRequest.setReceiverDigitalAddress(digitalAddress.getAddress());
+        digitalNotificationRequest.setClientRequestTimeStamp(Instant.now());
+        digitalNotificationRequest.setMessageContentType(DigitalCourtesyMailRequest.MessageContentTypeEnum.TEXT_HTML);
+        digitalNotificationRequest.setMessageText(mailBody);
+        digitalNotificationRequest.setSubjectText(recipientInt.getMessage().getPrimaryMessage().getSubject());
+        digitalNotificationRequest.setAttachmentUrls(List.of(FileUtils.getKeyWithStoragePrefix(aarKey)));
+        return digitalNotificationRequest;
     }
 }
