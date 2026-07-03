@@ -1,6 +1,7 @@
 package it.pagopa.pn.workflowmanager.action.utils;
 
 
+import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.EventId;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
@@ -16,6 +17,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
+
+import static it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCodes.ERROR_CODE_TIMELINESERVICE_TIMELINE_ELEMENT_NOT_PRESENT;
 
 @Component
 @AllArgsConstructor
@@ -176,6 +179,46 @@ public class TimelineUtils {
                 .filter(details -> details instanceof RecipientRelatedTimelineElementDetails)
                 .map(details -> (RecipientRelatedTimelineElementDetails) details)
                 .anyMatch(details -> details.getRecIndex() == recIndex);
+    }
+
+    public String retrieveCoverpageFileKey(String iun, int recIndex) {
+        String timelineId = TimelineEventId.COVERPAGE_CREATION_REQUEST.buildEventId(
+                EventId.builder()
+                        .iun(iun)
+                        .recIndex(recIndex)
+                        .build()
+        );
+
+        log.debug("retrieveCoverpageFileKey - iun={} recIndex={} timelineId={}", iun, recIndex, timelineId);
+
+        TimelineElementInternal timelineElement = timelineService.getTimelineElement(iun, timelineId)
+                .orElseThrow(() -> buildTimelineElementNotPresentException(iun, recIndex, timelineId));
+
+        if (!(timelineElement.getDetails() instanceof CoverpageCreationRequestDetailsInt details)
+                || details.getFileKey() == null
+                || details.getFileKey().isBlank()) {
+            String msg = String.format(
+                    "Timeline element %s for iun=%s recIndex=%d does not contain a valid coverpage fileKey",
+                    timelineId,
+                    iun,
+                    recIndex
+            );
+            log.error(msg);
+            throw new PnInternalException(msg, ERROR_CODE_TIMELINESERVICE_TIMELINE_ELEMENT_NOT_PRESENT);
+        }
+
+        return details.getFileKey();
+    }
+
+    private PnInternalException buildTimelineElementNotPresentException(String iun, int recIndex, String timelineId) {
+        String msg = String.format(
+                "Timeline element %s not found for iun=%s recIndex=%d",
+                timelineId,
+                iun,
+                recIndex
+        );
+        log.error(msg);
+        return new PnInternalException(msg, ERROR_CODE_TIMELINESERVICE_TIMELINE_ELEMENT_NOT_PRESENT);
     }
 
 }
