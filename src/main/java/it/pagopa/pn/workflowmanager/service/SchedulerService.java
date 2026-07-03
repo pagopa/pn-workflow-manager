@@ -6,9 +6,9 @@ import it.pagopa.pn.workflowmanager.dto.action.common.ActionType;
 import java.time.Instant;
 
 public interface SchedulerService {
-    void scheduleEvent(String iun, Instant dateToSchedule, ActionType actionType);
+    void scheduleEvent(String iun, Integer recIndex, Instant dateToSchedule, ActionType actionType);
 
     void scheduleEvent(String iun, Integer recIndex, Instant dateToSchedule, ActionType actionType, String timelineEventId, ActionDetails actionDetails);
 
-    void scheduleEvent(String iun, Instant dateToSchedule, ActionType actionType, ActionDetails actionDetails);
+    void scheduleEvent(String iun,Integer recIndex, Instant dateToSchedule, ActionType actionType, ActionDetails actionDetails);
 }

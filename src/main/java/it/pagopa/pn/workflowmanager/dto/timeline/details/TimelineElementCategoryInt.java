@@ -13,13 +13,15 @@ public enum TimelineElementCategoryInt {
     SEND_ANALOG_MESSAGE(SendAnalogMessageDetailsInt.class,  TimelineElementCategoryInt.VERSION_10),
     SEND_ANALOG_MESSAGE_PROGRESS(SendAnalogMessageProgressDetailsInt.class,  TimelineElementCategoryInt.VERSION_10),
     SEND_ANALOG_MESSAGE_FEEDBACK(SendAnalogMessageFeedbackDetailsInt.class,  TimelineElementCategoryInt.VERSION_10),
-    REACHED(ReachedDetailsInt.class,  TimelineElementCategoryInt.VERSION_10),
+    DELIVERED(DeliveredDetailsInt.class,  TimelineElementCategoryInt.VERSION_10),
     WORKFLOW_ENDED_REACHED(WorkflowEndedReachedDetailsInt.class,  TimelineElementCategoryInt.VERSION_10),
     WORKFLOW_ENDED_UNREACHED(WorkflowEndedUnreachedDetailsInt.class,  TimelineElementCategoryInt.VERSION_10),
     WORKFLOW_ENDED_UNDELIVERABLE(WorkflowEndedUndeliverableDetailsInt.class,  TimelineElementCategoryInt.VERSION_10),
     WORKFLOW_DONE_REACHED(WorkflowDoneReachedDetailsInt.class, TimelineElementCategoryInt.VERSION_10),
-    WORKFLOW_DONE_UNREACHED(WorkflowDoneUnreachedDetailsInt.class, TimelineElementCategoryInt.VERSION_10),    INFORMAL_NOTIFICATION_VIEWED(InformalNotificationViewedDetailsInt.class,  TimelineElementCategoryInt.VERSION_10),
-    COVERPAGE_CREATION_REQUEST(CoverpageCreationRequestDetailsInt.class, TimelineElementCategoryInt.VERSION_10);
+    WORKFLOW_DONE_UNREACHED(WorkflowDoneUnreachedDetailsInt.class, TimelineElementCategoryInt.VERSION_10),
+    INFORMAL_NOTIFICATION_VIEWED(InformalNotificationViewedDetailsInt.class,  TimelineElementCategoryInt.VERSION_10),
+    COVERPAGE_CREATION_REQUEST(CoverpageCreationRequestDetailsInt.class, TimelineElementCategoryInt.VERSION_10),
+    PAYMENT(NotificationPaidDetailsInt.class, TimelineElementCategoryInt.VERSION_10);
 
 
     private final Class<? extends TimelineElementDetailsInt> detailsJavaClass;

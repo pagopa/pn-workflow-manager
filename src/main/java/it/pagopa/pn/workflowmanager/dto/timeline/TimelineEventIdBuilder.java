@@ -28,6 +28,8 @@ public class TimelineEventIdBuilder {
 
     private String category = "";
 
+    private String paymentCode = "";
+
 
     public TimelineEventIdBuilder withIun(@Nullable String iun) {
         if(iun != null)
@@ -49,6 +51,13 @@ public class TimelineEventIdBuilder {
 
     public TimelineEventIdBuilder withCategory(@NotNull String category) {
         this.category = category;
+        return this;
+    }
+
+    // payment code per pagamenti PagoPa = PPANoticeNumberCreditorTaxId
+    public TimelineEventIdBuilder withPaymentCode(@Nullable String paymentCode) {
+        if(paymentCode != null)
+            this.paymentCode = DELIMITER.concat("CODE_").concat(paymentCode);
         return this;
     }
 
@@ -79,7 +88,8 @@ public class TimelineEventIdBuilder {
                 sentAttemptMade +
                 progressIndex +
                 channel +
-                deliveryType;
+                deliveryType +
+                paymentCode;
     }
 
 }
