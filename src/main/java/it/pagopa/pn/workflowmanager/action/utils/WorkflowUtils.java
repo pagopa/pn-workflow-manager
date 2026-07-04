@@ -1,11 +1,14 @@
 package it.pagopa.pn.workflowmanager.action.utils;
 
 import it.pagopa.pn.workflowmanager.dto.action.common.ActionType;
+import it.pagopa.pn.workflowmanager.dto.action.details.NotHandledDetails;
+import it.pagopa.pn.workflowmanager.dto.action.details.StartWorkflowDetails;
 import it.pagopa.pn.workflowmanager.dto.action.details.TimeoutWorkflowDetails;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.RecipientTypeInt;
 import it.pagopa.pn.workflowmanager.exceptions.PnWorkflowException;
 import it.pagopa.pn.workflowmanager.models.internal.campaign.Campaign;
 import it.pagopa.pn.workflowmanager.models.internal.campaign.ChannelType;
+import it.pagopa.pn.workflowmanager.models.internal.campaign.DesiredFeedbackType;
 import it.pagopa.pn.workflowmanager.models.internal.campaign.WorkFlowEntity;
 import it.pagopa.pn.workflowmanager.service.SchedulerService;
 import lombok.RequiredArgsConstructor;
@@ -70,6 +73,47 @@ public class WorkflowUtils {
                 .filter(workflow -> workflow.getChannel() == channel)
                 .findFirst()
                 .orElseThrow(() -> new PnWorkflowException("No workflow entity found for channel: " + channel + " in campaignId: " + campaign.getCampaignId()));
+    }
+
+    public boolean isDesiredFeedback(Campaign campaign, ChannelType channel, DesiredFeedbackType desiredFeedback) {
+        return campaign.getWorkflow().stream()
+                .filter(workflowEntity -> workflowEntity.getChannel() == channel)
+                .anyMatch(workflowEntity -> workflowEntity.getDesiredFeedback() == desiredFeedback);
+    }
+
+    public void advanceWorkflow(String iun, int recIndex, ChannelType channel, Campaign campaign, RecipientTypeInt recipientTypeInt) {
+        log.info("Scheduling next channel for iun={} channel={}", iun, recIndex);
+        Optional<WorkflowUtils.NextChannel> nextChannelInfoOptional = getNextChannel(campaign, channel, recipientTypeInt);
+        if(nextChannelInfoOptional.isEmpty()) {
+            scheduleEndWorkflow(iun, recIndex, channel);
+        } else {
+            WorkflowUtils.NextChannel nextChannelInfo = nextChannelInfoOptional.get();
+            scheduleNextChannel(iun, recIndex, nextChannelInfo);
+        }
+    }
+
+    private void scheduleEndWorkflow(String iun, int recIndex, ChannelType channel) {
+        log.warn("No next channel found for iun={} channel={}", iun, channel);
+        schedulerService.scheduleEvent(
+                iun,
+                recIndex,
+                Instant.now(),
+                ActionType.END_WORKFLOW,
+                new NotHandledDetails()
+        );
+    }
+
+    private void scheduleNextChannel(String iun, int recIndex, WorkflowUtils.NextChannel nextChannelInfo) {
+        schedulerService.scheduleEvent(
+                iun,
+                recIndex,
+                Instant.now(),
+                ActionType.START_WORKFLOW,
+                StartWorkflowDetails.builder()
+                        .stepIdx(nextChannelInfo.stepIndex())
+                        .channel(nextChannelInfo.channel())
+                        .build()
+        );
     }
 
     public record NextChannel(ChannelType channel, int stepIndex) {

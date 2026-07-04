@@ -1,6 +1,8 @@
 package it.pagopa.pn.workflowmanager.action.utils;
 
 import it.pagopa.pn.commons.exceptions.PnInternalException;
+import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.timelineservice.model.NotificationHistoryResponse;
+import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.timelineservice.model.NotificationStatus;
 import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
 import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
@@ -8,6 +10,7 @@ import it.pagopa.pn.workflowmanager.dto.timeline.EventId;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineEventId;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.*;
+import it.pagopa.pn.workflowmanager.models.internal.campaign.ChannelType;
 import it.pagopa.pn.workflowmanager.service.TimelineService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -178,6 +181,30 @@ public class TimelineUtils {
         return buildTimeline(notification, TimelineElementCategoryInt.SEND_DIGITAL_MESSAGE, elementId, detailsInt);
     }
 
+    public TimelineElementInternal buildDeliveredTimelineElement(
+            NotificationInt notification,
+            int recIndex,
+            ChannelType channel,
+            String sourceElementId
+    ){
+        log.debug("buildDeliveredTimelineElement - IUN={} and id={} and channel={}", notification.getIun(), recIndex, channel);
+        String elementId = TimelineEventId.DELIVERED.buildEventId(
+                EventId.builder()
+                        .iun(notification.getIun())
+                        .recIndex(recIndex)
+                        .channel(channel.name())
+                        .build()
+        );
+
+        DeliveredDetailsInt detailsInt = DeliveredDetailsInt.builder()
+                .recIndex(recIndex)
+                .channel(channel.name())
+                .sourceElementId(sourceElementId)
+                .build();
+
+        return buildTimeline(notification, TimelineElementCategoryInt.DELIVERED, elementId, detailsInt);
+    }
+
     public boolean checkTimelineCategories(List<TimelineElementInternal> timelineElements,
                                            int recIndex, TimelineElementCategoryInt... categories) {
         return hasAnyTimelineCategory(timelineElements, recIndex, categories);
@@ -242,6 +269,24 @@ public class TimelineUtils {
         );
         log.error(msg);
         return new PnInternalException(msg, ERROR_CODE_TIMELINESERVICE_TIMELINE_ELEMENT_NOT_PRESENT);
+    }
+
+    public void handleTransitionToReachedStatusIfNecessary(NotificationInt notificationInt, int recIndex, String sourceTimelineId) {
+        String iun = notificationInt.getIun();
+        int numOfRecipients = notificationInt.getRecipients().size();
+        Instant sentAt = notificationInt.getSentAt();
+        NotificationHistoryResponse history = timelineService.getTimelineAndStatusHistory(iun, numOfRecipients, sentAt);
+        NotificationStatus currentStatus = history.getNotificationStatus();
+        if(currentStatus == NotificationStatus.COMPLETED_UNREACHED) {
+            log.info("Notification {} is in COMPLETED_UNREACHED status, saving element with category WORKFLOW_ENDED_REACHED for recIndex {}", iun, recIndex);
+            TimelineElementInternal completedReachedTimelineElement = buildWorkflowEndedReachedTimelineElement(
+                    recIndex,
+                    notificationInt,
+                    getWorkflowEndedReachedTimelineElementId(recIndex, iun),
+                    sourceTimelineId
+            );
+            timelineService.addTimelineElement(completedReachedTimelineElement, notificationInt);
+        }
     }
 
 }
