@@ -71,6 +71,24 @@ class TemplateGeneratorServiceImplTest {
         verify(templateEngineClient).pecTemplate(Mockito.eq(expectedLanguage), Mockito.any());
     }
 
+    @ParameterizedTest
+    @MethodSource("provideAdditionalLanguageArguments")
+    void shouldGenerateInformalIoCommunicationTemplate(
+            List<String> additionalLanguages,
+            LanguageEnum expectedLanguage
+    ) {
+        NotificationInt notificationInt = buildNotification();
+        NotificationRecipientInt notificationRecipientInt = buildNotificationRecipient(additionalLanguages);
+        String expectedMessageTemplate = "template-content";
+
+        when(templateEngineClient.informalIoCommunication(Mockito.eq(expectedLanguage), Mockito.any())).thenReturn(expectedMessageTemplate);
+
+        String result = templateGeneratorService.generateInformalIoCommunicationTemplate(notificationInt, notificationRecipientInt, true);
+
+        assertEquals(expectedMessageTemplate, result);
+        verify(templateEngineClient).informalIoCommunication(Mockito.eq(expectedLanguage), Mockito.any());
+    }
+
     private NotificationInt buildNotification() {
         return NotificationInt.builder()
                 .iun("iun")
