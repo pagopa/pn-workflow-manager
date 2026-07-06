@@ -12,6 +12,7 @@ public interface PnExternalChannelsClient {
 
     String LEGAL_NOTIFICATION_REQUEST = "LEGAL NOTIFICATION_REQUEST";
 
+    String COURTESY_NOTIFICATION_REQUEST = "COURTESY NOTIFICATION_REQUEST";
     void sendNotificationPEC(
         String requestId,
         String mailBody,
@@ -19,5 +20,11 @@ public interface PnExternalChannelsClient {
         NotificationRecipientInt recipientInt,
         LegalDigitalAddressInt digitalAddress,
         List<String> fileKeys
+    );
+
+    void sendNotificationSMS(
+            String requestIdx,
+            String textMessage,
+            String senderDigitalAddress
     );
 }
