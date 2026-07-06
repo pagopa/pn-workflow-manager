@@ -17,4 +17,15 @@ public class TemplateEngineClientImpl implements TemplateEngineClient {
         log.logInvokingExternalService(CLIENT_NAME, IO_MESSAGE_TEMPLATE);
         return templateApi.informalIoCommunication(language, informalCommunication);
     }
+
+    public String pecTemplate(LanguageEnum language, InformalCommunication informalCommunication) {
+        log.logInvokingExternalService(CLIENT_NAME, PEC_TEMPLATE);
+        return templateApi.informalPecCommunication(language, informalCommunication);
+    }
+
+    @Override
+    public String informalIoCommunication(LanguageEnum xLanguage, InformalCommunication informalCommunication) {
+        log.logInvokingExternalService(CLIENT_NAME, INFORMAL_IO_COMMUNICATION);
+        return templateApi.informalIoCommunication(xLanguage, informalCommunication);
+    }
 }

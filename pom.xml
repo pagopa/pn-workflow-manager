@@ -38,7 +38,7 @@
 		<dependency>
 			<groupId>it.pagopa.pn</groupId>
 			<artifactId>pn-commons</artifactId>
-			<version>2.20.0-SPRINGBOOT3</version>
+			<version>2.24.0-SPRINGBOOT3</version>
 		</dependency>
 
 		<dependency>
@@ -189,7 +189,7 @@
 						<phase>generate-resources</phase>
 						<configuration>
 							<inputSpec>
-								https://raw.githubusercontent.com/pagopa/pn-timeline-service/56609d81c465694e6ff79e9f293af1765e906462/docs/openapi/pn-timeline-service-private.yaml
+								https://raw.githubusercontent.com/pagopa/pn-timeline-service/236a276721eb73cd91495e2861b6df2002ec805a/docs/openapi/pn-timeline-service-private.yaml
 							</inputSpec>
 							<templateDirectory>${project.build.directory}/dependency-resources/scripts/openapi/templates/7.4.0/client</templateDirectory>
 							<generatorName>java</generatorName>
@@ -298,7 +298,39 @@
                             <apiPackage>${project.groupId}.deliverypushworkflow.generated.openapi.msclient.paperchannel.api</apiPackage>
                         </configuration>
                     </execution>
-
+					<execution>
+						<id>generate-client-pn-safe-storage</id>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<phase>generate-resources</phase>
+						<configuration>
+							<inputSpec>https://raw.githubusercontent.com/pagopa/pn-ss/a897235516b6878bb335b82e2582ec1e4fdb589e/docs/openapi/pn-safestorage-v1.1-api.yaml</inputSpec>
+							<templateDirectory>${project.build.directory}/dependency-resources/scripts/openapi/templates/7.4.0/client</templateDirectory>
+							<generatorName>java</generatorName>
+							<library>webclient</library>
+							<generateApiDocumentation>false</generateApiDocumentation>
+							<generateApiTests>false</generateApiTests>
+							<generateModelTests>false</generateModelTests>
+							<additionalProperties>removeEnumValuePrefix=false</additionalProperties>
+							<configOptions>
+								<useJakartaEe>true</useJakartaEe>
+								<swaggerAnnotations>false</swaggerAnnotations>
+								<openApiNullable>false</openApiNullable>
+								<dateLibrary>java8</dateLibrary>
+								<delegatePattern>true</delegatePattern>
+								<interfaceOnly>true</interfaceOnly>
+								<annotationLibrary>none</annotationLibrary>
+								<documentationProvider>source</documentationProvider>
+								<openApiNullable>false</openApiNullable>
+								<reactive>true</reactive>
+								<skipDefaultInterface>false</skipDefaultInterface>
+								<useTags>true</useTags>
+							</configOptions>
+							<modelPackage>${project.groupId}.deliverypushvalidator.generated.openapi.msclient.pnsafestorage.model</modelPackage>
+							<apiPackage>${project.groupId}.deliverypushvalidator.generated.openapi.msclient.pnsafestorage.v1.api</apiPackage>
+						</configuration>
+					</execution>
 					<!-- OPEN API CLIENT PN-TEMPLATE-ENGINE -->
 					<execution>
 						<id>generate-client-pn-template-engine</id>
@@ -307,9 +339,8 @@
 						</goals>
 						<phase>generate-resources</phase>
 						<configuration>
-							<!-- TODO: usare un link con commitId -->
 							<inputSpec>
-								https://raw.githubusercontent.com/pagopa/pn-templates-engine/refs/heads/feature/PN-19944/docs/openapi/pn-internal-templates-v1.yaml
+								https://raw.githubusercontent.com/pagopa/pn-templates-engine/8cf6d190e61cfb253df86ff88e5d28e8068765a2/docs/openapi/pn-internal-templates-v1.yaml
 							</inputSpec>
 							<templateDirectory>${project.build.directory}/dependency-resources/scripts/openapi/templates/7.4.0/client</templateDirectory>
 							<generatorName>java</generatorName>
@@ -378,8 +409,60 @@
 						</configuration>
 					</execution>
 
+					<!-- OPEN API CLIENT PN-EXTERNAL-CHANNELS -->
+					<execution>
+						<id>generate-client-pn-external-channels</id>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<phase>generate-resources</phase>
+						<configuration>
+							<inputSpec>
+								https://raw.githubusercontent.com/pagopa/pn-ec/ccaecd5cd36ba871752447fbb2d01b29bc10c8b3/docs/openapi/external/api-internal-v1.yaml
+							</inputSpec>
+							<templateDirectory>${project.build.directory}/dependency-resources/scripts/openapi/templates/7.4.0/client</templateDirectory>
+							<generatorName>java</generatorName>
+							<library>resttemplate</library>
+							<generateApiDocumentation>false</generateApiDocumentation>
+							<generateApiTests>false</generateApiTests>
+							<generateModelTests>false</generateModelTests>
+							<additionalProperties>removeEnumValuePrefix=false</additionalProperties>
+							<typeMappings>
+								<typeMapping>OffsetDateTime=java.time.Instant</typeMapping>
+							</typeMappings>
+							<configOptions>
+								<useOneOfInterfaces>true</useOneOfInterfaces>
+								<useJakartaEe>true</useJakartaEe>
+								<swaggerAnnotations>false</swaggerAnnotations>
+								<openApiNullable>false</openApiNullable>
+								<dateLibrary>java8</dateLibrary>
+								<delegatePattern>true</delegatePattern>
+								<annotationLibrary>none</annotationLibrary>
+								<documentationProvider>source</documentationProvider>
+								<openApiNullable>false</openApiNullable>
+								<skipDefaultInterface>false</skipDefaultInterface>
+								<useTags>true</useTags>
+							</configOptions>
+							<modelPackage>it.pagopa.pn.workflowmanager.generated.openapi.msclient.externalchannels.model</modelPackage>
+							<apiPackage>it.pagopa.pn.workflowmanager.generated.openapi.msclient.externalchannels.api</apiPackage>
+						</configuration>
+					</execution>
+
                 </executions>
-			</plugin>			 		 
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<annotationProcessorPaths>
+						<path>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+						</path>
+					</annotationProcessorPaths>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 </project>
