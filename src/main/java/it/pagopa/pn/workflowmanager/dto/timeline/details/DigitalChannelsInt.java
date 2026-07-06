@@ -4,7 +4,7 @@ import lombok.Getter;
 
 @Getter
 public enum DigitalChannelsInt {
-    APPIO("APPIO"),
+    APPIO("APPIO"), // TODO: valutare se può essere rinominato in IO
     PEC("PEC"),
     EMAIL("EMAIL"),
     SMS("SMS");
