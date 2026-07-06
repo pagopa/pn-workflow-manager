@@ -7,6 +7,10 @@ import java.io.File;
 
 public interface TemplateGeneratorService {
     String generateIoMessageTemplate(NotificationInt notificationInt, NotificationRecipientInt notificationRecipientInt, boolean isIoUser);
+
     File informalAnalogCommunication(NotificationInt notificationInt, NotificationRecipientInt notificationRecipientInt, boolean isIoUser);
 
+    String generatePecTemplate(NotificationInt notificationInt, NotificationRecipientInt notificationRecipientInt, boolean isIoUser);
+  
+    String generateInformalIoCommunicationTemplate(NotificationInt notificationInt, NotificationRecipientInt notificationRecipientInt, boolean isIoUser);
 }

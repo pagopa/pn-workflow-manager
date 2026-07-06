@@ -16,13 +16,27 @@ import java.io.File;
 public class TemplateEngineClientImpl implements TemplateEngineClient {
     private final TemplateApi templateApi;
 
+    @Override
     public String ioMessageTemplate(LanguageEnum language, InformalCommunication informalCommunication) {
         log.logInvokingExternalService(CLIENT_NAME, IO_MESSAGE_TEMPLATE);
         return templateApi.informalIoCommunication(language, informalCommunication);
     }
 
+    @Override
     public File informalAnalogCommunication(LanguageEnum xLanguage, InformalCommunication informalCommunication) {
         log.logInvokingExternalService(CLIENT_NAME, IO_MESSAGE_TEMPLATE);
         return templateApi.informalAnalogCommunication(xLanguage, informalCommunication);
+    }
+
+    @Override
+    public String pecTemplate(LanguageEnum language, InformalCommunication informalCommunication) {
+        log.logInvokingExternalService(CLIENT_NAME, PEC_TEMPLATE);
+        return templateApi.informalPecCommunication(language, informalCommunication);
+    }
+
+    @Override
+    public String informalIoCommunication(LanguageEnum xLanguage, InformalCommunication informalCommunication) {
+        log.logInvokingExternalService(CLIENT_NAME, INFORMAL_IO_COMMUNICATION);
+        return templateApi.informalIoCommunication(xLanguage, informalCommunication);
     }
 }
