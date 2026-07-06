@@ -31,4 +31,10 @@ public interface PnExternalChannelsClient {
             DigitalAddressInt digitalAddress,
             List<String> attachmentUrls
     );
+
+    void sendNotificationSMS(
+            String requestIdx,
+            String textMessage,
+            String senderDigitalAddress
+    );
 }

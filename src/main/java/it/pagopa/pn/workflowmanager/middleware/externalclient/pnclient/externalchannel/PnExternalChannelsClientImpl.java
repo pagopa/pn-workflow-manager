@@ -11,6 +11,7 @@ import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRe
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.externalchannels.api.DigitalCourtesyMessagesApi;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.externalchannels.api.DigitalLegalMessagesApi;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.externalchannels.model.DigitalCourtesyMailRequest;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.externalchannels.model.DigitalCourtesySmsRequest;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.externalchannels.model.DigitalNotificationRequest;
 import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ import java.util.List;
 
 import static it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCodes.ERROR_CODE_WORKFLOWMANAGER_SENDEMAILNOTIFICATIONFAILED;
 import static it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCodes.ERROR_CODE_WORKFLOWMANAGER_SENDPECNOTIFICATIONFAILED;
+import static it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCodes.ERROR_CODE_WORKFLOWMANAGER_SENDSMSNOTIFICATIONFAILED;
 
 @Component
 @CustomLog
@@ -104,5 +106,33 @@ public class PnExternalChannelsClientImpl implements PnExternalChannelsClient {
         digitalNotificationRequest.setSubjectText(recipientInt.getMessage().getPrimaryMessage().getSubject());
         digitalNotificationRequest.setAttachmentUrls(attachmentUrls.stream().map(FileUtils::getKeyWithStoragePrefix).toList());
         return digitalNotificationRequest;
+    }
+
+    @Override
+    public void sendNotificationSMS(
+            String requestIdx,
+            String textMessage,
+            String senderDigitalAddress
+    ) {
+        try {
+            log.logInvokingAsyncExternalService(CLIENT_NAME, COURTESY_NOTIFICATION_REQUEST + "[SMS]", requestIdx);
+            log.debug("[enter] sendNotificationSMS requestId={} senderDigitalAddress={}", requestIdx, LogUtils.maskNumber(senderDigitalAddress));
+
+            DigitalCourtesySmsRequest digitalNotificationRequest = new DigitalCourtesySmsRequest();
+            digitalNotificationRequest.setChannel(DigitalCourtesySmsRequest.ChannelEnum.SMS);
+            digitalNotificationRequest.setRequestId(requestIdx);
+            digitalNotificationRequest.setCorrelationId(requestIdx);
+            digitalNotificationRequest.setEventType(EVENT_TYPE_INFORMAL);
+            digitalNotificationRequest.setQos(DigitalCourtesySmsRequest.QosEnum.BATCH);
+            digitalNotificationRequest.setReceiverDigitalAddress(senderDigitalAddress);
+            digitalNotificationRequest.setClientRequestTimeStamp(Instant.now());
+            digitalNotificationRequest.setMessageText(textMessage);
+
+            digitalCourtesyMessagesApi.sendCourtesyShortMessage(requestIdx, cfg.getCxId(), digitalNotificationRequest);
+            log.debug("[exit] sendNotificationSMS requestId={} senderDigitalAddress={}", requestIdx, LogUtils.maskNumber(senderDigitalAddress));
+        } catch (Exception e) {
+            log.error("error sending SMS notification for requestIdx={}", requestIdx);
+            throw new PnInternalException("error sending SMS notification", ERROR_CODE_WORKFLOWMANAGER_SENDSMSNOTIFICATIONFAILED, e);
+        }
     }
 }
