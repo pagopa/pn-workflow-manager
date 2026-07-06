@@ -1,6 +1,7 @@
 package it.pagopa.pn.workflowmanager.dto.action.common;
 
 import it.pagopa.pn.workflowmanager.dto.action.ActionDetails;
+import it.pagopa.pn.workflowmanager.dto.action.details.DocumentCreationResponseActionDetails;
 import it.pagopa.pn.workflowmanager.dto.action.details.NotHandledDetails;
 import it.pagopa.pn.workflowmanager.dto.action.details.StartWorkflowDetails;
 import it.pagopa.pn.workflowmanager.dto.action.details.TimeoutWorkflowDetails;
@@ -58,6 +59,15 @@ public enum ActionType {
               action.getRecipientIndex(),
               details.getStepIdx(),
               details.getChannel()
+      );
+    }
+  },
+
+  DOCUMENT_CREATION_RESPONSE(DocumentCreationResponseActionDetails.class) {
+    @Override
+    public String buildActionId(Action action) {
+      return String.format("safe_storage_response_timelineId=%s",
+              action.getTimelineId()
       );
     }
   };

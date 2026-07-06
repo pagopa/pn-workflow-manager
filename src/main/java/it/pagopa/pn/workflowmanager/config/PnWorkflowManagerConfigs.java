@@ -37,6 +37,7 @@ public class PnWorkflowManagerConfigs {
         private String digitalQueue;
         private String analogQueue;
         private String ioQueue;
+        private String safeStorageEvents;
     }
 
     @PostConstruct
