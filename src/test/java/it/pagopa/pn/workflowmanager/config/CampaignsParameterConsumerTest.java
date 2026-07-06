@@ -16,6 +16,7 @@ import java.time.ZoneOffset;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 class CampaignsParameterConsumerTest {
 
@@ -146,7 +147,7 @@ class CampaignsParameterConsumerTest {
                 .channel(ChannelType.IO)
                 .recipientType(Collections.singleton(RecipientTypeInt.PF))
                 .timeout(Duration.ofDays(1))
-                .desiredFeedback(DesiredFeedbackType.READ)
+                .desiredFeedback(Set.of(DesiredFeedbackType.READ))
                 .includeAttachment(false)
                 .build();
     }

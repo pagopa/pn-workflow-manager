@@ -418,13 +418,13 @@ class WorkflowUtilsTest {
     }
 
     @Test
-    void isDesiredFeedbackShouldReturnTrueWhenWorkflowMatches() {
+    void isDesiredFeedbackShouldReturnTrueWhenWorkflowAndFeedbackMatch() {
         // Arrange
         ChannelType channel = ChannelType.PEC;
         DesiredFeedbackType desiredFeedback = DesiredFeedbackType.RECEIVED;
 
         WorkFlowEntity workFlow = WorkFlowEntity.builder()
-                .desiredFeedback(desiredFeedback)
+                .desiredFeedback(Set.of(desiredFeedback))
                 .channel(channel)
                 .build();
 
@@ -446,7 +446,7 @@ class WorkflowUtilsTest {
         DesiredFeedbackType desiredFeedback = DesiredFeedbackType.RECEIVED;
 
         WorkFlowEntity workFlow = WorkFlowEntity.builder()
-                .desiredFeedback(desiredFeedback)
+                .desiredFeedback(Set.of(desiredFeedback))
                 .channel(channel)
                 .build();
 
@@ -456,6 +456,27 @@ class WorkflowUtilsTest {
 
         // Act
         boolean result = workflowUtils.isDesiredFeedback(campaign, channel, DesiredFeedbackType.PAID);
+
+        // Assert
+        assertFalse(result);
+    }
+
+    @Test
+    void isDesiredFeedbackShouldReturnFalseWhenWorkflowHasDifferentChannel() {
+        // Arrange
+        DesiredFeedbackType desiredFeedback = DesiredFeedbackType.RECEIVED;
+
+        WorkFlowEntity workFlow = WorkFlowEntity.builder()
+                .desiredFeedback(Set.of(desiredFeedback))
+                .channel(ChannelType.EMAIL)
+                .build();
+
+        Campaign campaign = Campaign.builder()
+                .workflow(List.of(workFlow))
+                .build();
+
+        // Act
+        boolean result = workflowUtils.isDesiredFeedback(campaign, ChannelType.IO, DesiredFeedbackType.RECEIVED);
 
         // Assert
         assertFalse(result);
@@ -473,6 +494,36 @@ class WorkflowUtilsTest {
 
         // Assert
         assertFalse(result);
+    }
+
+    @Test
+    void isDesiredFeedbackShouldReturnFalseWhenWorkflowDoesNotHaveDesiredFeedbacks() {
+        // EMPTY desiredFeedback set
+        // Arrange
+        WorkFlowEntity workFlow = WorkFlowEntity.builder()
+                .desiredFeedback(Set.of())
+                .channel(ChannelType.PEC)
+                .build();
+
+        Campaign campaign = Campaign.builder()
+                .workflow(List.of(workFlow))
+                .build();
+
+        // Act
+        boolean result = workflowUtils.isDesiredFeedback(campaign, ChannelType.PEC, DesiredFeedbackType.RECEIVED);
+
+        // Assert
+        assertFalse(result);
+
+        // NULL desiredFeedback set
+        workFlow.setDesiredFeedback(null);
+
+        // Act
+        boolean result2 = workflowUtils.isDesiredFeedback(campaign, ChannelType.PEC, DesiredFeedbackType.RECEIVED);
+
+        // Assert
+        assertFalse(result2);
+
     }
 
     @Test

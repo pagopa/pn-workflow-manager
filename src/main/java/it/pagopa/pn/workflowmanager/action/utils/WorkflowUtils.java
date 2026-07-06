@@ -78,7 +78,7 @@ public class WorkflowUtils {
     public boolean isDesiredFeedback(Campaign campaign, ChannelType channel, DesiredFeedbackType desiredFeedback) {
         return campaign.getWorkflow().stream()
                 .filter(workflowEntity -> workflowEntity.getChannel() == channel)
-                .anyMatch(workflowEntity -> workflowEntity.getDesiredFeedback() == desiredFeedback);
+                .anyMatch(workflowEntity -> workflowEntity.getDesiredFeedback() != null && workflowEntity.getDesiredFeedback().contains(desiredFeedback));
     }
 
     public void advanceWorkflow(String iun, int recIndex, ChannelType channel, Campaign campaign, RecipientTypeInt recipientTypeInt) {

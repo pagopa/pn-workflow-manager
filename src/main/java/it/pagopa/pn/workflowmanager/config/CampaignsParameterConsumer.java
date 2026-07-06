@@ -111,9 +111,7 @@ public class CampaignsParameterConsumer {
                 && Objects.nonNull(workflowStep.getChannel())
                 && Objects.nonNull(workflowStep.getRecipientType())
                 && !workflowStep.getRecipientType().isEmpty()
-                && workflowStep.getRecipientType().stream().allMatch(Objects::nonNull)
-                && Objects.nonNull(workflowStep.getDesiredFeedback())
-                && Objects.nonNull(workflowStep.getIncludeAttachment());
+                && workflowStep.getRecipientType().stream().allMatch(Objects::nonNull);
     }
 
     private boolean hasParameterNotFoundCause(Throwable throwable) {
