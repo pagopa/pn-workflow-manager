@@ -1,5 +1,6 @@
 package it.pagopa.pn.workflowmanager.action;
 
+import it.pagopa.pn.workflowmanager.action.start_workflow.EmailChannelSender;
 import it.pagopa.pn.workflowmanager.action.start_workflow.IoChannelSender;
 import it.pagopa.pn.workflowmanager.action.start_workflow.PecChannelSender;
 import it.pagopa.pn.workflowmanager.models.internal.campaign.ChannelType;
@@ -13,12 +14,14 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class ChannelSenderFactory {
     private final IoChannelSender ioChannelSender;
+    private final EmailChannelSender emailChannelSender;
     private final PecChannelSender pecChannelSender;
 
     public ChannelSender getChannelSender(@Nonnull ChannelType channel){
         return switch (channel) {
             case IO -> ioChannelSender;
             case PEC -> pecChannelSender;
+            case EMAIL -> emailChannelSender;
             default -> throw new IllegalArgumentException("Unsupported channel type: " + channel);
         };
     }

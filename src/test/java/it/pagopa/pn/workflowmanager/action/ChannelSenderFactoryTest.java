@@ -1,25 +1,28 @@
 package it.pagopa.pn.workflowmanager.action;
 
+import it.pagopa.pn.workflowmanager.action.start_workflow.EmailChannelSender;
 import it.pagopa.pn.workflowmanager.action.start_workflow.IoChannelSender;
-import it.pagopa.pn.workflowmanager.models.internal.campaign.ChannelType;
 import it.pagopa.pn.workflowmanager.action.start_workflow.PecChannelSender;
+import it.pagopa.pn.workflowmanager.models.internal.campaign.ChannelType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.Mockito.mock;
 
 class ChannelSenderFactoryTest {
 
     private IoChannelSender ioChannelSender;
     private PecChannelSender pecChannelSender;
+    private EmailChannelSender emailChannelSender;
     private ChannelSenderFactory channelSenderFactory;
 
     @BeforeEach
     void setUp() {
         ioChannelSender = mock(IoChannelSender.class);
+        emailChannelSender = mock(EmailChannelSender.class);
         pecChannelSender = mock(PecChannelSender.class);
-        channelSenderFactory = new ChannelSenderFactory(ioChannelSender, pecChannelSender);
+        channelSenderFactory = new ChannelSenderFactory(ioChannelSender, emailChannelSender, pecChannelSender);
     }
 
     @Test
@@ -32,16 +35,10 @@ class ChannelSenderFactoryTest {
     }
 
     @Test
-    void shouldThrowIllegalArgumentException_whenChannelIsNotSupported() {
-        ChannelType unsupportedChannel = ChannelType.EMAIL;
+    void shouldReturnEmailChannelSender_whenChannelIsEmail() {
+        ChannelSender result = channelSenderFactory.getChannelSender(ChannelType.EMAIL);
 
-        // when / then
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
-                () -> channelSenderFactory.getChannelSender(unsupportedChannel)
-        );
-        assertTrue(exception.getMessage().contains("Unsupported channel type"));
-        assertTrue(exception.getMessage().contains(unsupportedChannel.toString()));
+        assertSame(emailChannelSender, result);
     }
 
     @Test
