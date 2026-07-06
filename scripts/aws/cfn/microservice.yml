@@ -252,19 +252,19 @@ Parameters:
     Type: String
     Description: 'pn-workflow-manager Io event queue age alarm ARN'
 
-  SafeStore2WorkflowManagerQueueName:
+  SafeStorageToWorkflowManagerQueueName:
     Type: String
     Description: 'Safestorage to Workflow manager queue name'
 
-  SafeStore2WorkflowManagerQueueURL:
+  SafeStorageToWorkflowManagerQueueURL:
     Type: String
     Description: 'Safestorage to Workflow manager queue URL'
 
-  SafeStore2WorkflowManagerQueueARN:
+  SafeStorageToWorkflowManagerQueueARN:
     Type: String
     Description: 'Safestorage to Workflow manager queue ARN'
 
-  SafeStore2WorkflowManagerQueueAgeAlarmARN:
+  SafeStorageToWorkflowManagerQueueAgeAlarmARN:
     Type: String
     Description: 'pn-safestore_to_workflowmanager event queue age alarm ARN'
 
@@ -336,7 +336,7 @@ Resources:
         ContainerEnvEntry13: !Sub 'PN_WORKFLOWMANAGER_TEMPLATEENGINEBASEURL=http://${ApplicationLoadBalancerDomain}:8080'
         ContainerEnvEntry14: !Sub 'PN_WORKFLOWMANAGER_PAPERMESSAGESCLIENTBASEURL=http://${ApplicationLoadBalancerDomain}:8080'
         ContainerEnvEntry15: !Sub 'PN_WORKFLOWMANAGER_EXTERNALCHANNELSBASEURL=http://${ApplicationLoadBalancerDomain}:8080'
-        ContainerEnvEntry16: !Sub 'PN_WORKFLOWMANAGER_TOPICS_SAFESTORAGEEVENTS=${SafeStore2WorkflowManagerQueueName}'
+        ContainerEnvEntry16: !Sub 'PN_WORKFLOWMANAGER_TOPICS_SAFESTORAGEEVENTS=${SafeStorageToWorkflowManagerQueueName}'
         ApplicativeEnvFileChecksum: !Ref ApplicativeEnvFileChecksum
         JavaToolOptions: '-Dreactor.netty.ioWorkerCount=50'
         MappedPaths: '/workflow-manager-not-available'
@@ -369,14 +369,14 @@ Resources:
             - !Ref WorkflowManagerDigitalEventQueueAgeAlarmARN
             - !Ref WorkflowManagerIoEventQueueAlarmARN
             - !Ref WorkflowManagerIoEventQueueAgeAlarmARN
-            - !Ref SafeStore2WorkflowManagerQueueAgeAlarmARN
+            - !Ref SafeStorageToWorkflowManagerQueueAgeAlarmARN
         QueueArns: !Join
           - ','
           - - !Ref WorkflowManagerActionQueueARN
             - !Ref WorkflowManagerAnalogEventQueueARN
             - !Ref WorkflowManagerDigitalEventQueueARN
             - !Ref WorkflowManagerIoEventQueueARN
-            - !Ref SafeStore2WorkflowManagerQueueARN
+            - !Ref SafeStorageToWorkflowManagerQueueARN
         LogGroupsNames: !Join
           - ','
           - - !Sub '/aws/ecs/${ProjectName}-workflow-manager'
@@ -403,7 +403,7 @@ Resources:
               - !Ref WorkflowManagerAnalogEventQueueARN
               - !Ref WorkflowManagerDigitalEventQueueARN
               - !Ref WorkflowManagerIoEventQueueARN
-              - !Ref SafeStore2WorkflowManagerQueueARN
+              - !Ref SafeStorageToWorkflowManagerQueueARN
 
   EventBusEnqueueRole:
     Type: AWS::IAM::Role
@@ -431,7 +431,7 @@ Resources:
                   - !Ref WorkflowManagerAnalogEventQueueARN
                   - !Ref WorkflowManagerDigitalEventQueueARN
                   - !Ref WorkflowManagerIoEventQueueARN
-                  - !Ref SafeStore2WorkflowManagerQueueARN
+                  - !Ref SafeStorageToWorkflowManagerQueueARN
 
   PnCoreEventBusToWorkflowManagerActionQueueRule:
     Type: AWS::Events::Rule
@@ -714,7 +714,7 @@ Resources:
           documentType: [ 'PN_COMMUNICATIONS_COVERPAGE' ]
       Targets:
         - Arn: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:PnCoreEventBusMatchedEventLogger
-          Id: !Sub ${ProjectName}-Logger-SafeStore2WorkflowManager
+          Id: !Sub ${ProjectName}-Logger-SafeStorageToWorkflowManager
           InputTransformer:
             InputPathsMap:
               "timestamp": "$.time"
@@ -726,17 +726,17 @@ Resources:
                   "ingestionTime": <aws.events.event.ingestion-time>,
                   "originalEvent": <aws.events.event.json>
               }
-        - Id: !Sub '${ProjectName}-CoreEventBus-SafeStore2WorkflowManager'
-          Arn: !Ref SafeStore2WorkflowManagerQueueARN
+        - Id: !Sub '${ProjectName}-CoreEventBus-SafeStorageToWorkflowManager'
+          Arn: !Ref SafeStorageToWorkflowManagerQueueARN
           InputPath: $.detail
           DeadLetterConfig:
             Arn: !Sub arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:pn-CoreEventBus-DLQ
 
-  EventBridgeSafeStore2WorkflowManagerQueuePolicy:
+  EventBridgeSafeStorageToWorkflowManagerQueuePolicy:
     Type: AWS::SQS::QueuePolicy
     Properties:
       Queues:
-        - !Ref SafeStore2WorkflowManagerQueueURL
+        - !Ref SafeStorageToWorkflowManagerQueueURL
       PolicyDocument:
         Statement:
           - Sid: AllowEventBridgeToSendMessage
@@ -744,7 +744,7 @@ Resources:
             Principal:
               Service: events.amazonaws.com
             Action: sqs:SendMessage
-            Resource: !Ref SafeStore2WorkflowManagerQueueARN
+            Resource: !Ref SafeStorageToWorkflowManagerQueueARN
             Condition:
               ArnEquals:
                 aws:SourceArn: !GetAtt PnCoreEventBusToWorkflowManagerSafeStorageQueue.Arn

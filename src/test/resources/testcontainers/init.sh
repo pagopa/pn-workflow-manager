@@ -2,7 +2,7 @@
 
 echo "### CREATE QUEUES ###"
 
-queues="pn-workflow-manager-action-queue pn-workflow-manager-digital-event-queue pn-workflow-manager-analog-event-queue pn-workflow-manager-io-event-queue pn-pn-safestore_to_workflowmanager"
+queues="pn-workflow-manager-action-queue pn-workflow-manager-digital-event-queue pn-workflow-manager-analog-event-queue pn-workflow-manager-io-event-queue pn-safestore_to_workflowmanager"
 
 for qn in  $( echo $queues | tr " " "\n" ) ; do
 
@@ -60,7 +60,7 @@ IO_QUEUE_ARN=$(aws --profile default --region us-east-1 --endpoint-url=http://lo
 
 SAFESTORE_QUEUE_ARN=$(aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
     sqs get-queue-attributes \
-    --queue-url http://localstack:4566/000000000000/pn-pn-safestore_to_workflowmanager \
+    --queue-url http://localstack:4566/000000000000/pn-safestore_to_workflowmanager \
     --attribute-names QueueArn \
     --query 'Attributes.QueueArn' \
     --output text)
