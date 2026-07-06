@@ -82,7 +82,7 @@ public class WorkflowUtils {
     }
 
     public void advanceWorkflow(String iun, int recIndex, ChannelType channel, Campaign campaign, RecipientTypeInt recipientTypeInt) {
-        log.info("Scheduling next channel for iun={} channel={}", iun, recIndex);
+        log.info("Scheduling next channel for iun={} recIndex={} channel={}", iun, recIndex, channel);
         Optional<WorkflowUtils.NextChannel> nextChannelInfoOptional = getNextChannel(campaign, channel, recipientTypeInt);
         if(nextChannelInfoOptional.isEmpty()) {
             scheduleEndWorkflow(iun, recIndex, channel);
