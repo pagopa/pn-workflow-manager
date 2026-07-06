@@ -1,10 +1,13 @@
 package it.pagopa.pn.workflowmanager.action.utils;
 
 import it.pagopa.pn.workflowmanager.dto.action.common.ActionType;
+import it.pagopa.pn.workflowmanager.dto.action.details.NotHandledDetails;
+import it.pagopa.pn.workflowmanager.dto.action.details.StartWorkflowDetails;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.RecipientTypeInt;
 import it.pagopa.pn.workflowmanager.exceptions.PnWorkflowException;
 import it.pagopa.pn.workflowmanager.models.internal.campaign.Campaign;
 import it.pagopa.pn.workflowmanager.models.internal.campaign.ChannelType;
+import it.pagopa.pn.workflowmanager.models.internal.campaign.DesiredFeedbackType;
 import it.pagopa.pn.workflowmanager.models.internal.campaign.WorkFlowEntity;
 import it.pagopa.pn.workflowmanager.service.SchedulerService;
 import org.junit.jupiter.api.Assertions;
@@ -14,12 +17,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -48,7 +51,7 @@ class WorkflowUtilsTest {
 
         // Assert
         Assertions.assertAll(
-                () -> Assertions.assertTrue(result.isPresent()),
+                () -> assertTrue(result.isPresent()),
                 () -> Assertions.assertEquals(ChannelType.EMAIL, result.get().channel()),
                 () -> Assertions.assertEquals(1, result.get().stepIndex())
         );
@@ -100,7 +103,7 @@ class WorkflowUtilsTest {
 
         // Assert
         Assertions.assertAll(
-                () -> Assertions.assertTrue(result.isPresent()),
+                () -> assertTrue(result.isPresent()),
                 () -> Assertions.assertEquals(ChannelType.SMS, result.get().channel()),
                 () -> Assertions.assertEquals(2, result.get().stepIndex())
         );
@@ -123,7 +126,7 @@ class WorkflowUtilsTest {
 
         // Assert
         Assertions.assertAll(
-                () -> Assertions.assertTrue(result.isPresent()),
+                () -> assertTrue(result.isPresent()),
                 () -> Assertions.assertEquals(ChannelType.SMS, result.get().channel()),
                 () -> Assertions.assertEquals(1, result.get().stepIndex())
         );
@@ -146,7 +149,7 @@ class WorkflowUtilsTest {
 
         // Assert
         Assertions.assertAll(
-                () -> Assertions.assertTrue(result.isPresent()),
+                () -> assertTrue(result.isPresent()),
                 () -> Assertions.assertEquals(ChannelType.SMS, result.get().channel()),
                 () -> Assertions.assertEquals(1, result.get().stepIndex())
         );
@@ -169,7 +172,7 @@ class WorkflowUtilsTest {
 
         // Assert
         Assertions.assertAll(
-                () -> Assertions.assertTrue(resultPF.isPresent()),
+                () -> assertTrue(resultPF.isPresent()),
                 () -> Assertions.assertEquals(ChannelType.EMAIL, resultPF.get().channel()),
                 () -> Assertions.assertEquals(1, resultPF.get().stepIndex())
         );
@@ -237,7 +240,7 @@ class WorkflowUtilsTest {
 
         // Assert
         Assertions.assertAll(
-                () -> Assertions.assertTrue(result.isPresent()),
+                () -> assertTrue(result.isPresent()),
                 () -> Assertions.assertEquals(ChannelType.EMAIL, result.get().channel()),
                 () -> Assertions.assertEquals(1, result.get().stepIndex())
         );
@@ -257,7 +260,7 @@ class WorkflowUtilsTest {
 
         // Assert
         Assertions.assertAll(
-                () -> Assertions.assertTrue(result.isPresent()),
+                () -> assertTrue(result.isPresent()),
                 () -> Assertions.assertEquals(ChannelType.SMS, result.get().channel()),
                 () -> Assertions.assertEquals(2, result.get().stepIndex())
         );
@@ -277,7 +280,7 @@ class WorkflowUtilsTest {
 
         // Assert
         Assertions.assertAll(
-                () -> Assertions.assertTrue(result.isPresent()),
+                () -> assertTrue(result.isPresent()),
                 () -> Assertions.assertEquals(ChannelType.ANALOG, result.get().channel()),
                 () -> Assertions.assertEquals(3, result.get().stepIndex())
         );
@@ -301,7 +304,7 @@ class WorkflowUtilsTest {
 
         // Assert
         Assertions.assertAll(
-                () -> Assertions.assertTrue(result.isPresent()),
+                () -> assertTrue(result.isPresent()),
                 () -> Assertions.assertEquals(ChannelType.ANALOG, result.get().channel()),
                 () -> Assertions.assertEquals(2, result.get().stepIndex())
         );
@@ -412,6 +415,125 @@ class WorkflowUtilsTest {
         when(campaign.getWorkflow()).thenReturn(null);
 
         assertThrows(PnWorkflowException.class, () -> workflowUtils.scheduleTimeoutForCurrentChannel(iun, recIndex, currentStepIdx, campaign, ChannelType.IO));
+    }
+
+    @Test
+    void isDesiredFeedbackShouldReturnTrueWhenWorkflowMatches() {
+        // Arrange
+        ChannelType channel = ChannelType.PEC;
+        DesiredFeedbackType desiredFeedback = DesiredFeedbackType.RECEIVED;
+
+        WorkFlowEntity workFlow = WorkFlowEntity.builder()
+                .desiredFeedback(desiredFeedback)
+                .channel(channel)
+                .build();
+
+        Campaign campaign = Campaign.builder()
+                .workflow(List.of(workFlow))
+                .build();
+
+        // Act
+        boolean result = workflowUtils.isDesiredFeedback(campaign, channel, desiredFeedback);
+
+        // Assert
+        assertTrue(result);
+    }
+
+    @Test
+    void isDesiredFeedbackShouldReturnFalseWhenChannelMatchesButFeedbackDiffers() {
+        // Arrange
+        ChannelType channel = ChannelType.PEC;
+        DesiredFeedbackType desiredFeedback = DesiredFeedbackType.RECEIVED;
+
+        WorkFlowEntity workFlow = WorkFlowEntity.builder()
+                .desiredFeedback(desiredFeedback)
+                .channel(channel)
+                .build();
+
+        Campaign campaign = Campaign.builder()
+                .workflow(List.of(workFlow))
+                .build();
+
+        // Act
+        boolean result = workflowUtils.isDesiredFeedback(campaign, channel, DesiredFeedbackType.PAID);
+
+        // Assert
+        assertFalse(result);
+    }
+
+    @Test
+    void isDesiredFeedbackShouldReturnFalseWhenWorkflowIsEmpty() {
+        // Arrange
+        Campaign campaign = Campaign.builder()
+                .workflow(List.of())
+                .build();
+
+        // Act
+        boolean result = workflowUtils.isDesiredFeedback(campaign, ChannelType.PEC, DesiredFeedbackType.RECEIVED);
+
+        // Assert
+        assertFalse(result);
+    }
+
+    @Test
+    void advanceWorkflowShouldScheduleEndWorkflowWhenNoNextChannelFound() {
+        // Arrange
+        Campaign campaign = Campaign.builder()
+                .workflow(List.of(createWorkflowEntity(ChannelType.EMAIL, Set.of(RecipientTypeInt.PF))))
+                .build();
+        String iun = "IUN_123";
+        int recIndex = 0;
+        ChannelType currentChannel = ChannelType.EMAIL;
+        RecipientTypeInt recipientType = RecipientTypeInt.PF;
+
+        // Act
+        workflowUtils.advanceWorkflow(iun, recIndex, currentChannel, campaign, recipientType);
+
+        // Assert
+        verify(schedulerService).scheduleEvent(
+                eq(iun),
+                eq(recIndex),
+                any(Instant.class),
+                eq(ActionType.END_WORKFLOW),
+                any(NotHandledDetails.class)
+        );
+
+        // Verifichiamo che non sia stato chiamato lo start del canale successivo
+        verify(schedulerService, never()).scheduleEvent(
+                any(), anyInt(), any(), eq(ActionType.START_WORKFLOW), any()
+        );
+    }
+
+    @Test
+    void advanceWorkflowShouldScheduleNextChannelWhenNextChannelExists() {
+        Campaign campaign = createCampaignWithMultipleChannels(List.of(ChannelType.IO, ChannelType.EMAIL));
+        String iun = "IUN_123";
+        int recIndex = 0;
+        ChannelType currentChannel = ChannelType.IO;
+        RecipientTypeInt recipientType = RecipientTypeInt.PF;
+
+        // Act
+        workflowUtils.advanceWorkflow(iun, recIndex, currentChannel, campaign, recipientType);
+
+        // Assert
+        // Costruiamo il dettaglio atteso per verificare il Builder
+        StartWorkflowDetails expectedDetails = StartWorkflowDetails.builder()
+                .stepIdx(1)
+                .channel(ChannelType.EMAIL)
+                .build();
+
+        verify(schedulerService).scheduleEvent(
+                eq(iun),
+                eq(recIndex),
+                any(Instant.class),
+                eq(ActionType.START_WORKFLOW),
+                eq(expectedDetails)
+        );
+
+        // Verifichiamo che non sia stato chiamato l'end workflow
+        verify(schedulerService, never()).scheduleEvent(
+                any(), anyInt(), any(), eq(ActionType.END_WORKFLOW), any()
+        );
     }
 
     private Campaign createCampaignWithMultipleChannels(List<ChannelType> channels) {

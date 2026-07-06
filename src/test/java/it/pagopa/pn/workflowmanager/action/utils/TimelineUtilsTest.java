@@ -1,19 +1,25 @@
 package it.pagopa.pn.workflowmanager.action.utils;
 
 import it.pagopa.pn.commons.exceptions.PnInternalException;
+import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.timelineservice.model.NotificationHistoryResponse;
+import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.timelineservice.model.NotificationStatus;
 import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
 import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
+import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationSenderInt;
+import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.RecipientTypeInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.EventId;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineEventId;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.*;
+import it.pagopa.pn.workflowmanager.models.internal.campaign.ChannelType;
 import it.pagopa.pn.workflowmanager.service.TimelineService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -25,8 +31,8 @@ import java.util.Set;
 import static it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class TimelineUtilsTest {
@@ -569,9 +575,85 @@ class TimelineUtilsTest {
         Assertions.assertEquals(digitalAddressSourceInt, detailsInt.getDigitalAddressSource());
     }
 
+    @Test
+    void buildDeliveredTimelineElement() {
+        String sourceId = "source_001";
+        int recIndex = 0;
+        NotificationInt notification = createNotification();
+        ChannelType channel = ChannelType.IO;
+        String expectedElementId = TimelineEventId.DELIVERED.buildEventId(
+                EventId.builder()
+                        .iun(notification.getIun())
+                        .recIndex(recIndex)
+                        .channel(channel.name())
+                        .build()
+        );
+        TimelineElementInternal actual = timelineUtils.buildDeliveredTimelineElement(
+                createNotification(),
+                recIndex,
+                channel,
+                sourceId
+        );
+
+        Assertions.assertEquals("TEST-IUN-001", actual.getIun());
+        Assertions.assertEquals(expectedElementId, actual.getElementId());
+        Assertions.assertEquals(TEST_PA_ID, actual.getPaId());
+        Assertions.assertEquals(TimelineElementCategoryInt.DELIVERED, actual.getCategory());
+        Assertions.assertNotNull(actual.getDetails());
+        DeliveredDetailsInt detailsInt = (DeliveredDetailsInt) actual.getDetails();
+        Assertions.assertEquals(recIndex, detailsInt.getRecIndex());
+        Assertions.assertEquals(ChannelType.IO.name(), detailsInt.getChannel());
+        Assertions.assertEquals(sourceId, detailsInt.getSourceElementId());
+    }
+
+    @Test
+    void handleTransitionToReachedStatusIfNecessaryPersistWorkflowEndedReachedElement() {
+        NotificationInt notification = createNotification();
+        int recIndex = 0;
+        String sourceId = "source_001";
+
+        NotificationHistoryResponse historyResponse = new NotificationHistoryResponse();
+        historyResponse.setNotificationStatus(NotificationStatus.COMPLETED_UNREACHED);
+        when(timelineService.getTimelineAndStatusHistory(notification.getIun(), notification.getRecipients().size(), notification.getSentAt()))
+                        .thenReturn(historyResponse);
+
+        timelineUtils.handleTransitionToReachedStatusIfNecessary(notification, recIndex, sourceId);
+
+        ArgumentCaptor<TimelineElementInternal> elementCaptor = ArgumentCaptor.forClass(TimelineElementInternal.class);
+        verify(timelineService).addTimelineElement(elementCaptor.capture(), eq(notification));
+        TimelineElementInternal capturedElement = elementCaptor.getValue();
+        assertEquals(WORKFLOW_ENDED_REACHED, capturedElement.getCategory());
+        WorkflowEndedReachedDetailsInt details = (WorkflowEndedReachedDetailsInt) capturedElement.getDetails();
+        assertEquals(recIndex, details.getRecIndex());
+        assertEquals(sourceId, details.getSourceElementId());
+    }
+
+    @Test
+    void handleTransitionToReachedStatusIfNecessaryDoesntPersistWorkflowEndedReachedElement() {
+        NotificationInt notification = createNotification();
+        int recIndex = 0;
+        String sourceId = "source_001";
+
+        NotificationHistoryResponse historyResponse = new NotificationHistoryResponse();
+        historyResponse.setNotificationStatus(NotificationStatus.PROCESSING);
+        when(timelineService.getTimelineAndStatusHistory(notification.getIun(), notification.getRecipients().size(), notification.getSentAt()))
+                .thenReturn(historyResponse);
+
+        timelineUtils.handleTransitionToReachedStatusIfNecessary(notification, recIndex, sourceId);
+
+        verify(timelineService).getTimelineAndStatusHistory(notification.getIun(), notification.getRecipients().size(), notification.getSentAt());
+        verify(timelineService, never()).addTimelineElement(org.mockito.Mockito.any(), org.mockito.Mockito.eq(notification));
+    }
+
     private NotificationInt createNotification() {
         return NotificationInt.builder()
                 .iun(TEST_IUN)
+                .recipients(List.of(
+                        NotificationRecipientInt.builder()
+                                .denomination("Test Recipient")
+                                .recipientType(RecipientTypeInt.PF)
+                                .build()
+                ))
                 .sender(NotificationSenderInt.builder()
                         .paId(TEST_PA_ID)
                         .build())
