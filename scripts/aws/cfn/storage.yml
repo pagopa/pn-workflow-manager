@@ -95,6 +95,18 @@ Resources:
         MaxReceiveCount: 10
         DelaySeconds: 1
 
+  SafeStore2WorkflowManagerQueue:
+    Type: AWS::CloudFormation::Stack
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/sqs-queue.yaml"
+      Parameters:
+        QueueName: !Sub '${ProjectName}-pn-safestore_to_workflowmanager'
+        AlarmSNSTopicName: !Ref AlarmSNSTopicName
+        DelaySeconds: 1
+        VisibilityTimeout: 60
+
 Outputs:
   # Queues
   WorkflowManagerActionQueueName:
@@ -112,6 +124,16 @@ Outputs:
   WorkflowManagerActionQueueAgeAlarmARN:
     Value: !GetAtt WorkflowManagerActionQueue.Outputs.SqsAgeAlarmArn
     Description: pn-workflow-manager action queue age alarm ARN
+
+  SafeStore2WorkflowManagerQueueName:
+    Value: !GetAtt SafeStore2WorkflowManagerQueue.Outputs.QueueName
+    Description: SafeStore2WorkflowManager queue name
+  SafeStore2WorkflowManagerQueueURL:
+    Value: !GetAtt SafeStore2WorkflowManagerQueue.Outputs.QueueURL
+    Description: SafeStore2WorkflowManager queue URL
+  SafeStore2WorkflowManagerQueueARN:
+    Value: !GetAtt SafeStore2WorkflowManagerQueue.Outputs.QueueARN
+    Description: SafeStore2WorkflowManager queue ARN
 
   WorkflowManagerAnalogEventQueueName:
     Value: !GetAtt WorkflowManagerAnalogEventQueue.Outputs.QueueName
