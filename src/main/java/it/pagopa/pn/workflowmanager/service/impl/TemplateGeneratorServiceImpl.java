@@ -35,6 +35,13 @@ public class TemplateGeneratorServiceImpl implements TemplateGeneratorService {
         return templateEngineClient.pecTemplate(language, informalCommunication);
     }
 
+    @Override
+    public String generateInformalIoCommunicationTemplate(NotificationInt notificationInt, NotificationRecipientInt notificationRecipientInt, boolean isIoUser) {
+        LanguageEnum language = getLanguage(notificationRecipientInt.getAdditionalLanguages());
+        InformalCommunication informalCommunication = mapToInformalCommunication(notificationInt, notificationRecipientInt, isIoUser);
+        return templateEngineClient.informalIoCommunication(language, informalCommunication);
+    }
+
     private LanguageEnum getLanguage(List<String> additionalLanguages) {
         return CollectionUtils.isEmpty(additionalLanguages)
                 ? LanguageEnum.IT : LanguageEnum.fromValue(additionalLanguages.getFirst());
