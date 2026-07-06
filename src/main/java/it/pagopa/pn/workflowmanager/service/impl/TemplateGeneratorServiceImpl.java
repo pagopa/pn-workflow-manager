@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.io.File;
 import java.util.List;
 
 import static it.pagopa.pn.workflowmanager.service.mapper.TemplateEngineMapper.mapToInformalCommunication;
@@ -26,6 +27,13 @@ public class TemplateGeneratorServiceImpl implements TemplateGeneratorService {
         LanguageEnum language = getLanguage(notificationRecipientInt.getAdditionalLanguages());
         InformalCommunication informalCommunication = mapToInformalCommunication(notificationInt, notificationRecipientInt, isIoUser);
         return templateEngineClient.ioMessageTemplate(language, informalCommunication);
+    }
+
+    @Override
+    public File informalAnalogCommunication(NotificationInt notificationInt, NotificationRecipientInt notificationRecipientInt, boolean isIoUser) {
+        LanguageEnum language = getLanguage(notificationRecipientInt.getAdditionalLanguages());
+        InformalCommunication informalCommunication = mapToInformalCommunication(notificationInt, notificationRecipientInt, isIoUser);
+        return templateEngineClient.informalAnalogCommunication(language, informalCommunication);
     }
 
     @Override
