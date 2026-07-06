@@ -1,6 +1,7 @@
 package it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.externalchannel;
 
 import it.pagopa.pn.commons.log.PnLogger;
+import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.address.LegalDigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
@@ -20,6 +21,15 @@ public interface PnExternalChannelsClient {
         NotificationRecipientInt recipientInt,
         LegalDigitalAddressInt digitalAddress,
         List<String> fileKeys
+    );
+
+    void sendNotificationEMAIL(
+            String requestId,
+            String mailBody,
+            NotificationInt notificationInt,
+            NotificationRecipientInt recipientInt,
+            DigitalAddressInt digitalAddress,
+            List<String> attachmentUrls
     );
 
     void sendNotificationSMS(

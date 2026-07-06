@@ -120,4 +120,49 @@ class TemplateEngineClientImplTest {
 
         verify(templateApi).informalPecCommunication(language, informalCommunication);
     }
+
+    @Test
+    void informalIoCommunication_shouldReturnTemplate_whenTemplateApiRespondsSuccessfully() {
+        // given
+        String expectedTemplate = "<html>template content</html>";
+        when(templateApi.informalIoCommunication(language, informalCommunication))
+                .thenReturn(expectedTemplate);
+
+        // when
+        String result = templateEngineClient.informalIoCommunication(language, informalCommunication);
+
+        // then
+        assertEquals(expectedTemplate, result);
+        verify(templateApi).informalIoCommunication(language, informalCommunication);
+        verifyNoMoreInteractions(templateApi);
+    }
+
+    @Test
+    void informalIoCommunication_shouldReturnNull_whenTemplateApiReturnsNull() {
+        // given
+        when(templateApi.informalIoCommunication(language, informalCommunication))
+                .thenReturn(null);
+
+        // when
+        String result = templateEngineClient.informalIoCommunication(language, informalCommunication);
+
+        // then
+        assertNull(result);
+        verify(templateApi).informalIoCommunication(language, informalCommunication);
+    }
+
+    @Test
+    void informalIoCommunication_shouldPropagateException_whenTemplateApiThrows() {
+        // given
+        RuntimeException expectedException = new RuntimeException("external service error");
+        when(templateApi.informalIoCommunication(language, informalCommunication))
+                .thenThrow(expectedException);
+
+        // when / then
+        RuntimeException thrown = assertThrows(RuntimeException.class,
+                () -> templateEngineClient.informalIoCommunication(language, informalCommunication));
+        assertEquals("external service error", thrown.getMessage());
+
+        verify(templateApi).informalIoCommunication(language, informalCommunication);
+    }
 }
