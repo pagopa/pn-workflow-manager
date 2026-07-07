@@ -1,5 +1,6 @@
 package it.pagopa.pn.workflowmanager.action.utils;
 
+import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
 import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
@@ -10,7 +11,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class ChannelSenderUtilsTest {
@@ -19,6 +19,9 @@ class ChannelSenderUtilsTest {
     private TimelineUtils timelineUtils;
 
     private ChannelSenderUtils channelSenderUtils;
+
+    private static final String IUN = "IUN_TEST_123";
+    private static final int REC_INDEX = 0;
 
     @BeforeEach
     void setUp() {
@@ -31,48 +34,60 @@ class ChannelSenderUtilsTest {
     void shouldBuildDigitalAddressWithProvidedAddressAndType() {
         InformalDigitalAddressInt result = ChannelSenderUtils.buildDigitalAddress(
                 "user@example.com",
-                InformalDigitalAddressInt.INFORMAL_DIGITAL_ADDRESS_TYPE.EMAIL );
+                InformalDigitalAddressInt.INFORMAL_DIGITAL_ADDRESS_TYPE.EMAIL);
 
         assertEquals("user@example.com", result.getAddress());
         assertEquals(InformalDigitalAddressInt.INFORMAL_DIGITAL_ADDRESS_TYPE.EMAIL, result.getType());
     }
 
     @Test
-    void shouldBuildDigitalAddressWithNullAddress() {
-        InformalDigitalAddressInt result = ChannelSenderUtils.buildDigitalAddress(
-                null,
-                InformalDigitalAddressInt.INFORMAL_DIGITAL_ADDRESS_TYPE.PEC );
+    void shouldBuildSendDigitalMessageEventIdFromInputValues() {
+        String result = ChannelSenderUtils.buildSendDigitalMessageEventId(IUN, REC_INDEX, ChannelType.EMAIL);
 
-        assertNull(result.getAddress());
-        assertEquals(InformalDigitalAddressInt.INFORMAL_DIGITAL_ADDRESS_TYPE.PEC, result.getType());
+        assertEquals("SEND_DIGITAL_MESSAGE.IUN_IUN_TEST_123.RECINDEX_0.CHANNEL_EMAIL", result);
     }
 
     @Test
-    void shouldBuildSendDigitalMessageEventIdFromInputValues() {
-        String result = ChannelSenderUtils.buildSendDigitalMessageEventId("IUN_123",2, ChannelType.IO);
+    void shouldBuildSendDigitalMessageSkipTimelineElementId() {
+        String result = ChannelSenderUtils.buildSendDigitalMessageSkipTimelineElementId(REC_INDEX, IUN, ChannelType.EMAIL);
 
-        String expected = "SEND_DIGITAL_MESSAGE.IUN_IUN_123.RECINDEX_2.CHANNEL_IO";
-
-        assertEquals(expected, result);
+        assertEquals("SEND_DIGITAL_MESSAGE_SKIP.IUN_IUN_TEST_123.RECINDEX_0.CHANNEL_EMAIL", result);
     }
 
     @Test
     void shouldSaveSendDigitalMessageElement() {
         NotificationInt notification = mock(NotificationInt.class);
         InformalDigitalAddressInt digitalAddress = mock(InformalDigitalAddressInt.class);
+        TimelineElementInternal timelineElement = TimelineElementInternal.builder().build();
 
-         when(timelineUtils.buildSendDigitalMessageTimelineElement(notification, "event-id", 1, digitalAddress, DigitalChannelsInt.APPIO, null))
-            .thenReturn(TimelineElementInternal.builder().build());
+        when(timelineUtils.buildSendDigitalMessageTimelineElement(
+                notification, "event-id", REC_INDEX, digitalAddress, DigitalChannelsInt.EMAIL, null))
+                .thenReturn(timelineElement);
 
-        assertDoesNotThrow(() -> channelSenderUtils.saveSendDigitalMessageElement(
-                notification,
-                "event-id",
-                1,
-                digitalAddress,
-                DigitalChannelsInt.APPIO,
-                null ));
+        channelSenderUtils.saveSendDigitalMessageElement(
+                notification, "event-id", REC_INDEX,
+                digitalAddress, DigitalChannelsInt.EMAIL, null);
 
-        verify(timelineUtils, times(1)).buildSendDigitalMessageTimelineElement(notification, "event-id", 1, digitalAddress, DigitalChannelsInt.APPIO, null);
-        verify(timelineService, times(1)).addTimelineElement(any(), eq(notification));
+        verify(timelineUtils).buildSendDigitalMessageTimelineElement(
+                notification, "event-id", REC_INDEX, digitalAddress, DigitalChannelsInt.EMAIL, null);
+        verify(timelineService).addTimelineElement(timelineElement, notification);
+    }
+
+    @Test
+    void shouldSaveSendDigitalMessageSkipElement() {
+        NotificationInt notification = mock(NotificationInt.class);
+        TimelineElementInternal timelineElement = TimelineElementInternal.builder().build();
+
+        when(timelineUtils.buildSendDigitalMessageSkipTimelineElement(
+                REC_INDEX, notification, "skip-event-id", DigitalChannelsInt.EMAIL, DigitalAddressSourceInt.SPECIAL))
+                .thenReturn(timelineElement);
+
+        channelSenderUtils.saveSendDigitalMessageSkipElement(
+                REC_INDEX, notification, "skip-event-id",
+                DigitalChannelsInt.EMAIL, DigitalAddressSourceInt.SPECIAL);
+
+        verify(timelineUtils).buildSendDigitalMessageSkipTimelineElement(
+                REC_INDEX, notification, "skip-event-id", DigitalChannelsInt.EMAIL, DigitalAddressSourceInt.SPECIAL);
+        verify(timelineService).addTimelineElement(timelineElement, notification);
     }
 }
