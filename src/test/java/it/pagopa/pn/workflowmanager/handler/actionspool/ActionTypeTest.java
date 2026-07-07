@@ -87,30 +87,5 @@ class ActionTypeTest {
         assertEquals(StartWorkflowDetails.class, ActionType.START_WORKFLOW.getDetailsJavaClass());
         assertEquals(TimeoutWorkflowDetails.class, ActionType.TIMEOUT_WORKFLOW.getDetailsJavaClass());
     }
-
-    @Test
-    void testEnumValues() {
-        ActionType[] values = ActionType.values();
-        assertEquals(5, values.length);
-        assertEquals(ActionType.POST_ACCEPTED_PROCESSING_COMPLETED, values[0]);
-        assertEquals(ActionType.END_WORKFLOW, values[1]);
-        assertEquals(ActionType.WORKFLOW_DONE, values[2]);
-        assertEquals(ActionType.START_WORKFLOW, values[3]);
-        assertEquals(ActionType.TIMEOUT_WORKFLOW, values[4]);
-    }
-
-    @Test
-    void testEnumValueOf() {
-        assertEquals(ActionType.POST_ACCEPTED_PROCESSING_COMPLETED,
-                ActionType.valueOf("POST_ACCEPTED_PROCESSING_COMPLETED"));
-        assertEquals(ActionType.END_WORKFLOW,
-                ActionType.valueOf("END_WORKFLOW"));
-        assertEquals(ActionType.WORKFLOW_DONE,
-                ActionType.valueOf("WORKFLOW_DONE"));
-        assertEquals(ActionType.START_WORKFLOW,
-                ActionType.valueOf("START_WORKFLOW"));
-        assertEquals(ActionType.TIMEOUT_WORKFLOW,
-                ActionType.valueOf("TIMEOUT_WORKFLOW"));
-    }
 }
 

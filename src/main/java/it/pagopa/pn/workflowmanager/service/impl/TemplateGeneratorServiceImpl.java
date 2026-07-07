@@ -3,8 +3,10 @@ package it.pagopa.pn.workflowmanager.service.impl;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.templateengine.model.InformalCommunication;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.templateengine.model.InformalEmailCommunicationSubject;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.templateengine.model.LanguageEnum;
 import it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.templateengine.TemplateEngineClient;
+import it.pagopa.pn.workflowmanager.models.internal.campaign.Campaign;
 import it.pagopa.pn.workflowmanager.service.TemplateGeneratorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +17,7 @@ import java.io.File;
 import java.util.List;
 
 import static it.pagopa.pn.workflowmanager.service.mapper.TemplateEngineMapper.mapToInformalCommunication;
+import static it.pagopa.pn.workflowmanager.service.mapper.TemplateEngineMapper.mapToInformalEmailCommunicationSubject;
 
 @Service
 @Slf4j
@@ -23,31 +26,45 @@ public class TemplateGeneratorServiceImpl implements TemplateGeneratorService {
     private final TemplateEngineClient templateEngineClient;
 
     @Override
-    public String generateIoMessageTemplate(NotificationInt notificationInt, NotificationRecipientInt notificationRecipientInt, boolean isIoUser) {
+    public String generateIoMessageTemplate(NotificationInt notificationInt, NotificationRecipientInt notificationRecipientInt, Campaign campaign) {
         LanguageEnum language = getLanguage(notificationRecipientInt.getAdditionalLanguages());
-        InformalCommunication informalCommunication = mapToInformalCommunication(notificationInt, notificationRecipientInt, isIoUser);
+        InformalCommunication informalCommunication = mapToInformalCommunication(notificationInt, notificationRecipientInt, campaign);
         return templateEngineClient.ioMessageTemplate(language, informalCommunication);
     }
 
     @Override
-    public File informalAnalogCommunication(NotificationInt notificationInt, NotificationRecipientInt notificationRecipientInt, boolean isIoUser) {
+    public String generatePecBodyTemplate(NotificationInt notificationInt, NotificationRecipientInt notificationRecipientInt, Campaign campaign) {
         LanguageEnum language = getLanguage(notificationRecipientInt.getAdditionalLanguages());
-        InformalCommunication informalCommunication = mapToInformalCommunication(notificationInt, notificationRecipientInt, isIoUser);
-        return templateEngineClient.informalAnalogCommunication(language, informalCommunication);
+        InformalCommunication informalCommunication = mapToInformalCommunication(notificationInt, notificationRecipientInt, campaign);
+        return templateEngineClient.pecBodyTemplate(language, informalCommunication);
     }
 
     @Override
-    public String generatePecTemplate(NotificationInt notificationInt, NotificationRecipientInt notificationRecipientInt, boolean isIoUser) {
+    public String generatePecSubjectTemplate(NotificationInt notificationInt, NotificationRecipientInt notificationRecipientInt) {
         LanguageEnum language = getLanguage(notificationRecipientInt.getAdditionalLanguages());
-        InformalCommunication informalCommunication = mapToInformalCommunication(notificationInt, notificationRecipientInt, isIoUser);
-        return templateEngineClient.pecTemplate(language, informalCommunication);
+        InformalEmailCommunicationSubject informalEmailCommunicationSubject = mapToInformalEmailCommunicationSubject(notificationInt, notificationRecipientInt);
+        return templateEngineClient.pecSubjectTemplate(language, informalEmailCommunicationSubject);
     }
 
     @Override
-    public String generateInformalIoCommunicationTemplate(NotificationInt notificationInt, NotificationRecipientInt notificationRecipientInt, boolean isIoUser) {
+    public String generateEmailBodyTemplate(NotificationInt notificationInt, NotificationRecipientInt notificationRecipientInt, Campaign campaign) {
         LanguageEnum language = getLanguage(notificationRecipientInt.getAdditionalLanguages());
-        InformalCommunication informalCommunication = mapToInformalCommunication(notificationInt, notificationRecipientInt, isIoUser);
-        return templateEngineClient.informalIoCommunication(language, informalCommunication);
+        InformalCommunication informalCommunication = mapToInformalCommunication(notificationInt, notificationRecipientInt, campaign);
+        return templateEngineClient.emailBodyTemplate(language, informalCommunication);
+    }
+
+    @Override
+    public String generateEmailSubjectTemplate(NotificationInt notificationInt, NotificationRecipientInt notificationRecipientInt) {
+        LanguageEnum language = getLanguage(notificationRecipientInt.getAdditionalLanguages());
+        InformalEmailCommunicationSubject informalEmailCommunicationSubject = mapToInformalEmailCommunicationSubject(notificationInt, notificationRecipientInt);
+        return templateEngineClient.emailSubjectTemplate(language, informalEmailCommunicationSubject);
+    }
+
+    @Override
+    public File generateCoverpageTemplate(NotificationInt notificationInt, NotificationRecipientInt notificationRecipientInt, Campaign campaign) {
+        LanguageEnum language = getLanguage(notificationRecipientInt.getAdditionalLanguages());
+        InformalCommunication informalCommunication = mapToInformalCommunication(notificationInt, notificationRecipientInt, campaign);
+        return templateEngineClient.coverpageTemplate(language, informalCommunication);
     }
 
     private LanguageEnum getLanguage(List<String> additionalLanguages) {

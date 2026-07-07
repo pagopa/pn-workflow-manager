@@ -4,25 +4,24 @@ import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationIn
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationMessageInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationSenderInt;
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.templateengine.model.InformalCommunication;
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.templateengine.model.InformalCommunicationBody;
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.templateengine.model.InformalCommunicationSender;
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.templateengine.model.SharedInformalCommunicationRecipient;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.templateengine.model.*;
+import it.pagopa.pn.workflowmanager.models.internal.campaign.Campaign;
 import org.springframework.util.CollectionUtils;
 
 public class TemplateEngineMapper {
     private TemplateEngineMapper() {
     }
 
-    public static InformalCommunication mapToInformalCommunication(NotificationInt notification, NotificationRecipientInt recipient, boolean isIoUser) {
+    public static InformalCommunication mapToInformalCommunication(NotificationInt notification, NotificationRecipientInt recipient, Campaign campaign) {
         return new InformalCommunication()
                 .iun(notification.getIun())
                 .subject(recipient.getMessage().getPrimaryMessage().getSubject())
                 .hasAttachment(!CollectionUtils.isEmpty(notification.getDocuments()))
                 .hasPayment(!CollectionUtils.isEmpty(recipient.getPayments()))
                 .body(mapToInformalCommunicationBody(recipient.getMessage()))
-                .sender(mapToInformalCommunicationSender(notification.getSender()))
-                .recipient(mapToInformalCommunicationRecipient(recipient, isIoUser));
+                .sender(mapToInformalCommunicationSender(notification.getSender(), campaign))
+                .recipient(mapToInformalCommunicationRecipient(recipient));
+                //TODO: .checkoutUrl();
     }
 
     private static InformalCommunicationBody mapToInformalCommunicationBody(NotificationMessageInt message) {
@@ -31,18 +30,25 @@ public class TemplateEngineMapper {
                 .secondaryContent(message.getAdditionalMessage() != null ? message.getAdditionalMessage().getLongBody() : null);
     }
 
-    private static InformalCommunicationSender mapToInformalCommunicationSender(NotificationSenderInt sender) {
+    private static InformalCommunicationSender mapToInformalCommunicationSender(NotificationSenderInt sender, Campaign campaign) {
         return new InformalCommunicationSender()
-                .paDenomination(sender.getPaDenomination());
+                .denomination(sender.getPaDenomination())
+                .id(sender.getPaId())
+                .service(campaign.getServiceName());
     }
 
-    private static SharedInformalCommunicationRecipient mapToInformalCommunicationRecipient(NotificationRecipientInt recipient, boolean isIoUser) {
+    private static SharedInformalCommunicationRecipient mapToInformalCommunicationRecipient(NotificationRecipientInt recipient) {
         return new SharedInformalCommunicationRecipient()
                 .taxId(recipient.getTaxId())
                 .denomination(recipient.getDenomination())
-                .recipientType(SharedInformalCommunicationRecipient.RecipientTypeEnum.fromValue(recipient.getRecipientType().name()))
-                .isIoUser(isIoUser);
+                .recipientType(SharedInformalCommunicationRecipient.RecipientTypeEnum.fromValue(recipient.getRecipientType().name()));
     }
 
+    public static InformalEmailCommunicationSubject mapToInformalEmailCommunicationSubject(NotificationInt notification, NotificationRecipientInt recipient) {
+        return new InformalEmailCommunicationSubject()
+                .subject(recipient.getMessage().getPrimaryMessage().getSubject())
+                .recipientDenomination(recipient.getDenomination())
+                .senderDenomination(notification.getSender().getPaDenomination());
+    }
 
 }

@@ -15,7 +15,6 @@ import it.pagopa.pn.workflowmanager.generated.openapi.msclient.externalchannels.
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.externalchannels.model.DigitalNotificationRequest;
 import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
@@ -39,6 +38,7 @@ public class PnExternalChannelsClientImpl implements PnExternalChannelsClient {
     public void sendNotificationPEC(
             String requestId,
             String mailBody,
+            String subject,
             NotificationInt notificationInt,
             NotificationRecipientInt recipientInt,
             LegalDigitalAddressInt digitalAddress,
@@ -59,7 +59,7 @@ public class PnExternalChannelsClientImpl implements PnExternalChannelsClient {
             digitalNotificationRequest.setReceiverDigitalAddress(digitalAddress.getAddress());
             digitalNotificationRequest.setClientRequestTimeStamp(Instant.now());
             digitalNotificationRequest.setMessageText(mailBody);
-            digitalNotificationRequest.setSubjectText(recipientInt.getMessage().getPrimaryMessage().getSubject());
+            digitalNotificationRequest.setSubjectText(subject);
             digitalNotificationRequest.setAttachmentUrls(fileKeysWithStoragePrefix);
 
 
@@ -73,6 +73,7 @@ public class PnExternalChannelsClientImpl implements PnExternalChannelsClient {
     @Override
     public void sendNotificationEMAIL(String requestId,
                                       String mailBody,
+                                      String subject,
                                       NotificationInt notificationInt,
                                       NotificationRecipientInt recipientInt,
                                       DigitalAddressInt digitalAddress,
@@ -81,7 +82,18 @@ public class PnExternalChannelsClientImpl implements PnExternalChannelsClient {
             log.logInvokingAsyncExternalService(CLIENT_NAME, COURTESY_NOTIFICATION_REQUEST + "[EMAIL]", requestId);
             log.debug("[enter] sendNotificationEMAIL address={} requestId={} recipient={}", LogUtils.maskNumber(digitalAddress.getAddress()), requestId, LogUtils.maskGeneric(recipientInt.getDenomination()));
 
-            DigitalCourtesyMailRequest digitalNotificationRequest = buildDigitalCourtesyMailRequest(requestId, mailBody, recipientInt, digitalAddress, attachmentUrls);
+            DigitalCourtesyMailRequest digitalNotificationRequest = new DigitalCourtesyMailRequest();
+            digitalNotificationRequest.setChannel(DigitalCourtesyMailRequest.ChannelEnum.EMAIL);
+            digitalNotificationRequest.setRequestId(requestId);
+            digitalNotificationRequest.setCorrelationId(requestId);
+            digitalNotificationRequest.setEventType(EVENT_TYPE_INFORMAL);
+            digitalNotificationRequest.setQos(DigitalCourtesyMailRequest.QosEnum.BATCH);
+            digitalNotificationRequest.setReceiverDigitalAddress(digitalAddress.getAddress());
+            digitalNotificationRequest.setClientRequestTimeStamp(Instant.now());
+            digitalNotificationRequest.setMessageContentType(DigitalCourtesyMailRequest.MessageContentTypeEnum.TEXT_HTML);
+            digitalNotificationRequest.setMessageText(mailBody);
+            digitalNotificationRequest.setSubjectText(subject);
+            digitalNotificationRequest.setAttachmentUrls(attachmentUrls.stream().map(FileUtils::getKeyWithStoragePrefix).toList());
 
             digitalCourtesyMessagesApi.sendDigitalCourtesyMessage(requestId, cfg.getCxId(), digitalNotificationRequest);
 
@@ -90,22 +102,6 @@ public class PnExternalChannelsClientImpl implements PnExternalChannelsClient {
             log.error("error sending EMAIL notification for iun={}", notificationInt.getIun());
             throw new PnInternalException("error sending EMAIL notification", ERROR_CODE_WORKFLOWMANAGER_SENDEMAILNOTIFICATIONFAILED,e);
         }
-    }
-
-    private static @NotNull DigitalCourtesyMailRequest buildDigitalCourtesyMailRequest(String requestId, String mailBody, NotificationRecipientInt recipientInt, DigitalAddressInt digitalAddress, List<String> attachmentUrls) {
-        DigitalCourtesyMailRequest digitalNotificationRequest = new DigitalCourtesyMailRequest();
-        digitalNotificationRequest.setChannel(DigitalCourtesyMailRequest.ChannelEnum.EMAIL);
-        digitalNotificationRequest.setRequestId(requestId);
-        digitalNotificationRequest.setCorrelationId(requestId);
-        digitalNotificationRequest.setEventType(EVENT_TYPE_INFORMAL);
-        digitalNotificationRequest.setQos(DigitalCourtesyMailRequest.QosEnum.BATCH);
-        digitalNotificationRequest.setReceiverDigitalAddress(digitalAddress.getAddress());
-        digitalNotificationRequest.setClientRequestTimeStamp(Instant.now());
-        digitalNotificationRequest.setMessageContentType(DigitalCourtesyMailRequest.MessageContentTypeEnum.TEXT_HTML);
-        digitalNotificationRequest.setMessageText(mailBody);
-        digitalNotificationRequest.setSubjectText(recipientInt.getMessage().getPrimaryMessage().getSubject());
-        digitalNotificationRequest.setAttachmentUrls(attachmentUrls.stream().map(FileUtils::getKeyWithStoragePrefix).toList());
-        return digitalNotificationRequest;
     }
 
     @Override
