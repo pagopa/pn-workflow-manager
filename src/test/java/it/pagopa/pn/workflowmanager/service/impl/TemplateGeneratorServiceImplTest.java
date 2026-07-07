@@ -3,12 +3,15 @@ package it.pagopa.pn.workflowmanager.service.impl;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.*;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.templateengine.model.LanguageEnum;
 import it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.templateengine.TemplateEngineClient;
+import it.pagopa.pn.workflowmanager.models.internal.campaign.Campaign;
+import it.pagopa.pn.workflowmanager.models.internal.campaign.CampaignStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
 
+import java.io.File;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
@@ -35,11 +38,12 @@ class TemplateGeneratorServiceImplTest {
     ) {
         NotificationInt notificationInt = buildNotification();
         NotificationRecipientInt notificationRecipientInt = buildNotificationRecipient(additionalLanguages);
+        Campaign campaign = buildCampaign();
         String expectedMessageTemplate = "template-content";
 
         when(templateEngineClient.ioMessageTemplate(Mockito.eq(expectedLanguage), Mockito.any())).thenReturn(expectedMessageTemplate);
 
-        String result = templateGeneratorService.generateIoMessageTemplate(notificationInt, notificationRecipientInt, true);
+        String result = templateGeneratorService.generateIoMessageTemplate(notificationInt, notificationRecipientInt, campaign);
 
         assertEquals(expectedMessageTemplate, result);
         verify(templateEngineClient).ioMessageTemplate(Mockito.eq(expectedLanguage), Mockito.any());
@@ -55,25 +59,26 @@ class TemplateGeneratorServiceImplTest {
 
     @ParameterizedTest
     @MethodSource("provideAdditionalLanguageArguments")
-    void shouldGeneratePecTemplate(
+    void shouldGeneratePecBodyTemplate(
             List<String> additionalLanguages,
             LanguageEnum expectedLanguage
     ) {
         NotificationInt notificationInt = buildNotification();
         NotificationRecipientInt notificationRecipientInt = buildNotificationRecipient(additionalLanguages);
+        Campaign campaign = buildCampaign();
         String expectedMessageTemplate = "template-content";
 
-        when(templateEngineClient.pecTemplate(Mockito.eq(expectedLanguage), Mockito.any())).thenReturn(expectedMessageTemplate);
+        when(templateEngineClient.pecBodyTemplate(Mockito.eq(expectedLanguage), Mockito.any())).thenReturn(expectedMessageTemplate);
 
-        String result = templateGeneratorService.generatePecTemplate(notificationInt, notificationRecipientInt, true);
+        String result = templateGeneratorService.generatePecBodyTemplate(notificationInt, notificationRecipientInt, campaign);
 
         assertEquals(expectedMessageTemplate, result);
-        verify(templateEngineClient).pecTemplate(Mockito.eq(expectedLanguage), Mockito.any());
+        verify(templateEngineClient).pecBodyTemplate(Mockito.eq(expectedLanguage), Mockito.any());
     }
 
     @ParameterizedTest
     @MethodSource("provideAdditionalLanguageArguments")
-    void shouldGenerateInformalIoCommunicationTemplate(
+    void shouldGeneratePecSubjectTemplate(
             List<String> additionalLanguages,
             LanguageEnum expectedLanguage
     ) {
@@ -81,12 +86,68 @@ class TemplateGeneratorServiceImplTest {
         NotificationRecipientInt notificationRecipientInt = buildNotificationRecipient(additionalLanguages);
         String expectedMessageTemplate = "template-content";
 
-        when(templateEngineClient.informalIoCommunication(Mockito.eq(expectedLanguage), Mockito.any())).thenReturn(expectedMessageTemplate);
+        when(templateEngineClient.pecSubjectTemplate(Mockito.eq(expectedLanguage), Mockito.any())).thenReturn(expectedMessageTemplate);
 
-        String result = templateGeneratorService.generateInformalIoCommunicationTemplate(notificationInt, notificationRecipientInt, true);
+        String result = templateGeneratorService.generatePecSubjectTemplate(notificationInt, notificationRecipientInt);
 
         assertEquals(expectedMessageTemplate, result);
-        verify(templateEngineClient).informalIoCommunication(Mockito.eq(expectedLanguage), Mockito.any());
+        verify(templateEngineClient).pecSubjectTemplate(Mockito.eq(expectedLanguage), Mockito.any());
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideAdditionalLanguageArguments")
+    void shouldGenerateEmailBodyTemplate(
+            List<String> additionalLanguages,
+            LanguageEnum expectedLanguage
+    ) {
+        NotificationInt notificationInt = buildNotification();
+        NotificationRecipientInt notificationRecipientInt = buildNotificationRecipient(additionalLanguages);
+        Campaign campaign = buildCampaign();
+        String expectedMessageTemplate = "template-content";
+
+        when(templateEngineClient.emailBodyTemplate(Mockito.eq(expectedLanguage), Mockito.any())).thenReturn(expectedMessageTemplate);
+
+        String result = templateGeneratorService.generateEmailBodyTemplate(notificationInt, notificationRecipientInt, campaign);
+
+        assertEquals(expectedMessageTemplate, result);
+        verify(templateEngineClient).emailBodyTemplate(Mockito.eq(expectedLanguage), Mockito.any());
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideAdditionalLanguageArguments")
+    void shouldGenerateEmailSubjectTemplate(
+            List<String> additionalLanguages,
+            LanguageEnum expectedLanguage
+    ) {
+        NotificationInt notificationInt = buildNotification();
+        NotificationRecipientInt notificationRecipientInt = buildNotificationRecipient(additionalLanguages);
+        String expectedMessageTemplate = "template-content";
+
+        when(templateEngineClient.emailSubjectTemplate(Mockito.eq(expectedLanguage), Mockito.any())).thenReturn(expectedMessageTemplate);
+
+        String result = templateGeneratorService.generateEmailSubjectTemplate(notificationInt, notificationRecipientInt);
+
+        assertEquals(expectedMessageTemplate, result);
+        verify(templateEngineClient).emailSubjectTemplate(Mockito.eq(expectedLanguage), Mockito.any());
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideAdditionalLanguageArguments")
+    void shouldGenerateAnalogTemplate(
+            List<String> additionalLanguages,
+            LanguageEnum expectedLanguage
+    ) {
+        NotificationInt notificationInt = buildNotification();
+        NotificationRecipientInt notificationRecipientInt = buildNotificationRecipient(additionalLanguages);
+        Campaign campaign = buildCampaign();
+        File expectedCoverpageTemplate = mock(File.class);
+
+        when(templateEngineClient.coverpageTemplate(Mockito.eq(expectedLanguage), Mockito.any())).thenReturn(expectedCoverpageTemplate);
+
+        File result = templateGeneratorService.generateCoverpageTemplate(notificationInt, notificationRecipientInt, campaign);
+
+        assertEquals(expectedCoverpageTemplate, result);
+        verify(templateEngineClient).coverpageTemplate(Mockito.eq(expectedLanguage), Mockito.any());
     }
 
     private NotificationInt buildNotification() {
@@ -114,6 +175,19 @@ class TemplateGeneratorServiceImplTest {
                                 .longBody("longBody")
                                 .build())
                         .build())
+                .build();
+    }
+
+    private Campaign buildCampaign() {
+        return Campaign.builder()
+                .campaignId("campaignId")
+                .senderId("senderId")
+                .title("title")
+                .descriptionScope("descriptionScope")
+                .status(CampaignStatus.IN_PROGRESS)
+                .serviceId("serviceId")
+                .serviceName("serviceName")
+                .workflow(List.of())
                 .build();
     }
 }

@@ -5,6 +5,7 @@ import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationIn
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
 import it.pagopa.pn.workflowmanager.dto.safestorage.DocumentType;
 import it.pagopa.pn.workflowmanager.dto.safestorage.FileCreationWithContentRequest;
+import it.pagopa.pn.workflowmanager.models.internal.campaign.Campaign;
 import it.pagopa.pn.workflowmanager.service.SafeStorageService;
 import it.pagopa.pn.workflowmanager.service.SaveDocumentService;
 import it.pagopa.pn.workflowmanager.service.TemplateGeneratorService;
@@ -51,12 +52,13 @@ public class SaveDocumentServiceImpl implements SaveDocumentService {
     public String saveCoverpage(
             NotificationInt notification,
             NotificationRecipientInt recipient,
+            Campaign campaign,
             String timelineElementId,
             String recIndex
     ) {
         try {
             log.debug("Start saveCoverpage - iun={}", notification.getIun());
-            File legalFactFile = templateGeneratorService.informalAnalogCommunication(notification, recipient, true);
+            File legalFactFile = templateGeneratorService.generateCoverpageTemplate(notification, recipient, campaign);
             byte[] legalFact = Files.readAllBytes(legalFactFile.toPath());
             Map<String, List<String>> tags = Map.of(
                     "iun", List.of(notification.getIun()),

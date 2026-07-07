@@ -22,6 +22,7 @@ public class Campaign {
     private CampaignStatus status;
     private String senderContact;
     private String serviceId;
+    private String serviceName;
     private Boolean sensitiveContent;
     private Boolean stopOnViewed;
     private List<WorkFlowEntity> workflow;

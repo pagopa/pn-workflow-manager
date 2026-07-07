@@ -33,6 +33,7 @@ class EmailChannelSenderTest {
     private static final String IUN = "IUN_TEST_123";
     private static final String EMAIL_ADDRESS = "test@example.com";
     private static final String HTML_CONTENT = "<html>test</html>";
+    private static final String EMAIL_SUBJECT = "Test Subject";
 
     @Mock
     private AuditLogService auditLogService;
@@ -59,6 +60,7 @@ class EmailChannelSenderTest {
     void shouldSendEmailWithAttachmentsWhenEmailPresentAndIncludeAttachmentTrue() {
         // Given
         NotificationInt notification = buildNotification(EMAIL_ADDRESS);
+        NotificationRecipientInt recipient = notification.getRecipients().getFirst();
         Campaign campaign = buildCampaign(true);
         int recIndex = 0;
         int currentStep = 0;
@@ -66,9 +68,10 @@ class EmailChannelSenderTest {
         String expectedRequestId = ChannelSenderUtils.buildSendDigitalMessageEventId(IUN, recIndex, ChannelType.EMAIL);
         PnAuditLogEvent auditLogEvent = mock(PnAuditLogEvent.class);
 
-        when(channelSenderUtils.searchIfUserFromAppIo(IUN, ChannelType.EMAIL, recIndex)).thenReturn(false);
-        when(templateGeneratorService.generateInformalIoCommunicationTemplate(any(), any(), eq(false)))
+        when(templateGeneratorService.generateEmailBodyTemplate(notification, recipient, campaign))
                 .thenReturn(HTML_CONTENT);
+        when(templateGeneratorService.generateEmailSubjectTemplate(notification, recipient))
+                .thenReturn(EMAIL_SUBJECT);
         when(auditLogService.buildAuditLogEvent(eq(IUN), eq(recIndex), eq(PnAuditLogEventType.AUD_COM_SEND_EMAIL),
                 anyString(), eq(IUN), eq(recIndex), eq(expectedRequestId)))
                 .thenReturn(auditLogEvent);
@@ -87,6 +90,7 @@ class EmailChannelSenderTest {
         verify(pnExternalChannelsClient).sendNotificationEMAIL(
                 eq(expectedRequestId),
                 eq(HTML_CONTENT),
+                eq(EMAIL_SUBJECT),
                 eq(notification),
                 any(NotificationRecipientInt.class),
                 argThat(addr -> EMAIL_ADDRESS.equals(addr.getAddress())),
@@ -106,6 +110,7 @@ class EmailChannelSenderTest {
     void shouldSendEmailWithoutAttachmentsWhenIncludeAttachmentFalse() {
         // Given
         NotificationInt notification = buildNotification(EMAIL_ADDRESS);
+        NotificationRecipientInt recipient = notification.getRecipients().getFirst();
         Campaign campaign = buildCampaign(false);
         int recIndex = 0;
         int currentStep = 0;
@@ -113,9 +118,11 @@ class EmailChannelSenderTest {
         String expectedRequestId = ChannelSenderUtils.buildSendDigitalMessageEventId(IUN, recIndex, ChannelType.EMAIL);
         PnAuditLogEvent auditLogEvent = mock(PnAuditLogEvent.class);
 
-        when(channelSenderUtils.searchIfUserFromAppIo(IUN, ChannelType.EMAIL, recIndex)).thenReturn(false);
-        when(templateGeneratorService.generateInformalIoCommunicationTemplate(any(), any(), eq(false)))
+
+        when(templateGeneratorService.generateEmailBodyTemplate(notification, recipient, campaign))
                 .thenReturn(HTML_CONTENT);
+        when(templateGeneratorService.generateEmailSubjectTemplate(notification, recipient))
+                .thenReturn(EMAIL_SUBJECT);
         when(auditLogService.buildAuditLogEvent(eq(IUN), eq(recIndex), eq(PnAuditLogEventType.AUD_COM_SEND_EMAIL),
                 anyString(), eq(IUN), eq(recIndex), eq(expectedRequestId)))
                 .thenReturn(auditLogEvent);
@@ -129,6 +136,7 @@ class EmailChannelSenderTest {
         verify(pnExternalChannelsClient).sendNotificationEMAIL(
                 eq(expectedRequestId),
                 eq(HTML_CONTENT),
+                eq(EMAIL_SUBJECT),
                 eq(notification),
                 any(NotificationRecipientInt.class),
                 any(InformalDigitalAddressInt.class),

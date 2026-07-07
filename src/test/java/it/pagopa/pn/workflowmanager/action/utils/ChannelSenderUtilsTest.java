@@ -10,8 +10,6 @@ import it.pagopa.pn.workflowmanager.service.TimelineService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.Optional;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -57,13 +55,6 @@ class ChannelSenderUtilsTest {
     }
 
     @Test
-    void shouldBuildDeliveredEventId() {
-        String result = ChannelSenderUtils.buildDeliveredEventId(IUN, REC_INDEX, ChannelType.IO);
-
-        assertEquals("DELIVERED.IUN_IUN_TEST_123.RECINDEX_0.CHANNEL_IO", result);
-    }
-
-    @Test
     void shouldSaveSendDigitalMessageElement() {
         NotificationInt notification = mock(NotificationInt.class);
         InformalDigitalAddressInt digitalAddress = mock(InformalDigitalAddressInt.class);
@@ -98,32 +89,5 @@ class ChannelSenderUtilsTest {
         verify(timelineUtils).buildSendDigitalMessageSkipTimelineElement(
                 REC_INDEX, notification, "skip-event-id", DigitalChannelsInt.EMAIL, DigitalAddressSourceInt.SPECIAL);
         verify(timelineService).addTimelineElement(timelineElement, notification);
-    }
-
-    @Test
-    void shouldReturnTrueWhenUserFromAppIoIsFound() {
-        String deliveredEventId = ChannelSenderUtils.buildDeliveredEventId(IUN, REC_INDEX, ChannelType.EMAIL);
-        TimelineElementInternal timelineElement = TimelineElementInternal.builder().build();
-
-        when(timelineService.getTimelineElement(IUN, deliveredEventId))
-                .thenReturn(Optional.of(timelineElement));
-
-        boolean result = channelSenderUtils.searchIfUserFromAppIo(IUN, ChannelType.EMAIL, REC_INDEX);
-
-        assertTrue(result);
-        verify(timelineService).getTimelineElement(IUN, deliveredEventId);
-    }
-
-    @Test
-    void shouldReturnFalseWhenUserFromAppIoIsNotFound() {
-        String deliveredEventId = ChannelSenderUtils.buildDeliveredEventId(IUN, REC_INDEX, ChannelType.EMAIL);
-
-        when(timelineService.getTimelineElement(IUN, deliveredEventId))
-                .thenReturn(Optional.empty());
-
-        boolean result = channelSenderUtils.searchIfUserFromAppIo(IUN, ChannelType.EMAIL, REC_INDEX);
-
-        assertFalse(result);
-        verify(timelineService).getTimelineElement(IUN, deliveredEventId);
     }
 }

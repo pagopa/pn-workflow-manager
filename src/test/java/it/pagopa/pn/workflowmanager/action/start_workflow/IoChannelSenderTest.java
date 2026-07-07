@@ -67,7 +67,7 @@ class IoChannelSenderTest {
                 .thenReturn(auditLogEvent);
         when(auditLogEvent.generateSuccess(any())).thenReturn(auditLogEvent);
 
-        when(templateGeneratorService.generateIoMessageTemplate(notification, recipient0, false)).thenReturn("markdown-content");
+        when(templateGeneratorService.generateIoMessageTemplate(notification, recipient0, campaign)).thenReturn("markdown-content");
 
         ioChannelSender.send(notification, campaign,0,0, ChannelType.IO);
 
@@ -125,7 +125,7 @@ class IoChannelSenderTest {
                 .thenReturn(auditLogEvent);
         when(auditLogEvent.generateFailure(anyString(), any())).thenReturn(auditLogEvent);
 
-        when(templateGeneratorService.generateIoMessageTemplate(notification, recipient0, false)).thenReturn("markdown-content");
+        when(templateGeneratorService.generateIoMessageTemplate(notification, recipient0, campaign)).thenReturn("markdown-content");
 
         doThrow(new RuntimeException("IO Connector failure")).when(ioConnectorClient).sendMessage(any(IoMessageRequest.class));
 

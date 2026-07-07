@@ -6,6 +6,7 @@ import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRe
 import it.pagopa.pn.workflowmanager.dto.safestorage.DocumentType;
 import it.pagopa.pn.workflowmanager.dto.safestorage.FileCreationResponseInt;
 import it.pagopa.pn.workflowmanager.dto.safestorage.FileCreationWithContentRequest;
+import it.pagopa.pn.workflowmanager.models.internal.campaign.Campaign;
 import it.pagopa.pn.workflowmanager.service.SafeStorageService;
 import it.pagopa.pn.workflowmanager.service.TemplateGeneratorService;
 import org.junit.jupiter.api.BeforeEach;
@@ -89,11 +90,12 @@ class SaveDocumentServiceImplTest {
 
         NotificationInt notification = NotificationInt.builder().iun("iun-123").build();
         NotificationRecipientInt recipient = NotificationRecipientInt.builder().taxId("tax-1").build();
+        Campaign campaign = Campaign.builder().campaignId("camp-1").senderId("sender-1").build();
 
-        when(templateGeneratorService.informalAnalogCommunication(notification, recipient, true)).thenReturn(tmp);
+        when(templateGeneratorService.generateCoverpageTemplate(notification, recipient, campaign)).thenReturn(tmp);
         when(safeStorageService.createAndUploadContent(any())).thenReturn(new FileCreationResponseInt("k1"));
 
-        String res = saveDocumentService.saveCoverpage(notification, recipient, "timeline-1", "0");
+        String res = saveDocumentService.saveCoverpage(notification, recipient, campaign,"timeline-1", "0");
 
         assertEquals("safestorage://k1", res);
 
@@ -117,12 +119,13 @@ class SaveDocumentServiceImplTest {
     void saveCoverpageShouldWrapFileReadFailuresInPnInternalException() {
         NotificationInt notification = NotificationInt.builder().iun("iun-999").build();
         NotificationRecipientInt recipient = NotificationRecipientInt.builder().taxId("tax-999").build();
+        Campaign campaign = Campaign.builder().campaignId("camp-1").senderId("sender-1").build();
         File missingFile = tempDir.resolve("missing.pdf").toFile();
 
-        when(templateGeneratorService.informalAnalogCommunication(notification, recipient, true)).thenReturn(missingFile);
+        when(templateGeneratorService.generateCoverpageTemplate(notification, recipient, campaign)).thenReturn(missingFile);
 
         PnInternalException exc = assertThrows(PnInternalException.class, () ->
-                saveDocumentService.saveCoverpage(notification, recipient, "t-1", "1")
+                saveDocumentService.saveCoverpage(notification, recipient, campaign, "t-1", "1")
         );
 
         assertEquals(String.format(SaveDocumentServiceImpl.SAVE_LEGAL_FACT_EXCEPTION_MESSAGE,
@@ -133,18 +136,18 @@ class SaveDocumentServiceImplTest {
 
     @Test
     void saveCoverpageShouldWrapStorageFailuresInPnInternalException() throws Exception {
-        byte[] fileBytes = "pdfcontent".getBytes(StandardCharsets.UTF_8);
         Path coverpagePath = tempDir.resolve("coverpage-storage-failure.pdf");
-        Files.write(coverpagePath, fileBytes);
+        Files.writeString(coverpagePath, "pdfcontent");
         NotificationInt notification = NotificationInt.builder().iun("iun-999").build();
         NotificationRecipientInt recipient = NotificationRecipientInt.builder().taxId("tax-999").build();
+        Campaign campaign = Campaign.builder().campaignId("camp-1").senderId("sender-1").build();
         RuntimeException storageException = new RuntimeException("generation failed");
 
-        when(templateGeneratorService.informalAnalogCommunication(notification, recipient, true)).thenReturn(coverpagePath.toFile());
+        when(templateGeneratorService.generateCoverpageTemplate(notification, recipient, campaign)).thenReturn(coverpagePath.toFile());
         when(safeStorageService.createAndUploadContent(any())).thenThrow(storageException);
 
         PnInternalException exc = assertThrows(PnInternalException.class, () ->
-                saveDocumentService.saveCoverpage(notification, recipient, "t-1", "1")
+                saveDocumentService.saveCoverpage(notification, recipient, campaign, "t-1", "1")
         );
 
         assertEquals(String.format(SaveDocumentServiceImpl.SAVE_LEGAL_FACT_EXCEPTION_MESSAGE,

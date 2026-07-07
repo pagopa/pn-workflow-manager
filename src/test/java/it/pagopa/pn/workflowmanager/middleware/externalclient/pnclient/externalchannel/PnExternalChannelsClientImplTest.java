@@ -67,6 +67,7 @@ class PnExternalChannelsClientImplTest {
         client.sendNotificationPEC(
                 requestId,
                 mailBody,
+                subject,
                 notification,
                 recipient,
                 digitalAddress,
@@ -112,7 +113,7 @@ class PnExternalChannelsClientImplTest {
 
         when(cfg.getCxId()).thenReturn(cxId);
 
-        client.sendNotificationPEC(requestId, "body", notification, recipient, digitalAddress, List.of());
+        client.sendNotificationPEC(requestId, "body", "subject", notification, recipient, digitalAddress, List.of());
 
         ArgumentCaptor<DigitalNotificationRequest> requestCaptor = ArgumentCaptor.forClass(DigitalNotificationRequest.class);
         verify(digitalLegalMessagesApi).sendDigitalLegalMessage(eq(requestId), eq(cxId), requestCaptor.capture());
@@ -146,7 +147,7 @@ class PnExternalChannelsClientImplTest {
 
         PnInternalException thrown = assertThrows(
                 PnInternalException.class,
-                () -> client.sendNotificationPEC(requestId, "body", notification, recipient, digitalAddress, List.of("file"))
+                () -> client.sendNotificationPEC(requestId, "body", "subject", notification, recipient, digitalAddress, List.of("file"))
         );
 
         assertSame(apiException, thrown.getCause());
@@ -171,7 +172,7 @@ class PnExternalChannelsClientImplTest {
 
         assertThrows(
                 PnInternalException.class,
-                () -> client.sendNotificationPEC("request-id", "body", notification, recipient, digitalAddress, null)
+                () -> client.sendNotificationPEC("request-id", "body", "subject", notification, recipient, digitalAddress, null)
         );
     }
 
@@ -203,6 +204,7 @@ class PnExternalChannelsClientImplTest {
         client.sendNotificationEMAIL(
                 requestId,
                 mailBody,
+                subject,
                 notification,
                 recipient,
                 digitalAddress,
@@ -252,7 +254,7 @@ class PnExternalChannelsClientImplTest {
 
         PnInternalException thrown = assertThrows(
                 PnInternalException.class,
-                () -> client.sendNotificationEMAIL(requestId, "body", notification, recipient, digitalAddress, List.of("aarKey"))
+                () -> client.sendNotificationEMAIL(requestId, "body", "subject", notification, recipient, digitalAddress, List.of("aarKey"))
         );
 
         assertSame(apiException, thrown.getCause());
