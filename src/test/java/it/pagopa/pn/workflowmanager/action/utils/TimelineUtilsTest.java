@@ -158,6 +158,32 @@ class TimelineUtilsTest {
     }
 
     @Test
+    void buildSendDigitalMessageSkipTimelineElement() {
+        // Arrange
+        NotificationInt notification = createNotification();
+
+        // Act
+        TimelineElementInternal actual = timelineUtils.buildSendDigitalMessageSkipTimelineElement(
+                TEST_REC_INDEX, notification, TEST_EVENT_ID, DigitalChannelsInt.EMAIL,DigitalAddressSourceInt.SPECIAL);
+
+        // Assert
+        Assertions.assertAll(
+                () -> Assertions.assertEquals(TEST_IUN, actual.getIun()),
+                () -> Assertions.assertEquals(SEND_DIGITAL_MESSAGE_SKIP, actual.getCategory()),
+                () -> Assertions.assertEquals(TEST_EVENT_ID, actual.getElementId()),
+                () -> Assertions.assertEquals(TEST_PA_ID, actual.getPaId()),
+                () -> assertNotNull(actual.getTimestamp()),
+                () -> assertNotNull(actual.getDetails()),
+                () -> Assertions.assertInstanceOf(SendDigitalMessageSkipDetailsInt.class, actual.getDetails())
+        );
+
+        SendDigitalMessageSkipDetailsInt details = (SendDigitalMessageSkipDetailsInt) actual.getDetails();
+        Assertions.assertAll(
+                () -> Assertions.assertEquals(TEST_REC_INDEX, details.getRecIndex())
+        );
+    }
+
+    @Test
     void getWorkflowEndedReachedTimelineElementId() {
         // Act
         String result = TimelineUtils.getWorkflowEndedReachedTimelineElementId(TEST_REC_INDEX, TEST_IUN);
