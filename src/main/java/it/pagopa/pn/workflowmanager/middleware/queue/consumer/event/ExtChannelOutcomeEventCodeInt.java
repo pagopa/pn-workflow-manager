@@ -1,4 +1,4 @@
-package it.pagopa.pn.workflowmanager.middleware.queue.consumer.feedback.extchannel;
+package it.pagopa.pn.workflowmanager.middleware.queue.consumer.event;
 
 import it.pagopa.pn.workflowmanager.models.internal.campaign.ChannelType;
 import lombok.Getter;

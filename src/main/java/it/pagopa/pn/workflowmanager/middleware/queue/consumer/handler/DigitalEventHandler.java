@@ -4,10 +4,12 @@ import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.externalchannels.model.CourtesyMessageProgressEvent;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.externalchannels.model.LegalMessageSentDetails;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.externalchannels.model.SingleStatusUpdate;
+import it.pagopa.pn.workflowmanager.middleware.queue.consumer.event.DigitalMessageReferenceInt;
+import it.pagopa.pn.workflowmanager.middleware.queue.consumer.event.ExtChannelOutcomeStatusInt;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.feedback.ChannelEventProcessor;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.feedback.extchannel.EmailEventNormalizer;
-import it.pagopa.pn.workflowmanager.middleware.queue.consumer.feedback.extchannel.ExtChannelOutcomeEvent;
-import it.pagopa.pn.workflowmanager.middleware.queue.consumer.feedback.extchannel.ExtChannelOutcomeEventCodeInt;
+import it.pagopa.pn.workflowmanager.middleware.queue.consumer.event.ExtChannelOutcomeEvent;
+import it.pagopa.pn.workflowmanager.middleware.queue.consumer.event.ExtChannelOutcomeEventCodeInt;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.feedback.extchannel.PecEventNormalizer;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.feedback.extchannel.SmsEventNormalizer;
 import it.pagopa.pn.workflowmanager.models.internal.campaign.ChannelType;
@@ -15,9 +17,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import java.time.Instant;
-
-import static it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCodes.ERROR_CODE_WORKFLOWMANAGER_INVALID_DIGITAL_EVENT;
+import static it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCodes.ERROR_CODE_WORKFLOWMANAGER_INVALID_EVENT_RECEIVED;
 
 @Component
 @Slf4j
@@ -30,10 +30,10 @@ public class DigitalEventHandler {
 
     public void handle(SingleStatusUpdate event) {
         if (event.getDigitalLegal() != null) {
-            ExtChannelOutcomeEvent legalEvent = mapLegalEvent(event);
+            ExtChannelOutcomeEvent legalEvent = mapLegalEvent(event.getDigitalLegal());
             channelEventProcessor.process(legalEvent, pecEventNormalizer);
         } else if (event.getDigitalCourtesy() != null) {
-            ExtChannelOutcomeEvent courtesyEvent = mapCourtesyEvent(event);
+            ExtChannelOutcomeEvent courtesyEvent = mapCourtesyEvent(event.getDigitalCourtesy());
             ChannelType channelType = courtesyEvent.getEventCode().getChannelType();
             if (channelType == ChannelType.EMAIL) {
                 channelEventProcessor.process(courtesyEvent, emailEventNormalizer);
@@ -42,42 +42,54 @@ public class DigitalEventHandler {
             } else {
                 throw new PnInternalException(
                         "Unsupported courtesy channel type: " + channelType,
-                        ERROR_CODE_WORKFLOWMANAGER_INVALID_DIGITAL_EVENT
+                        ERROR_CODE_WORKFLOWMANAGER_INVALID_EVENT_RECEIVED
                 );
             }
         } else {
             throw new PnInternalException(
                     "Invalid digital event: both digitalLegal and digitalCourtesy are null",
-                    ERROR_CODE_WORKFLOWMANAGER_INVALID_DIGITAL_EVENT
+                    ERROR_CODE_WORKFLOWMANAGER_INVALID_EVENT_RECEIVED
             );
         }
     }
 
-    private ExtChannelOutcomeEvent mapLegalEvent(SingleStatusUpdate event) {
-        LegalMessageSentDetails digitalLegal = event.getDigitalLegal();
-        return ExtChannelOutcomeEvent.builder()
+    private ExtChannelOutcomeEvent mapLegalEvent(LegalMessageSentDetails digitalLegal) {
+        ExtChannelOutcomeEvent.ExtChannelOutcomeEventBuilder builder = ExtChannelOutcomeEvent.builder()
                 .requestId(digitalLegal.getRequestId())
-                .eventTimestamp(resolveEventTimestamp(digitalLegal.getEventTimestamp(), event.getEventTimestamp()))
-                .status(digitalLegal.getStatus().getValue())
+                .eventTimestamp(digitalLegal.getEventTimestamp())
+                .status(ExtChannelOutcomeStatusInt.valueOf(digitalLegal.getStatus().getValue()))
                 .eventDetails(digitalLegal.getEventDetails())
-                .generatedMessage(digitalLegal.getGeneratedMessage() != null ? digitalLegal.getGeneratedMessage().toString() : null)
-                .eventCode(ExtChannelOutcomeEventCodeInt.fromValue(digitalLegal.getEventCode().getValue()))
-                .build();
+                .eventCode(ExtChannelOutcomeEventCodeInt.fromValue(digitalLegal.getEventCode().getValue()));
+
+        if(digitalLegal.getGeneratedMessage() != null) {
+            builder.generatedMessage(DigitalMessageReferenceInt.builder()
+                    .location(digitalLegal.getGeneratedMessage().getLocation())
+                    .system(digitalLegal.getGeneratedMessage().getSystem())
+                    .id(digitalLegal.getGeneratedMessage().getId())
+                    .build()
+            );
+        }
+
+        return builder.build();
     }
 
-    private ExtChannelOutcomeEvent mapCourtesyEvent(SingleStatusUpdate event) {
-        CourtesyMessageProgressEvent digitalCourtesy = event.getDigitalCourtesy();
-        return ExtChannelOutcomeEvent.builder()
+    private ExtChannelOutcomeEvent mapCourtesyEvent(CourtesyMessageProgressEvent digitalCourtesy) {
+        ExtChannelOutcomeEvent.ExtChannelOutcomeEventBuilder builder = ExtChannelOutcomeEvent.builder()
                 .requestId(digitalCourtesy.getRequestId())
-                .eventTimestamp(resolveEventTimestamp(digitalCourtesy.getEventTimestamp(), event.getEventTimestamp()))
-                .status(digitalCourtesy.getStatus().getValue())
+                .eventTimestamp(digitalCourtesy.getEventTimestamp())
+                .status(ExtChannelOutcomeStatusInt.valueOf(digitalCourtesy.getStatus().getValue()))
                 .eventDetails(digitalCourtesy.getEventDetails())
-                .generatedMessage(digitalCourtesy.getGeneratedMessage() != null ? digitalCourtesy.getGeneratedMessage().toString() : null)
-                .eventCode(ExtChannelOutcomeEventCodeInt.fromValue(digitalCourtesy.getEventCode().getValue()))
-                .build();
-    }
+                .eventCode(ExtChannelOutcomeEventCodeInt.fromValue(digitalCourtesy.getEventCode().getValue()));
 
-    private Instant resolveEventTimestamp(Instant channelTimestamp, Instant envelopeTimestamp) {
-        return channelTimestamp != null ? channelTimestamp : envelopeTimestamp;
+        if(digitalCourtesy.getGeneratedMessage() != null) {
+            builder.generatedMessage(DigitalMessageReferenceInt.builder()
+                    .location(digitalCourtesy.getGeneratedMessage().getLocation())
+                    .system(digitalCourtesy.getGeneratedMessage().getSystem())
+                    .id(digitalCourtesy.getGeneratedMessage().getId())
+                    .build()
+            );
+        }
+
+        return builder.build();
     }
 }

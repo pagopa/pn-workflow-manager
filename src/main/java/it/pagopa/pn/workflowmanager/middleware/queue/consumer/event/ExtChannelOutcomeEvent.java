@@ -1,4 +1,4 @@
-package it.pagopa.pn.workflowmanager.middleware.queue.consumer.feedback.extchannel;
+package it.pagopa.pn.workflowmanager.middleware.queue.consumer.event;
 
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.feedback.ChannelOutcomeEvent;
 import lombok.Builder;
@@ -11,9 +11,9 @@ import java.time.Instant;
 public class ExtChannelOutcomeEvent implements ChannelOutcomeEvent {
     private String requestId;
     private Instant eventTimestamp;
-    private String status;
+    private ExtChannelOutcomeStatusInt status;
     private String eventDetails;
-    private String generatedMessage;
+    private DigitalMessageReferenceInt generatedMessage;
     private ExtChannelOutcomeEventCodeInt eventCode;
 
     @Override

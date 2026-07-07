@@ -7,7 +7,7 @@ import it.pagopa.pn.workflowmanager.generated.openapi.msclient.externalchannels.
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.externalchannels.model.SingleStatusUpdate;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.feedback.ChannelEventProcessor;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.feedback.extchannel.EmailEventNormalizer;
-import it.pagopa.pn.workflowmanager.middleware.queue.consumer.feedback.extchannel.ExtChannelOutcomeEvent;
+import it.pagopa.pn.workflowmanager.middleware.queue.consumer.event.ExtChannelOutcomeEvent;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.feedback.extchannel.PecEventNormalizer;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.feedback.extchannel.SmsEventNormalizer;
 import org.junit.jupiter.api.Test;
