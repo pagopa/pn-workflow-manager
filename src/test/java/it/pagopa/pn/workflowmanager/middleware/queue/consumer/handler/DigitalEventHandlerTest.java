@@ -3,6 +3,7 @@ package it.pagopa.pn.workflowmanager.middleware.queue.consumer.handler;
 import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.externalchannels.model.CourtesyMessageProgressEvent;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.externalchannels.model.LegalMessageSentDetails;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.externalchannels.model.ProgressEventCategory;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.externalchannels.model.SingleStatusUpdate;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.feedback.ChannelEventProcessor;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.feedback.extchannel.EmailEventNormalizer;
@@ -45,6 +46,7 @@ class DigitalEventHandlerTest {
         LegalMessageSentDetails legal = new LegalMessageSentDetails();
         legal.setRequestId("REQ-PEC");
         legal.setEventCode(LegalMessageSentDetails.EventCodeEnum.C003);
+        legal.setStatus(ProgressEventCategory.OK);
         legal.setEventTimestamp(Instant.parse("2026-07-07T10:00:00Z"));
 
         SingleStatusUpdate update = new SingleStatusUpdate();
@@ -65,6 +67,7 @@ class DigitalEventHandlerTest {
         CourtesyMessageProgressEvent courtesy = new CourtesyMessageProgressEvent();
         courtesy.setRequestId("REQ-MAIL");
         courtesy.setEventCode(CourtesyMessageProgressEvent.EventCodeEnum.M004);
+        courtesy.setStatus(ProgressEventCategory.OK);
         courtesy.setEventTimestamp(Instant.parse("2026-07-07T11:00:00Z"));
 
         SingleStatusUpdate update = new SingleStatusUpdate();
@@ -84,6 +87,7 @@ class DigitalEventHandlerTest {
         CourtesyMessageProgressEvent courtesy = new CourtesyMessageProgressEvent();
         courtesy.setRequestId("REQ-SMS");
         courtesy.setEventCode(CourtesyMessageProgressEvent.EventCodeEnum.S008);
+        courtesy.setStatus(ProgressEventCategory.OK);
         courtesy.setEventTimestamp(Instant.parse("2026-07-07T12:00:00Z"));
 
         SingleStatusUpdate update = new SingleStatusUpdate();
@@ -113,11 +117,13 @@ class DigitalEventHandlerTest {
         LegalMessageSentDetails legal = new LegalMessageSentDetails();
         legal.setRequestId("REQ-LEGAL-FIRST");
         legal.setEventCode(LegalMessageSentDetails.EventCodeEnum.C001);
+        legal.setStatus(ProgressEventCategory.OK);
         legal.setEventTimestamp(Instant.parse("2026-07-07T13:00:00Z"));
 
         CourtesyMessageProgressEvent courtesy = new CourtesyMessageProgressEvent();
         courtesy.setRequestId("REQ-SMS-SHOULD-NOT-BE-USED");
         courtesy.setEventCode(CourtesyMessageProgressEvent.EventCodeEnum.S010);
+        courtesy.setStatus(ProgressEventCategory.OK);
         courtesy.setEventTimestamp(Instant.parse("2026-07-07T14:00:00Z"));
 
         SingleStatusUpdate update = new SingleStatusUpdate();
@@ -141,6 +147,7 @@ class DigitalEventHandlerTest {
         CourtesyMessageProgressEvent courtesy = new CourtesyMessageProgressEvent();
         courtesy.setRequestId("REQ-MAIL-NO-TS");
         courtesy.setEventCode(CourtesyMessageProgressEvent.EventCodeEnum.M003);
+        courtesy.setStatus(ProgressEventCategory.OK);
         courtesy.setEventTimestamp(null);
 
         SingleStatusUpdate update = new SingleStatusUpdate();
@@ -154,4 +161,5 @@ class DigitalEventHandlerTest {
         assertEquals(envelopeTs, captor.getValue().getEventTimestamp());
         assertEquals("M003", captor.getValue().getEventCode().getValue());
     }
+
 }

@@ -91,12 +91,13 @@ class ActionTypeTest {
     @Test
     void testEnumValues() {
         ActionType[] values = ActionType.values();
-        assertEquals(5, values.length);
+        assertEquals(6, values.length);
         assertEquals(ActionType.POST_ACCEPTED_PROCESSING_COMPLETED, values[0]);
         assertEquals(ActionType.END_WORKFLOW, values[1]);
         assertEquals(ActionType.WORKFLOW_DONE, values[2]);
         assertEquals(ActionType.START_WORKFLOW, values[3]);
         assertEquals(ActionType.TIMEOUT_WORKFLOW, values[4]);
+        assertEquals(ActionType.DOCUMENT_CREATION_RESPONSE, values[5]);
     }
 
     @Test
@@ -111,6 +112,8 @@ class ActionTypeTest {
                 ActionType.valueOf("START_WORKFLOW"));
         assertEquals(ActionType.TIMEOUT_WORKFLOW,
                 ActionType.valueOf("TIMEOUT_WORKFLOW"));
+        assertEquals(ActionType.DOCUMENT_CREATION_RESPONSE,
+                ActionType.valueOf("DOCUMENT_CREATION_RESPONSE"));
     }
 }
 
