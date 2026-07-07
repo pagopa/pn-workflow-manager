@@ -4,6 +4,8 @@ import it.pagopa.pn.commons.log.PnLogger;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.templateengine.model.InformalCommunication;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.templateengine.model.LanguageEnum;
 
+import java.io.File;
+
 public interface TemplateEngineClient {
     String CLIENT_NAME = PnLogger.EXTERNAL_SERVICES.PN_TEMPLATE_ENGINE;
 
@@ -12,7 +14,9 @@ public interface TemplateEngineClient {
     String INFORMAL_IO_COMMUNICATION = "IO INFORMAL COMMUNICATION";
 
     String ioMessageTemplate(LanguageEnum language, InformalCommunication informalCommunication);
-
+  
+    File informalAnalogCommunication(LanguageEnum xLanguage, InformalCommunication informalCommunication);
+  
     String pecTemplate(LanguageEnum language, InformalCommunication informalCommunication);
 
     String informalIoCommunication(LanguageEnum xLanguage, InformalCommunication informalCommunication);
