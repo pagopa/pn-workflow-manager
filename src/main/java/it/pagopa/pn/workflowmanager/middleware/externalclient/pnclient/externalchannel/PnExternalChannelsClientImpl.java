@@ -11,10 +11,10 @@ import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRe
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.externalchannels.api.DigitalCourtesyMessagesApi;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.externalchannels.api.DigitalLegalMessagesApi;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.externalchannels.model.DigitalCourtesyMailRequest;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.externalchannels.model.DigitalCourtesySmsRequest;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.externalchannels.model.DigitalNotificationRequest;
 import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
@@ -22,6 +22,7 @@ import java.util.List;
 
 import static it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCodes.ERROR_CODE_WORKFLOWMANAGER_SENDEMAILNOTIFICATIONFAILED;
 import static it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCodes.ERROR_CODE_WORKFLOWMANAGER_SENDPECNOTIFICATIONFAILED;
+import static it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCodes.ERROR_CODE_WORKFLOWMANAGER_SENDSMSNOTIFICATIONFAILED;
 
 @Component
 @CustomLog
@@ -37,6 +38,7 @@ public class PnExternalChannelsClientImpl implements PnExternalChannelsClient {
     public void sendNotificationPEC(
             String requestId,
             String mailBody,
+            String subject,
             NotificationInt notificationInt,
             NotificationRecipientInt recipientInt,
             LegalDigitalAddressInt digitalAddress,
@@ -57,7 +59,7 @@ public class PnExternalChannelsClientImpl implements PnExternalChannelsClient {
             digitalNotificationRequest.setReceiverDigitalAddress(digitalAddress.getAddress());
             digitalNotificationRequest.setClientRequestTimeStamp(Instant.now());
             digitalNotificationRequest.setMessageText(mailBody);
-            digitalNotificationRequest.setSubjectText(recipientInt.getMessage().getPrimaryMessage().getSubject());
+            digitalNotificationRequest.setSubjectText(subject);
             digitalNotificationRequest.setAttachmentUrls(fileKeysWithStoragePrefix);
 
 
@@ -71,6 +73,7 @@ public class PnExternalChannelsClientImpl implements PnExternalChannelsClient {
     @Override
     public void sendNotificationEMAIL(String requestId,
                                       String mailBody,
+                                      String subject,
                                       NotificationInt notificationInt,
                                       NotificationRecipientInt recipientInt,
                                       DigitalAddressInt digitalAddress,
@@ -79,7 +82,18 @@ public class PnExternalChannelsClientImpl implements PnExternalChannelsClient {
             log.logInvokingAsyncExternalService(CLIENT_NAME, COURTESY_NOTIFICATION_REQUEST + "[EMAIL]", requestId);
             log.debug("[enter] sendNotificationEMAIL address={} requestId={} recipient={}", LogUtils.maskNumber(digitalAddress.getAddress()), requestId, LogUtils.maskGeneric(recipientInt.getDenomination()));
 
-            DigitalCourtesyMailRequest digitalNotificationRequest = buildDigitalCourtesyMailRequest(requestId, mailBody, recipientInt, digitalAddress, attachmentUrls);
+            DigitalCourtesyMailRequest digitalNotificationRequest = new DigitalCourtesyMailRequest();
+            digitalNotificationRequest.setChannel(DigitalCourtesyMailRequest.ChannelEnum.EMAIL);
+            digitalNotificationRequest.setRequestId(requestId);
+            digitalNotificationRequest.setCorrelationId(requestId);
+            digitalNotificationRequest.setEventType(EVENT_TYPE_INFORMAL);
+            digitalNotificationRequest.setQos(DigitalCourtesyMailRequest.QosEnum.BATCH);
+            digitalNotificationRequest.setReceiverDigitalAddress(digitalAddress.getAddress());
+            digitalNotificationRequest.setClientRequestTimeStamp(Instant.now());
+            digitalNotificationRequest.setMessageContentType(DigitalCourtesyMailRequest.MessageContentTypeEnum.TEXT_HTML);
+            digitalNotificationRequest.setMessageText(mailBody);
+            digitalNotificationRequest.setSubjectText(subject);
+            digitalNotificationRequest.setAttachmentUrls(attachmentUrls.stream().map(FileUtils::getKeyWithStoragePrefix).toList());
 
             digitalCourtesyMessagesApi.sendDigitalCourtesyMessage(requestId, cfg.getCxId(), digitalNotificationRequest);
 
@@ -90,19 +104,31 @@ public class PnExternalChannelsClientImpl implements PnExternalChannelsClient {
         }
     }
 
-    private static @NotNull DigitalCourtesyMailRequest buildDigitalCourtesyMailRequest(String requestId, String mailBody, NotificationRecipientInt recipientInt, DigitalAddressInt digitalAddress, List<String> attachmentUrls) {
-        DigitalCourtesyMailRequest digitalNotificationRequest = new DigitalCourtesyMailRequest();
-        digitalNotificationRequest.setChannel(DigitalCourtesyMailRequest.ChannelEnum.EMAIL);
-        digitalNotificationRequest.setRequestId(requestId);
-        digitalNotificationRequest.setCorrelationId(requestId);
-        digitalNotificationRequest.setEventType(EVENT_TYPE_INFORMAL);
-        digitalNotificationRequest.setQos(DigitalCourtesyMailRequest.QosEnum.BATCH);
-        digitalNotificationRequest.setReceiverDigitalAddress(digitalAddress.getAddress());
-        digitalNotificationRequest.setClientRequestTimeStamp(Instant.now());
-        digitalNotificationRequest.setMessageContentType(DigitalCourtesyMailRequest.MessageContentTypeEnum.TEXT_HTML);
-        digitalNotificationRequest.setMessageText(mailBody);
-        digitalNotificationRequest.setSubjectText(recipientInt.getMessage().getPrimaryMessage().getSubject());
-        digitalNotificationRequest.setAttachmentUrls(attachmentUrls.stream().map(FileUtils::getKeyWithStoragePrefix).toList());
-        return digitalNotificationRequest;
+    @Override
+    public void sendNotificationSMS(
+            String requestIdx,
+            String textMessage,
+            String senderDigitalAddress
+    ) {
+        try {
+            log.logInvokingAsyncExternalService(CLIENT_NAME, COURTESY_NOTIFICATION_REQUEST + "[SMS]", requestIdx);
+            log.debug("[enter] sendNotificationSMS requestId={} senderDigitalAddress={}", requestIdx, LogUtils.maskNumber(senderDigitalAddress));
+
+            DigitalCourtesySmsRequest digitalNotificationRequest = new DigitalCourtesySmsRequest();
+            digitalNotificationRequest.setChannel(DigitalCourtesySmsRequest.ChannelEnum.SMS);
+            digitalNotificationRequest.setRequestId(requestIdx);
+            digitalNotificationRequest.setCorrelationId(requestIdx);
+            digitalNotificationRequest.setEventType(EVENT_TYPE_INFORMAL);
+            digitalNotificationRequest.setQos(DigitalCourtesySmsRequest.QosEnum.BATCH);
+            digitalNotificationRequest.setReceiverDigitalAddress(senderDigitalAddress);
+            digitalNotificationRequest.setClientRequestTimeStamp(Instant.now());
+            digitalNotificationRequest.setMessageText(textMessage);
+
+            digitalCourtesyMessagesApi.sendCourtesyShortMessage(requestIdx, cfg.getCxId(), digitalNotificationRequest);
+            log.debug("[exit] sendNotificationSMS requestId={} senderDigitalAddress={}", requestIdx, LogUtils.maskNumber(senderDigitalAddress));
+        } catch (Exception e) {
+            log.error("error sending SMS notification for requestIdx={}", requestIdx);
+            throw new PnInternalException("error sending SMS notification", ERROR_CODE_WORKFLOWMANAGER_SENDSMSNOTIFICATIONFAILED, e);
+        }
     }
 }

@@ -39,9 +39,7 @@ public class IoChannelSender implements ChannelSender {
         String requestId = ChannelSenderUtils.buildSendDigitalMessageEventId(notification.getIun(), recIndex, channel);
         PnAuditLogEvent auditLogEvent = buildAuditLogEvent(notification.getIun(), recIndex, requestId);
         try {
-
-            // TODO: capire se isIoUser serve.
-            String markdown = templateGeneratorService.generateIoMessageTemplate(notification, recipient, false);
+            String markdown = templateGeneratorService.generateIoMessageTemplate(notification, recipient, campaign);
 
             ioConnectorClient.sendMessage(
                     IoMessageRequest.builder()

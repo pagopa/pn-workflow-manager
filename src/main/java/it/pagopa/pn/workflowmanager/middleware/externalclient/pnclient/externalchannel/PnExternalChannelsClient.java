@@ -17,6 +17,7 @@ public interface PnExternalChannelsClient {
     void sendNotificationPEC(
         String requestId,
         String mailBody,
+        String subject,
         NotificationInt notificationInt,
         NotificationRecipientInt recipientInt,
         LegalDigitalAddressInt digitalAddress,
@@ -26,9 +27,16 @@ public interface PnExternalChannelsClient {
     void sendNotificationEMAIL(
             String requestId,
             String mailBody,
+            String subject,
             NotificationInt notificationInt,
             NotificationRecipientInt recipientInt,
             DigitalAddressInt digitalAddress,
             List<String> attachmentUrls
+    );
+
+    void sendNotificationSMS(
+            String requestIdx,
+            String textMessage,
+            String senderDigitalAddress
     );
 }

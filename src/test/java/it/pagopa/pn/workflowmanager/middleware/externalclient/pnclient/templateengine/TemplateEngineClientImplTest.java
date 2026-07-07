@@ -2,6 +2,7 @@ package it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.template
 
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.templateengine.api.TemplateApi;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.templateengine.model.InformalCommunication;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.templateengine.model.InformalEmailCommunicationSubject;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.templateengine.model.LanguageEnum;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -9,6 +10,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.io.File;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -24,11 +27,13 @@ class TemplateEngineClientImplTest {
 
     private LanguageEnum language;
     private InformalCommunication informalCommunication;
+    private InformalEmailCommunicationSubject informalEmailCommunicationSubject;
 
     @BeforeEach
     void setUp() {
         language = LanguageEnum.IT;
         informalCommunication = new InformalCommunication();
+        informalEmailCommunicationSubject = new InformalEmailCommunicationSubject();
     }
 
     @Test
@@ -77,92 +82,182 @@ class TemplateEngineClientImplTest {
     }
 
     @Test
-    void pecTemplate_shouldReturnTemplate_whenTemplateApiRespondsSuccessfully() {
+    void pecBodyTemplate_shouldReturnTemplate_whenBodyTemplateApiRespondsSuccessfully() {
         // given
         String expectedTemplate = "<html>template content</html>";
-        when(templateApi.informalPecCommunication(language, informalCommunication))
+        when(templateApi.informalPecCommunicationBody(language, informalCommunication))
                 .thenReturn(expectedTemplate);
 
         // when
-        String result = templateEngineClient.pecTemplate(language, informalCommunication);
+        String result = templateEngineClient.pecBodyTemplate(language, informalCommunication);
 
         // then
         assertEquals(expectedTemplate, result);
-        verify(templateApi).informalPecCommunication(language, informalCommunication);
+        verify(templateApi).informalPecCommunicationBody(language, informalCommunication);
         verifyNoMoreInteractions(templateApi);
     }
 
     @Test
-    void pecTemplate_shouldReturnNull_whenTemplateApiReturnsNull() {
+    void pecBodyTemplate_shouldReturnNull_whenBodyTemplateApiReturnsNull() {
         // given
-        when(templateApi.informalPecCommunication(language, informalCommunication))
+        when(templateApi.informalPecCommunicationBody(language, informalCommunication))
                 .thenReturn(null);
 
         // when
-        String result = templateEngineClient.pecTemplate(language, informalCommunication);
+        String result = templateEngineClient.pecBodyTemplate(language, informalCommunication);
 
         // then
         assertNull(result);
-        verify(templateApi).informalPecCommunication(language, informalCommunication);
+        verify(templateApi).informalPecCommunicationBody(language, informalCommunication);
     }
 
     @Test
-    void pecTemplate_shouldPropagateException_whenTemplateApiThrows() {
+    void pecBodyTemplate_shouldPropagateException_whenBodyTemplateApiThrows() {
         // given
         RuntimeException expectedException = new RuntimeException("external service error");
-        when(templateApi.informalPecCommunication(language, informalCommunication))
+        when(templateApi.informalPecCommunicationBody(language, informalCommunication))
                 .thenThrow(expectedException);
 
         // when / then
         RuntimeException thrown = assertThrows(RuntimeException.class,
-                () -> templateEngineClient.pecTemplate(language, informalCommunication));
+                () -> templateEngineClient.pecBodyTemplate(language, informalCommunication));
         assertEquals("external service error", thrown.getMessage());
 
-        verify(templateApi).informalPecCommunication(language, informalCommunication);
+        verify(templateApi).informalPecCommunicationBody(language, informalCommunication);
     }
 
     @Test
-    void informalIoCommunication_shouldReturnTemplate_whenTemplateApiRespondsSuccessfully() {
+    void pecSubjectTemplate_shouldReturnTemplate_whenSubjectTemplateApiRespondsSuccessfully() {
         // given
-        String expectedTemplate = "<html>template content</html>";
-        when(templateApi.informalIoCommunication(language, informalCommunication))
+        String expectedTemplate = "Subject content";
+        when(templateApi.informalPecCommunicationSubject(language, informalEmailCommunicationSubject))
                 .thenReturn(expectedTemplate);
 
         // when
-        String result = templateEngineClient.informalIoCommunication(language, informalCommunication);
+        String result = templateEngineClient.pecSubjectTemplate(language, informalEmailCommunicationSubject);
 
         // then
         assertEquals(expectedTemplate, result);
-        verify(templateApi).informalIoCommunication(language, informalCommunication);
+        verify(templateApi).informalPecCommunicationSubject(language, informalEmailCommunicationSubject);
         verifyNoMoreInteractions(templateApi);
     }
 
     @Test
-    void informalIoCommunication_shouldReturnNull_whenTemplateApiReturnsNull() {
+    void pecSubjectTemplate_shouldReturnNull_whenSubjectTemplateApiReturnsNull() {
         // given
-        when(templateApi.informalIoCommunication(language, informalCommunication))
+        when(templateApi.informalPecCommunicationSubject(language, informalEmailCommunicationSubject))
                 .thenReturn(null);
 
         // when
-        String result = templateEngineClient.informalIoCommunication(language, informalCommunication);
+        String result = templateEngineClient.pecSubjectTemplate(language, informalEmailCommunicationSubject);
 
         // then
         assertNull(result);
-        verify(templateApi).informalIoCommunication(language, informalCommunication);
+        verify(templateApi).informalPecCommunicationSubject(language, informalEmailCommunicationSubject);
     }
 
     @Test
-    void informalIoCommunication_shouldPropagateException_whenTemplateApiThrows() {
+    void pecSubjectTemplate_shouldPropagateException_whenSubjectTemplateApiThrows() {
         // given
         RuntimeException expectedException = new RuntimeException("external service error");
-        when(templateApi.informalIoCommunication(language, informalCommunication))
+        when(templateApi.informalPecCommunicationSubject(language, informalEmailCommunicationSubject))
                 .thenThrow(expectedException);
 
         // when / then
         RuntimeException thrown = assertThrows(RuntimeException.class,
-                () -> templateEngineClient.informalIoCommunication(language, informalCommunication));
+                () -> templateEngineClient.pecSubjectTemplate(language, informalEmailCommunicationSubject));
         assertEquals("external service error", thrown.getMessage());
 
-        verify(templateApi).informalIoCommunication(language, informalCommunication);
+        verify(templateApi).informalPecCommunicationSubject(language, informalEmailCommunicationSubject);
+    }
+
+    @Test
+    void emailSubjectTemplate_shouldReturnTemplate_whenSubjectTemplateApiRespondsSuccessfully() {
+        // given
+        String expectedTemplate = "Email Subject content";
+        when(templateApi.informalEmailCommunicationSubject(language, informalEmailCommunicationSubject))
+                .thenReturn(expectedTemplate);
+
+        // when
+        String result = templateEngineClient.emailSubjectTemplate(language, informalEmailCommunicationSubject);
+
+        // then
+        assertEquals(expectedTemplate, result);
+        verify(templateApi).informalEmailCommunicationSubject(language, informalEmailCommunicationSubject);
+        verifyNoMoreInteractions(templateApi);
+    }
+
+    @Test
+    void emailSubjectTemplate_shouldReturnNull_whenSubjectTemplateApiReturnsNull() {
+        // given
+        when(templateApi.informalEmailCommunicationSubject(language, informalEmailCommunicationSubject))
+                .thenReturn(null);
+
+        // when
+        String result = templateEngineClient.emailSubjectTemplate(language, informalEmailCommunicationSubject);
+
+        // then
+        assertNull(result);
+        verify(templateApi).informalEmailCommunicationSubject(language, informalEmailCommunicationSubject);
+    }
+
+    @Test
+    void emailSubjectTemplate_shouldPropagateException_whenSubjectTemplateApiThrows() {
+        // given
+        RuntimeException expectedException = new RuntimeException("external service error");
+        when(templateApi.informalEmailCommunicationSubject(language, informalEmailCommunicationSubject))
+                .thenThrow(expectedException);
+
+        // when / then
+        RuntimeException thrown = assertThrows(RuntimeException.class,
+                () -> templateEngineClient.emailSubjectTemplate(language, informalEmailCommunicationSubject));
+        assertEquals("external service error", thrown.getMessage());
+
+        verify(templateApi).informalEmailCommunicationSubject(language, informalEmailCommunicationSubject);
+    }
+
+    @Test
+    void coverpageTemplate_shouldReturnTemplate_whenCoverpageTemplateApiRespondsSuccessfully() {
+        // given
+        File expectedTemplate = mock(File.class);
+        when(templateApi.informalAnalogCommunication(language, informalCommunication))
+                .thenReturn(expectedTemplate);
+
+        // when
+        File result = templateEngineClient.coverpageTemplate(language, informalCommunication);
+
+        // then
+        assertEquals(expectedTemplate, result);
+        verify(templateApi).informalAnalogCommunication(language, informalCommunication);
+        verifyNoMoreInteractions(templateApi);
+    }
+
+    @Test
+    void coverpageTemplate_shouldReturnNull_whenCoverpageTemplateApiReturnsNull() {
+        // given
+        when(templateApi.informalAnalogCommunication(language, informalCommunication))
+                .thenReturn(null);
+
+        // when
+        File result = templateEngineClient.coverpageTemplate(language, informalCommunication);
+
+        // then
+        assertNull(result);
+        verify(templateApi).informalAnalogCommunication(language, informalCommunication);
+    }
+
+    @Test
+    void coverpageTemplate_shouldPropagateException_whenCoverpageTemplateApiThrows() {
+        // given
+        RuntimeException expectedException = new RuntimeException("external service error");
+        when(templateApi.informalAnalogCommunication(language, informalCommunication))
+                .thenThrow(expectedException);
+
+        // when / then
+        RuntimeException thrown = assertThrows(RuntimeException.class,
+                () -> templateEngineClient.coverpageTemplate(language, informalCommunication));
+        assertEquals("external service error", thrown.getMessage());
+
+        verify(templateApi).informalAnalogCommunication(language, informalCommunication);
     }
 }

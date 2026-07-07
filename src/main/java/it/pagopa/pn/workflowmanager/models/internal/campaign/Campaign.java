@@ -19,9 +19,10 @@ public class Campaign {
     private String descriptionScope;
     private OffsetDateTime startDate;
     private OffsetDateTime endDate;
-    private Boolean closed;
+    private CampaignStatus status;
     private String senderContact;
     private String serviceId;
+    private String serviceName;
     private Boolean sensitiveContent;
     private Boolean stopOnViewed;
     private List<WorkFlowEntity> workflow;

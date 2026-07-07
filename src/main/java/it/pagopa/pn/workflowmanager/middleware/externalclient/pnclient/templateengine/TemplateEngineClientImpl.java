@@ -2,10 +2,13 @@ package it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.template
 
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.templateengine.api.TemplateApi;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.templateengine.model.InformalCommunication;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.templateengine.model.InformalEmailCommunicationSubject;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.templateengine.model.LanguageEnum;
 import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+
+import java.io.File;
 
 @CustomLog
 @RequiredArgsConstructor
@@ -13,19 +16,39 @@ import org.springframework.stereotype.Component;
 public class TemplateEngineClientImpl implements TemplateEngineClient {
     private final TemplateApi templateApi;
 
+    @Override
     public String ioMessageTemplate(LanguageEnum language, InformalCommunication informalCommunication) {
         log.logInvokingExternalService(CLIENT_NAME, IO_MESSAGE_TEMPLATE);
         return templateApi.informalIoCommunication(language, informalCommunication);
     }
 
-    public String pecTemplate(LanguageEnum language, InformalCommunication informalCommunication) {
-        log.logInvokingExternalService(CLIENT_NAME, PEC_TEMPLATE);
-        return templateApi.informalPecCommunication(language, informalCommunication);
+    @Override
+    public String pecBodyTemplate(LanguageEnum language, InformalCommunication informalCommunication) {
+        log.logInvokingExternalService(CLIENT_NAME, PEC_BODY_TEMPLATE);
+        return templateApi.informalPecCommunicationBody(language, informalCommunication);
     }
 
     @Override
-    public String informalIoCommunication(LanguageEnum xLanguage, InformalCommunication informalCommunication) {
-        log.logInvokingExternalService(CLIENT_NAME, INFORMAL_IO_COMMUNICATION);
-        return templateApi.informalIoCommunication(xLanguage, informalCommunication);
+    public String pecSubjectTemplate(LanguageEnum language, InformalEmailCommunicationSubject informalCommunicationSubject) {
+        log.logInvokingExternalService(CLIENT_NAME, PEC_SUBJECT_TEMPLATE);
+        return templateApi.informalPecCommunicationSubject(language, informalCommunicationSubject);
+    }
+
+    @Override
+    public String emailBodyTemplate(LanguageEnum language, InformalCommunication informalCommunication) {
+        log.logInvokingExternalService(CLIENT_NAME, EMAIL_BODY_TEMPLATE);
+        return templateApi.informalEmailCommunicationBody(language, informalCommunication);
+    }
+
+    @Override
+    public String emailSubjectTemplate(LanguageEnum language, InformalEmailCommunicationSubject informalCommunicationSubject) {
+        log.logInvokingExternalService(CLIENT_NAME, EMAIL_SUBJECT_TEMPLATE);
+        return templateApi.informalEmailCommunicationSubject(language, informalCommunicationSubject);
+    }
+
+    @Override
+    public File coverpageTemplate(LanguageEnum xLanguage, InformalCommunication informalCommunication) {
+        log.logInvokingExternalService(CLIENT_NAME, COVERPAGE_TEMPLATE);
+        return templateApi.informalAnalogCommunication(xLanguage, informalCommunication);
     }
 }

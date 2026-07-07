@@ -11,6 +11,7 @@ import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRe
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.externalchannels.api.DigitalCourtesyMessagesApi;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.externalchannels.api.DigitalLegalMessagesApi;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.externalchannels.model.DigitalCourtesyMailRequest;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.externalchannels.model.DigitalCourtesySmsRequest;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.externalchannels.model.DigitalNotificationRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -66,6 +67,7 @@ class PnExternalChannelsClientImplTest {
         client.sendNotificationPEC(
                 requestId,
                 mailBody,
+                subject,
                 notification,
                 recipient,
                 digitalAddress,
@@ -111,7 +113,7 @@ class PnExternalChannelsClientImplTest {
 
         when(cfg.getCxId()).thenReturn(cxId);
 
-        client.sendNotificationPEC(requestId, "body", notification, recipient, digitalAddress, List.of());
+        client.sendNotificationPEC(requestId, "body", "subject", notification, recipient, digitalAddress, List.of());
 
         ArgumentCaptor<DigitalNotificationRequest> requestCaptor = ArgumentCaptor.forClass(DigitalNotificationRequest.class);
         verify(digitalLegalMessagesApi).sendDigitalLegalMessage(eq(requestId), eq(cxId), requestCaptor.capture());
@@ -145,7 +147,7 @@ class PnExternalChannelsClientImplTest {
 
         PnInternalException thrown = assertThrows(
                 PnInternalException.class,
-                () -> client.sendNotificationPEC(requestId, "body", notification, recipient, digitalAddress, List.of("file"))
+                () -> client.sendNotificationPEC(requestId, "body", "subject", notification, recipient, digitalAddress, List.of("file"))
         );
 
         assertSame(apiException, thrown.getCause());
@@ -170,7 +172,7 @@ class PnExternalChannelsClientImplTest {
 
         assertThrows(
                 PnInternalException.class,
-                () -> client.sendNotificationPEC("request-id", "body", notification, recipient, digitalAddress, null)
+                () -> client.sendNotificationPEC("request-id", "body", "subject", notification, recipient, digitalAddress, null)
         );
     }
 
@@ -202,6 +204,7 @@ class PnExternalChannelsClientImplTest {
         client.sendNotificationEMAIL(
                 requestId,
                 mailBody,
+                subject,
                 notification,
                 recipient,
                 digitalAddress,
@@ -251,7 +254,49 @@ class PnExternalChannelsClientImplTest {
 
         PnInternalException thrown = assertThrows(
                 PnInternalException.class,
-                () -> client.sendNotificationEMAIL(requestId, "body", notification, recipient, digitalAddress, List.of("aarKey"))
+                () -> client.sendNotificationEMAIL(requestId, "body", "subject", notification, recipient, digitalAddress, List.of("aarKey"))
+        );
+
+        assertSame(apiException, thrown.getCause());
+    }
+
+    @Test
+    void sendsSmsNotificationWithExpectedPayload() {
+        String requestIdx = "request-idx";
+        String cxId = "cx-id";
+        String textMessage = "Hello SMS";
+        String senderDigitalAddress = "+39123456789";
+
+        when(cfg.getCxId()).thenReturn(cxId);
+
+        client.sendNotificationSMS(requestIdx, textMessage, senderDigitalAddress);
+
+        ArgumentCaptor<DigitalCourtesySmsRequest> requestCaptor = ArgumentCaptor.forClass(DigitalCourtesySmsRequest.class);
+        verify(digitalCourtesyMessagesApi).sendCourtesyShortMessage(eq(requestIdx), eq(cxId), requestCaptor.capture());
+
+        DigitalCourtesySmsRequest sent = requestCaptor.getValue();
+        assertEquals(DigitalCourtesySmsRequest.ChannelEnum.SMS, sent.getChannel());
+        assertEquals(requestIdx, sent.getRequestId());
+        assertEquals(requestIdx, sent.getCorrelationId());
+        assertEquals("INFORMAL", sent.getEventType());
+        assertEquals(DigitalCourtesySmsRequest.QosEnum.BATCH, sent.getQos());
+        assertEquals(senderDigitalAddress, sent.getReceiverDigitalAddress());
+        assertEquals(textMessage, sent.getMessageText());
+        assertNotNull(sent.getClientRequestTimeStamp());
+    }
+
+    @Test
+    void wrapsAndRethrowsWhenSmsApiFails() {
+        String requestIdx = "request-idx";
+        RuntimeException apiException = new RuntimeException("boom");
+
+        when(cfg.getCxId()).thenReturn("cx-id");
+        doThrow(apiException).when(digitalCourtesyMessagesApi)
+                .sendCourtesyShortMessage(anyString(), anyString(), any(DigitalCourtesySmsRequest.class));
+
+        PnInternalException thrown = assertThrows(
+                PnInternalException.class,
+                () -> client.sendNotificationSMS(requestIdx, "text", "+39123456789")
         );
 
         assertSame(apiException, thrown.getCause());

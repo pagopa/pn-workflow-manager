@@ -38,13 +38,15 @@ public class PecChannelSender implements ChannelSender {
         NotificationRecipientInt recipient = notification.getRecipients().get(recIndex);
         WorkFlowEntity workflowStep = resolveWorkflowStep(campaign, recipient, currentStep, channel);
 
-        String messageText = templateGeneratorService.generatePecTemplate(notification, recipient, false);
+        String messageText = templateGeneratorService.generatePecBodyTemplate(notification, recipient, campaign);
+        String subject = templateGeneratorService.generatePecSubjectTemplate(notification, recipient);
 
         String timelineId = ChannelSenderUtils.buildSendDigitalMessageEventId(notification.getIun(), recIndex, channel);
 
         pnExternalChannelsClient.sendNotificationPEC(
                 timelineId,
                 messageText,
+                subject,
                 notification,
                 recipient,
                 recipient.getDigitalDomicile(),
