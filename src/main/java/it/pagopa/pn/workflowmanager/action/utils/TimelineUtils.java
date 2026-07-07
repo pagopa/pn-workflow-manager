@@ -6,6 +6,7 @@ import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.timelineserv
 import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.timelineservice.model.SendingReceipt;
 import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
 import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
+import it.pagopa.pn.workflowmanager.dto.address.PhysicalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.ResponseStatusInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.EventId;
@@ -93,6 +94,27 @@ public class TimelineUtils {
                 .recIndex(recIndex)
                 .build()
         );
+    }
+
+    public TimelineElementInternal buildPrepareAnalogDeliveryTimelineElement(Integer recIndex,
+                                                                             NotificationInt notification,
+                                                                             String eventId,
+                                                                             ServiceLevelInt serviceLevel,
+                                                                             Integer sentAttemptMade,
+                                                                             String relatedRequestId,
+                                                                             PhysicalAddressInt physicalAddressInt) {
+        log.debug("buildPrepareAnalogDeliveryTimelineElement - IUN={} and id={}", notification.getIun(), recIndex);
+
+        PrepareAnalogDeliveryDetailsInt details = PrepareAnalogDeliveryDetailsInt.builder()
+                .recIndex(recIndex)
+                .physicalAddress(physicalAddressInt)
+                .deliveryType(AnalogDeliveryTypeInt.RS)
+                .serviceLevel(serviceLevel)
+                .sentAttemptMade(sentAttemptMade)
+                .relatedRequestId(relatedRequestId)
+                .foreignState(physicalAddressInt.getForeignState())
+                .build();
+        return buildTimeline(notification, TimelineElementCategoryInt.PREPARE_ANALOG_DELIVERY, eventId, details);
     }
 
     public TimelineElementInternal buildWorkflowEndedUnreachedTimelineElement(Integer recIndex, NotificationInt notification,

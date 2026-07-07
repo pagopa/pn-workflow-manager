@@ -6,6 +6,7 @@ import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.timelineserv
 import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.timelineservice.model.SendingReceipt;
 import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
 import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
+import it.pagopa.pn.workflowmanager.dto.address.PhysicalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationSenderInt;
@@ -879,6 +880,57 @@ class TimelineUtilsTest {
                         .build())
                 .sentAt(Instant.now())
                 .build();
+    }
+
+    @Test
+    void buildPrepareAnalogDeliveryTimelineElement() {
+        // Arrange
+        NotificationInt notification = createNotification();
+        String eventId = "PREPARE_ANALOG.IUN_TEST-IUN-001.RECINDEX_0.ATTEMPT_0";
+        ServiceLevelInt serviceLevel = ServiceLevelInt.AR_REGISTERED_LETTER;
+        Integer sentAttemptMade = 0;
+        String relatedRequestId = "related-request-001";
+        PhysicalAddressInt physicalAddress = PhysicalAddressInt.builder()
+                .address("Via Roma 1")
+                .addressDetails("Scala A")
+                .zip("00100")
+                .municipality("Roma")
+                .province("RM")
+                .foreignState("ITALIA")
+                .build();
+
+        // Act
+        TimelineElementInternal actual = timelineUtils.buildPrepareAnalogDeliveryTimelineElement(
+                TEST_REC_INDEX,
+                notification,
+                eventId,
+                serviceLevel,
+                sentAttemptMade,
+                relatedRequestId,
+                physicalAddress
+        );
+
+        // Assert
+        Assertions.assertAll(
+                () -> Assertions.assertEquals(TEST_IUN, actual.getIun()),
+                () -> Assertions.assertEquals(PREPARE_ANALOG_DELIVERY, actual.getCategory()),
+                () -> Assertions.assertEquals(eventId, actual.getElementId()),
+                () -> Assertions.assertEquals(TEST_PA_ID, actual.getPaId()),
+                () -> assertNotNull(actual.getTimestamp()),
+                () -> assertNotNull(actual.getDetails()),
+                () -> Assertions.assertInstanceOf(PrepareAnalogDeliveryDetailsInt.class, actual.getDetails())
+        );
+
+        PrepareAnalogDeliveryDetailsInt details = (PrepareAnalogDeliveryDetailsInt) actual.getDetails();
+        Assertions.assertAll(
+                () -> Assertions.assertEquals(TEST_REC_INDEX, details.getRecIndex()),
+                () -> Assertions.assertEquals(physicalAddress, details.getPhysicalAddress()),
+                () -> Assertions.assertEquals(AnalogDeliveryTypeInt.RS, details.getDeliveryType()),
+                () -> Assertions.assertEquals(serviceLevel, details.getServiceLevel()),
+                () -> Assertions.assertEquals(sentAttemptMade, details.getSentAttemptMade()),
+                () -> Assertions.assertEquals(relatedRequestId, details.getRelatedRequestId()),
+                () -> Assertions.assertEquals("ITALIA", details.getForeignState())
+        );
     }
 
     private TimelineElementInternal createTimelineElement(TimelineElementCategoryInt category, int recIndex) {

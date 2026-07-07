@@ -40,12 +40,12 @@ public class PaperMessagesClientImpl implements PaperMessagesClient {
         prepareRequest.setReceiverType(paperChannelPrepareRequest.getRecipientInt().getRecipientType().getValue());
         prepareRequest.setNotificationSentAt(paperChannelPrepareRequest.getNotificationInt().getSentAt());
         prepareRequest.setSenderPaId(paperChannelPrepareRequest.getNotificationInt().getSender().getPaId());
-        //prepareRequest.setSenderPriority(paperChannelPrepareRequest.getNotificationInt().getSender().getPhysicalCommunicationPriority());
+        //prepareRequest.setSenderPriority(paperChannelPrepareRequest.getNotificationInt().getSender().getPhysicalCommunicationPriority()); //Todo: Manca senderPriority
         prepareRequest.setRelatedRequestId(paperChannelPrepareRequest.getRelatedRequestId());
         //prepareRequest.setDiscoveredAddress(mapInternalToExternal(paperChannelPrepareRequest.getDiscoveredAddress()));
         //prepareRequest.setAarWithRadd(paperChannelPrepareRequest.getAarWithRadd());
 
-        paperMessagesApi.sendPaperPrepareRequest(paperChannelPrepareRequest.getRequestId(), prepareRequest, CLIENT_ID);
+        paperMessagesApi.sendPaperPrepareRequest(paperChannelPrepareRequest.getRequestId(), prepareRequest, cfg.getCxId());
 
         log.debug("[exit] prepare iun={}  address={} recipient={} requestId={} attachments={} relatedRequestId={}",
                 paperChannelPrepareRequest.getNotificationInt().getIun(), LogUtils.maskGeneric(paperChannelPrepareRequest.getPaAddress()==null?"null":paperChannelPrepareRequest.getPaAddress().getAddress()), LogUtils.maskGeneric(paperChannelPrepareRequest.getRecipientInt().getDenomination()), paperChannelPrepareRequest.getRequestId(), paperChannelPrepareRequest.getAttachments(), paperChannelPrepareRequest.getRelatedRequestId());
