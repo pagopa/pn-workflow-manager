@@ -76,15 +76,15 @@ public class EmailChannelSender implements ChannelSender {
         PnAuditLogEvent auditLogEvent = buildAuditLogEvent(notification.getIun(), recIndex, requestId);
 
         try {
-            boolean userFromAppIo = channelSenderUtils.searchIfUserFromAppIo(notification.getIun(), channel, recIndex);
-            String html = templateGeneratorService.generateInformalIoCommunicationTemplate(notification, recipient, userFromAppIo);
+            String subject = templateGeneratorService.generateEmailSubjectTemplate(notification, recipient);
+            String htmlBody = templateGeneratorService.generateEmailBodyTemplate(notification, recipient, campaign);
             List<String> attachmentUrls = resolveAttachments(notification, recIndex, currentStep, campaign, channel);
             InformalDigitalAddressInt emailAddress = ChannelSenderUtils.buildDigitalAddress(
                     recipient.getEmail(), InformalDigitalAddressInt.INFORMAL_DIGITAL_ADDRESS_TYPE.EMAIL
             );
             log.info("Sending email for notification {} to recipient {} with requestId {}",
                     notification.getIun(), recIndex, requestId);
-            pnExternalChannelsClient.sendNotificationEMAIL(requestId, html, notification, recipient, emailAddress, attachmentUrls);
+            pnExternalChannelsClient.sendNotificationEMAIL(requestId, htmlBody, subject, notification, recipient, emailAddress, attachmentUrls);
             channelSenderUtils.saveSendDigitalMessageElement(
                     notification, requestId, recIndex, emailAddress,
                     DigitalChannelsInt.EMAIL, DigitalAddressSourceInt.SPECIAL
