@@ -6,7 +6,6 @@ import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRe
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationSenderInt;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.templateengine.model.*;
 import it.pagopa.pn.workflowmanager.models.internal.campaign.Campaign;
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.templateengine.model.*;
 import org.springframework.util.CollectionUtils;
 
 public class TemplateEngineMapper {
