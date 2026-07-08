@@ -27,8 +27,8 @@ import static it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCo
 @AllArgsConstructor
 public class SaveDocumentServiceImpl implements SaveDocumentService {
 
-    public static final String SAVE_LEGAL_FACT_EXCEPTION_MESSAGE = "Generating %s legal fact for IUN=%s and recipientId=%s";
-    public static final String LEGALFACTS_MEDIATYPE_STRING = "application/pdf";
+    public static final String SAVE_DOCUMENT_EXCEPTION_MESSAGE = "Generating %s document for IUN=%s and recipientId=%s";
+    public static final String DOCUMENTS_MEDIATYPE_STRING = "application/pdf";
     public static final String PN_COMMUNICATIONS_COVERPAGE = "PN_COMMUNICATIONS_COVERPAGE";
     public static final String SAVED = "SAVED";
 
@@ -36,12 +36,12 @@ public class SaveDocumentServiceImpl implements SaveDocumentService {
 
     private final SafeStorageService safeStorageService;
 
-    public String saveLegalFact(byte[] legalFact, Map<String, List<String>> tags) {
+    public String saveDocument(byte[] content, Map<String, List<String>> tags) {
         FileCreationWithContentRequest fileCreationRequest = new FileCreationWithContentRequest();
-        fileCreationRequest.setContentType(LEGALFACTS_MEDIATYPE_STRING);
+        fileCreationRequest.setContentType(DOCUMENTS_MEDIATYPE_STRING);
         fileCreationRequest.setDocumentType(PN_COMMUNICATIONS_COVERPAGE);
         fileCreationRequest.setStatus(SAVED);
-        fileCreationRequest.setContent(legalFact);
+        fileCreationRequest.setContent(content);
         fileCreationRequest.setTags(tags);
         
         return FileUtils.getKeyWithStoragePrefix(
@@ -66,9 +66,9 @@ public class SaveDocumentServiceImpl implements SaveDocumentService {
                     "documentType", List.of(DocumentType.COVERPAGE.name()),
                     "timelineElementId", List.of(timelineElementId)
             );
-            return saveLegalFact(legalFact, tags);
+            return saveDocument(legalFact, tags);
         } catch (Exception exc) {
-            String msg = String.format(SAVE_LEGAL_FACT_EXCEPTION_MESSAGE, "DIGITAL_DELIVERY", notification.getIun(), recipient.getTaxId());
+            String msg = String.format(SAVE_DOCUMENT_EXCEPTION_MESSAGE, "COVERPAGE", notification.getIun(), recIndex);
             throw new PnInternalException(msg, ERROR_CODE_WORKFLOWMANAGER_SAVELEGALFACTSFAILED, exc);
         }
     }
