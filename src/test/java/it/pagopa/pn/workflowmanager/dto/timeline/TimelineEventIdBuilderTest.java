@@ -12,7 +12,7 @@ class TimelineEventIdBuilderTest {
 
     @Test
     void buildSEND_DIGITAL_MESSAGETest() {
-        String timeLineEventIdExpected = "SEND_DIGITAL_MESSAGE.IUN_KWKU-JHXN-HJXM-202304-U-A.RECINDEX_0.CHANNEL_APPIO";
+        String timeLineEventIdExpected = "SEND_DIGITAL_MESSAGE.IUN_KWKU-JHXN-HJXM-202304-U-A.RECINDEX_0.CHANNEL_IO";
         String timeLineEventIdActual = new TimelineEventIdBuilder()
                 .withCategory(TimelineEventId.SEND_DIGITAL_MESSAGE.getValue())
                 .withIun(IUN)
@@ -31,7 +31,7 @@ class TimelineEventIdBuilderTest {
 
     @Test
     void buildSEND_DIGITAL_MESSAGE_SKIPTest() {
-        String timeLineEventIdExpected = "SEND_DIGITAL_MESSAGE_SKIP.IUN_KWKU-JHXN-HJXM-202304-U-A.RECINDEX_0.CHANNEL_APPIO";
+        String timeLineEventIdExpected = "SEND_DIGITAL_MESSAGE_SKIP.IUN_KWKU-JHXN-HJXM-202304-U-A.RECINDEX_0.CHANNEL_IO";
         String timeLineEventIdActual = new TimelineEventIdBuilder()
                 .withCategory(TimelineEventId.SEND_DIGITAL_MESSAGE_SKIP.getValue())
                 .withIun(IUN)
@@ -50,7 +50,7 @@ class TimelineEventIdBuilderTest {
 
     @Test
     void buildSEND_DIGITAL_MESSAGE_PROGRESSTest() {
-        String timeLineEventIdExpected = "SEND_DIGITAL_MESSAGE_PROGRESS.IUN_KWKU-JHXN-HJXM-202304-U-A.RECINDEX_0.IDX_0.CHANNEL_APPIO";
+        String timeLineEventIdExpected = "SEND_DIGITAL_MESSAGE_PROGRESS.IUN_KWKU-JHXN-HJXM-202304-U-A.RECINDEX_0.IDX_0.CHANNEL_IO";
         String timeLineEventIdActual = new TimelineEventIdBuilder()
                 .withCategory(TimelineEventId.SEND_DIGITAL_MESSAGE_PROGRESS.getValue())
                 .withIun(IUN)
@@ -71,7 +71,7 @@ class TimelineEventIdBuilderTest {
 
     @Test
     void buildSEND_DIGITAL_MESSAGE_FEEDBACKTest() {
-        String timeLineEventIdExpected = "SEND_DIGITAL_MESSAGE_FEEDBACK.IUN_KWKU-JHXN-HJXM-202304-U-A.RECINDEX_0.CHANNEL_APPIO";
+        String timeLineEventIdExpected = "SEND_DIGITAL_MESSAGE_FEEDBACK.IUN_KWKU-JHXN-HJXM-202304-U-A.RECINDEX_0.CHANNEL_IO";
         String timeLineEventIdActual = new TimelineEventIdBuilder()
                 .withCategory(TimelineEventId.SEND_DIGITAL_MESSAGE_FEEDBACK.getValue())
                 .withIun(IUN)
@@ -176,7 +176,7 @@ class TimelineEventIdBuilderTest {
 
     @Test
     void buildREACHEDTest() {
-        String timeLineEventIdExpected = "DELIVERED.IUN_KWKU-JHXN-HJXM-202304-U-A.RECINDEX_0.CHANNEL_APPIO";
+        String timeLineEventIdExpected = "DELIVERED.IUN_KWKU-JHXN-HJXM-202304-U-A.RECINDEX_0.CHANNEL_IO";
         String timeLineEventIdActual = new TimelineEventIdBuilder()
                 .withCategory(TimelineEventId.DELIVERED.getValue())
                 .withIun(IUN)
@@ -323,7 +323,7 @@ class TimelineEventIdBuilderTest {
 
     @Test
     void buildINFORMAL_NOTIFICATION_VIEWEDTest() {
-        String timeLineEventIdExpected = "INFORMAL_NOTIFICATION_VIEWED.IUN_KWKU-JHXN-HJXM-202304-U-A.RECINDEX_0.CHANNEL_APPIO";
+        String timeLineEventIdExpected = "INFORMAL_NOTIFICATION_VIEWED.IUN_KWKU-JHXN-HJXM-202304-U-A.RECINDEX_0.CHANNEL_IO";
         String timeLineEventIdActual = new TimelineEventIdBuilder()
                 .withCategory(TimelineEventId.INFORMAL_NOTIFICATION_VIEWED.getValue())
                 .withIun(IUN)

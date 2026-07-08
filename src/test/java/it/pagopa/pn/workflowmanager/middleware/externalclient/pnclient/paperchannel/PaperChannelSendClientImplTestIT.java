@@ -2,11 +2,7 @@ package it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.papercha
 
 import it.pagopa.pn.commons.exceptions.PnHttpResponseException;
 import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.paperchannel.api.PaperMessagesApi;
-import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.paperchannel.model.PrepareRequest;
-import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.paperchannel.model.ProposalTypeEnum;
-import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.paperchannel.model.ProductTypeEnum;
-import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.paperchannel.model.SendRequest;
-import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.paperchannel.model.SendResponse;
+import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.paperchannel.model.*;
 import it.pagopa.pn.workflowmanager.config.PnWorkflowManagerConfigs;
 import it.pagopa.pn.workflowmanager.dto.address.PhysicalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
@@ -17,7 +13,6 @@ import it.pagopa.pn.workflowmanager.exceptions.PnPaperChannelChangedCostExceptio
 import it.pagopa.pn.workflowmanager.utils.NotificationRecipientTestBuilder;
 import it.pagopa.pn.workflowmanager.utils.NotificationTestBuilder;
 import org.apache.http.HttpStatus;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -30,13 +25,14 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class PaperChannelSendClientImplTestIT {
+    private static final String TEST_CX_ID = "test-cx-id";
+
     @Mock
     private PnWorkflowManagerConfigs cfg;
     @Mock
@@ -46,6 +42,8 @@ class PaperChannelSendClientImplTestIT {
 
     @Test
     void shouldBuildPrepareRequestFor890() {
+        when(cfg.getCxId()).thenReturn(TEST_CX_ID);
+
         String requestId = "requestId";
         NotificationRecipientInt recipient = NotificationRecipientTestBuilder.builder().build();
         NotificationInt notification = NotificationTestBuilder.builder().build();
@@ -60,7 +58,7 @@ class PaperChannelSendClientImplTestIT {
         client.prepare(paperChannelPrepareRequest);
 
         ArgumentCaptor<PrepareRequest> captor = ArgumentCaptor.forClass(PrepareRequest.class);
-        verify(paperMessagesApi).sendPaperPrepareRequest(eq(requestId), captor.capture(), anyString());
+        verify(paperMessagesApi).sendPaperPrepareRequest(eq(requestId), captor.capture(), eq(TEST_CX_ID));
 
         PrepareRequest sent = captor.getValue();
         assertEquals(requestId, sent.getRequestId());
@@ -74,6 +72,8 @@ class PaperChannelSendClientImplTestIT {
 
     @Test
     void shouldBuildPrepareRequestForAR() {
+        when(cfg.getCxId()).thenReturn(TEST_CX_ID);
+
         String requestId = "requestId";
         PaperChannelPrepareRequest paperChannelPrepareRequest = buildPrepareRequest(
                 requestId,
@@ -86,13 +86,15 @@ class PaperChannelSendClientImplTestIT {
         client.prepare(paperChannelPrepareRequest);
 
         ArgumentCaptor<PrepareRequest> captor = ArgumentCaptor.forClass(PrepareRequest.class);
-        verify(paperMessagesApi).sendPaperPrepareRequest(eq(requestId), captor.capture(), anyString());
+        verify(paperMessagesApi).sendPaperPrepareRequest(eq(requestId), captor.capture(), eq(TEST_CX_ID));
         assertEquals(ProposalTypeEnum.AR, captor.getValue().getProposalProductType());
     }
 
 
     @Test
     void shouldBuildPrepareRequestForARSecondRequest() {
+        when(cfg.getCxId()).thenReturn(TEST_CX_ID);
+
         String requestId = "requestId";
         String relatedRequestId = "requestId_0";
         PaperChannelPrepareRequest paperChannelPrepareRequest = buildPrepareRequest(
@@ -106,12 +108,14 @@ class PaperChannelSendClientImplTestIT {
         client.prepare(paperChannelPrepareRequest);
 
         ArgumentCaptor<PrepareRequest> captor = ArgumentCaptor.forClass(PrepareRequest.class);
-        verify(paperMessagesApi).sendPaperPrepareRequest(eq(requestId), captor.capture(), anyString());
+        verify(paperMessagesApi).sendPaperPrepareRequest(eq(requestId), captor.capture(), eq(TEST_CX_ID));
         assertEquals(relatedRequestId, captor.getValue().getRelatedRequestId());
     }
 
     @Test
     void shouldBuildPrepareRequestForSimpleRegisteredLetterWithNotificationSentAt() {
+        when(cfg.getCxId()).thenReturn(TEST_CX_ID);
+
         String requestId = "requestId";
         NotificationInt notificationInt = NotificationTestBuilder.builder()
                 .withSentAt(Instant.EPOCH.plusMillis(57))
@@ -132,7 +136,7 @@ class PaperChannelSendClientImplTestIT {
         client.prepare(paperChannelPrepareRequest);
 
         ArgumentCaptor<PrepareRequest> captor = ArgumentCaptor.forClass(PrepareRequest.class);
-        verify(paperMessagesApi).sendPaperPrepareRequest(eq(requestId), captor.capture(), anyString());
+        verify(paperMessagesApi).sendPaperPrepareRequest(eq(requestId), captor.capture(), eq(TEST_CX_ID));
 
         PrepareRequest sent = captor.getValue();
         assertEquals(ProposalTypeEnum.RS, sent.getProposalProductType());
@@ -140,7 +144,7 @@ class PaperChannelSendClientImplTestIT {
         assertEquals("iun_12345", sent.getIun());
         assertEquals("GeneratedTaxId_9ce24c59-862c-4024-aa75-40d888e6acac", sent.getReceiverFiscalCode());
     }
-    
+
     @Test
     void shouldSendAndReturnResponseAmount() {
         String requestId = "requestId";
@@ -223,6 +227,9 @@ class PaperChannelSendClientImplTestIT {
                         .build())
                 .receiverAddress(PhysicalAddressInt.builder()
                         .address("test2")
+                        .build())
+                .senderAddress(PhysicalAddressInt.builder()
+                        .address("sender-address")
                         .build())
                 .recipientInt(NotificationRecipientTestBuilder.builder().build())
                 .notificationInt(NotificationTestBuilder.builder().build())
