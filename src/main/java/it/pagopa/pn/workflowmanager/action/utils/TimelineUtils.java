@@ -384,17 +384,17 @@ public class TimelineUtils {
         return timelineId.split("\\" + TimelineEventIdBuilder.DELIMITER)[1].replace("IUN_", "");
     }
 
-    public int checkIfSendRequestIsPresentAndRetrieveRecIndex(String iun, String requestId) {
+    public SendRelatedTimelineElement checkAndRetrieveSourceSendRequestDetails(String iun, String requestId) {
         Optional<TimelineElementInternal> optRequestElement = timelineService.getTimelineElement(iun, requestId);
         if(optRequestElement.isEmpty()) {
             throw new PnInternalException(String.format("Request with requestId=%s not found in timeline for iun=%s", requestId, iun), ERROR_CODE_TIMELINESERVICE_TIMELINE_ELEMENT_NOT_PRESENT);
         }
 
         TimelineElementInternal requestElement = optRequestElement.get();
-        if(!(requestElement.getDetails() instanceof RecipientRelatedTimelineElementDetails)) {
-            throw new PnInternalException(String.format("Timeline element with requestId=%s for iun=%s is not a recipient related timeline element", requestId, iun), ERROR_CODE_TIMELINESERVICE_TIMELINE_ELEMENT_NOT_PRESENT);
+        if(!(requestElement.getDetails() instanceof SendRelatedTimelineElement)) {
+            throw new PnInternalException(String.format("Timeline element with requestId=%s for iun=%s is not a send related timeline element", requestId, iun), ERROR_CODE_TIMELINESERVICE_TIMELINE_ELEMENT_NOT_PRESENT);
         }
 
-        return ((RecipientRelatedTimelineElementDetails) requestElement.getDetails()).getRecIndex();
+        return (SendRelatedTimelineElement) requestElement.getDetails();
     }
 }

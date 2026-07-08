@@ -1,6 +1,7 @@
-package it.pagopa.pn.workflowmanager.middleware.queue.consumer.feedback.io;
+package it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.io;
 
 import it.pagopa.pn.workflowmanager.action.utils.TimelineUtils;
+import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.event.NotificationPaidInt;
 import it.pagopa.pn.workflowmanager.dto.event.NotificationViewedInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
@@ -9,10 +10,11 @@ import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.ResponseStatusInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.DigitalChannelsInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.DigitalDeliveryDetailsInt;
+import it.pagopa.pn.workflowmanager.dto.timeline.details.SendDigitalMessageDetailsInt;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.event.IoOutcomeEvent;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.event.IoOutcomeEventType;
-import it.pagopa.pn.workflowmanager.middleware.queue.consumer.feedback.NormalizedChannelOutcome;
-import it.pagopa.pn.workflowmanager.middleware.queue.consumer.feedback.trigger.ChannelEventTrigger;
+import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.NormalizedChannelOutcome;
+import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.trigger.ChannelEventTrigger;
 import it.pagopa.pn.workflowmanager.models.internal.campaign.ChannelType;
 import it.pagopa.pn.workflowmanager.utils.NotificationPaymentUtils;
 import org.junit.jupiter.api.AfterEach;
@@ -53,6 +55,16 @@ class IoEventNormalizerTest {
 
     private final String iun = "IUN-TEST-999";
     private final int recIndex = 0;
+    private final String userTaxId = "tax-user-01";
+    private final SendDigitalMessageDetailsInt sendDigitalMessageDetails = SendDigitalMessageDetailsInt.builder()
+            .recIndex(recIndex)
+            .digitalAddressSource(null)
+            .digitalAddress(InformalDigitalAddressInt.builder()
+                    .type(InformalDigitalAddressInt.INFORMAL_DIGITAL_ADDRESS_TYPE.APPIO)
+                    .address(userTaxId)
+                    .build()
+            )
+            .build();
     private final Instant now = Instant.now();
     private final String requestId = "req-123";
     private final String paTaxId = "tax-pa-01";
@@ -85,11 +97,12 @@ class IoEventNormalizerTest {
 
         when(timelineUtils.buildSendDigitalMessageProgress(
                 eq(notification), eq(recIndex), eq(DigitalChannelsInt.APPIO), eq(requestId),
-                any(DigitalDeliveryDetailsInt.class), isNull(), isNull(), eq(now)))
+                any(DigitalDeliveryDetailsInt.class), eq(sendDigitalMessageDetails.getDigitalAddress()),
+                eq(sendDigitalMessageDetails.getDigitalAddressSource()), eq(now)))
                 .thenReturn(mockTimelineElement);
 
         // Act
-        NormalizedChannelOutcome result = ioEventNormalizer.normalize(ioEvent, notification, recIndex);
+        NormalizedChannelOutcome result = ioEventNormalizer.normalize(ioEvent, notification, sendDigitalMessageDetails);
 
         // Assert
         verifyCommonsAssertionsForNormalizedChannelOutcome(result, IoEventClassification.SENT_TO_IO);
@@ -107,11 +120,12 @@ class IoEventNormalizerTest {
 
         when(timelineUtils.buildSendDigitalMessageProgress(
                 eq(notification), eq(recIndex), eq(DigitalChannelsInt.APPIO), eq(requestId),
-                any(DigitalDeliveryDetailsInt.class), isNull(), isNull(), eq(now)))
+                any(DigitalDeliveryDetailsInt.class), eq(sendDigitalMessageDetails.getDigitalAddress()),
+                eq(sendDigitalMessageDetails.getDigitalAddressSource()), eq(now)))
                 .thenReturn(mockTimelineElement);
 
         // Act
-        NormalizedChannelOutcome result = ioEventNormalizer.normalize(ioEvent, notification, recIndex);
+        NormalizedChannelOutcome result = ioEventNormalizer.normalize(ioEvent, notification, sendDigitalMessageDetails);
 
         // Assert
         verifyCommonsAssertionsForNormalizedChannelOutcome(result, IoEventClassification.DELIVERED_TO_USER);
@@ -131,7 +145,7 @@ class IoEventNormalizerTest {
                 .thenReturn(mockTimelineElement);
 
         // Act
-        NormalizedChannelOutcome result = ioEventNormalizer.normalize(ioEvent, notification, recIndex);
+        NormalizedChannelOutcome result = ioEventNormalizer.normalize(ioEvent, notification, sendDigitalMessageDetails);
 
         // Assert
         verifyCommonsAssertionsForNormalizedChannelOutcome(result, IoEventClassification.READ);
@@ -168,7 +182,7 @@ class IoEventNormalizerTest {
                 .thenReturn(mockTimelineElement);
 
         // Act
-        NormalizedChannelOutcome result = ioEventNormalizer.normalize(ioEvent, notification, recIndex);
+        NormalizedChannelOutcome result = ioEventNormalizer.normalize(ioEvent, notification, sendDigitalMessageDetails);
 
         // Assert
         verifyCommonsAssertionsForNormalizedChannelOutcome(result, IoEventClassification.PAID);
@@ -199,11 +213,12 @@ class IoEventNormalizerTest {
         // Ci aspettiamo il metodo di Feedback anziché Progress
         when(timelineUtils.buildSendDigitalMessageFeedback(
                 eq(notification), eq(recIndex), eq(DigitalChannelsInt.APPIO), eq(requestId),
-                any(DigitalDeliveryDetailsInt.class), isNull(), isNull(), eq(ResponseStatusInt.KO), isNull(), eq(now)))
+                any(DigitalDeliveryDetailsInt.class), eq(sendDigitalMessageDetails.getDigitalAddress()),
+                eq(sendDigitalMessageDetails.getDigitalAddressSource()), eq(ResponseStatusInt.KO), isNull(), eq(now)))
                 .thenReturn(mockTimelineElement);
 
         // Act
-        NormalizedChannelOutcome result = ioEventNormalizer.normalize(ioEvent, notification, recIndex);
+        NormalizedChannelOutcome result = ioEventNormalizer.normalize(ioEvent, notification, sendDigitalMessageDetails);
 
         // Assert
         verifyCommonsAssertionsForNormalizedChannelOutcome(result, IoEventClassification.SENDER_NOT_ALLOWED);

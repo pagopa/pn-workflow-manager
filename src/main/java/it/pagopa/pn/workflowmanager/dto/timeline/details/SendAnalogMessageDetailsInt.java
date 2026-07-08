@@ -16,7 +16,7 @@ import java.util.List;
 @SuperBuilder(toBuilder = true)
 @EqualsAndHashCode(callSuper = true)
 @ToString
-public class SendAnalogMessageDetailsInt extends CategoryTypeTimelineElementDetailsInt implements RecipientRelatedTimelineElementDetails, PhysicalAddressRelatedTimelineElement {
+public class SendAnalogMessageDetailsInt extends CategoryTypeTimelineElementDetailsInt implements SendRelatedTimelineElement, PhysicalAddressRelatedTimelineElement {
     private int recIndex;
     private PhysicalAddressInt physicalAddress;
     private ServiceLevelInt serviceLevel;

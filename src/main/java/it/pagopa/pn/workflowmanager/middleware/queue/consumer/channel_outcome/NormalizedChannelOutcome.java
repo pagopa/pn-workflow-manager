@@ -1,7 +1,7 @@
-package it.pagopa.pn.workflowmanager.middleware.queue.consumer.feedback;
+package it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome;
 
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
-import it.pagopa.pn.workflowmanager.middleware.queue.consumer.feedback.trigger.ChannelEventTrigger;
+import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.trigger.ChannelEventTrigger;
 import it.pagopa.pn.workflowmanager.models.internal.campaign.ChannelType;
 import lombok.Builder;
 import lombok.Data;
@@ -15,7 +15,7 @@ public class NormalizedChannelOutcome {
     private String iun;
     private int recIndex;
     private ChannelType channel;
-    private FeedbackClassification classification;
+    private ChannelOutcomeClassification classification;
     private Set<ChannelEventTrigger> triggers;
     private String originalEventType;
     private Instant eventTimestamp;

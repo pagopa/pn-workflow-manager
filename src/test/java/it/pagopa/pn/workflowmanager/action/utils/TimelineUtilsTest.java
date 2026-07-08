@@ -806,29 +806,29 @@ class TimelineUtilsTest {
     }
 
     @Test
-    void checkIfSendRequestIsPresentAndRetrieveRecIndexSuccess() {
+    void checkAndRetrieveSourceSendRequestDetailsSuccess() {
         // Arrange
         String iun = "TEST-IUN-001";
         String requestId = "request-001";
         int expectedRecIndex = 2;
 
         TimelineElementInternal mockElement = mock(TimelineElementInternal.class);
-        RecipientRelatedTimelineElementDetails mockDetails = mock(RecipientRelatedTimelineElementDetails.class);
+        SendRelatedTimelineElement mockDetails = mock(SendRelatedTimelineElement.class);
 
         when(timelineService.getTimelineElement(iun, requestId)).thenReturn(Optional.of(mockElement));
         when(mockElement.getDetails()).thenReturn(mockDetails);
         when(mockDetails.getRecIndex()).thenReturn(expectedRecIndex);
 
         // Act
-        int actualRecIndex = timelineUtils.checkIfSendRequestIsPresentAndRetrieveRecIndex(iun, requestId);
+        SendRelatedTimelineElement element = timelineUtils.checkAndRetrieveSourceSendRequestDetails(iun, requestId);
 
         // Assert
-        assertEquals(expectedRecIndex, actualRecIndex);
+        assertEquals(expectedRecIndex, element.getRecIndex());
         verify(timelineService).getTimelineElement(iun, requestId);
     }
 
     @Test
-    void checkIfSendRequestIsPresentAndRetrieveRecIndexElementNotFound() {
+    void checkAndRetrieveSourceSendRequestDetailsElementNotFound() {
         // Arrange
         String iun = "TEST-IUN-001";
         String requestId = "request-not-found";
@@ -836,11 +836,11 @@ class TimelineUtilsTest {
         when(timelineService.getTimelineElement(iun, requestId)).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThrows(PnInternalException.class, () -> timelineUtils.checkIfSendRequestIsPresentAndRetrieveRecIndex(iun, requestId));
+        assertThrows(PnInternalException.class, () -> timelineUtils.checkAndRetrieveSourceSendRequestDetails(iun, requestId));
     }
 
     @Test
-    void checkIfSendRequestIsPresentAndRetrieveRecIndexInvalidDetailsType() {
+    void checkAndRetrieveSourceSendRequestDetailsInvalidDetailsType() {
         // Arrange
         String iun = "TEST-IUN-001";
         String requestId = "request-invalid-details";
@@ -862,7 +862,7 @@ class TimelineUtilsTest {
         when(mockElement.getDetails()).thenReturn(new InvalidTimelineElementDetails());
 
         // Act & Assert
-        assertThrows(PnInternalException.class, () -> timelineUtils.checkIfSendRequestIsPresentAndRetrieveRecIndex(iun, requestId));
+        assertThrows(PnInternalException.class, () -> timelineUtils.checkAndRetrieveSourceSendRequestDetails(iun, requestId));
     }
 
     private NotificationInt createNotification() {

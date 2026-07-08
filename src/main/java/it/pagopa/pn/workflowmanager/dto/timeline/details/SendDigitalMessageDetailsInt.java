@@ -14,7 +14,7 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder(toBuilder = true)
 @EqualsAndHashCode(callSuper = true)
 @ToString
-public class SendDigitalMessageDetailsInt extends CategoryTypeTimelineElementDetailsInt implements InformalDigitalAddressRelatedTimelineElement, RecipientRelatedTimelineElementDetails {
+public class SendDigitalMessageDetailsInt extends CategoryTypeTimelineElementDetailsInt implements InformalDigitalAddressRelatedTimelineElement, SendRelatedTimelineElement {
     private int recIndex;
     private InformalDigitalAddressInt digitalAddress;
     private DigitalAddressSourceInt digitalAddressSource;

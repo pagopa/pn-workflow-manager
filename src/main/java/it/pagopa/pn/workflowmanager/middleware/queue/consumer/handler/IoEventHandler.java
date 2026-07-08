@@ -1,8 +1,8 @@
 package it.pagopa.pn.workflowmanager.middleware.queue.consumer.handler;
 
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.event.IoOutcomeEvent;
-import it.pagopa.pn.workflowmanager.middleware.queue.consumer.feedback.ChannelEventProcessor;
-import it.pagopa.pn.workflowmanager.middleware.queue.consumer.feedback.io.IoEventNormalizer;
+import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.ChannelEventProcessor;
+import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.io.IoEventNormalizer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

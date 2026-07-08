@@ -1,4 +1,4 @@
-package it.pagopa.pn.workflowmanager.middleware.queue.consumer.feedback;
+package it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome;
 
 import it.pagopa.pn.workflowmanager.action.utils.TimelineUtils;
 import it.pagopa.pn.workflowmanager.action.utils.WorkflowUtils;
@@ -8,7 +8,7 @@ import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationIn
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.RecipientTypeInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
-import it.pagopa.pn.workflowmanager.middleware.queue.consumer.feedback.trigger.ChannelEventTriggerDispatcher;
+import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.trigger.ChannelEventTriggerDispatcher;
 import it.pagopa.pn.workflowmanager.models.internal.campaign.Campaign;
 import it.pagopa.pn.workflowmanager.models.internal.campaign.ChannelType;
 import it.pagopa.pn.workflowmanager.service.SchedulerService;
@@ -45,7 +45,7 @@ public class ChannelOutcomeHandler {
             channelEventTriggerDispatcher.dispatchAll(normalizedChannelOutcome.getTriggers(), notificationInt);
         }
 
-        FeedbackClassification classification = normalizedChannelOutcome.getClassification();
+        ChannelOutcomeClassification classification = normalizedChannelOutcome.getClassification();
         if(classification.isRecipientReached()) {
             persistReachedElement(normalizedChannelOutcome, notificationInt);
         }
@@ -55,7 +55,7 @@ public class ChannelOutcomeHandler {
                 .orElse(false);
         if(isDesiredFeedbackForCampaign) {
             scheduleWorkflowDone(normalizedChannelOutcome);
-        } else if(classification.isFinalFeedback()) {
+        } else if(classification.getCategory() == ChannelOutcomeCategory.FEEDBACK) {
             workflowUtils.advanceWorkflow(iun, recIndex, channel, campaign, recipientTypeInt);
         }
         // Se non è un feedback finale o un feedback desiderato, devo solo persistere l'elemento in timeline, senza avanzare il workflow.

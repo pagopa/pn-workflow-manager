@@ -1,6 +1,7 @@
-package it.pagopa.pn.workflowmanager.middleware.queue.consumer.feedback.io;
+package it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.io;
 
 import it.pagopa.pn.workflowmanager.exceptions.PnUnknownEventCodeException;
+import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.ChannelOutcomeCategory;
 import it.pagopa.pn.workflowmanager.models.internal.campaign.DesiredFeedbackType;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -12,21 +13,21 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 
 class IoEventClassificationTest {
-    @ParameterizedTest(name = "Tipo {0} -> recipientReached={1}, finalFeedback={2}")
+    @ParameterizedTest(name = "Tipo {0} -> recipientReached={1}, category={2}")
     @CsvSource({
-            "DELIVERED_TO_USER, true,  false",
-            "SENDER_NOT_ALLOWED, false, true",
-            "SENT_TO_IO,         false, false",
-            "READ,               true,  false",
-            "PAID,               true,  false"
+            "DELIVERED_TO_USER, true,  PROGRESS",
+            "SENDER_NOT_ALLOWED, false, FEEDBACK",
+            "SENT_TO_IO,         false, PROGRESS",
+            "READ,               true,  PROGRESS",
+            "PAID,               true,  PROGRESS"
     })
-    void shouldMapCorrectBooleanFlags(String enumName, boolean expectedReached, boolean expectedFinal) {
+    void shouldMapCorrectBooleanFlags(String enumName, boolean expectedReached, ChannelOutcomeCategory expectedCategory) {
         // Act
         IoEventClassification classification = IoEventClassification.valueOf(enumName);
 
         // Assert
         assertEquals(expectedReached, classification.isRecipientReached());
-        assertEquals(expectedFinal, classification.isFinalFeedback());
+        assertEquals(expectedCategory, classification.getCategory());
     }
 
     @Test

@@ -1,4 +1,4 @@
-package it.pagopa.pn.workflowmanager.middleware.queue.consumer.feedback;
+package it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome;
 
 import it.pagopa.pn.workflowmanager.action.utils.TimelineUtils;
 import it.pagopa.pn.workflowmanager.action.utils.WorkflowUtils;
@@ -8,8 +8,8 @@ import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationIn
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.RecipientTypeInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
-import it.pagopa.pn.workflowmanager.middleware.queue.consumer.feedback.trigger.ChannelEventTrigger;
-import it.pagopa.pn.workflowmanager.middleware.queue.consumer.feedback.trigger.ChannelEventTriggerDispatcher;
+import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.trigger.ChannelEventTrigger;
+import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.trigger.ChannelEventTriggerDispatcher;
 import it.pagopa.pn.workflowmanager.models.internal.campaign.Campaign;
 import it.pagopa.pn.workflowmanager.models.internal.campaign.ChannelType;
 import it.pagopa.pn.workflowmanager.models.internal.campaign.DesiredFeedbackType;
@@ -55,7 +55,7 @@ class ChannelOutcomeHandlerTest {
     @Mock
     private Campaign campaign;
     @Mock
-    private FeedbackClassification classification;
+    private ChannelOutcomeClassification classification;
     @Mock
     private TimelineElementInternal timelineElement;
     @Mock
@@ -88,7 +88,7 @@ class ChannelOutcomeHandlerTest {
         Set<ChannelEventTrigger> triggers = Set.of(mock(ChannelEventTrigger.class));
         when(outcome.getTriggers()).thenReturn(triggers);
         when(classification.getSatisfiedDesiredFeedback()).thenReturn(Optional.empty());
-        when(classification.isFinalFeedback()).thenReturn(false);
+        when(classification.getCategory()).thenReturn(ChannelOutcomeCategory.PROGRESS);
 
         // Act
         channelOutcomeHandler.handleOutcome(outcome, notification, campaign);
@@ -146,7 +146,7 @@ class ChannelOutcomeHandlerTest {
         // Arrange
         when(outcome.getTriggers()).thenReturn(Collections.emptySet());
         when(classification.getSatisfiedDesiredFeedback()).thenReturn(Optional.empty());
-        when(classification.isFinalFeedback()).thenReturn(true);
+        when(classification.getCategory()).thenReturn(ChannelOutcomeCategory.FEEDBACK);
 
         // Act
         channelOutcomeHandler.handleOutcome(outcome, notification, campaign);
@@ -161,7 +161,7 @@ class ChannelOutcomeHandlerTest {
         // Arrange
         when(outcome.getTriggers()).thenReturn(Collections.emptySet());
         when(classification.getSatisfiedDesiredFeedback()).thenReturn(Optional.empty());
-        when(classification.isFinalFeedback()).thenReturn(false);
+        when(classification.getCategory()).thenReturn(ChannelOutcomeCategory.PROGRESS);
 
         // Act
         channelOutcomeHandler.handleOutcome(outcome, notification, campaign);

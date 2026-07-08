@@ -1,7 +1,8 @@
-package it.pagopa.pn.workflowmanager.middleware.queue.consumer.feedback;
+package it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome;
 
 import it.pagopa.pn.workflowmanager.action.utils.TimelineUtils;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
+import it.pagopa.pn.workflowmanager.dto.timeline.details.SendRelatedTimelineElement;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.utils.MdcUtils;
 import it.pagopa.pn.workflowmanager.models.internal.campaign.Campaign;
 import it.pagopa.pn.workflowmanager.service.CampaignService;
@@ -24,13 +25,13 @@ public class ChannelEventProcessor {
         log.info("Start process outcome event: {}", event);
 
         String iun = timelineUtils.getIunFromTimelineId(event.getRequestId());
-        int recIndex = timelineUtils.checkIfSendRequestIsPresentAndRetrieveRecIndex(iun, event.getRequestId());
+        SendRelatedTimelineElement sourceSendRequestDetails = timelineUtils.checkAndRetrieveSourceSendRequestDetails(iun, event.getRequestId());
         MdcUtils.addIunAndCorrIdToMdc(iun, event.getRequestId());
 
         NotificationInt notificationInt = notificationService.getInformalNotificationByIun(iun);
         Campaign campaign = campaignService.getCampaignByCampaignIdAndSenderId(notificationInt.getCampaignId(), notificationInt.getSender().getPaId());
 
-        NormalizedChannelOutcome normalizedChannelOutcome = normalizer.normalize(event, notificationInt, recIndex);
+        NormalizedChannelOutcome normalizedChannelOutcome = normalizer.normalize(event, notificationInt, sourceSendRequestDetails);
         log.debug("Normalized channel outcome: {}", normalizedChannelOutcome);
         channelOutcomeHandler.handleOutcome(normalizedChannelOutcome, notificationInt, campaign);
     }
