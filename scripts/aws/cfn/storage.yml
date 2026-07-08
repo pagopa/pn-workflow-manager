@@ -107,6 +107,18 @@ Resources:
         DelaySeconds: 1
         VisibilityTimeout: 60
 
+  WorkflowManagerInputsQueue:
+    Type: AWS::CloudFormation::Stack
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/sqs-queue.yaml"
+      Parameters:
+        QueueName: !Sub '${ProjectName}-workflow_manager_inputs'
+        AlarmSNSTopicName: !Ref AlarmSNSTopicName
+        VisibilityTimeout: 60
+        DelaySeconds: 1
+
 Outputs:
   # Queues
   WorkflowManagerActionQueueName:
@@ -182,6 +194,22 @@ Outputs:
   WorkflowManagerIoEventQueueAgeAlarmARN:
     Value: !GetAtt WorkflowManagerIoEventQueue.Outputs.SqsAgeAlarmArn
     Description: workflow-manager io-event queue age alarm ARN
+
+  WorkflowManagerInputsQueueName:
+    Value: !GetAtt WorkflowManagerInputsQueue.Outputs.QueueName
+    Description: workflow-manager analog-event queue name
+  WorkflowManagerInputsQueueURL:
+    Value: !GetAtt WorkflowManagerInputsQueue.Outputs.QueueURL
+    Description: workflow-manager analog-event queue URL
+  WorkflowManagerInputsQueueARN:
+    Value: !GetAtt WorkflowManagerInputsQueue.Outputs.QueueARN
+    Description: workflow-manager analog-event queue ARN
+  WorkflowManagerInputsQueueAlarmARN:
+    Value: !GetAtt WorkflowManagerInputsQueue.Outputs.SqsDLQAlarmArn
+    Description: workflow-manager analog-event queue dlq alarm ARN
+  WorkflowManagerInputsQueueAgeAlarmARN:
+    Value: !GetAtt WorkflowManagerInputsQueue.Outputs.SqsAgeAlarmArn
+    Description: workflow-manager analog-event queue age alarm ARN
 
   # Log groups
   EcsWorkflowLogGroup:
