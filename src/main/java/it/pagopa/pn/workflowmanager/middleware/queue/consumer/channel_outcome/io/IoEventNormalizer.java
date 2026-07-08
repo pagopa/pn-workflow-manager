@@ -19,10 +19,12 @@ import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.tr
 import it.pagopa.pn.workflowmanager.models.internal.campaign.ChannelType;
 import it.pagopa.pn.workflowmanager.utils.NotificationPaymentUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
 import java.util.Set;
 
+@Component
 @RequiredArgsConstructor
 public class IoEventNormalizer implements ChannelOutcomeNormalizer<IoOutcomeEvent> {
     private final TimelineUtils timelineUtils;
