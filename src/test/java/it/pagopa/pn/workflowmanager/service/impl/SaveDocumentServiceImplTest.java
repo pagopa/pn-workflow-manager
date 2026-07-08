@@ -95,7 +95,7 @@ class SaveDocumentServiceImplTest {
         when(templateGeneratorService.generateCoverpageTemplate(notification, recipient, campaign)).thenReturn(tmp);
         when(safeStorageService.createAndUploadContent(any())).thenReturn(new FileCreationResponseInt("k1"));
 
-        String res = saveDocumentService.saveCoverpage(notification, recipient, campaign,"timeline-1", "0");
+        String res = saveDocumentService.saveCoverpage(notification, recipient, campaign,"timeline-1", 0);
 
         assertEquals("safestorage://k1", res);
 
@@ -125,7 +125,7 @@ class SaveDocumentServiceImplTest {
         when(templateGeneratorService.generateCoverpageTemplate(notification, recipient, campaign)).thenReturn(missingFile);
 
         PnInternalException exc = assertThrows(PnInternalException.class, () ->
-                saveDocumentService.saveCoverpage(notification, recipient, campaign, "t-1", "1")
+                saveDocumentService.saveCoverpage(notification, recipient, campaign, "t-1", 1)
         );
 
         assertEquals(String.format(SaveDocumentServiceImpl.SAVE_DOCUMENT_EXCEPTION_MESSAGE,
@@ -147,7 +147,7 @@ class SaveDocumentServiceImplTest {
         when(safeStorageService.createAndUploadContent(any())).thenThrow(storageException);
 
         PnInternalException exc = assertThrows(PnInternalException.class, () ->
-                saveDocumentService.saveCoverpage(notification, recipient, campaign, "t-1", "1")
+                saveDocumentService.saveCoverpage(notification, recipient, campaign, "t-1", 1)
         );
 
         assertEquals(String.format(SaveDocumentServiceImpl.SAVE_DOCUMENT_EXCEPTION_MESSAGE,
