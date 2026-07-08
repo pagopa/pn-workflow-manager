@@ -65,7 +65,8 @@ class ChannelOutcomeHandlerTest {
     private final String iun = "IUN-123-XYZ";
     private final ChannelType channel = ChannelType.PEC;
     private final String elementId = "ELEM-999";
-    private final RecipientTypeInt recipientType = RecipientTypeInt.PF; // Assumi sia una enum o interfaccia valida
+    private final RecipientTypeInt recipientType = RecipientTypeInt.PF;
+    private final Instant eventTimestamp = Instant.now();
 
     @BeforeEach
     void setUp() {
@@ -75,6 +76,7 @@ class ChannelOutcomeHandlerTest {
         lenient().when(outcome.getRecIndex()).thenReturn(recIndex);
         lenient().when(outcome.getTimelineElementInternal()).thenReturn(timelineElement);
         lenient().when(outcome.getClassification()).thenReturn(classification);
+        lenient().when(outcome.getEventTimestamp()).thenReturn(eventTimestamp);
         lenient().when(timelineElement.getElementId()).thenReturn(elementId);
 
         // Mock del destinatario dentro la notifica
@@ -106,7 +108,7 @@ class ChannelOutcomeHandlerTest {
         when(classification.getSatisfiedDesiredFeedback()).thenReturn(Optional.empty());
 
         TimelineElementInternal reachedElement = mock(TimelineElementInternal.class);
-        when(timelineUtils.buildDeliveredTimelineElement(notification, recIndex, channel, elementId))
+        when(timelineUtils.buildDeliveredTimelineElement(notification, recIndex, channel, elementId, eventTimestamp))
                 .thenReturn(reachedElement);
 
         // Act

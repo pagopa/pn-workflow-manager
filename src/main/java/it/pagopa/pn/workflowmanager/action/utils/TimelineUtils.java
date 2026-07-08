@@ -122,7 +122,6 @@ public class TimelineUtils {
 
         WorkflowEndedReachedDetailsInt details = WorkflowEndedReachedDetailsInt.builder()
                 .recIndex(recIndex)
-                .notificationDate(Instant.now())
                 .sourceElementId(sourceTimelineId)
                 .build();
 
@@ -204,7 +203,8 @@ public class TimelineUtils {
             NotificationInt notification,
             int recIndex,
             ChannelType channel,
-            String sourceElementId
+            String sourceElementId,
+            Instant notificationDate
     ){
         log.debug("buildDeliveredTimelineElement - IUN={} and id={} and channel={}", notification.getIun(), recIndex, channel);
         String elementId = TimelineEventId.DELIVERED.buildEventId(
@@ -219,6 +219,7 @@ public class TimelineUtils {
                 .recIndex(recIndex)
                 .channel(channel.name())
                 .sourceElementId(sourceElementId)
+                .notificationDate(notificationDate)
                 .build();
 
         return buildTimeline(notification, TimelineElementCategoryInt.DELIVERED, elementId, detailsInt);

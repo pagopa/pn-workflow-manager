@@ -79,7 +79,8 @@ public class ChannelOutcomeHandler {
                 notificationInt,
                 normalizedChannelOutcome.getRecIndex(),
                 normalizedChannelOutcome.getChannel(),
-                normalizedChannelOutcome.getTimelineElementInternal().getElementId()
+                normalizedChannelOutcome.getTimelineElementInternal().getElementId(),
+                normalizedChannelOutcome.getEventTimestamp()
         );
         timelineService.addTimelineElement(reachedElement, notificationInt);
 
