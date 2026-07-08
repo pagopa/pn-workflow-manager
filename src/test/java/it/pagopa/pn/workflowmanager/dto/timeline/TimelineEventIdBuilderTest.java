@@ -3,7 +3,7 @@ package it.pagopa.pn.workflowmanager.dto.timeline;
 import org.junit.jupiter.api.Test;
 
 import static it.pagopa.pn.workflowmanager.dto.timeline.details.AnalogDeliveryTypeInt.RS;
-import static it.pagopa.pn.workflowmanager.dto.timeline.details.DigitalChannelsInt.APPIO;
+import static it.pagopa.pn.workflowmanager.dto.timeline.details.DigitalChannelsInt.IO;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class TimelineEventIdBuilderTest {
@@ -17,14 +17,14 @@ class TimelineEventIdBuilderTest {
                 .withCategory(TimelineEventId.SEND_DIGITAL_MESSAGE.getValue())
                 .withIun(IUN)
                 .withRecIndex(0)
-                .withChannel(APPIO.getValue())
+                .withChannel(IO.getValue())
                 .build();
         assertThat(timeLineEventIdActual).isEqualTo(timeLineEventIdExpected);
         String timeLineEventIdActualFromBuildEvent = TimelineEventId.SEND_DIGITAL_MESSAGE.buildEventId(EventId
                 .builder()
                 .iun(IUN)
                 .recIndex(0)
-                .channel(APPIO.getValue())
+                .channel(IO.getValue())
                 .build());
         assertThat(timeLineEventIdActualFromBuildEvent).isEqualTo(timeLineEventIdExpected);
     }
@@ -36,14 +36,14 @@ class TimelineEventIdBuilderTest {
                 .withCategory(TimelineEventId.SEND_DIGITAL_MESSAGE_SKIP.getValue())
                 .withIun(IUN)
                 .withRecIndex(0)
-                .withChannel(APPIO.getValue())
+                .withChannel(IO.getValue())
                 .build();
         assertThat(timeLineEventIdActual).isEqualTo(timeLineEventIdExpected);
         String timeLineEventIdActualFromBuildEvent = TimelineEventId.SEND_DIGITAL_MESSAGE_SKIP.buildEventId(EventId
                 .builder()
                 .iun(IUN)
                 .recIndex(0)
-                .channel(APPIO.getValue())
+                .channel(IO.getValue())
                 .build());
         assertThat(timeLineEventIdActualFromBuildEvent).isEqualTo(timeLineEventIdExpected);
     }
@@ -55,7 +55,7 @@ class TimelineEventIdBuilderTest {
                 .withCategory(TimelineEventId.SEND_DIGITAL_MESSAGE_PROGRESS.getValue())
                 .withIun(IUN)
                 .withRecIndex(0)
-                .withChannel(APPIO.getValue())
+                .withChannel(IO.getValue())
                 .withProgressIndex(0)
                 .build();
         assertThat(timeLineEventIdActual).isEqualTo(timeLineEventIdExpected);
@@ -63,7 +63,7 @@ class TimelineEventIdBuilderTest {
                 .builder()
                 .iun(IUN)
                 .recIndex(0)
-                .channel(APPIO.getValue())
+                .channel(IO.getValue())
                 .progressIndex(0)
                 .build());
         assertThat(timeLineEventIdActualFromBuildEvent).isEqualTo(timeLineEventIdExpected);
@@ -76,14 +76,14 @@ class TimelineEventIdBuilderTest {
                 .withCategory(TimelineEventId.SEND_DIGITAL_MESSAGE_FEEDBACK.getValue())
                 .withIun(IUN)
                 .withRecIndex(0)
-                .withChannel(APPIO.getValue())
+                .withChannel(IO.getValue())
                 .build();
         assertThat(timeLineEventIdActual).isEqualTo(timeLineEventIdExpected);
         String timeLineEventIdActualFromBuildEvent = TimelineEventId.SEND_DIGITAL_MESSAGE_FEEDBACK.buildEventId(EventId
                 .builder()
                 .iun(IUN)
                 .recIndex(0)
-                .channel(APPIO.getValue())
+                .channel(IO.getValue())
                 .build());
         assertThat(timeLineEventIdActualFromBuildEvent).isEqualTo(timeLineEventIdExpected);
     }
@@ -181,14 +181,14 @@ class TimelineEventIdBuilderTest {
                 .withCategory(TimelineEventId.DELIVERED.getValue())
                 .withIun(IUN)
                 .withRecIndex(0)
-                .withChannel(APPIO.getValue())
+                .withChannel(IO.getValue())
                 .build();
         assertThat(timeLineEventIdActual).isEqualTo(timeLineEventIdExpected);
         String timeLineEventIdActualFromBuildEvent = TimelineEventId.DELIVERED.buildEventId(EventId
                 .builder()
                 .iun(IUN)
                 .recIndex(0)
-                .channel(APPIO.getValue())
+                .channel(IO.getValue())
                 .build());
         assertThat(timeLineEventIdActualFromBuildEvent).isEqualTo(timeLineEventIdExpected);
     }
@@ -328,14 +328,14 @@ class TimelineEventIdBuilderTest {
                 .withCategory(TimelineEventId.INFORMAL_NOTIFICATION_VIEWED.getValue())
                 .withIun(IUN)
                 .withRecIndex(0)
-                .withChannel(APPIO.getValue())
+                .withChannel(IO.getValue())
                 .build();
         assertThat(timeLineEventIdActual).isEqualTo(timeLineEventIdExpected);
         String timeLineEventIdActualFromBuildEvent = TimelineEventId.INFORMAL_NOTIFICATION_VIEWED.buildEventId(EventId
                 .builder()
                 .iun(IUN)
                 .recIndex(0)
-                .channel(APPIO.getValue())
+                .channel(IO.getValue())
                 .build());
         assertThat(timeLineEventIdActualFromBuildEvent).isEqualTo(timeLineEventIdExpected);
     }

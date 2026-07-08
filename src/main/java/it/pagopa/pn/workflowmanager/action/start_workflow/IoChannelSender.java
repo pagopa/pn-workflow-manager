@@ -56,7 +56,7 @@ public class IoChannelSender implements ChannelSender {
                     requestId,
                     recIndex,
                     ChannelSenderUtils.buildDigitalAddress(recipient.getTaxId(), InformalDigitalAddressInt.INFORMAL_DIGITAL_ADDRESS_TYPE.APPIO),
-                    DigitalChannelsInt.APPIO,
+                    DigitalChannelsInt.IO,
                     null
             );
 

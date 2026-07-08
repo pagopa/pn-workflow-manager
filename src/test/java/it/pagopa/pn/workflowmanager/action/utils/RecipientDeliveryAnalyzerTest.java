@@ -240,7 +240,7 @@ class RecipientDeliveryAnalyzerTest {
     private List<TimelineElementInternal> createTimelineWithAppIoFeedback(int recIndex) {
         SendDigitalMessageFeedbackDetailsInt details = SendDigitalMessageFeedbackDetailsInt.builder()
                 .recIndex(recIndex)
-                .channel(DigitalChannelsInt.APPIO)
+                .channel(DigitalChannelsInt.IO)
                 .build();
 
         TimelineElementInternal element = TimelineElementInternal.builder()

@@ -96,7 +96,7 @@ class IoEventNormalizerTest {
                 .build();
 
         when(timelineUtils.buildSendDigitalMessageProgress(
-                eq(notification), eq(recIndex), eq(DigitalChannelsInt.APPIO), eq(requestId),
+                eq(notification), eq(recIndex), eq(DigitalChannelsInt.IO), eq(requestId),
                 any(DigitalDeliveryDetailsInt.class), eq(sendDigitalMessageDetails.getDigitalAddress()),
                 eq(sendDigitalMessageDetails.getDigitalAddressSource()), eq(now)))
                 .thenReturn(mockTimelineElement);
@@ -119,7 +119,7 @@ class IoEventNormalizerTest {
                 .build();
 
         when(timelineUtils.buildSendDigitalMessageProgress(
-                eq(notification), eq(recIndex), eq(DigitalChannelsInt.APPIO), eq(requestId),
+                eq(notification), eq(recIndex), eq(DigitalChannelsInt.IO), eq(requestId),
                 any(DigitalDeliveryDetailsInt.class), eq(sendDigitalMessageDetails.getDigitalAddress()),
                 eq(sendDigitalMessageDetails.getDigitalAddressSource()), eq(now)))
                 .thenReturn(mockTimelineElement);
@@ -212,7 +212,7 @@ class IoEventNormalizerTest {
 
         // Ci aspettiamo il metodo di Feedback anziché Progress
         when(timelineUtils.buildSendDigitalMessageFeedback(
-                eq(notification), eq(recIndex), eq(DigitalChannelsInt.APPIO), eq(requestId),
+                eq(notification), eq(recIndex), eq(DigitalChannelsInt.IO), eq(requestId),
                 any(DigitalDeliveryDetailsInt.class), eq(sendDigitalMessageDetails.getDigitalAddress()),
                 eq(sendDigitalMessageDetails.getDigitalAddressSource()), eq(ResponseStatusInt.KO), isNull(), eq(now)))
                 .thenReturn(mockTimelineElement);

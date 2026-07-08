@@ -74,14 +74,14 @@ class InformalDigitalDetailsIntTest {
     void sendDigitalMessageSkipToLog() {
         SendDigitalMessageSkipDetailsInt details = SendDigitalMessageSkipDetailsInt.builder()
                 .recIndex(4)
-                .channel(DigitalChannelsInt.APPIO)
+                .channel(DigitalChannelsInt.IO)
                 .digitalAddressSource(DigitalAddressSourceInt.PLATFORM)
                 .retryNumber(5)
                 .build();
 
         Assertions.assertEquals(
                 String.format("recIndex=%d channel=%s digitalAddressSource=%s retryNumber=%s",
-                        4, DigitalChannelsInt.APPIO, DigitalAddressSourceInt.PLATFORM, 5),
+                        4, DigitalChannelsInt.IO, DigitalAddressSourceInt.PLATFORM, 5),
                 details.toLog()
         );
         Assertions.assertEquals(4, details.getRecIndex());

@@ -77,7 +77,7 @@ public class IoEventNormalizer implements ChannelOutcomeNormalizer<IoOutcomeEven
             case PROGRESS -> timelineUtils.buildSendDigitalMessageProgress(
                     notificationInt,
                     recIndex,
-                    DigitalChannelsInt.APPIO,
+                    DigitalChannelsInt.IO,
                     ioEvent.getRequestId(),
                     DigitalDeliveryDetailsInt.builder()
                             .code(ioEvent.getEventType().name())
@@ -90,7 +90,7 @@ public class IoEventNormalizer implements ChannelOutcomeNormalizer<IoOutcomeEven
             case FEEDBACK -> timelineUtils.buildSendDigitalMessageFeedback(
                     notificationInt,
                     recIndex,
-                    DigitalChannelsInt.APPIO,
+                    DigitalChannelsInt.IO,
                     ioEvent.getRequestId(),
                     DigitalDeliveryDetailsInt.builder()
                             .code(ioEvent.getEventType().name())
