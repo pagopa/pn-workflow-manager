@@ -288,7 +288,6 @@ Parameters:
     Type: String
     Description: 'pn-workflow-manager inputs queue age alarm ARN'
 
-
   ActionQueueDetailType:
     Type: CommaDelimitedList
     Description: 'List of action detail type to accept in event bridge rule'
@@ -700,7 +699,7 @@ Resources:
             Period: !Ref AutoscalingCheckPeriod
             Stat: Average
           ReturnData: False
-        - Id: m6
+        - Id: m5
           MetricStat:
             Metric:
               Dimensions:
@@ -711,7 +710,7 @@ Resources:
             Period: !Ref AutoscalingCheckPeriod
             Stat: Average
           ReturnData: False
-        - Id: m5
+        - Id: m6
           MetricStat:
             Metric:
               Dimensions:
@@ -725,7 +724,7 @@ Resources:
             Stat: Average
           ReturnData: False
         - Id: code
-          Expression: !Sub "IF(m5==0, 101, (100*(m1+m2+m3+m4+m6)) / (${ConsumedQueueMessagePerMinute} * m5) )"
+          Expression: !Sub "IF(m6==0, 101, (100*(m1+m2+m3+m4+m5)) / (${ConsumedQueueMessagePerMinute} * m6) )"
           Label: !Sub "${ProjectName}-workflow-manager-queue-custom-metric"
           ReturnData: False
         - Id: e1
