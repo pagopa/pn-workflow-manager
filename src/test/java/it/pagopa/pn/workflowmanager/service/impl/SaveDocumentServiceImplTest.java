@@ -50,21 +50,21 @@ class SaveDocumentServiceImplTest {
     }
 
     @Test
-    void saveLegalFactShouldUploadPdfWithMetadataAndReturnPrefixedKey() {
+    void saveDocumentShouldUploadPdfWithMetadataAndReturnPrefixedKey() {
         byte[] content = "legal-fact".getBytes(StandardCharsets.UTF_8);
         Map<String, List<String>> tags = Map.of("iun", List.of("IUN123"));
 
         when(safeStorageService.createAndUploadContent(any()))
                 .thenReturn(new FileCreationResponseInt("generatedKey"));
 
-        String result = saveDocumentService.saveLegalFact(content, tags);
+        String result = saveDocumentService.saveDocument(content, tags);
 
         assertEquals("safestorage://generatedKey", result);
 
         ArgumentCaptor<FileCreationWithContentRequest> requestCaptor = ArgumentCaptor.forClass(FileCreationWithContentRequest.class);
         verify(safeStorageService).createAndUploadContent(requestCaptor.capture());
         FileCreationWithContentRequest req = requestCaptor.getValue();
-        assertEquals(SaveDocumentServiceImpl.LEGALFACTS_MEDIATYPE_STRING, req.getContentType());
+        assertEquals(SaveDocumentServiceImpl.DOCUMENTS_MEDIATYPE_STRING, req.getContentType());
         assertEquals(SaveDocumentServiceImpl.PN_COMMUNICATIONS_COVERPAGE, req.getDocumentType());
         assertEquals(SaveDocumentServiceImpl.SAVED, req.getStatus());
         assertArrayEquals(content, req.getContent());
@@ -72,11 +72,11 @@ class SaveDocumentServiceImplTest {
     }
 
     @Test
-    void saveLegalFactShouldReturnUnchangedKeyWhenStoragePrefixIsAlreadyPresent() {
+    void saveDocumentShouldReturnUnchangedKeyWhenStoragePrefixIsAlreadyPresent() {
         when(safeStorageService.createAndUploadContent(any()))
                 .thenReturn(new FileCreationResponseInt("safestorage://generatedKey"));
 
-        String result = saveDocumentService.saveLegalFact(new byte[0], Map.of());
+        String result = saveDocumentService.saveDocument(new byte[0], Map.of());
 
         assertEquals("safestorage://generatedKey", result);
     }
@@ -102,7 +102,7 @@ class SaveDocumentServiceImplTest {
         ArgumentCaptor<FileCreationWithContentRequest> requestCaptor = ArgumentCaptor.forClass(FileCreationWithContentRequest.class);
         verify(safeStorageService).createAndUploadContent(requestCaptor.capture());
         FileCreationWithContentRequest req = requestCaptor.getValue();
-        assertEquals(SaveDocumentServiceImpl.LEGALFACTS_MEDIATYPE_STRING, req.getContentType());
+        assertEquals(SaveDocumentServiceImpl.DOCUMENTS_MEDIATYPE_STRING, req.getContentType());
         assertEquals(SaveDocumentServiceImpl.PN_COMMUNICATIONS_COVERPAGE, req.getDocumentType());
         assertEquals(SaveDocumentServiceImpl.SAVED, req.getStatus());
         assertArrayEquals(fileBytes, req.getContent());
@@ -128,8 +128,8 @@ class SaveDocumentServiceImplTest {
                 saveDocumentService.saveCoverpage(notification, recipient, campaign, "t-1", "1")
         );
 
-        assertEquals(String.format(SaveDocumentServiceImpl.SAVE_LEGAL_FACT_EXCEPTION_MESSAGE,
-                "DIGITAL_DELIVERY", notification.getIun(), recipient.getTaxId()), exc.getProblem().getDetail());
+        assertEquals(String.format(SaveDocumentServiceImpl.SAVE_DOCUMENT_EXCEPTION_MESSAGE,
+                "COVERPAGE", notification.getIun(), 1), exc.getProblem().getDetail());
         assertEquals(ERROR_CODE_WORKFLOWMANAGER_SAVELEGALFACTSFAILED, exc.getProblem().getErrors().getFirst().getCode());
         assertNotNull(exc.getCause());
     }
@@ -150,8 +150,8 @@ class SaveDocumentServiceImplTest {
                 saveDocumentService.saveCoverpage(notification, recipient, campaign, "t-1", "1")
         );
 
-        assertEquals(String.format(SaveDocumentServiceImpl.SAVE_LEGAL_FACT_EXCEPTION_MESSAGE,
-                "DIGITAL_DELIVERY", notification.getIun(), recipient.getTaxId()), exc.getProblem().getDetail());
+        assertEquals(String.format(SaveDocumentServiceImpl.SAVE_DOCUMENT_EXCEPTION_MESSAGE,
+                "COVERPAGE", notification.getIun(), 1), exc.getProblem().getDetail());
         assertEquals(ERROR_CODE_WORKFLOWMANAGER_SAVELEGALFACTSFAILED, exc.getProblem().getErrors().getFirst().getCode());
         assertSame(storageException, exc.getCause());
     }

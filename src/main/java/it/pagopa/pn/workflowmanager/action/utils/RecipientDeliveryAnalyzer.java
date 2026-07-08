@@ -83,7 +83,7 @@ public class RecipientDeliveryAnalyzer {
                 .map(TimelineElementInternal::getDetails)
                 .filter(d -> d instanceof SendDigitalMessageFeedbackDetailsInt)
                 .map(d -> (SendDigitalMessageFeedbackDetailsInt) d)
-                .anyMatch(d -> d.getRecIndex() == recIndex && DigitalChannelsInt.APPIO.equals(d.getChannel()));
+                .anyMatch(d -> d.getRecIndex() == recIndex && DigitalChannelsInt.IO.equals(d.getChannel()));
     }
 
     private static boolean hasDigitalChannelSkipInTimeline(List<TimelineElementInternal> timelineElements,

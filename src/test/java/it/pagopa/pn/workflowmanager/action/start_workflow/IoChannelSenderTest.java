@@ -86,7 +86,7 @@ class IoChannelSenderTest {
                 eq(expectedRequestId),
                 eq(0),
                 any(InformalDigitalAddressInt.class),
-                eq(DigitalChannelsInt.APPIO),
+                eq(DigitalChannelsInt.IO),
                 isNull()
         );
         verify(workflowUtils).scheduleTimeoutForCurrentChannel(iun, 0, 0, campaign, ChannelType.IO);
