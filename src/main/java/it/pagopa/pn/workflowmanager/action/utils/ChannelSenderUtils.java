@@ -2,10 +2,13 @@ package it.pagopa.pn.workflowmanager.action.utils;
 
 import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
 import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
+import it.pagopa.pn.workflowmanager.dto.address.PhysicalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.EventId;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineEventId;
+import it.pagopa.pn.workflowmanager.dto.timeline.details.AnalogDeliveryTypeInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.DigitalChannelsInt;
+import it.pagopa.pn.workflowmanager.dto.timeline.details.ServiceLevelInt;
 import it.pagopa.pn.workflowmanager.models.internal.campaign.ChannelType;
 import it.pagopa.pn.workflowmanager.service.TimelineService;
 import jakarta.annotation.Nonnull;
@@ -78,6 +81,39 @@ public class ChannelSenderUtils {
                 .iun(iun)
                 .recIndex(recIndex)
                 .channel(channel.name())
+                .build()
+        );
+    }
+
+    public void savePrepareAnalogDeliveryElement(
+            Integer recIndex,
+            NotificationInt notification,
+            String elementId,
+            ServiceLevelInt serviceLevel,
+            Integer sentAttemptMade,
+            String relatedRequestId,
+            PhysicalAddressInt physicalAddressInt
+    ) {
+        timelineService.addTimelineElement(
+                timelineUtils.buildPrepareAnalogDeliveryTimelineElement(
+                        recIndex,
+                        notification,
+                        elementId,
+                        serviceLevel,
+                        sentAttemptMade,
+                        relatedRequestId,
+                        physicalAddressInt
+                ),
+                notification
+        );
+    }
+
+    public static String buildPrepareAnalogDeliveryTimelineElementId(Integer recIndex, String iun, Integer sentAttemptMade) {
+        return TimelineEventId.PREPARE_ANALOG_DELIVERY.buildEventId(EventId.builder()
+                .iun(iun)
+                .recIndex(recIndex)
+                .deliveryType(AnalogDeliveryTypeInt.RS.name())
+                .sentAttemptMade(sentAttemptMade)
                 .build()
         );
     }
