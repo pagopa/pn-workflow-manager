@@ -4,13 +4,13 @@ import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationIn
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
 
 import java.io.File;
+import it.pagopa.pn.workflowmanager.models.internal.campaign.Campaign;
 
 public interface TemplateGeneratorService {
-    String generateIoMessageTemplate(NotificationInt notificationInt, NotificationRecipientInt notificationRecipientInt, boolean isIoUser);
-
-    File informalAnalogCommunication(NotificationInt notificationInt, NotificationRecipientInt notificationRecipientInt, boolean isIoUser);
-
-    String generatePecTemplate(NotificationInt notificationInt, NotificationRecipientInt notificationRecipientInt, boolean isIoUser);
-  
-    String generateInformalIoCommunicationTemplate(NotificationInt notificationInt, NotificationRecipientInt notificationRecipientInt, boolean isIoUser);
+    String generateIoMessageTemplate(NotificationInt notificationInt, NotificationRecipientInt notificationRecipientInt, Campaign campaign);
+    String generatePecBodyTemplate(NotificationInt notificationInt, NotificationRecipientInt notificationRecipientInt, Campaign campaign);
+    String generatePecSubjectTemplate(NotificationInt notificationInt, NotificationRecipientInt notificationRecipientInt);
+    String generateEmailBodyTemplate(NotificationInt notificationInt, NotificationRecipientInt notificationRecipientInt, Campaign campaign);
+    String generateEmailSubjectTemplate(NotificationInt notificationInt, NotificationRecipientInt notificationRecipientInt);
+    File generateCoverpageTemplate(NotificationInt notificationInt, NotificationRecipientInt notificationRecipientInt, Campaign campaign);
 }

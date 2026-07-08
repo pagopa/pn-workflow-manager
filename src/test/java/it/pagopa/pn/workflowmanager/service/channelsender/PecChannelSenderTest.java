@@ -96,8 +96,10 @@ class PecChannelSenderTest {
         SendAttachmentMode sendAttachmentMode = new SendAttachmentMode(Set.of(AttachmentType.DOCUMENTS));
         NotificationRecipientInt recipient = notification.getRecipients().getFirst();
 
-        when(templateGeneratorService.generatePecTemplate(notification, recipient, false))
+        when(templateGeneratorService.generatePecBodyTemplate(notification, recipient, campaign))
                 .thenReturn("<html>PEC</html>");
+        when(templateGeneratorService.generatePecSubjectTemplate(notification, recipient))
+                .thenReturn("Oggetto PEC");
         when(attachmentUtils.retrieveAttachmentTypesToSend(notification, ChannelType.PEC)).thenReturn(sendAttachmentMode);
         when(attachmentUtils.retrieveAttachments(notification, 0, sendAttachmentMode, false))
                 .thenReturn(List.of("safestorage://doc1"));
@@ -108,6 +110,7 @@ class PecChannelSenderTest {
         verify(pnExternalChannelsClient).sendNotificationPEC(
                 requestIdCaptor.capture(),
                 eq("<html>PEC</html>"),
+                eq("Oggetto PEC"),
                 eq(notification),
                 eq(recipient),
                 eq(recipient.getDigitalDomicile()),

@@ -2,21 +2,25 @@ package it.pagopa.pn.workflowmanager.service.mapper;
 
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.*;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.templateengine.model.InformalCommunication;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.templateengine.model.InformalEmailCommunicationSubject;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.templateengine.model.SharedInformalCommunicationRecipient;
+import it.pagopa.pn.workflowmanager.models.internal.campaign.Campaign;
+import it.pagopa.pn.workflowmanager.models.internal.campaign.CampaignStatus;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TemplateEngineMapperTest {
     @Test
     void shouldMapToInformalCommunicationWhenNoDocumentsAndNoPayments() {
         NotificationInt notification = buildNotification(List.of());
         NotificationRecipientInt recipient = buildNotificationRecipient(List.of());
+        Campaign campaign = buildCampaign();
 
-        InformalCommunication result = TemplateEngineMapper.mapToInformalCommunication(notification, recipient, true);
+        InformalCommunication result = TemplateEngineMapper.mapToInformalCommunication(notification, recipient, campaign);
 
         assertMapping(result, false, false, null);
     }
@@ -27,8 +31,9 @@ class TemplateEngineMapperTest {
         NotificationPaymentInfoInt payment = NotificationPaymentInfoInt.builder().build();
         NotificationInt notification = buildNotification(List.of(document));
         NotificationRecipientInt recipient = buildNotificationRecipient(List.of(payment));
+        Campaign campaign = buildCampaign();
 
-        InformalCommunication result = TemplateEngineMapper.mapToInformalCommunication(notification, recipient, true);
+        InformalCommunication result = TemplateEngineMapper.mapToInformalCommunication(notification, recipient, campaign);
 
         assertMapping(result, true, true, null);
     }
@@ -44,13 +49,31 @@ class TemplateEngineMapperTest {
                         .language("DE")
                         .build()
         );
+        Campaign campaign = buildCampaign();
 
-        InformalCommunication result = TemplateEngineMapper.mapToInformalCommunication(notification, recipient, true);
+        InformalCommunication result = TemplateEngineMapper.mapToInformalCommunication(notification, recipient, campaign);
 
         assertMapping(result, false, false, "Secondary content");
     }
 
+    @Test
+    void shouldMapToInformalEmailCommunicationSubject() {
+        NotificationInt notification = buildNotification(List.of());
+        NotificationRecipientInt recipient = buildNotificationRecipient(List.of());
+        recipient.getMessage().setAdditionalMessage(
+                LocalizedMessageInt.builder()
+                        .longBody("Secondary content")
+                        .subject("Secondary subject")
+                        .language("DE")
+                        .build()
+        );
 
+        InformalEmailCommunicationSubject result = TemplateEngineMapper.mapToInformalEmailCommunicationSubject(notification, recipient);
+
+        assertEquals("subject", result.getSubject());
+        assertEquals("recipientDenomination", result.getRecipientDenomination());
+        assertEquals("senderDenomination", result.getSenderDenomination());
+    }
 
     private NotificationInt buildNotification(List<NotificationDocumentInt> documents) {
         return NotificationInt.builder()
@@ -81,14 +104,30 @@ class TemplateEngineMapperTest {
                 .build();
     }
 
+    private Campaign buildCampaign() {
+        return Campaign.builder()
+                .campaignId("campaignId")
+                .senderId("senderId")
+                .title("title")
+                .descriptionScope("descriptionScope")
+                .status(CampaignStatus.IN_PROGRESS)
+                .serviceId("serviceId")
+                .serviceName("serviceName")
+                .workflow(List.of())
+                .build();
+    }
+
     private void assertMapping(InformalCommunication result, boolean expectedHasAttachment, boolean expectedHasPayment, String expectedSecondaryContent) {
         // fixed values
         assertEquals("IUN_001", result.getIun());
         assertEquals("subject", result.getSubject());
-        assertEquals("senderDenomination", result.getSender().getPaDenomination());
+        assertEquals("senderDenomination", result.getSender().getDenomination());
+        assertEquals("senderId", result.getSender().getId());
+        assertEquals("serviceName", result.getSender().getService());
         assertEquals("recipientTaxId", result.getRecipient().getTaxId());
         assertEquals("recipientDenomination", result.getRecipient().getDenomination());
-        assertTrue(result.getRecipient().getIsIoUser());
+        assertEquals(SharedInformalCommunicationRecipient.RecipientTypeEnum.PF, result.getRecipient().getRecipientType());
+
 
         // dynamic values
         assertEquals(expectedHasAttachment, result.getHasAttachment());

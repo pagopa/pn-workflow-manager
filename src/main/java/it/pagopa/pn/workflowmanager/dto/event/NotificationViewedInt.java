@@ -1,6 +1,6 @@
 package it.pagopa.pn.workflowmanager.dto.event;
 
-import it.pagopa.pn.workflowmanager.middleware.queue.consumer.feedback.trigger.ChannelEventTrigger;
+import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.trigger.ChannelEventTrigger;
 import lombok.Builder;
 import lombok.Getter;
 

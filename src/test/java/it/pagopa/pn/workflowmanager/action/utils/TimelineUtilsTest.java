@@ -152,8 +152,33 @@ class TimelineUtilsTest {
         WorkflowEndedReachedDetailsInt details = (WorkflowEndedReachedDetailsInt) actual.getDetails();
         Assertions.assertAll(
                 () -> Assertions.assertEquals(TEST_REC_INDEX, details.getRecIndex()),
-                () -> Assertions.assertEquals(TEST_SOURCE_TIMELINE_ID, details.getSourceElementId()),
-                () -> assertNotNull(details.getNotificationDate())
+                () -> Assertions.assertEquals(TEST_SOURCE_TIMELINE_ID, details.getSourceElementId())
+        );
+    }
+
+    @Test
+    void buildSendDigitalMessageSkipTimelineElement() {
+        // Arrange
+        NotificationInt notification = createNotification();
+
+        // Act
+        TimelineElementInternal actual = timelineUtils.buildSendDigitalMessageSkipTimelineElement(
+                TEST_REC_INDEX, notification, TEST_EVENT_ID, DigitalChannelsInt.EMAIL,DigitalAddressSourceInt.SPECIAL);
+
+        // Assert
+        Assertions.assertAll(
+                () -> Assertions.assertEquals(TEST_IUN, actual.getIun()),
+                () -> Assertions.assertEquals(SEND_DIGITAL_MESSAGE_SKIP, actual.getCategory()),
+                () -> Assertions.assertEquals(TEST_EVENT_ID, actual.getElementId()),
+                () -> Assertions.assertEquals(TEST_PA_ID, actual.getPaId()),
+                () -> assertNotNull(actual.getTimestamp()),
+                () -> assertNotNull(actual.getDetails()),
+                () -> Assertions.assertInstanceOf(SendDigitalMessageSkipDetailsInt.class, actual.getDetails())
+        );
+
+        SendDigitalMessageSkipDetailsInt details = (SendDigitalMessageSkipDetailsInt) actual.getDetails();
+        Assertions.assertAll(
+                () -> Assertions.assertEquals(TEST_REC_INDEX, details.getRecIndex())
         );
     }
 
@@ -406,27 +431,6 @@ class TimelineUtilsTest {
     }
 
     @Test
-    void buildWorkflowEndedReachedTimelineElement_shouldSetNotificationDate() {
-        // Arrange
-        NotificationInt notification = createNotification();
-        Instant before = Instant.now();
-
-        // Act
-        TimelineElementInternal result = timelineUtils.buildWorkflowEndedReachedTimelineElement(
-                TEST_REC_INDEX, notification, TEST_EVENT_ID, TEST_SOURCE_TIMELINE_ID);
-
-        Instant after = Instant.now();
-
-        // Assert
-        WorkflowEndedReachedDetailsInt details = (WorkflowEndedReachedDetailsInt) result.getDetails();
-        Assertions.assertAll(
-                () -> assertNotNull(details.getNotificationDate()),
-                () -> Assertions.assertFalse(details.getNotificationDate().isBefore(before)),
-                () -> Assertions.assertFalse(details.getNotificationDate().isAfter(after))
-        );
-    }
-
-    @Test
     void buildWorkflowEndedUndeliverableTimelineElement_shouldHandleMultipleRecipientIndices() {
         // Arrange
         int recIndex2 = 5;
@@ -582,6 +586,7 @@ class TimelineUtilsTest {
         int recIndex = 0;
         NotificationInt notification = createNotification();
         ChannelType channel = ChannelType.IO;
+        Instant notificationDate = Instant.now();
         String expectedElementId = TimelineEventId.DELIVERED.buildEventId(
                 EventId.builder()
                         .iun(notification.getIun())
@@ -593,7 +598,8 @@ class TimelineUtilsTest {
                 createNotification(),
                 recIndex,
                 channel,
-                sourceId
+                sourceId,
+                notificationDate
         );
 
         Assertions.assertEquals("TEST-IUN-001", actual.getIun());
@@ -605,6 +611,7 @@ class TimelineUtilsTest {
         Assertions.assertEquals(recIndex, detailsInt.getRecIndex());
         Assertions.assertEquals(ChannelType.IO.name(), detailsInt.getChannel());
         Assertions.assertEquals(sourceId, detailsInt.getSourceElementId());
+        Assertions.assertEquals(notificationDate, detailsInt.getNotificationDate());
     }
 
     @Test
@@ -780,29 +787,29 @@ class TimelineUtilsTest {
     }
 
     @Test
-    void checkIfSendRequestIsPresentAndRetrieveRecIndexSuccess() {
+    void checkAndRetrieveSourceSendRequestDetailsSuccess() {
         // Arrange
         String iun = "TEST-IUN-001";
         String requestId = "request-001";
         int expectedRecIndex = 2;
 
         TimelineElementInternal mockElement = mock(TimelineElementInternal.class);
-        RecipientRelatedTimelineElementDetails mockDetails = mock(RecipientRelatedTimelineElementDetails.class);
+        SendRelatedTimelineElement mockDetails = mock(SendRelatedTimelineElement.class);
 
         when(timelineService.getTimelineElement(iun, requestId)).thenReturn(Optional.of(mockElement));
         when(mockElement.getDetails()).thenReturn(mockDetails);
         when(mockDetails.getRecIndex()).thenReturn(expectedRecIndex);
 
         // Act
-        int actualRecIndex = timelineUtils.checkIfSendRequestIsPresentAndRetrieveRecIndex(iun, requestId);
+        SendRelatedTimelineElement element = timelineUtils.checkAndRetrieveSourceSendRequestDetails(iun, requestId);
 
         // Assert
-        assertEquals(expectedRecIndex, actualRecIndex);
+        assertEquals(expectedRecIndex, element.getRecIndex());
         verify(timelineService).getTimelineElement(iun, requestId);
     }
 
     @Test
-    void checkIfSendRequestIsPresentAndRetrieveRecIndexElementNotFound() {
+    void checkAndRetrieveSourceSendRequestDetailsElementNotFound() {
         // Arrange
         String iun = "TEST-IUN-001";
         String requestId = "request-not-found";
@@ -810,11 +817,11 @@ class TimelineUtilsTest {
         when(timelineService.getTimelineElement(iun, requestId)).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThrows(PnInternalException.class, () -> timelineUtils.checkIfSendRequestIsPresentAndRetrieveRecIndex(iun, requestId));
+        assertThrows(PnInternalException.class, () -> timelineUtils.checkAndRetrieveSourceSendRequestDetails(iun, requestId));
     }
 
     @Test
-    void checkIfSendRequestIsPresentAndRetrieveRecIndexInvalidDetailsType() {
+    void checkAndRetrieveSourceSendRequestDetailsInvalidDetailsType() {
         // Arrange
         String iun = "TEST-IUN-001";
         String requestId = "request-invalid-details";
@@ -836,7 +843,7 @@ class TimelineUtilsTest {
         when(mockElement.getDetails()).thenReturn(new InvalidTimelineElementDetails());
 
         // Act & Assert
-        assertThrows(PnInternalException.class, () -> timelineUtils.checkIfSendRequestIsPresentAndRetrieveRecIndex(iun, requestId));
+        assertThrows(PnInternalException.class, () -> timelineUtils.checkAndRetrieveSourceSendRequestDetails(iun, requestId));
     }
 
     private NotificationInt createNotification() {

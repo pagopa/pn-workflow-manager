@@ -1,8 +1,8 @@
 package it.pagopa.pn.workflowmanager.middleware.queue.consumer.handler;
 
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.event.IoOutcomeEvent;
-import it.pagopa.pn.workflowmanager.middleware.queue.consumer.feedback.ChannelEventProcessor;
-import it.pagopa.pn.workflowmanager.middleware.queue.consumer.feedback.io.IoEventNormalizer;
+import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.ChannelEventProcessor;
+import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.io.IoEventNormalizer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

@@ -1,4 +1,4 @@
-package it.pagopa.pn.workflowmanager.middleware.queue.consumer.feedback.io;
+package it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.io;
 
 import it.pagopa.pn.workflowmanager.action.utils.TimelineUtils;
 import it.pagopa.pn.workflowmanager.dto.event.NotificationPaidInt;
@@ -8,11 +8,14 @@ import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.ResponseStatusInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.DigitalChannelsInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.DigitalDeliveryDetailsInt;
+import it.pagopa.pn.workflowmanager.dto.timeline.details.SendDigitalMessageDetailsInt;
+import it.pagopa.pn.workflowmanager.dto.timeline.details.SendRelatedTimelineElement;
+import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.ChannelOutcomeClassification;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.event.IoOutcomeEvent;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.event.IoOutcomeEventType;
-import it.pagopa.pn.workflowmanager.middleware.queue.consumer.feedback.ChannelOutcomeNormalizer;
-import it.pagopa.pn.workflowmanager.middleware.queue.consumer.feedback.NormalizedChannelOutcome;
-import it.pagopa.pn.workflowmanager.middleware.queue.consumer.feedback.trigger.ChannelEventTrigger;
+import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.ChannelOutcomeNormalizer;
+import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.NormalizedChannelOutcome;
+import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.trigger.ChannelEventTrigger;
 import it.pagopa.pn.workflowmanager.models.internal.campaign.ChannelType;
 import it.pagopa.pn.workflowmanager.utils.NotificationPaymentUtils;
 import lombok.RequiredArgsConstructor;
@@ -25,13 +28,15 @@ public class IoEventNormalizer implements ChannelOutcomeNormalizer<IoOutcomeEven
     private final TimelineUtils timelineUtils;
 
     @Override
-    public NormalizedChannelOutcome normalize(IoOutcomeEvent ioEvent, NotificationInt notification, int recIndex) {
+    public NormalizedChannelOutcome normalize(IoOutcomeEvent ioEvent, NotificationInt notification, SendRelatedTimelineElement sourceSendRequestDetails) {
+        int recIndex = sourceSendRequestDetails.getRecIndex();
+        ChannelOutcomeClassification classification = IoEventClassification.fromEventType(ioEvent.getEventType().name());
         return NormalizedChannelOutcome.builder()
                 .iun(notification.getIun())
-                .classification(IoEventClassification.fromEventType(ioEvent.getEventType().name()))
+                .classification(classification)
                 .triggers(buildTriggers(ioEvent, notification, recIndex))
                 .channel(ChannelType.IO)
-                .timelineElementInternal(buildTimelineElement(ioEvent, notification, recIndex))
+                .timelineElementInternal(buildTimelineElement(ioEvent, notification, sourceSendRequestDetails, classification))
                 .originalEventType(ioEvent.getEventType().name())
                 .eventTimestamp(ioEvent.getEventTimestamp())
                 .build();
@@ -63,9 +68,11 @@ public class IoEventNormalizer implements ChannelOutcomeNormalizer<IoOutcomeEven
         return triggers;
     }
 
-    private TimelineElementInternal buildTimelineElement(IoOutcomeEvent ioEvent, NotificationInt notificationInt, int recIndex) {
-        return switch(ioEvent.getEventType()) {
-            case SENT_TO_IO, READ, PAID, DELIVERED_TO_USER -> timelineUtils.buildSendDigitalMessageProgress(
+    private TimelineElementInternal buildTimelineElement(IoOutcomeEvent ioEvent, NotificationInt notificationInt, SendRelatedTimelineElement sourceSendRequestDetails, ChannelOutcomeClassification classification) {
+        SendDigitalMessageDetailsInt digitalSendMessageDetails = (SendDigitalMessageDetailsInt) sourceSendRequestDetails;
+        int recIndex = digitalSendMessageDetails.getRecIndex();
+        return switch (classification.getCategory()) {
+            case PROGRESS -> timelineUtils.buildSendDigitalMessageProgress(
                     notificationInt,
                     recIndex,
                     DigitalChannelsInt.APPIO,
@@ -74,11 +81,11 @@ public class IoEventNormalizer implements ChannelOutcomeNormalizer<IoOutcomeEven
                             .code(ioEvent.getEventType().name())
                             .eventTimestamp(ioEvent.getEventTimestamp())
                             .build(),
-                    null, // TODO: Mettiamo il taxCode del destinatario come address?
-                    null,
+                    digitalSendMessageDetails.getDigitalAddress(),
+                    digitalSendMessageDetails.getDigitalAddressSource(),
                     ioEvent.getEventTimestamp()
             );
-            case SENDER_NOT_ALLOWED -> timelineUtils.buildSendDigitalMessageFeedback(
+            case FEEDBACK -> timelineUtils.buildSendDigitalMessageFeedback(
                     notificationInt,
                     recIndex,
                     DigitalChannelsInt.APPIO,
@@ -87,8 +94,8 @@ public class IoEventNormalizer implements ChannelOutcomeNormalizer<IoOutcomeEven
                             .code(ioEvent.getEventType().name())
                             .eventTimestamp(ioEvent.getEventTimestamp())
                             .build(),
-                    null, // TODO: Mettiamo il taxCode del destinatario come address?
-                    null,
+                    digitalSendMessageDetails.getDigitalAddress(),
+                    digitalSendMessageDetails.getDigitalAddressSource(),
                     ResponseStatusInt.KO,
                     null,
                     ioEvent.getEventTimestamp()

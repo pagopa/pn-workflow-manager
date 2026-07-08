@@ -1,6 +1,6 @@
 package it.pagopa.pn.workflowmanager.middleware.queue.consumer.event;
 
-import it.pagopa.pn.workflowmanager.middleware.queue.consumer.feedback.ChannelOutcomeEvent;
+import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.ChannelOutcomeEvent;
 import lombok.Builder;
 import lombok.Data;
 

@@ -61,6 +61,21 @@ public class TimelineUtils {
                 .build();
     }
 
+    public TimelineElementInternal buildSendDigitalMessageSkipTimelineElement(Integer recIndex, NotificationInt notification,
+                                                                              String eventId,
+                                                                              DigitalChannelsInt digitalAddressChannel,
+                                                                              DigitalAddressSourceInt digitalAddressSource){
+        log.debug("buildSendDigitalMessageSkipTimelineElement - IUN={} and id={}", notification.getIun(), recIndex);
+
+        SendDigitalMessageSkipDetailsInt details = SendDigitalMessageSkipDetailsInt.builder()
+                .recIndex(recIndex)
+                .channel(digitalAddressChannel)
+                .digitalAddressSource(digitalAddressSource)
+                .build();
+
+        return buildTimeline(notification, TimelineElementCategoryInt.SEND_DIGITAL_MESSAGE_SKIP, eventId, details);
+    }
+
     public TimelineElementInternal buildWorkflowEndedUndeliverableTimelineElement(Integer recIndex, NotificationInt notification,
                                                                               String eventId) {
         log.debug("buildWorkflowEndedUndeliverableTimelineElement - IUN={} and id={}", notification.getIun(), recIndex);
@@ -107,7 +122,6 @@ public class TimelineUtils {
 
         WorkflowEndedReachedDetailsInt details = WorkflowEndedReachedDetailsInt.builder()
                 .recIndex(recIndex)
-                .notificationDate(Instant.now())
                 .sourceElementId(sourceTimelineId)
                 .build();
 
@@ -189,7 +203,8 @@ public class TimelineUtils {
             NotificationInt notification,
             int recIndex,
             ChannelType channel,
-            String sourceElementId
+            String sourceElementId,
+            Instant notificationDate
     ){
         log.debug("buildDeliveredTimelineElement - IUN={} and id={} and channel={}", notification.getIun(), recIndex, channel);
         String elementId = TimelineEventId.DELIVERED.buildEventId(
@@ -204,6 +219,7 @@ public class TimelineUtils {
                 .recIndex(recIndex)
                 .channel(channel.name())
                 .sourceElementId(sourceElementId)
+                .notificationDate(notificationDate)
                 .build();
 
         return buildTimeline(notification, TimelineElementCategoryInt.DELIVERED, elementId, detailsInt);
@@ -369,17 +385,17 @@ public class TimelineUtils {
         return timelineId.split("\\" + TimelineEventIdBuilder.DELIMITER)[1].replace("IUN_", "");
     }
 
-    public int checkIfSendRequestIsPresentAndRetrieveRecIndex(String iun, String requestId) {
+    public SendRelatedTimelineElement checkAndRetrieveSourceSendRequestDetails(String iun, String requestId) {
         Optional<TimelineElementInternal> optRequestElement = timelineService.getTimelineElement(iun, requestId);
         if(optRequestElement.isEmpty()) {
             throw new PnInternalException(String.format("Request with requestId=%s not found in timeline for iun=%s", requestId, iun), ERROR_CODE_TIMELINESERVICE_TIMELINE_ELEMENT_NOT_PRESENT);
         }
 
         TimelineElementInternal requestElement = optRequestElement.get();
-        if(!(requestElement.getDetails() instanceof RecipientRelatedTimelineElementDetails)) {
-            throw new PnInternalException(String.format("Timeline element with requestId=%s for iun=%s is not a recipient related timeline element", requestId, iun), ERROR_CODE_TIMELINESERVICE_TIMELINE_ELEMENT_NOT_PRESENT);
+        if(!(requestElement.getDetails() instanceof SendRelatedTimelineElement)) {
+            throw new PnInternalException(String.format("Timeline element with requestId=%s for iun=%s is not a send related timeline element", requestId, iun), ERROR_CODE_TIMELINESERVICE_TIMELINE_ELEMENT_NOT_PRESENT);
         }
 
-        return ((RecipientRelatedTimelineElementDetails) requestElement.getDetails()).getRecIndex();
+        return (SendRelatedTimelineElement) requestElement.getDetails();
     }
 }

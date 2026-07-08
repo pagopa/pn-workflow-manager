@@ -1,4 +1,4 @@
-package it.pagopa.pn.workflowmanager.middleware.queue.consumer.feedback.trigger;
+package it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.trigger;
 
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.exceptions.PnChannelTriggerNotFoundException;
