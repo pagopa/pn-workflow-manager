@@ -124,6 +124,10 @@ class PaperChannelServiceImplTest {
         doThrow(new RuntimeException("Paper channel error"))
                 .when(paperMessagesClient).prepare(any(PaperChannelPrepareRequest.class));
 
+        Assertions.assertThrows(PnInternalException.class, () ->
+                service.prepareSimpleRegisteredLetter(notification, recIndex, coverpageFileKey)
+        );
+
         verify(paperMessagesClient, times(1)).prepare(any(PaperChannelPrepareRequest.class));
         verify(channelSenderUtils, never()).savePrepareAnalogDeliveryElement(
                 anyInt(), any(), anyString(), any(), anyInt(), any(), any()
