@@ -13,4 +13,5 @@ public interface TemplateGeneratorService {
     String generateEmailBodyTemplate(NotificationInt notificationInt, NotificationRecipientInt notificationRecipientInt, Campaign campaign);
     String generateEmailSubjectTemplate(NotificationInt notificationInt, NotificationRecipientInt notificationRecipientInt);
     File generateCoverpageTemplate(NotificationInt notificationInt, NotificationRecipientInt notificationRecipientInt, Campaign campaign);
+    String generateSmsTemplate(NotificationInt notificationInt, NotificationRecipientInt notificationRecipientInt);
 }

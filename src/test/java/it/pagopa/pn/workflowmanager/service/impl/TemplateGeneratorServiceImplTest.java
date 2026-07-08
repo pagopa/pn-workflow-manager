@@ -150,6 +150,24 @@ class TemplateGeneratorServiceImplTest {
         verify(templateEngineClient).coverpageTemplate(Mockito.eq(expectedLanguage), Mockito.any());
     }
 
+    @ParameterizedTest
+    @MethodSource("provideAdditionalLanguageArguments")
+    void shouldGenerateSmsTemplate(
+            List<String> additionalLanguages,
+            LanguageEnum expectedLanguage
+    ) {
+        NotificationInt notificationInt = buildNotification();
+        NotificationRecipientInt notificationRecipientInt = buildNotificationRecipient(additionalLanguages);
+        String expectedMessageTemplate = "template-content";
+
+        when(templateEngineClient.smsTemplate(Mockito.eq(expectedLanguage), Mockito.any())).thenReturn(expectedMessageTemplate);
+
+        String result = templateGeneratorService.generateSmsTemplate(notificationInt, notificationRecipientInt);
+
+        assertEquals(expectedMessageTemplate, result);
+        verify(templateEngineClient).smsTemplate(Mockito.eq(expectedLanguage), Mockito.any());
+    }
+
     private NotificationInt buildNotification() {
         return NotificationInt.builder()
                 .iun("iun")

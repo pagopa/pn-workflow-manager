@@ -3,6 +3,7 @@ package it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.template
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.templateengine.api.TemplateApi;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.templateengine.model.InformalCommunication;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.templateengine.model.InformalEmailCommunicationSubject;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.templateengine.model.InformalSmsCommunication;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.templateengine.model.LanguageEnum;
 import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
@@ -50,5 +51,11 @@ public class TemplateEngineClientImpl implements TemplateEngineClient {
     public File coverpageTemplate(LanguageEnum xLanguage, InformalCommunication informalCommunication) {
         log.logInvokingExternalService(CLIENT_NAME, COVERPAGE_TEMPLATE);
         return templateApi.informalAnalogCommunication(xLanguage, informalCommunication);
+    }
+
+    @Override
+    public String smsTemplate(LanguageEnum language, InformalSmsCommunication informalCommunication) {
+        log.logInvokingExternalService(CLIENT_NAME, SMS_TEMPLATE);
+        return templateApi.informalSmsCommunication(language, informalCommunication);
     }
 }
