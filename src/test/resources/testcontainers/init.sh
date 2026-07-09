@@ -2,7 +2,7 @@
 
 echo "### CREATE QUEUES ###"
 
-queues="pn-workflow-manager-action-queue pn-workflow-manager-digital-event-queue pn-workflow-manager-analog-event-queue pn-workflow-manager-io-event-queue pn-safestore_to_workflowmanager"
+queues="pn-workflow-manager_action pn-workflow-manager_digital_event pn-workflow-manager_analog_event pn-workflow-manager_io_event pn-safestore_to_workflowmanager"
 
 for qn in  $( echo $queues | tr " " "\n" ) ; do
 
