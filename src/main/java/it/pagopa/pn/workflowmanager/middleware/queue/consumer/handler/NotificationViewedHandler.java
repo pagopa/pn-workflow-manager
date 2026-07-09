@@ -7,6 +7,7 @@ import it.pagopa.pn.workflowmanager.dto.event.NotificationViewedInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.models.internal.campaign.Campaign;
+import it.pagopa.pn.workflowmanager.models.internal.campaign.DesiredFeedbackType;
 import it.pagopa.pn.workflowmanager.service.AuditLogService;
 import it.pagopa.pn.workflowmanager.service.CampaignService;
 import it.pagopa.pn.workflowmanager.service.NotificationService;
@@ -67,7 +68,7 @@ public class NotificationViewedHandler {
         timelineUtils.handleTransitionToReachedStatusIfNecessary(notification, recIndex, viewedTimelineElementId);
 
         if (isWebViewWithStopOnViewed(notificationViewed, campaign)) {
-            workflowUtils.scheduleWorkflowDone(iun, recIndex, viewedTimelineElementId);
+            workflowUtils.scheduleWorkflowDone(iun, recIndex, viewedTimelineElementId, DesiredFeedbackType.READ);
         }
     }
 

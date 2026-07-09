@@ -9,6 +9,7 @@ import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRe
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationSenderInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.models.internal.campaign.Campaign;
+import it.pagopa.pn.workflowmanager.models.internal.campaign.DesiredFeedbackType;
 import it.pagopa.pn.workflowmanager.service.AuditLogService;
 import it.pagopa.pn.workflowmanager.service.CampaignService;
 import it.pagopa.pn.workflowmanager.service.NotificationService;
@@ -127,7 +128,7 @@ class NotificationViewedHandlerTest {
                 any(),
                 eq(1)
         );
-        verify(workflowUtils).scheduleWorkflowDone("IUN_2", 1, viewedTimelineId);
+        verify(workflowUtils).scheduleWorkflowDone("IUN_2", 1, viewedTimelineId, DesiredFeedbackType.READ);
     }
 
     @Test
@@ -177,7 +178,7 @@ class NotificationViewedHandlerTest {
                 any(),
                 eq(0)
         );
-        verify(workflowUtils, never()).scheduleWorkflowDone(anyString(), anyInt(), anyString());
+        verify(workflowUtils, never()).scheduleWorkflowDone(anyString(), anyInt(), anyString(), any());
     }
 }
 
