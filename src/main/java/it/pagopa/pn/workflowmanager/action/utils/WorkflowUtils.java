@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Component
@@ -44,7 +45,7 @@ public class WorkflowUtils {
         return Optional.empty();
     }
 
-    public void scheduleTimeoutForCurrentChannel(String iun, int recIndex, int currentStepIdx, Campaign campaign, ChannelType channel) {
+    public void scheduleTimeoutForCurrentChannel(String iun, int recIndex, Campaign campaign, ChannelType channel) {
         log.info("Start scheduleTimeoutForCurrentChannel for campaignId={} channel={}", campaign.getCampaignId(), channel);
         Optional<Duration> timeout = getTimeoutForCurrentChannel(campaign, channel);
         if (timeout.isPresent()) {
@@ -52,7 +53,6 @@ public class WorkflowUtils {
             log.debug("Scheduling timeout for campaignId={} channel={} at {}", campaign.getCampaignId(), channel, timeoutInstant);
             TimeoutWorkflowDetails actionDetails = TimeoutWorkflowDetails.builder()
                     .channel(channel)
-                    .stepIdx(currentStepIdx)
                     .build();
             schedulerService.scheduleEvent(iun, recIndex, timeoutInstant, ActionType.TIMEOUT_WORKFLOW, actionDetails);
         } else {
@@ -62,8 +62,12 @@ public class WorkflowUtils {
 
     private Optional<Duration> getTimeoutForCurrentChannel(Campaign campaign, ChannelType channel) {
         return Optional.of(getWorkflowEntityForCurrentChannel(campaign, channel))
-                .map(WorkFlowEntity::getTimeout);
+                .stream()
+                .map(WorkFlowEntity::getTimeout)
+                .filter(Objects::nonNull)
+                .findFirst();
     }
+
 
     private WorkFlowEntity getWorkflowEntityForCurrentChannel(Campaign campaign, ChannelType channel) {
         if(campaign.getWorkflow() == null || campaign.getWorkflow().isEmpty()) {

@@ -62,7 +62,7 @@ public class PecChannelSender implements ChannelSender {
                 null
         );
 
-        workflowUtils.scheduleTimeoutForCurrentChannel(notification.getIun(), recIndex, currentStep, campaign, channel);
+        workflowUtils.scheduleTimeoutForCurrentChannel(notification.getIun(), recIndex, campaign, channel);
     }
 
     private List<String> resolveAttachmentUrls(

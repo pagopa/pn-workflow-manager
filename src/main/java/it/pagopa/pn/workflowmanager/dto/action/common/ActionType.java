@@ -51,10 +51,9 @@ public enum ActionType {
     public String buildActionId(Action action) {
       TimeoutWorkflowDetails details = (TimeoutWorkflowDetails) action.getDetails();
       return String.format(
-              "%s_timeout_workflow_recIndex_%d_stepIndex_%d_channel_%s",
+              "%s_timeout_workflow_recIndex_%d_channel_%s",
               action.getIun(),
               action.getRecipientIndex(),
-              details.getStepIdx(),
               details.getChannel()
       );
     }

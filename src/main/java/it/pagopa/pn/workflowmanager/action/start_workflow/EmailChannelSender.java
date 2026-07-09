@@ -89,7 +89,7 @@ public class EmailChannelSender implements ChannelSender {
                     notification, requestId, recIndex, emailAddress,
                     DigitalChannelsInt.EMAIL, DigitalAddressSourceInt.SPECIAL
             );
-            workflowUtils.scheduleTimeoutForCurrentChannel(notification.getIun(), recIndex, currentStep, campaign, channel);
+            workflowUtils.scheduleTimeoutForCurrentChannel(notification.getIun(), recIndex, campaign, channel);
             auditLogEvent.generateSuccess("Email sent successfully").log();
         } catch (Exception e) {
             auditLogEvent.generateFailure("Error sending message", e).log();
