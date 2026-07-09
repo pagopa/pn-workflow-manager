@@ -33,6 +33,7 @@ public class IoChannelSender implements ChannelSender {
     private final ChannelSenderUtils channelSenderUtils;
     private final WorkflowUtils workflowUtils;
 
+    @Override
     public void send(NotificationInt notification, Campaign campaign, int recIndex, int currentStep, ChannelType channel) {
         log.info("Sending message for notification {} to recipient {} via channel {}", notification.getIun(), recIndex, channel);
         NotificationRecipientInt recipient = notification.getRecipients().get(recIndex);
