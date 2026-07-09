@@ -27,7 +27,7 @@ import static it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCo
 @AllArgsConstructor
 public class SaveDocumentServiceImpl implements SaveDocumentService {
 
-    public static final String SAVE_DOCUMENT_EXCEPTION_MESSAGE = "Generating %s document for IUN=%s and recipientId=%s";
+    public static final String SAVE_DOCUMENT_EXCEPTION_MESSAGE = "Generating %s document for IUN=%s and recipientId=%d";
     public static final String DOCUMENTS_MEDIATYPE_STRING = "application/pdf";
     public static final String PN_COMMUNICATIONS_COVERPAGE = "PN_COMMUNICATIONS_COVERPAGE";
     public static final String SAVED = "SAVED";
@@ -54,7 +54,7 @@ public class SaveDocumentServiceImpl implements SaveDocumentService {
             NotificationRecipientInt recipient,
             Campaign campaign,
             String timelineElementId,
-            String recIndex
+            int recIndex
     ) {
         try {
             log.debug("Start saveCoverpage - iun={}", notification.getIun());
@@ -62,7 +62,7 @@ public class SaveDocumentServiceImpl implements SaveDocumentService {
             byte[] legalFact = Files.readAllBytes(legalFactFile.toPath());
             Map<String, List<String>> tags = Map.of(
                     "iun", List.of(notification.getIun()),
-                    "recIndex", List.of(recIndex),
+                    "recIndex", List.of(String.valueOf(recIndex)),
                     "documentType", List.of(DocumentType.COVERPAGE.name()),
                     "timelineElementId", List.of(timelineElementId)
             );

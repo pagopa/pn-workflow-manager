@@ -11,6 +11,6 @@ public interface SaveDocumentService {
             NotificationRecipientInt recipient,
             Campaign campaign,
             String timelineElementId,
-            String recIndex
+            int recIndex
     );
 }

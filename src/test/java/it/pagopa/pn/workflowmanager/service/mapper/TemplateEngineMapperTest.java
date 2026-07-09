@@ -75,6 +75,14 @@ class TemplateEngineMapperTest {
         assertEquals("senderDenomination", result.getSenderDenomination());
     }
 
+    @Test
+    void shouldMapToInformalSmsCommunication() {
+        NotificationInt notification = buildNotification(List.of());
+        var result = TemplateEngineMapper.mapToInformalSmsCommunication(notification);
+
+        assertEquals("senderDenomination", result.getSenderPaDenomination());
+    }
+
     private NotificationInt buildNotification(List<NotificationDocumentInt> documents) {
         return NotificationInt.builder()
                 .iun("IUN_001")

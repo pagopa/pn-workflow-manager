@@ -4,6 +4,7 @@ import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationIn
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.templateengine.model.InformalCommunication;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.templateengine.model.InformalEmailCommunicationSubject;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.templateengine.model.InformalSmsCommunication;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.templateengine.model.LanguageEnum;
 import it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.templateengine.TemplateEngineClient;
 import it.pagopa.pn.workflowmanager.models.internal.campaign.Campaign;
@@ -16,8 +17,7 @@ import org.springframework.util.CollectionUtils;
 import java.io.File;
 import java.util.List;
 
-import static it.pagopa.pn.workflowmanager.service.mapper.TemplateEngineMapper.mapToInformalCommunication;
-import static it.pagopa.pn.workflowmanager.service.mapper.TemplateEngineMapper.mapToInformalEmailCommunicationSubject;
+import static it.pagopa.pn.workflowmanager.service.mapper.TemplateEngineMapper.*;
 
 @Service
 @Slf4j
@@ -65,6 +65,13 @@ public class TemplateGeneratorServiceImpl implements TemplateGeneratorService {
         LanguageEnum language = getLanguage(notificationRecipientInt.getAdditionalLanguages());
         InformalCommunication informalCommunication = mapToInformalCommunication(notificationInt, notificationRecipientInt, campaign);
         return templateEngineClient.coverpageTemplate(language, informalCommunication);
+    }
+
+    @Override
+    public String generateSmsTemplate(NotificationInt notificationInt, NotificationRecipientInt notificationRecipientInt) {
+        LanguageEnum language = getLanguage(notificationRecipientInt.getAdditionalLanguages());
+        InformalSmsCommunication informalSmsCommunication = mapToInformalSmsCommunication(notificationInt);
+        return templateEngineClient.smsTemplate(language, informalSmsCommunication);
     }
 
     private LanguageEnum getLanguage(List<String> additionalLanguages) {

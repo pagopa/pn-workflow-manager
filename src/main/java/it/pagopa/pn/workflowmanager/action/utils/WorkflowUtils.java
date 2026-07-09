@@ -81,6 +81,15 @@ public class WorkflowUtils {
                 .anyMatch(workflowEntity -> workflowEntity.getDesiredFeedback() != null && workflowEntity.getDesiredFeedback().contains(desiredFeedback));
     }
 
+    /**
+     * This method is responsible for advancing the workflow to the next channel or scheduling the end of the workflow if no next channel is found.
+     *
+     * @param iun                The unique identifier for the notification.
+     * @param recIndex           The index of the recipient in the notification.
+     * @param channel            The current channel type.
+     * @param campaign           The campaign associated with the notification.
+     * @param recipientTypeInt   The type of the recipient.
+     */
     public void advanceWorkflow(String iun, int recIndex, ChannelType channel, Campaign campaign, RecipientTypeInt recipientTypeInt) {
         log.info("Scheduling next channel for iun={} recIndex={} channel={}", iun, recIndex, channel);
         Optional<WorkflowUtils.NextChannel> nextChannelInfoOptional = getNextChannel(campaign, channel, recipientTypeInt);
@@ -88,12 +97,12 @@ public class WorkflowUtils {
             scheduleEndWorkflow(iun, recIndex, channel);
         } else {
             WorkflowUtils.NextChannel nextChannelInfo = nextChannelInfoOptional.get();
-            scheduleNextChannel(iun, recIndex, nextChannelInfo);
+            scheduleNextChannel(iun, recIndex, nextChannelInfo, channel);
         }
     }
 
     private void scheduleEndWorkflow(String iun, int recIndex, ChannelType channel) {
-        log.warn("No next channel found for iun={} channel={}", iun, channel);
+        log.info("No next channel found for iun {} and recIndex {} given channel {}. Scheduling END_WORKFLOW event.", iun, recIndex, channel);
         schedulerService.scheduleEvent(
                 iun,
                 recIndex,
@@ -103,7 +112,9 @@ public class WorkflowUtils {
         );
     }
 
-    private void scheduleNextChannel(String iun, int recIndex, WorkflowUtils.NextChannel nextChannelInfo) {
+    private void scheduleNextChannel(String iun, int recIndex, WorkflowUtils.NextChannel nextChannelInfo, ChannelType previousChannel) {
+        log.info("Next channel found {} for iun {} and recIndex {} from previous channel {}. Scheduling START_WORKFLOW event.",
+                nextChannelInfo.channel(), iun, recIndex, previousChannel);
         schedulerService.scheduleEvent(
                 iun,
                 recIndex,
