@@ -3,6 +3,7 @@ package it.pagopa.pn.workflowmanager.action.utils;
 import it.pagopa.pn.workflowmanager.dto.action.common.ActionType;
 import it.pagopa.pn.workflowmanager.dto.action.details.NotHandledDetails;
 import it.pagopa.pn.workflowmanager.dto.action.details.StartWorkflowDetails;
+import it.pagopa.pn.workflowmanager.dto.action.details.WorkflowDoneDetails;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.RecipientTypeInt;
 import it.pagopa.pn.workflowmanager.exceptions.PnWorkflowException;
 import it.pagopa.pn.workflowmanager.models.internal.campaign.Campaign;
@@ -14,6 +15,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Duration;
@@ -594,17 +596,19 @@ class WorkflowUtilsTest {
         String elementId = "ELEMENT_456";
 
         // Act
-        workflowUtils.scheduleWorkflowDone(iun, recIndex, elementId);
+        workflowUtils.scheduleWorkflowDone(iun, recIndex, elementId, DesiredFeedbackType.SENT);
 
         // Assert
+        ArgumentCaptor<WorkflowDoneDetails> workflowDoneDetailsArgumentCaptor = ArgumentCaptor.forClass(WorkflowDoneDetails.class);
         verify(schedulerService).scheduleEvent(
                 eq(iun),
                 eq(recIndex),
                 any(Instant.class),
                 eq(ActionType.WORKFLOW_DONE),
                 eq(elementId),
-                any(NotHandledDetails.class)
+                workflowDoneDetailsArgumentCaptor.capture()
         );
+        assertEquals(DesiredFeedbackType.SENT, workflowDoneDetailsArgumentCaptor.getValue().getCompletionFeedback());
     }
 
     private Campaign createCampaignWithMultipleChannels(List<ChannelType> channels) {

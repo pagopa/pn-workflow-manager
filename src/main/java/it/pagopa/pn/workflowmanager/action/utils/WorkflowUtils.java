@@ -4,6 +4,7 @@ import it.pagopa.pn.workflowmanager.dto.action.common.ActionType;
 import it.pagopa.pn.workflowmanager.dto.action.details.NotHandledDetails;
 import it.pagopa.pn.workflowmanager.dto.action.details.StartWorkflowDetails;
 import it.pagopa.pn.workflowmanager.dto.action.details.TimeoutWorkflowDetails;
+import it.pagopa.pn.workflowmanager.dto.action.details.WorkflowDoneDetails;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.RecipientTypeInt;
 import it.pagopa.pn.workflowmanager.exceptions.PnWorkflowException;
 import it.pagopa.pn.workflowmanager.models.internal.campaign.Campaign;
@@ -127,7 +128,7 @@ public class WorkflowUtils {
         );
     }
 
-    public void scheduleWorkflowDone(String iun,  int recIndex, String elementId) {
+    public void scheduleWorkflowDone(String iun,  int recIndex, String elementId, DesiredFeedbackType completionFeedback) {
         log.info("Scheduling workflow done for iun={} recIndex={} triggered by element={}", iun, recIndex, elementId);
         schedulerService.scheduleEvent(
                 iun,
@@ -135,7 +136,7 @@ public class WorkflowUtils {
                 Instant.now(),
                 ActionType.WORKFLOW_DONE,
                 elementId,
-                new NotHandledDetails()
+                WorkflowDoneDetails.builder().completionFeedback(completionFeedback).build()
         );
     }
 

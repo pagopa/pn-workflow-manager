@@ -13,13 +13,15 @@ import lombok.experimental.SuperBuilder;
 public class WorkflowDoneUnreachedDetailsInt extends CategoryTypeTimelineElementDetailsInt implements RecipientRelatedTimelineElementDetails {
     private int recIndex;
     private String sourceElementId;
+    private String completionFeedback;
 
     @Override
     public String toLog() {
         return String.format(
-                "recIndex=%d sourceElementId=%s",
+                "recIndex=%d sourceElementId=%s completionFeedback=%s",
                 recIndex,
-                sourceElementId
+                sourceElementId,
+                completionFeedback
         );
     }
 }
