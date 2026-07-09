@@ -2,8 +2,6 @@ package it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome;
 
 import it.pagopa.pn.workflowmanager.action.utils.TimelineUtils;
 import it.pagopa.pn.workflowmanager.action.utils.WorkflowUtils;
-import it.pagopa.pn.workflowmanager.dto.action.common.ActionType;
-import it.pagopa.pn.workflowmanager.dto.action.details.NotHandledDetails;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.RecipientTypeInt;
@@ -13,7 +11,6 @@ import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.tr
 import it.pagopa.pn.workflowmanager.models.internal.campaign.Campaign;
 import it.pagopa.pn.workflowmanager.models.internal.campaign.ChannelType;
 import it.pagopa.pn.workflowmanager.models.internal.campaign.DesiredFeedbackType;
-import it.pagopa.pn.workflowmanager.service.SchedulerService;
 import it.pagopa.pn.workflowmanager.service.TimelineService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,8 +34,6 @@ class ChannelOutcomeHandlerTest {
     private TimelineUtils timelineUtils;
     @Mock
     private TimelineService timelineService;
-    @Mock
-    private SchedulerService schedulerService;
     @Mock
     private ChannelEventTriggerDispatcher channelEventTriggerDispatcher;
     @Mock
@@ -132,14 +127,7 @@ class ChannelOutcomeHandlerTest {
         channelOutcomeHandler.handleOutcome(outcome, notification, campaign);
 
         // Assert
-        verify(schedulerService).scheduleEvent(
-                eq(iun),
-                eq(recIndex),
-                any(Instant.now().getClass()),
-                eq(ActionType.WORKFLOW_DONE),
-                eq(elementId),
-                any(NotHandledDetails.class)
-        );
+        verify(workflowUtils).scheduleWorkflowDone(iun, recIndex, elementId);
         verify(workflowUtils, never()).advanceWorkflow(iun, recIndex, channel, campaign, recipientType);
     }
 
@@ -155,7 +143,7 @@ class ChannelOutcomeHandlerTest {
 
         // Assert
         verify(workflowUtils).advanceWorkflow(iun, recIndex, channel, campaign, recipientType);
-        verifyNoInteractions(schedulerService);
+        verify(workflowUtils, never()).scheduleWorkflowDone(iun, recIndex, elementId);
     }
 
     @Test
@@ -171,7 +159,6 @@ class ChannelOutcomeHandlerTest {
         // Assert
         verify(timelineService, times(1)).addTimelineElement(timelineElement, notification);
         verifyNoMoreInteractions(timelineService);
-        verifyNoInteractions(schedulerService);
         verifyNoInteractions(workflowUtils);
     }
 }

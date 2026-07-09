@@ -587,6 +587,26 @@ class WorkflowUtilsTest {
         );
     }
 
+    @Test
+    void scheduleWorkflowDoneShouldScheduleWorkflowDoneEvent() {
+        String iun = "IUN_123";
+        int recIndex = 0;
+        String elementId = "ELEMENT_456";
+
+        // Act
+        workflowUtils.scheduleWorkflowDone(iun, recIndex, elementId);
+
+        // Assert
+        verify(schedulerService).scheduleEvent(
+                eq(iun),
+                eq(recIndex),
+                any(Instant.class),
+                eq(ActionType.WORKFLOW_DONE),
+                eq(elementId),
+                any(NotHandledDetails.class)
+        );
+    }
+
     private Campaign createCampaignWithMultipleChannels(List<ChannelType> channels) {
         List<WorkFlowEntity> workflow = channels.stream()
                 .map(channel -> createWorkflowEntity(channel, Set.of(RecipientTypeInt.PF)))

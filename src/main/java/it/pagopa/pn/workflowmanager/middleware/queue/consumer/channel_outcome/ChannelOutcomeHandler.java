@@ -2,8 +2,6 @@ package it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome;
 
 import it.pagopa.pn.workflowmanager.action.utils.TimelineUtils;
 import it.pagopa.pn.workflowmanager.action.utils.WorkflowUtils;
-import it.pagopa.pn.workflowmanager.dto.action.common.ActionType;
-import it.pagopa.pn.workflowmanager.dto.action.details.NotHandledDetails;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.RecipientTypeInt;
@@ -11,14 +9,11 @@ import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.trigger.ChannelEventTriggerDispatcher;
 import it.pagopa.pn.workflowmanager.models.internal.campaign.Campaign;
 import it.pagopa.pn.workflowmanager.models.internal.campaign.ChannelType;
-import it.pagopa.pn.workflowmanager.service.SchedulerService;
 import it.pagopa.pn.workflowmanager.service.TimelineService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
-
-import java.time.Instant;
 
 @Component
 @RequiredArgsConstructor
@@ -26,7 +21,6 @@ import java.time.Instant;
 public class ChannelOutcomeHandler {
     private final TimelineUtils timelineUtils;
     private final TimelineService timelineService;
-    private final SchedulerService schedulerService;
     private final ChannelEventTriggerDispatcher channelEventTriggerDispatcher;
     private final WorkflowUtils workflowUtils;
 
@@ -54,23 +48,11 @@ public class ChannelOutcomeHandler {
                 .map(f -> workflowUtils.isDesiredFeedback(campaign, normalizedChannelOutcome.getChannel(), f))
                 .orElse(false);
         if(isDesiredFeedbackForCampaign) {
-            scheduleWorkflowDone(normalizedChannelOutcome);
+            workflowUtils.scheduleWorkflowDone(iun, recIndex, normalizedChannelOutcome.getTimelineElementInternal().getElementId());
         } else if(classification.getCategory() == ChannelOutcomeCategory.FEEDBACK) {
             workflowUtils.advanceWorkflow(iun, recIndex, channel, campaign, recipientTypeInt);
         }
         // Se non è un feedback finale o un feedback desiderato, devo solo persistere l'elemento in timeline, senza avanzare il workflow.
-    }
-
-    private void scheduleWorkflowDone(NormalizedChannelOutcome normalizedChannelEvent) {
-        log.info("Scheduling workflow done for iun={} channel={}", normalizedChannelEvent.getIun(), normalizedChannelEvent.getChannel());
-        schedulerService.scheduleEvent(
-                normalizedChannelEvent.getIun(),
-                normalizedChannelEvent.getRecIndex(),
-                Instant.now(),
-                ActionType.WORKFLOW_DONE,
-                normalizedChannelEvent.getTimelineElementInternal().getElementId(),
-                new NotHandledDetails()
-        );
     }
 
     private void persistReachedElement(NormalizedChannelOutcome normalizedChannelOutcome, NotificationInt notificationInt) {
