@@ -4,7 +4,6 @@ import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.commons.log.PnAuditLogEvent;
 import it.pagopa.pn.commons.log.PnAuditLogEventType;
 import it.pagopa.pn.workflowmanager.action.utils.ChannelSenderUtils;
-import it.pagopa.pn.workflowmanager.action.utils.NotificationUtils;
 import it.pagopa.pn.workflowmanager.action.utils.PaperChannelUtils;
 import it.pagopa.pn.workflowmanager.dto.address.PhysicalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
@@ -36,9 +35,6 @@ class PaperChannelServiceImplTest {
     private PaperMessagesClient paperMessagesClient;
 
     @Mock
-    private NotificationUtils notificationUtils;
-
-    @Mock
     private PaperChannelUtils paperChannelUtils;
 
     @Mock
@@ -54,7 +50,6 @@ class PaperChannelServiceImplTest {
         MockitoAnnotations.openMocks(this);
         service = new PaperChannelServiceImpl(
                 paperMessagesClient,
-                notificationUtils,
                 auditLogService,
                 paperChannelUtils,
                 channelSenderUtils
@@ -72,7 +67,7 @@ class PaperChannelServiceImplTest {
         NotificationInt notification = createNotification(iun);
         PnAuditLogEvent auditLogEvent = mock(PnAuditLogEvent.class);
 
-        when(notificationUtils.retrieveAttachmentsToSend(any(), eq(recIndex)))
+        when(paperChannelUtils.retrieveAttachmentsToSend(any(), eq(recIndex)))
                 .thenReturn(List.of("attachment1"));
 
         when(auditLogService.buildAuditLogEvent(eq(iun), eq(recIndex), eq(PnAuditLogEventType.AUD_COM_PD_PREPARE),
@@ -111,7 +106,7 @@ class PaperChannelServiceImplTest {
         NotificationInt notification = createNotification(iun);
         PnAuditLogEvent auditLogEvent = mock(PnAuditLogEvent.class);
 
-        when(notificationUtils.retrieveAttachmentsToSend(any(), eq(recIndex)))
+        when(paperChannelUtils.retrieveAttachmentsToSend(any(), eq(recIndex)))
                 .thenReturn(List.of("attachment1"));
 
         when(auditLogService.buildAuditLogEvent(eq(iun), eq(recIndex), eq(PnAuditLogEventType.AUD_COM_PD_PREPARE),

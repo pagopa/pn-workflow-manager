@@ -5,12 +5,17 @@ import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.paperchannel
 import it.pagopa.pn.workflowmanager.config.PnWorkflowManagerConfigs;
 import it.pagopa.pn.workflowmanager.dto.address.PhysicalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
+import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationSenderInt;
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.CategorizedAttachmentsResultInt;
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.ResultFilterInt;
 import it.pagopa.pn.workflowmanager.dto.ext.paperchannel.AnalogDtoInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.ServiceLevelInt;
+import it.pagopa.pn.workflowmanager.models.internal.campaign.Campaign;
+import it.pagopa.pn.workflowmanager.models.internal.campaign.ChannelType;
+import it.pagopa.pn.workflowmanager.service.CampaignService;
 import it.pagopa.pn.workflowmanager.service.TimelineService;
+import it.pagopa.pn.workflowmanager.utils.SendAttachmentMode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -26,6 +31,9 @@ class PaperChannelUtilsTest {
     private TimelineUtils timelineUtils;
     private TimelineService timelineService;
     private PaperChannelUtils paperChannelUtils;
+    private AttachmentUtils attachmentUtils;
+    private CampaignService campaignService;
+    private WorkflowUtils workflowUtils;
 
     private static final String IUN = "TEST-IUN-001";
     private static final Integer REC_INDEX = 0;
@@ -37,7 +45,10 @@ class PaperChannelUtilsTest {
         pnWorkflowManagerConfigs = mock(PnWorkflowManagerConfigs.class);
         timelineUtils = mock(TimelineUtils.class);
         timelineService = mock(TimelineService.class);
-        paperChannelUtils = new PaperChannelUtils(pnWorkflowManagerConfigs, timelineUtils, timelineService);
+        attachmentUtils = mock(AttachmentUtils.class);
+        campaignService = mock(CampaignService.class);
+        workflowUtils = mock(WorkflowUtils.class);
+        paperChannelUtils = new PaperChannelUtils(pnWorkflowManagerConfigs, timelineUtils, timelineService, attachmentUtils, campaignService, workflowUtils);
     }
 
     @Test
@@ -118,7 +129,7 @@ class PaperChannelUtilsTest {
     }
 
     @Test
-    void getPaperChannelNotificationTimelineElement_Success() {
+    void getPrepareAnalogDeliveryTimelineElement_Success() {
         TimelineElementInternal expectedElement = TimelineElementInternal.builder()
                 .elementId(EVENT_ID)
                 .build();
@@ -126,21 +137,68 @@ class PaperChannelUtilsTest {
         when(timelineService.getTimelineElement(IUN, EVENT_ID))
                 .thenReturn(Optional.of(expectedElement));
 
-        TimelineElementInternal result = paperChannelUtils.getPaperChannelNotificationTimelineElement(IUN, EVENT_ID);
+        TimelineElementInternal result = paperChannelUtils.getPrepareAnalogDeliveryTimelineElement(IUN, EVENT_ID);
 
         assertEquals(expectedElement, result);
         verify(timelineService).getTimelineElement(IUN, EVENT_ID);
     }
 
     @Test
-    void getPaperChannelNotificationTimelineElement_NotFound_ThrowsException() {
+    void getPrepareAnalogDeliveryTimelineElement_NotFound_ThrowsException() {
         when(timelineService.getTimelineElement(IUN, EVENT_ID))
                 .thenReturn(Optional.empty());
 
         assertThrows(PnInternalException.class, () ->
-                paperChannelUtils.getPaperChannelNotificationTimelineElement(IUN, EVENT_ID)
+                paperChannelUtils.getPrepareAnalogDeliveryTimelineElement(IUN, EVENT_ID)
         );
 
         verify(timelineService).getTimelineElement(IUN, EVENT_ID);
     }
+
+    @Test
+    void retrieveAttachmentsToSend_shouldReturnAttachments() {
+        NotificationInt notification = mock(NotificationInt.class);
+        int recIndex = 0;
+        SendAttachmentMode sendAttachmentMode = mock(SendAttachmentMode.class);
+        List<String> expectedAttachments = List.of("attachment1.pdf", "attachment2.pdf");
+
+        when(attachmentUtils.retrieveAttachmentTypesToSend(notification, ChannelType.ANALOG))
+                .thenReturn(sendAttachmentMode);
+        when(attachmentUtils.retrieveAttachments(notification, recIndex, sendAttachmentMode, false))
+                .thenReturn(expectedAttachments);
+
+        List<String> result = paperChannelUtils.retrieveAttachmentsToSend(notification, recIndex);
+
+        assertEquals(expectedAttachments, result);
+        verify(attachmentUtils).retrieveAttachmentTypesToSend(notification, ChannelType.ANALOG);
+        verify(attachmentUtils).retrieveAttachments(notification, recIndex, sendAttachmentMode, false);
+        verifyNoMoreInteractions(attachmentUtils);
+    }
+
+    @Test
+    void scheduleTimeoutForAnalogChannel_shouldScheduleTimeoutCorrectly() {
+        String campaignId = "campaign-123";
+        String paId = "pa-456";
+        String iun = "IUN-789";
+        int recIndex = 0;
+
+        NotificationInt notification = mock(NotificationInt.class);
+        NotificationSenderInt sender = mock(NotificationSenderInt.class);
+        Campaign campaign = mock(Campaign.class);
+
+        when(notification.getCampaignId()).thenReturn(campaignId);
+        when(notification.getSender()).thenReturn(sender);
+        when(sender.getPaId()).thenReturn(paId);
+        when(notification.getIun()).thenReturn(iun);
+
+        when(campaignService.getCampaignByCampaignIdAndSenderId(campaignId, paId))
+                .thenReturn(campaign);
+
+        paperChannelUtils.scheduleTimeoutForAnalogChannel(notification, recIndex);
+
+        verify(campaignService).getCampaignByCampaignIdAndSenderId(campaignId, paId);
+        verify(workflowUtils).scheduleTimeoutForCurrentChannel(iun, recIndex, campaign, ChannelType.ANALOG);
+        verifyNoMoreInteractions(campaignService, workflowUtils);
+    }
+
 }

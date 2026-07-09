@@ -10,6 +10,9 @@ import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.ResultFilterInt;
 import it.pagopa.pn.workflowmanager.dto.ext.paperchannel.AnalogDtoInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.ServiceLevelInt;
+import it.pagopa.pn.workflowmanager.models.internal.campaign.Campaign;
+import it.pagopa.pn.workflowmanager.models.internal.campaign.ChannelType;
+import it.pagopa.pn.workflowmanager.service.CampaignService;
 import it.pagopa.pn.workflowmanager.service.TimelineService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +32,9 @@ public class PaperChannelUtils {
     private final PnWorkflowManagerConfigs pnWorkflowManagerConfigs;
     private final TimelineUtils timelineUtils;
     private final TimelineService timelineService;
+    private final AttachmentUtils attachmentUtils;
+    private final CampaignService campaignService;
+    private final WorkflowUtils workflowUtils;
 
     public PhysicalAddressInt getSenderAddress() {
         return pnWorkflowManagerConfigs.getPaperChannel().getSenderPhysicalAddress();
@@ -67,7 +73,7 @@ public class PaperChannelUtils {
                 .build();
     }
 
-    public TimelineElementInternal getPaperChannelNotificationTimelineElement(String iun, String eventId) {
+    public TimelineElementInternal getPrepareAnalogDeliveryTimelineElement(String iun, String eventId) {
         //Viene ottenuto l'oggetto di timeline
         Optional<TimelineElementInternal> timelineElement = timelineService.getTimelineElement(iun, eventId);
 
@@ -79,5 +85,16 @@ public class PaperChannelUtils {
         }
     }
 
+    public List<String> retrieveAttachmentsToSend(NotificationInt notification, int recIndex) {
+        return attachmentUtils.retrieveAttachments(
+                notification, recIndex,
+                attachmentUtils.retrieveAttachmentTypesToSend(notification, ChannelType.ANALOG),
+                false
+        );
+    }
 
+    public void scheduleTimeoutForAnalogChannel(NotificationInt notification, int recIndex) {
+        Campaign campaign = campaignService.getCampaignByCampaignIdAndSenderId(notification.getCampaignId(), notification.getSender().getPaId());
+        workflowUtils.scheduleTimeoutForCurrentChannel(notification.getIun(), recIndex, campaign, ChannelType.ANALOG);
+    }
 }

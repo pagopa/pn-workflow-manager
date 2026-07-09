@@ -5,7 +5,6 @@ import it.pagopa.pn.commons.log.PnAuditLogEvent;
 import it.pagopa.pn.commons.log.PnAuditLogEventType;
 import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.paperchannel.model.SendResponse;
 import it.pagopa.pn.workflowmanager.action.utils.ChannelSenderUtils;
-import it.pagopa.pn.workflowmanager.action.utils.NotificationUtils;
 import it.pagopa.pn.workflowmanager.action.utils.PaperChannelUtils;
 import it.pagopa.pn.workflowmanager.dto.address.PhysicalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
@@ -33,7 +32,6 @@ public class PaperChannelServiceImpl implements PaperChannelService {
     private static final Integer FIRST_ATTEMPT = 0;
 
     private final PaperMessagesClient paperMessagesClient;
-    private final NotificationUtils notificationUtils;
     private final AuditLogService auditLogService;
     private final PaperChannelUtils paperChannelUtils;
     private final ChannelSenderUtils channelSenderUtils;
@@ -51,7 +49,7 @@ public class PaperChannelServiceImpl implements PaperChannelService {
                 .recipientInt(recipient)
                 .paAddress(physicalAddressInt)
                 .analogType(PhysicalAddressInt.ANALOG_TYPE.SIMPLE_REGISTERED_LETTER)
-                .attachments(notificationUtils.retrieveAttachmentsToSend(notification, recIndex))
+                .attachments(paperChannelUtils.retrieveAttachmentsToSend(notification, recIndex))
                 .build();
         String msg = "Preparing simple registered letter notification {} to recipientIdx {} with requestId {}";
         PnAuditLogEvent auditLogEvent = buildAuditLogEvent(notification.getIun(), recIndex, requestId, PnAuditLogEventType.AUD_COM_PD_PREPARE, msg);
@@ -64,7 +62,7 @@ public class PaperChannelServiceImpl implements PaperChannelService {
                     requestId,
                     null,//Per l'invio di una notifica bonaria il dato serviceLevel è assente
                     FIRST_ATTEMPT,
-                    null,//Per l'invio di una notifica bonaria si presuppone che ci sia un solo invio, quindi verrà valorizzato solo con un secondo invio
+                    null,//Per l'invio di una notifica bonaria si presuppone che ci sia un solo invio
                     physicalAddressInt);
             auditLogEvent.generateSuccess("simple registered letter notification prepare successfully").log();
         } catch (Exception e) {

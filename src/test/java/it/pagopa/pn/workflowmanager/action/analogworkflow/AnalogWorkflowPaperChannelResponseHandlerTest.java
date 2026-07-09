@@ -74,7 +74,7 @@ class AnalogWorkflowPaperChannelResponseHandlerTest {
         PnAuditLogEvent auditLogEvent = mock(PnAuditLogEvent.class);
 
         when(notificationService.getInformalNotificationByIun(TEST_IUN)).thenReturn(notification);
-        when(paperChannelUtils.getPaperChannelNotificationTimelineElement(TEST_IUN, TEST_REQUEST_ID))
+        when(paperChannelUtils.getPrepareAnalogDeliveryTimelineElement(TEST_IUN, TEST_REQUEST_ID))
                 .thenReturn(timelineElement);
         when(auditLogService.buildAuditLogEvent(eq(TEST_IUN), eq(REC_INDEX),
                 eq(PnAuditLogEventType.AUD_COM_PD_PREPARE_RECEIVE), anyString(), eq(TEST_REQUEST_ID), anyString()))
@@ -97,6 +97,7 @@ class AnalogWorkflowPaperChannelResponseHandlerTest {
                 eq(PRODUCT_TYPE), anyList(), any(CategorizedAttachmentsResultInt.class));
         verify(auditLogEvent).generateSuccess(anyString());
         verify(auditLogEvent).log();
+        verify(paperChannelUtils).scheduleTimeoutForAnalogChannel(notification, REC_INDEX);
     }
 
     @Test
@@ -108,7 +109,7 @@ class AnalogWorkflowPaperChannelResponseHandlerTest {
         PnAuditLogEvent auditLogEvent = mock(PnAuditLogEvent.class);
 
         when(notificationService.getInformalNotificationByIun(TEST_IUN)).thenReturn(notification);
-        when(paperChannelUtils.getPaperChannelNotificationTimelineElement(TEST_IUN, TEST_REQUEST_ID))
+        when(paperChannelUtils.getPrepareAnalogDeliveryTimelineElement(TEST_IUN, TEST_REQUEST_ID))
                 .thenReturn(timelineElement);
         when(auditLogService.buildAuditLogEvent(eq(TEST_IUN), eq(REC_INDEX),
                 eq(PnAuditLogEventType.AUD_COM_PD_PREPARE_RECEIVE), anyString(), eq(TEST_REQUEST_ID), anyString()))
@@ -140,7 +141,7 @@ class AnalogWorkflowPaperChannelResponseHandlerTest {
         Throwable exception = new PnPaperChannelChangedCostException();
 
         when(notificationService.getInformalNotificationByIun(TEST_IUN)).thenReturn(notification);
-        when(paperChannelUtils.getPaperChannelNotificationTimelineElement(TEST_IUN, TEST_REQUEST_ID))
+        when(paperChannelUtils.getPrepareAnalogDeliveryTimelineElement(TEST_IUN, TEST_REQUEST_ID))
                 .thenReturn(timelineElement);
         when(auditLogService.buildAuditLogEvent(eq(TEST_IUN), eq(REC_INDEX),
                 eq(PnAuditLogEventType.AUD_COM_PD_PREPARE_RECEIVE), anyString(), eq(TEST_REQUEST_ID), anyString()))

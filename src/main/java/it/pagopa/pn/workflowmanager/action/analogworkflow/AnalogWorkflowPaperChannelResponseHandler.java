@@ -42,7 +42,7 @@ public class AnalogWorkflowPaperChannelResponseHandler {
         log.info("paperChannelPrepareResponseHandler response iun={} requestId={} statusCode={} statusDesc={} statusDate={}", response.getIun(), response.getRequestId(), response.getStatusCode(), response.getStatusDetail(), response.getStatusDateTime());
 
         NotificationInt notification = notificationService.getInformalNotificationByIun(response.getIun());
-        TimelineElementInternal timelineElementInternal = paperChannelUtils.getPaperChannelNotificationTimelineElement(response.getIun(), response.getRequestId());
+        TimelineElementInternal timelineElementInternal = paperChannelUtils.getPrepareAnalogDeliveryTimelineElement(response.getIun(), response.getRequestId());
 
         int recIndex = ((RecipientRelatedTimelineElementDetails)timelineElementInternal.getDetails()).getRecIndex();
         String requestId = response.getRequestId();
@@ -68,7 +68,7 @@ public class AnalogWorkflowPaperChannelResponseHandler {
         List<String> replacedF24AttachmentUrls = response.getReplacedF24AttachmentUrls();
         CategorizedAttachmentsResultInt categorizedAttachmentsResult = response.getCategorizedAttachmentsResult();
         //se era una prepare di un analog, procedo con la send della simpleregistered
-        if (isRegisteredLetterDelivery(timelineElementInternal)) {
+        if (isSimpleRegisteredLetterDelivery(timelineElementInternal)) {
             log.info("paperChannelPrepareResponseHandler prepare response is for simple registered letter, now registered letter can be sent iun={} requestId={} statusCode={} statusDesc={} statusDate={}", response.getIun(), response.getRequestId(), response.getStatusCode(), response.getStatusDetail(), response.getStatusDateTime());
             try {
                 String timelineId =
@@ -82,6 +82,7 @@ public class AnalogWorkflowPaperChannelResponseHandler {
                                 categorizedAttachmentsResult);
                 String auditlogmessage = timelineId == null ? "nothing send" : "generated timelineId=" + timelineId;
                 auditLogEvent.generateSuccess(auditlogmessage).log();
+                paperChannelUtils.scheduleTimeoutForAnalogChannel(notification, recIndex);
             } catch (PnPaperChannelChangedCostException e) {
                 String auditlogmessage = "send cost is different from prepare cost, need to re-do prepare";
                 this.paperChannelService.prepareSimpleRegisteredLetter(notification, recIndex,
@@ -95,7 +96,7 @@ public class AnalogWorkflowPaperChannelResponseHandler {
     }
 
     private void handlePrepareKO(PrepareEventInt response, TimelineElementInternal timelineElementInternal, String requestId) {
-        if (isRegisteredLetterDelivery(timelineElementInternal)) {
+        if (isSimpleRegisteredLetterDelivery(timelineElementInternal)) {
             log.error("paperChannelPrepareResponseHandler prepare response is for simple registered letter event is KO and is " +
                     "not expected iun={} requestId={} statusCode={} statusDesc={} statusDate={}", response.getIun(),
                     response.getRequestId(), response.getStatusCode(), response.getStatusDetail(), response.getStatusDateTime());
@@ -109,7 +110,7 @@ public class AnalogWorkflowPaperChannelResponseHandler {
         return auditLogService.buildAuditLogEvent(iun, recIndex, PnAuditLogEventType.AUD_COM_PD_PREPARE_RECEIVE, msg, requestId,statusCode);
     }
 
-    private boolean isRegisteredLetterDelivery(TimelineElementInternal timelineElementInternal) {
+    private boolean isSimpleRegisteredLetterDelivery(TimelineElementInternal timelineElementInternal) {
         return timelineElementInternal.getDetails() instanceof PrepareAnalogDeliveryDetailsInt sendAnalogDetails
                 && Objects.nonNull(sendAnalogDetails.getDeliveryType())
                 && sendAnalogDetails.getDeliveryType().equals(AnalogDeliveryTypeInt.RS);

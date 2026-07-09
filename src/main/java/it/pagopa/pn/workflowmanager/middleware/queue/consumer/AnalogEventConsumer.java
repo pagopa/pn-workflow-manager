@@ -16,6 +16,7 @@ import static it.pagopa.pn.workflowmanager.middleware.queue.consumer.utils.MdcUt
 @RequiredArgsConstructor
 public class AnalogEventConsumer {
     private final PaperChannelResponseHandler paperChannelResponseHandler;
+
     @SqsListener(value = "${pn.workflow-manager.topics.analog-queue}")
     public void workflowManagerAnalogEventConsumer(Message<PaperChannelUpdate> message) {
         setMdc(message);
