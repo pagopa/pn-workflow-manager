@@ -1,5 +1,6 @@
 package it.pagopa.pn.workflowmanager.action.utils;
 
+import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.paperchannel.model.SendResponse;
 import it.pagopa.pn.workflowmanager.config.PnWorkflowManagerConfigs;
 import it.pagopa.pn.workflowmanager.dto.address.PhysicalAddressInt;
@@ -135,6 +136,10 @@ class PaperChannelUtilsTest {
     void getPaperChannelNotificationTimelineElement_NotFound_ThrowsException() {
         when(timelineService.getTimelineElement(IUN, EVENT_ID))
                 .thenReturn(Optional.empty());
+
+        assertThrows(PnInternalException.class, () ->
+                paperChannelUtils.getPaperChannelNotificationTimelineElement(IUN, EVENT_ID)
+        );
 
         verify(timelineService).getTimelineElement(IUN, EVENT_ID);
     }
