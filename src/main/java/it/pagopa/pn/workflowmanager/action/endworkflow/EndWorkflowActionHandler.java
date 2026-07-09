@@ -29,7 +29,7 @@ public class EndWorkflowActionHandler {
     private final RecipientDeliveryAnalyzer recipientDeliveryAnalyzer;
     private final TimelineService timelineService;
 
-    public void endWorkflowAction(List<TimelineElementInternal> timelineElements,String iun, int recIndex, String timelineId) {
+    public void endWorkflowAction(List<TimelineElementInternal> timelineElements, String iun, int recIndex, String timelineId) {
         log.info("End informal notification workflow for recipient - iun {} id {}", iun, recIndex);
 
         NotificationInt notificationInt = notificationService.getInformalNotificationByIun(iun);

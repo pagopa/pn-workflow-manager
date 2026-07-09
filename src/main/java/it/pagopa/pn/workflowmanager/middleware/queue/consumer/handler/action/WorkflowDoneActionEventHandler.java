@@ -4,6 +4,7 @@ import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.actionmanage
 import it.pagopa.pn.workflowmanager.action.doneworkflow.WorkflowDoneActionHandler;
 import it.pagopa.pn.workflowmanager.action.utils.TimelineUtils;
 import it.pagopa.pn.workflowmanager.dto.action.common.Action;
+import it.pagopa.pn.workflowmanager.dto.action.details.WorkflowDoneDetails;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.router.SupportedEventType;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.utils.MdcUtils;
@@ -43,7 +44,9 @@ public class WorkflowDoneActionEventHandler extends AbstractActionEventHandler {
                             timelineElements,
                             action.getIun(),
                             action.getRecipientIndex(),
-                            action.getTimelineId())
+                            action.getTimelineId(),
+                            (WorkflowDoneDetails) action.getDetails()
+                    )
             );
             log.logEndingProcess(processName);
         } catch (Exception ex) {

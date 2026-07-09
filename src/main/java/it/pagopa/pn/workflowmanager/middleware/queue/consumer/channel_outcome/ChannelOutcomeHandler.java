@@ -48,7 +48,7 @@ public class ChannelOutcomeHandler {
                 .map(f -> workflowUtils.isDesiredFeedback(campaign, normalizedChannelOutcome.getChannel(), f))
                 .orElse(false);
         if(isDesiredFeedbackForCampaign) {
-            workflowUtils.scheduleWorkflowDone(iun, recIndex, normalizedChannelOutcome.getTimelineElementInternal().getElementId());
+            workflowUtils.scheduleWorkflowDone(iun, recIndex, normalizedChannelOutcome.getTimelineElementInternal().getElementId(), classification.getSatisfiedDesiredFeedback().get());
         } else if(classification.getCategory() == ChannelOutcomeCategory.FEEDBACK) {
             workflowUtils.advanceWorkflow(iun, recIndex, channel, campaign, recipientTypeInt);
         }
