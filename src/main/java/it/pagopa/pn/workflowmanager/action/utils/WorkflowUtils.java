@@ -127,6 +127,18 @@ public class WorkflowUtils {
         );
     }
 
+    public void scheduleWorkflowDone(String iun,  int recIndex, String elementId) {
+        log.info("Scheduling workflow done for iun={} recIndex={} triggered by element={}", iun, recIndex, elementId);
+        schedulerService.scheduleEvent(
+                iun,
+                recIndex,
+                Instant.now(),
+                ActionType.WORKFLOW_DONE,
+                elementId,
+                new NotHandledDetails()
+        );
+    }
+
     public record NextChannel(ChannelType channel, int stepIndex) {
     }
 }
