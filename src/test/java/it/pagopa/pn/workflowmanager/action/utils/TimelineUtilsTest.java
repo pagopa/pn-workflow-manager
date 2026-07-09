@@ -20,6 +20,7 @@ import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineEventId;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.*;
 import it.pagopa.pn.workflowmanager.models.internal.campaign.ChannelType;
+import it.pagopa.pn.workflowmanager.models.internal.campaign.DesiredFeedbackType;
 import it.pagopa.pn.workflowmanager.service.TimelineService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -199,33 +200,6 @@ class TimelineUtilsTest {
     }
 
     @Test
-    void buildWorkflowDoneUnreachedTimelineElement() {
-        // Arrange
-        NotificationInt notification = createNotification();
-
-        // Act
-        TimelineElementInternal actual = timelineUtils.buildWorkflowDoneUnreachedTimelineElement(
-                TEST_REC_INDEX, notification, TEST_EVENT_ID, TEST_SOURCE_TIMELINE_ID);
-
-        // Assert
-        Assertions.assertAll(
-                () -> Assertions.assertEquals(TEST_IUN, actual.getIun()),
-                () -> Assertions.assertEquals(WORKFLOW_DONE_UNREACHED, actual.getCategory()),
-                () -> Assertions.assertEquals(TEST_EVENT_ID, actual.getElementId()),
-                () -> Assertions.assertEquals(TEST_PA_ID, actual.getPaId()),
-                () -> assertNotNull(actual.getTimestamp()),
-                () -> assertNotNull(actual.getDetails()),
-                () -> Assertions.assertInstanceOf(WorkflowDoneUnreachedDetailsInt.class, actual.getDetails())
-        );
-
-        WorkflowDoneUnreachedDetailsInt details = (WorkflowDoneUnreachedDetailsInt) actual.getDetails();
-        Assertions.assertAll(
-                () -> Assertions.assertEquals(TEST_REC_INDEX, details.getRecIndex()),
-                () -> Assertions.assertEquals(TEST_SOURCE_TIMELINE_ID, details.getSourceElementId())
-        );
-    }
-
-    @Test
     void getWorkflowDoneUnreachedTimelineElementId() {
         // Act
         String result = TimelineUtils.getWorkflowDoneUnreachedTimelineElementId(TEST_REC_INDEX, TEST_IUN);
@@ -244,24 +218,17 @@ class TimelineUtilsTest {
 
         // Act
         TimelineElementInternal actual = timelineUtils.buildWorkflowDoneReachedTimelineElement(
-                TEST_REC_INDEX, notification, TEST_EVENT_ID, TEST_SOURCE_TIMELINE_ID);
+                TEST_REC_INDEX, notification, TEST_EVENT_ID, TEST_SOURCE_TIMELINE_ID, DesiredFeedbackType.SENT);
 
         // Assert
-        Assertions.assertAll(
-                () -> Assertions.assertEquals(TEST_IUN, actual.getIun()),
-                () -> Assertions.assertEquals(WORKFLOW_DONE_REACHED, actual.getCategory()),
-                () -> Assertions.assertEquals(TEST_EVENT_ID, actual.getElementId()),
-                () -> Assertions.assertEquals(TEST_PA_ID, actual.getPaId()),
-                () -> assertNotNull(actual.getTimestamp()),
-                () -> assertNotNull(actual.getDetails()),
-                () -> Assertions.assertInstanceOf(WorkflowDoneReachedDetailsInt.class, actual.getDetails())
-        );
-
-        WorkflowDoneReachedDetailsInt details = (WorkflowDoneReachedDetailsInt) actual.getDetails();
-        Assertions.assertAll(
-                () -> Assertions.assertEquals(TEST_REC_INDEX, details.getRecIndex()),
-                () -> Assertions.assertEquals(TEST_SOURCE_TIMELINE_ID, details.getSourceElementId())
-        );
+        Assertions.assertEquals("TEST-IUN-001", actual.getIun());
+        Assertions.assertEquals(TEST_PA_ID, actual.getPaId());
+        Assertions.assertEquals(TimelineElementCategoryInt.WORKFLOW_DONE_REACHED, actual.getCategory());
+        assertNotNull(actual.getDetails());
+        WorkflowDoneReachedDetailsInt detailsInt = (WorkflowDoneReachedDetailsInt) actual.getDetails();
+        Assertions.assertEquals(TEST_REC_INDEX, detailsInt.getRecIndex());
+        Assertions.assertEquals(TEST_SOURCE_TIMELINE_ID, detailsInt.getSourceElementId());
+        Assertions.assertEquals(DesiredFeedbackType.SENT.name(), detailsInt.getCompletionFeedback());
     }
 
     @Test
@@ -450,33 +417,24 @@ class TimelineUtilsTest {
     }
 
     @Test
-    void buildWorkflowDoneReachedTimelineElement_shouldHandleDifferentSourceTimelineIds() {
+    void buildWorkflowDoneUnreachedTimelineElement() {
         // Arrange
         String customSourceId = "CUSTOM-SOURCE-ID";
         NotificationInt notification = createNotification();
 
         // Act
-        TimelineElementInternal result = timelineUtils.buildWorkflowDoneReachedTimelineElement(
-                TEST_REC_INDEX, notification, TEST_EVENT_ID, customSourceId);
+        TimelineElementInternal actual = timelineUtils.buildWorkflowDoneUnreachedTimelineElement(
+                TEST_REC_INDEX, notification, TEST_EVENT_ID, customSourceId, DesiredFeedbackType.SENT);
 
         // Assert
-        WorkflowDoneReachedDetailsInt details = (WorkflowDoneReachedDetailsInt) result.getDetails();
-        Assertions.assertEquals(customSourceId, details.getSourceElementId());
-    }
-
-    @Test
-    void buildWorkflowDoneUnreachedTimelineElement_shouldHandleDifferentSourceTimelineIds() {
-        // Arrange
-        String customSourceId = "CUSTOM-SOURCE-ID";
-        NotificationInt notification = createNotification();
-
-        // Act
-        TimelineElementInternal result = timelineUtils.buildWorkflowDoneUnreachedTimelineElement(
-                TEST_REC_INDEX, notification, TEST_EVENT_ID, customSourceId);
-
-        // Assert
-        WorkflowDoneUnreachedDetailsInt details = (WorkflowDoneUnreachedDetailsInt) result.getDetails();
-        Assertions.assertEquals(customSourceId, details.getSourceElementId());
+        Assertions.assertEquals("TEST-IUN-001", actual.getIun());
+        Assertions.assertEquals(TEST_PA_ID, actual.getPaId());
+        Assertions.assertEquals(WORKFLOW_DONE_UNREACHED, actual.getCategory());
+        assertNotNull(actual.getDetails());
+        WorkflowDoneUnreachedDetailsInt detailsInt = (WorkflowDoneUnreachedDetailsInt) actual.getDetails();
+        Assertions.assertEquals(TEST_REC_INDEX, detailsInt.getRecIndex());
+        Assertions.assertEquals(customSourceId, detailsInt.getSourceElementId());
+        Assertions.assertEquals(DesiredFeedbackType.SENT.name(), detailsInt.getCompletionFeedback());
     }
 
     @Test

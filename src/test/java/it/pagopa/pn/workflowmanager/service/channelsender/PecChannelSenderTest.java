@@ -73,7 +73,7 @@ class PecChannelSenderTest {
                 .sentAt(Instant.parse("2026-07-02T10:00:00Z"))
                 .sender(NotificationSenderInt.builder().paDenomination("PA").build())
                 .documents(List.of(NotificationDocumentInt.builder()
-                        .ref(NotificationDocumentInt.Ref.builder().key("doc1").build())
+                        .ref(NotificationDocumentInt.Ref.builder().build())
                         .build()))
                 .recipients(List.of(recipient))
                 .build();
@@ -134,7 +134,7 @@ class PecChannelSenderTest {
         assertEquals("destinatario@pec.it", capturedDigitalAddress.getAddress());
         assertEquals(InformalDigitalAddressInt.INFORMAL_DIGITAL_ADDRESS_TYPE.PEC, capturedDigitalAddress.getType());
 
-        verify(workflowUtils).scheduleTimeoutForCurrentChannel("IUN123", 0, 0, campaign, ChannelType.PEC);
+        verify(workflowUtils).scheduleTimeoutForCurrentChannel("IUN123", 0, campaign, ChannelType.PEC);
     }
 }
 

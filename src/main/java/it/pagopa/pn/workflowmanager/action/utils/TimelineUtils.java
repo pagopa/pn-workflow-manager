@@ -18,6 +18,7 @@ import it.pagopa.pn.workflowmanager.dto.timeline.TimelineEventId;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineEventIdBuilder;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.*;
 import it.pagopa.pn.workflowmanager.models.internal.campaign.ChannelType;
+import it.pagopa.pn.workflowmanager.models.internal.campaign.DesiredFeedbackType;
 import it.pagopa.pn.workflowmanager.service.TimelineService;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -207,12 +208,13 @@ public class TimelineUtils {
     }
 
     public TimelineElementInternal buildWorkflowDoneUnreachedTimelineElement(Integer recIndex, NotificationInt notification,
-                                                                              String eventId, String sourceTimelineId) {
+                                                                             String eventId, String sourceTimelineId, DesiredFeedbackType completionFeedback) {
         log.debug("buildWorkflowDoneUnreachedTimelineElement - IUN={} and id={}", notification.getIun(), recIndex);
 
         WorkflowDoneUnreachedDetailsInt details = WorkflowDoneUnreachedDetailsInt.builder()
                 .recIndex(recIndex)
                 .sourceElementId(sourceTimelineId)
+                .completionFeedback(completionFeedback.name())
                 .build();
 
 
@@ -228,12 +230,13 @@ public class TimelineUtils {
     }
 
     public TimelineElementInternal buildWorkflowDoneReachedTimelineElement(Integer recIndex, NotificationInt notification,
-                                                                            String eventId, String sourceTimelineId) {
+                                                                            String eventId, String sourceTimelineId, DesiredFeedbackType completionFeedback) {
         log.debug("buildWorkflowDoneReachedTimelineElement - IUN={} and id={}", notification.getIun(), recIndex);
 
         WorkflowDoneReachedDetailsInt details = WorkflowDoneReachedDetailsInt.builder()
                 .recIndex(recIndex)
                 .sourceElementId(sourceTimelineId)
+                .completionFeedback(completionFeedback.name())
                 .build();
 
 

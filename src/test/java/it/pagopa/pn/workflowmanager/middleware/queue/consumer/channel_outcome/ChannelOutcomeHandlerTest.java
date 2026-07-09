@@ -127,7 +127,7 @@ class ChannelOutcomeHandlerTest {
         channelOutcomeHandler.handleOutcome(outcome, notification, campaign);
 
         // Assert
-        verify(workflowUtils).scheduleWorkflowDone(iun, recIndex, elementId);
+        verify(workflowUtils).scheduleWorkflowDone(iun, recIndex, elementId, desiredFeedback);
         verify(workflowUtils, never()).advanceWorkflow(iun, recIndex, channel, campaign, recipientType);
     }
 
@@ -143,7 +143,7 @@ class ChannelOutcomeHandlerTest {
 
         // Assert
         verify(workflowUtils).advanceWorkflow(iun, recIndex, channel, campaign, recipientType);
-        verify(workflowUtils, never()).scheduleWorkflowDone(iun, recIndex, elementId);
+        verify(workflowUtils, never()).scheduleWorkflowDone(eq(iun), eq(recIndex), eq(elementId), any());
     }
 
     @Test
