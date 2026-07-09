@@ -3,6 +3,7 @@ package it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.template
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.templateengine.api.TemplateApi;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.templateengine.model.InformalCommunication;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.templateengine.model.InformalEmailCommunicationSubject;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.templateengine.model.InformalSmsCommunication;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.templateengine.model.LanguageEnum;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,12 +29,14 @@ class TemplateEngineClientImplTest {
     private LanguageEnum language;
     private InformalCommunication informalCommunication;
     private InformalEmailCommunicationSubject informalEmailCommunicationSubject;
+    private InformalSmsCommunication informalSmsCommunication;
 
     @BeforeEach
     void setUp() {
         language = LanguageEnum.IT;
         informalCommunication = new InformalCommunication();
         informalEmailCommunicationSubject = new InformalEmailCommunicationSubject();
+        informalSmsCommunication = new InformalSmsCommunication();
     }
 
     @Test
@@ -259,5 +262,50 @@ class TemplateEngineClientImplTest {
         assertEquals("external service error", thrown.getMessage());
 
         verify(templateApi).informalAnalogCommunication(language, informalCommunication);
+    }
+
+    @Test
+    void smsTemplate_shouldReturnTemplate_whenSmsTemplateApiRespondsSuccessfully() {
+        // given
+        String expectedTemplate = "SMS template content";
+        when(templateApi.informalSmsCommunication(language, informalSmsCommunication))
+                .thenReturn(expectedTemplate);
+
+        // when
+        String result = templateEngineClient.smsTemplate(language, informalSmsCommunication);
+
+        // then
+        assertEquals(expectedTemplate, result);
+        verify(templateApi).informalSmsCommunication(language, informalSmsCommunication);
+        verifyNoMoreInteractions(templateApi);
+    }
+
+    @Test
+    void smsTemplate_shouldReturnNull_whenSmsTemplateApiReturnsNull() {
+        // given
+        when(templateApi.informalSmsCommunication(language, informalSmsCommunication))
+                .thenReturn(null);
+
+        // when
+        String result = templateEngineClient.smsTemplate(language, informalSmsCommunication);
+
+        // then
+        assertNull(result);
+        verify(templateApi).informalSmsCommunication(language, informalSmsCommunication);
+    }
+
+    @Test
+    void smsTemplate_shouldPropagateException_whenSmsTemplateApiThrows() {
+        // given
+        RuntimeException expectedException = new RuntimeException("external service error");
+        when(templateApi.informalSmsCommunication(language, informalSmsCommunication))
+                .thenThrow(expectedException);
+
+        // when / then
+        RuntimeException thrown = assertThrows(RuntimeException.class,
+                () -> templateEngineClient.smsTemplate(language, informalSmsCommunication));
+        assertEquals("external service error", thrown.getMessage());
+
+        verify(templateApi).informalSmsCommunication(language, informalSmsCommunication);
     }
 }
