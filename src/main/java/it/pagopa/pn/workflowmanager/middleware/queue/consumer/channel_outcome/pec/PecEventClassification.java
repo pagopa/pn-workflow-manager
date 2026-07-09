@@ -17,7 +17,7 @@ import java.util.Optional;
 public enum PecEventClassification implements ChannelOutcomeClassification {
     // codici in arrivo da ext-Channel (C) con/senza busta indica se lo stato contiene allegati
     C000(false, ChannelOutcomeCategory.PROGRESS, null), // COMUNICAZIONE CON SERVER PEC AVVENUTA  (senza busta)
-    C001(false, ChannelOutcomeCategory.PROGRESS, null), // StatusPec.ACCETTAZIONE  (con busta)
+    C001(false, ChannelOutcomeCategory.PROGRESS, DesiredFeedbackType.SENT), // StatusPec.ACCETTAZIONE  (con busta)
     C002(false, ChannelOutcomeCategory.FEEDBACK, null), // StatusPec.NON_ACCETTAZIONE  (con busta)
     C003(true, ChannelOutcomeCategory.FEEDBACK, DesiredFeedbackType.RECEIVED), // StatusPec.AVVENUTA_CONSEGNA  (con busta)
     C004(false, ChannelOutcomeCategory.FEEDBACK, null), // StatusPec.ERRORE_CONSEGNA (con busta)

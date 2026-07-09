@@ -12,7 +12,7 @@ import java.util.Optional;
 @Getter
 public enum EmailEventClassification implements ChannelOutcomeClassification {
     M003(false, ChannelOutcomeCategory.PROGRESS, DesiredFeedbackType.SENT),
-    M004(true, ChannelOutcomeCategory.PROGRESS, null),
+    M004(true, ChannelOutcomeCategory.PROGRESS, DesiredFeedbackType.RECEIVED),
     M005(false, ChannelOutcomeCategory.FEEDBACK, null),
     M006(false, ChannelOutcomeCategory.FEEDBACK, null),
     M008(false, ChannelOutcomeCategory.FEEDBACK, null),

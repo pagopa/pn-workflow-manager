@@ -35,7 +35,7 @@ class EmailEventClassificationTest {
 
     @ParameterizedTest(name = "Input: {0}")
     @ValueSource(strings = {
-            "M004", "M005", "M006", "M008", "M009", "M010", "M011"
+            "M005", "M006", "M008", "M009", "M010", "M011"
     })
     void shouldReturnEmptyOptionalWhenDesiredFeedbackIsNull(String enumName) {
         // Act
@@ -45,10 +45,15 @@ class EmailEventClassificationTest {
         assertFalse(classification.getSatisfiedDesiredFeedback().isPresent());
     }
 
-    @Test
-    void shouldReturnCorrectDesiredFeedbackWhenPresent() {
+
+    @ParameterizedTest(name = "Tipo {0} -> desiredFeedback={1}")
+    @CsvSource({
+            "M003, SENT",
+            "M004, RECEIVED"
+    })
+    void shouldReturnCorrectDesiredFeedbackWhenPresent(EmailEventClassification classification, DesiredFeedbackType expectedFeedback) {
         // Act & Assert
-        assertEquals(Optional.of(DesiredFeedbackType.SENT), EmailEventClassification.M003.getSatisfiedDesiredFeedback());
+        assertEquals(Optional.of(expectedFeedback), classification.getSatisfiedDesiredFeedback());
     }
 
     @ParameterizedTest(name = "Input: {0}")

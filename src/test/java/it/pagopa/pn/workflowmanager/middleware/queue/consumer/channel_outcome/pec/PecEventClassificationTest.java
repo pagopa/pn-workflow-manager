@@ -40,8 +40,8 @@ class PecEventClassificationTest {
 
         @ParameterizedTest(name = "Input: {0}")
         @ValueSource(strings = {
-                "C000", "C001", "C002", "C004", "C005",
-                "C006", "C007", "C008", "C009", "C010", "C011"
+                "C000", "C002", "C004", "C005", "C006",
+                "C007", "C008", "C009", "C010", "C011"
         })
         void shouldReturnEmptyOptionalWhenDesiredFeedbackIsNull(String enumName) {
             // Act
@@ -51,10 +51,14 @@ class PecEventClassificationTest {
             assertFalse(classification.getSatisfiedDesiredFeedback().isPresent());
         }
 
-        @Test
-        void shouldReturnCorrectDesiredFeedbackWhenPresent() {
+        @ParameterizedTest(name = "Tipo {0} -> desiredFeedback={1}")
+        @CsvSource({
+                "C001, SENT",
+                "C003, RECEIVED"
+        })
+        void shouldReturnCorrectDesiredFeedbackWhenPresent(PecEventClassification classification, DesiredFeedbackType expectedFeedback) {
             // Act & Assert
-            assertEquals(Optional.of(DesiredFeedbackType.RECEIVED), PecEventClassification.C003.getSatisfiedDesiredFeedback());
+            assertEquals(Optional.of(expectedFeedback), classification.getSatisfiedDesiredFeedback());
         }
 
         @ParameterizedTest(name = "Input: {0}")
