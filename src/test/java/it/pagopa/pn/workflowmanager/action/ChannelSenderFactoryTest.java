@@ -3,6 +3,7 @@ package it.pagopa.pn.workflowmanager.action;
 import it.pagopa.pn.workflowmanager.action.start_workflow.EmailChannelSender;
 import it.pagopa.pn.workflowmanager.action.start_workflow.IoChannelSender;
 import it.pagopa.pn.workflowmanager.action.start_workflow.PecChannelSender;
+import it.pagopa.pn.workflowmanager.action.start_workflow.SmsChannelSender;
 import it.pagopa.pn.workflowmanager.models.internal.campaign.ChannelType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,6 +16,7 @@ class ChannelSenderFactoryTest {
     private IoChannelSender ioChannelSender;
     private PecChannelSender pecChannelSender;
     private EmailChannelSender emailChannelSender;
+    private SmsChannelSender smsChannelSender;
     private ChannelSenderFactory channelSenderFactory;
 
     @BeforeEach
@@ -22,7 +24,8 @@ class ChannelSenderFactoryTest {
         ioChannelSender = mock(IoChannelSender.class);
         emailChannelSender = mock(EmailChannelSender.class);
         pecChannelSender = mock(PecChannelSender.class);
-        channelSenderFactory = new ChannelSenderFactory(ioChannelSender, emailChannelSender, pecChannelSender);
+        smsChannelSender = mock(SmsChannelSender.class);
+        channelSenderFactory = new ChannelSenderFactory(ioChannelSender, emailChannelSender, pecChannelSender, smsChannelSender);
     }
 
     @Test
@@ -46,5 +49,12 @@ class ChannelSenderFactoryTest {
         ChannelSender result = channelSenderFactory.getChannelSender(ChannelType.PEC);
 
         assertSame(pecChannelSender, result);
+    }
+
+    @Test
+    void shouldReturnSmsChannelSender_whenChannelIsSms() {
+        ChannelSender result = channelSenderFactory.getChannelSender(ChannelType.SMS);
+
+        assertSame(smsChannelSender, result);
     }
 }
