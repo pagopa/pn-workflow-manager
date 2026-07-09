@@ -2,6 +2,7 @@ package it.pagopa.pn.workflowmanager.middleware.queue.consumer;
 
 import io.awspring.cloud.sqs.annotation.SqsListener;
 import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.paperchannel.model.PaperChannelUpdate;
+import it.pagopa.pn.workflowmanager.middleware.responsehandler.PaperChannelResponseHandler;
 import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
@@ -14,6 +15,7 @@ import static it.pagopa.pn.workflowmanager.middleware.queue.consumer.utils.MdcUt
 @CustomLog
 @RequiredArgsConstructor
 public class AnalogEventConsumer {
+    private final PaperChannelResponseHandler paperChannelResponseHandler;
     @SqsListener(value = "${pn.workflow-manager.topics.analog-queue}")
     public void workflowManagerAnalogEventConsumer(Message<PaperChannelUpdate> message) {
         setMdc(message);
@@ -21,7 +23,7 @@ public class AnalogEventConsumer {
         try {
             log.info("Handle action workflowManagerAnalogEventsConsumer, with content {}", message);
             log.logStartingProcess(processName);
-
+            paperChannelResponseHandler.paperChannelResponseReceiver(message.getPayload());
             log.logEndingProcess(processName);
         } catch (Exception ex) {
             log.logEndingProcess(processName, false, ex.getMessage() , ex);
