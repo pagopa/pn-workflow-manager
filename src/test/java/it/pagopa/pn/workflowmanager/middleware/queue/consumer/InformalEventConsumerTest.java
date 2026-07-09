@@ -1,6 +1,7 @@
 package it.pagopa.pn.workflowmanager.middleware.queue.consumer;
 
 import it.pagopa.pn.api.dto.events.PnDeliveryNotificationViewedEvent;
+import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.handler.NotificationViewedHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,6 +11,8 @@ import org.springframework.messaging.support.MessageBuilder;
 
 import java.time.Instant;
 
+import static it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCodes.ERROR_CODE_WORKFLOWMANAGER_INVALID_EVENT_RECEIVED;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
@@ -68,22 +71,16 @@ class InformalEventConsumerTest {
     }
 
     @Test
-    void handleMessage_withNullPayload_buildsEmptyNotificationViewedInt() {
-        // when
-        consumer.workflowManagerInformalEventConsumer(buildMessage(null));
-
-        // then
-        verify(notificationViewedHandler).handleViewNotification(argThat(n ->
-                n.getIun() == null
-                && n.getRecipientIndex() == null
-                && n.getViewedDate() == null
-                && n.getSourceChannel() == null
-                && n.getSourceChannelDetails() == null
-        ));
+    void handleMessage_withNullPayload_throwsException() {
+        // when / then
+        PnInternalException exception = assertThrows(PnInternalException.class,
+                () -> consumer.workflowManagerInformalEventConsumer(buildMessage(null)));
+        assertEquals(ERROR_CODE_WORKFLOWMANAGER_INVALID_EVENT_RECEIVED, exception.getProblem().getErrors().getFirst().getCode());
+        verifyNoInteractions(notificationViewedHandler);
     }
 
     @Test
-    void handleMessage_withNullViewedDate_viewedDateIsNull() {
+    void handleMessage_withNullViewedDate_throwsException() {
         // given
         PnDeliveryNotificationViewedEvent.Payload payload = PnDeliveryNotificationViewedEvent.Payload.builder()
                 .iun("ABCD-EFGH-0003-202401-X-1")
@@ -92,13 +89,11 @@ class InformalEventConsumerTest {
                 .sourceChannel("APP_IO")
                 .build();
 
-        // when
-        consumer.workflowManagerInformalEventConsumer(buildMessage(payload));
-
-        // then
-        verify(notificationViewedHandler).handleViewNotification(argThat(n ->
-                "ABCD-EFGH-0003-202401-X-1".equals(n.getIun()) && n.getViewedDate() == null
-        ));
+        // when / then
+        PnInternalException exception = assertThrows(PnInternalException.class,
+                () -> consumer.workflowManagerInformalEventConsumer(buildMessage(payload)));
+        assertEquals(ERROR_CODE_WORKFLOWMANAGER_INVALID_EVENT_RECEIVED, exception.getProblem().getErrors().getFirst().getCode());
+        verifyNoInteractions(notificationViewedHandler);
     }
 
     @Test
@@ -122,9 +117,8 @@ class InformalEventConsumerTest {
     }
 
     @Test
-    void handleMessage_withNullIun_skipsAddMdcAndHandlerIsCalledSuccessfully() {
-        // given - payload con iun null: la condizione (iun != null && recipientIndex != null) è false,
-        // addIunAndRecIndexToMdc non viene invocato e non si genera NPE
+    void handleMessage_withNullIun_throwsException() {
+        // given
         PnDeliveryNotificationViewedEvent.Payload payload = PnDeliveryNotificationViewedEvent.Payload.builder()
                 .iun(null)
                 .recipientIndex(0)
@@ -132,10 +126,29 @@ class InformalEventConsumerTest {
                 .sourceChannel("WEB")
                 .build();
 
-        // when / then - nessuna eccezione, l'handler viene comunque chiamato
+        // when / then
+        PnInternalException exception = assertThrows(PnInternalException.class,
+                () -> consumer.workflowManagerInformalEventConsumer(buildMessage(payload)));
+        assertEquals(ERROR_CODE_WORKFLOWMANAGER_INVALID_EVENT_RECEIVED, exception.getProblem().getErrors().getFirst().getCode());
+        verifyNoInteractions(notificationViewedHandler);
+    }
+
+    @Test
+    void handleMessage_withZeroRecipientIndex_isValid() {
+        // given - recipientIndex = 0 is valid (the builder validates >= 0)
+        PnDeliveryNotificationViewedEvent.Payload payload = PnDeliveryNotificationViewedEvent.Payload.builder()
+                .iun("ABCD-EFGH-0006-202401-X-1")
+                .recipientIndex(0)  // recipientIndex = 0 is the minimum valid value
+                .viewedDate(Instant.now())
+                .sourceChannel("WEB")
+                .build();
+
+        // when
         consumer.workflowManagerInformalEventConsumer(buildMessage(payload));
+
+        // then - no exception thrown, handler was invoked successfully
         verify(notificationViewedHandler).handleViewNotification(argThat(n ->
-                n.getIun() == null && n.getRecipientIndex() == 0
+                "ABCD-EFGH-0006-202401-X-1".equals(n.getIun()) && n.getRecipientIndex() == 0
         ));
     }
 
@@ -146,6 +159,7 @@ class InformalEventConsumerTest {
                 .iun("ABCD-EFGH-0005-202401-X-1")
                 .recipientIndex(0)
                 .viewedDate(Instant.now())
+                .sourceChannel("WEB")
                 .build();
         doThrow(new RuntimeException("handler error"))
                 .when(notificationViewedHandler).handleViewNotification(any());

@@ -2,8 +2,7 @@ package it.pagopa.pn.workflowmanager.middleware.queue.consumer.handler;
 
 import it.pagopa.pn.commons.log.PnAuditLogEventType;
 import it.pagopa.pn.workflowmanager.action.utils.TimelineUtils;
-import it.pagopa.pn.workflowmanager.dto.action.common.ActionType;
-import it.pagopa.pn.workflowmanager.dto.action.details.NotHandledDetails;
+import it.pagopa.pn.workflowmanager.action.utils.WorkflowUtils;
 import it.pagopa.pn.workflowmanager.dto.event.NotificationViewedInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
@@ -13,7 +12,6 @@ import it.pagopa.pn.workflowmanager.models.internal.campaign.Campaign;
 import it.pagopa.pn.workflowmanager.service.AuditLogService;
 import it.pagopa.pn.workflowmanager.service.CampaignService;
 import it.pagopa.pn.workflowmanager.service.NotificationService;
-import it.pagopa.pn.workflowmanager.service.SchedulerService;
 import it.pagopa.pn.workflowmanager.service.TimelineService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,11 +24,13 @@ import java.util.List;
 import java.util.Optional;
 
 import static it.pagopa.pn.workflowmanager.action.utils.TimelineUtils.getInformalNotificationViewedTimelineElementId;
-import static it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt.INFORMAL_NOTIFICATION_VIEWED;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -45,9 +45,9 @@ class NotificationViewedHandlerTest {
     @Mock
     private CampaignService campaignService;
     @Mock
-    private SchedulerService schedulerService;
-    @Mock
     private AuditLogService auditLogService;
+    @Mock
+    private WorkflowUtils workflowUtils;
 
     @InjectMocks
     private NotificationViewedHandler handler;
@@ -61,15 +61,16 @@ class NotificationViewedHandlerTest {
                 .viewedDate(Instant.now())
                 .build();
 
-        when(timelineService.getTimelineElementForSpecificRecipient("IUN_1", 0, INFORMAL_NOTIFICATION_VIEWED))
+        String viewedTimelineId = getInformalNotificationViewedTimelineElementId(0, "IUN_1", "WEB");
+        when(timelineService.getTimelineElement("IUN_1", viewedTimelineId))
                 .thenReturn(Optional.of(TimelineElementInternal.builder().build()));
 
         handler.handleViewNotification(payload);
 
-        verify(notificationService, never()).getInformalNotificationByIun(any());
+        verifyNoInteractions(notificationService);
+        verifyNoInteractions(workflowUtils);
+        verifyNoInteractions(auditLogService);
         verify(timelineService, never()).addTimelineElement(any(), any());
-        verify(schedulerService, never()).scheduleEvent(any(), any(), any(), any(ActionType.class), any(), any());
-        verify(auditLogService, never()).buildAuditLogEvent(any(), any(), any(), any(), any());
     }
 
     @Test
@@ -102,7 +103,7 @@ class NotificationViewedHandlerTest {
                 .elementId(viewedTimelineId)
                 .build();
 
-        when(timelineService.getTimelineElementForSpecificRecipient("IUN_2", 1, INFORMAL_NOTIFICATION_VIEWED))
+        when(timelineService.getTimelineElement("IUN_2", viewedTimelineId))
                 .thenReturn(Optional.empty());
         when(notificationService.getInformalNotificationByIun("IUN_2")).thenReturn(notification);
         when(campaignService.getCampaignByCampaignIdAndSenderId("CMP_1", "PA_1")).thenReturn(campaign);
@@ -126,14 +127,7 @@ class NotificationViewedHandlerTest {
                 any(),
                 eq(1)
         );
-        verify(schedulerService).scheduleEvent(
-                eq("IUN_2"),
-                eq(1),
-                any(Instant.class),
-                eq(ActionType.WORKFLOW_DONE),
-                eq(viewedTimelineId),
-                any(NotHandledDetails.class)
-        );
+        verify(workflowUtils).scheduleWorkflowDone("IUN_2", 1, viewedTimelineId);
     }
 
     @Test
@@ -161,7 +155,7 @@ class NotificationViewedHandlerTest {
 
         String viewedTimelineId = getInformalNotificationViewedTimelineElementId(0, "IUN_3", "IO");
 
-        when(timelineService.getTimelineElementForSpecificRecipient("IUN_3", 0, INFORMAL_NOTIFICATION_VIEWED))
+        when(timelineService.getTimelineElement("IUN_3", viewedTimelineId))
                 .thenReturn(Optional.empty());
         when(notificationService.getInformalNotificationByIun("IUN_3")).thenReturn(notification);
         when(campaignService.getCampaignByCampaignIdAndSenderId("CMP_2", "PA_2")).thenReturn(campaign);
@@ -183,7 +177,7 @@ class NotificationViewedHandlerTest {
                 any(),
                 eq(0)
         );
-        verify(schedulerService, never()).scheduleEvent(any(), any(), any(), any(ActionType.class), any(), any());
+        verify(workflowUtils, never()).scheduleWorkflowDone(anyString(), anyInt(), anyString());
     }
 }
 
