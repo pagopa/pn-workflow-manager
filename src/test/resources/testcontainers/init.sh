@@ -2,7 +2,7 @@
 
 echo "### CREATE QUEUES ###"
 
-queues="pn-workflow-manager_action pn-workflow-manager_digital_event pn-workflow-manager_analog_event pn-workflow-manager_io_event pn-safestore_to_workflowmanager"
+queues="pn-workflow-manager_action pn-workflow-manager_digital_event pn-workflow-manager_analog_event pn-workflow-manager_io_event pn-safestore_to_workflowmanager pn-workflow_manager_inputs"
 
 for qn in  $( echo $queues | tr " " "\n" ) ; do
 
@@ -61,6 +61,13 @@ IO_QUEUE_ARN=$(aws --profile default --region us-east-1 --endpoint-url=http://lo
 SAFESTORE_QUEUE_ARN=$(aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
     sqs get-queue-attributes \
     --queue-url http://localstack:4566/000000000000/pn-safestore_to_workflowmanager \
+    --attribute-names QueueArn \
+    --query 'Attributes.QueueArn' \
+    --output text)
+
+INPUTS_QUEUE_ARN=$(aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
+    sqs get-queue-attributes \
+    --queue-url http://localstack:4566/000000000000/pn-workflow_manager_inputs \
     --attribute-names QueueArn \
     --query 'Attributes.QueueArn' \
     --output text)
@@ -141,5 +148,20 @@ aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
     --rule pn-SafeStorageToWorkflowManager \
     --event-bus-name pn-CoreEventBus \
     --targets "Id=1,Arn=$SAFESTORE_QUEUE_ARN,InputPath=$.detail"
+
+# Rule 6: InformalNotificationViewedEvent -> workflow manager inputs queue
+echo "Creating InformalNotificationViewedEvent rule..."
+aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
+    events put-rule \
+    --name pn-InformalToWorkflowManager \
+    --event-bus-name pn-CoreEventBus \
+    --event-pattern '{"detail-type":["InformalNotificationViewedEvent"]}'
+
+echo "Adding target to InformalNotificationViewedEvent rule..."
+aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
+    events put-targets \
+    --rule pn-InformalToWorkflowManager \
+    --event-bus-name pn-CoreEventBus \
+    --targets "Id=1,Arn=$INPUTS_QUEUE_ARN,InputPath=$.detail"
 
 echo "Initialization terminated"

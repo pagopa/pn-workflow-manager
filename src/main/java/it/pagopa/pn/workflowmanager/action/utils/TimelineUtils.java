@@ -243,10 +243,39 @@ public class TimelineUtils {
         return buildTimeline(notification, TimelineElementCategoryInt.WORKFLOW_DONE_REACHED, eventId, details);
     }
 
+    public TimelineElementInternal buildInformalNotificationViewedTimelineElement(
+            NotificationInt notification,
+            Integer recIndex,
+            String eventId,
+            Instant eventTimestamp,
+            String sourceChannel,
+            String sourceChannelDetails
+    ) {
+        log.debug("buildInformalNotificationViewedTimelineElement - IUN={} and id={}", notification.getIun(), recIndex);
+
+        InformalNotificationViewedDetailsInt details = InformalNotificationViewedDetailsInt.builder()
+                .recIndex(recIndex)
+                .eventTimestamp(eventTimestamp)
+                .sourceChannel(sourceChannel)
+                .sourceChannelDetails(sourceChannelDetails)
+                .build();
+
+        return buildTimeline(notification, TimelineElementCategoryInt.INFORMAL_NOTIFICATION_VIEWED, eventId, details);
+    }
+
     public static String getWorkflowDoneReachedTimelineElementId(Integer recIndex, String iun) {
         return TimelineEventId.WORKFLOW_DONE_REACHED.buildEventId(EventId.builder()
                 .iun(iun)
                 .recIndex(recIndex)
+                .build()
+        );
+    }
+
+    public static String getInformalNotificationViewedTimelineElementId(Integer recIndex, String iun, String channel) {
+        return TimelineEventId.INFORMAL_NOTIFICATION_VIEWED.buildEventId(EventId.builder()
+                .iun(iun)
+                .recIndex(recIndex)
+                .channel(channel)
                 .build()
         );
     }
