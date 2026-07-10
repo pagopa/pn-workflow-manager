@@ -1,5 +1,6 @@
 package it.pagopa.pn.workflowmanager.middleware.queue.consumer.handler.action;
 
+import it.pagopa.pn.workflowmanager.action.postacceptedprocessing.PostAcceptedProcessingHandler;
 import it.pagopa.pn.workflowmanager.dto.action.common.Action;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.router.SupportedEventType;
 import org.junit.jupiter.api.Assertions;
@@ -11,11 +12,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.messaging.MessageHeaders;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class PostAcceptedProcessingEventHandlerTest {
     @Mock
     private MessageHeaders headers;
+    @Mock
+    private PostAcceptedProcessingHandler postAcceptedProcessingHandler;
     @InjectMocks
     private PostAcceptedProcessingEventHandler handler;
 
@@ -32,5 +36,6 @@ class PostAcceptedProcessingEventHandlerTest {
                 .build();
 
         Assertions.assertDoesNotThrow(() -> handler.handle(action, headers));
+        verify(postAcceptedProcessingHandler).handle("iun_123");
     }
 }

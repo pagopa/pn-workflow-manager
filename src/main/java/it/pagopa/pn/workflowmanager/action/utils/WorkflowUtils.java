@@ -120,14 +120,18 @@ public class WorkflowUtils {
     private void scheduleNextChannel(String iun, int recIndex, WorkflowUtils.NextChannel nextChannelInfo, ChannelType previousChannel) {
         log.info("Next channel found {} for iun {} and recIndex {} from previous channel {}. Scheduling START_WORKFLOW event.",
                 nextChannelInfo.channel(), iun, recIndex, previousChannel);
+        scheduleStartWorkflow(iun, recIndex, nextChannelInfo.stepIndex(), nextChannelInfo.channel());
+    }
+
+    public void scheduleStartWorkflow(String iun, int recIndex, int stepIdx, ChannelType channel) {
         schedulerService.scheduleEvent(
                 iun,
                 recIndex,
                 Instant.now(),
                 ActionType.START_WORKFLOW,
                 StartWorkflowDetails.builder()
-                        .stepIdx(nextChannelInfo.stepIndex())
-                        .channel(nextChannelInfo.channel())
+                        .stepIdx(stepIdx)
+                        .channel(channel)
                         .build()
         );
     }
