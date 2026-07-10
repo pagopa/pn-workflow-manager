@@ -24,6 +24,7 @@ public class SendAnalogMessageProgressDetailsInt extends CategoryTypeTimelineEle
     private String sendRequestId;
     private String registeredLetterCode;
     private ServiceLevelInt serviceLevel;
+    private Integer sentAttemptMade;
 
     @Override
     public String toLog() {

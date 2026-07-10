@@ -12,6 +12,7 @@ import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationIn
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationSenderInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.RecipientTypeInt;
+import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.AttachmentDetailsInt;
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.CategorizedAttachmentsResultInt;
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.ResponseStatusInt;
 import it.pagopa.pn.workflowmanager.dto.ext.paperchannel.AnalogDtoInt;
@@ -948,6 +949,144 @@ class TimelineUtilsTest {
                 () -> assertEquals(categorizedAttachmentsResult, details.getCategorizedAttachmentsResult()),
                 () -> assertNotNull(details.getPrepareRequestId())
         );
+    }
+
+    @Test
+    void buildSendAnalogProgressNotificationTimelineElement() {
+        // Arrange
+        NotificationInt notification = createNotification();
+        ServiceLevelInt serviceLevel = ServiceLevelInt.AR_REGISTERED_LETTER;
+        Instant notificationDate = Instant.now();
+        AnalogDeliveryDetailsInt deliveryDetail = AnalogDeliveryDetailsInt.builder()
+                .code("P000")
+                .eventTimestamp(notificationDate)
+                .build();
+        AnalogDeliveryTypeInt deliveryType = AnalogDeliveryTypeInt.RS;
+        List<AttachmentDetailsInt> attachments = List.of(AttachmentDetailsInt.builder().id("att-1").build());
+        String sendRequestId = "req-analog-001";
+        String registeredLetterCode = "rlc-001";
+        Integer sentAttemptMade = 0;
+        Integer progressIndex = 1;
+
+        when(timelineService.retrieveAndIncrementCounterForTimelineEvent(sendRequestId))
+                .thenReturn(progressIndex.longValue());
+
+        String expectedEventId = TimelineUtils.buildSendAnalogProgressTimelineEventId(
+                TEST_REC_INDEX, notification, progressIndex, deliveryType, sentAttemptMade);
+
+        // Act
+        TimelineElementInternal actual = timelineUtils.buildSendAnalogProgressNotificationTimelineElement(
+                TEST_REC_INDEX, notification, serviceLevel, notificationDate,
+                deliveryDetail, deliveryType, attachments, sendRequestId, registeredLetterCode, sentAttemptMade);
+
+        // Assert
+        verify(timelineService).retrieveAndIncrementCounterForTimelineEvent(sendRequestId);
+        Assertions.assertAll(
+                () -> assertEquals(TEST_IUN, actual.getIun()),
+                () -> assertEquals(SEND_ANALOG_MESSAGE_PROGRESS, actual.getCategory()),
+                () -> assertEquals(expectedEventId, actual.getElementId()),
+                () -> assertEquals(TEST_PA_ID, actual.getPaId()),
+                () -> assertNotNull(actual.getTimestamp()),
+                () -> assertInstanceOf(SendAnalogMessageProgressDetailsInt.class, actual.getDetails())
+        );
+
+        SendAnalogMessageProgressDetailsInt details = (SendAnalogMessageProgressDetailsInt) actual.getDetails();
+        Assertions.assertAll(
+                () -> assertEquals(TEST_REC_INDEX, details.getRecIndex()),
+                () -> assertEquals(serviceLevel, details.getServiceLevel()),
+                () -> assertEquals(attachments, details.getAttachments()),
+                () -> assertEquals(sendRequestId, details.getSendRequestId()),
+                () -> assertEquals(deliveryDetail, details.getDeliveryDetail()),
+                () -> assertEquals(registeredLetterCode, details.getRegisteredLetterCode()),
+                () -> assertEquals(notificationDate, details.getNotificationDate()),
+                () -> assertEquals(deliveryType, details.getDeliveryType()),
+                () -> assertEquals(sentAttemptMade, details.getSentAttemptMade())
+        );
+    }
+
+    @Test
+    void buildSendAnalogProgressTimelineEventId() {
+        // Arrange
+        NotificationInt notification = createNotification();
+
+        // Act
+        String result = TimelineUtils.buildSendAnalogProgressTimelineEventId(
+                TEST_REC_INDEX, notification, 1, AnalogDeliveryTypeInt.RS, 0);
+
+        // Assert
+        assertNotNull(result);
+        assertTrue(result.contains(TEST_IUN));
+    }
+
+    @Test
+    void buildSendAnalogFeedbackNotificationTimelineElement() {
+        // Arrange
+        NotificationInt notification = createNotification();
+        ServiceLevelInt serviceLevel = ServiceLevelInt.AR_REGISTERED_LETTER;
+        Instant notificationDate = Instant.now();
+        AnalogDeliveryDetailsInt deliveryDetail = AnalogDeliveryDetailsInt.builder()
+                .code("CON080")
+                .eventTimestamp(notificationDate)
+                .build();
+        AnalogDeliveryTypeInt deliveryType = AnalogDeliveryTypeInt.RS;
+        List<AttachmentDetailsInt> attachments = List.of(AttachmentDetailsInt.builder().id("att-1").build());
+        String sendRequestId = "req-analog-001";
+        String registeredLetterCode = "rlc-001";
+        PhysicalAddressInt physicalAddress = PhysicalAddressInt.builder().address("Via Roma 1").build();
+        PhysicalAddressInt newAddress = PhysicalAddressInt.builder().address("Via Milano 5").build();
+        ResponseStatusInt responseStatus = ResponseStatusInt.OK;
+        String requestTimelineId = "timeline-req-001";
+        Integer sentAttemptMade = 0;
+
+        String expectedEventId = TimelineUtils.buildSendAnalogFeedbackTimelineEventId(
+                TEST_REC_INDEX, notification, deliveryType, sentAttemptMade);
+
+        // Act
+        TimelineElementInternal actual = timelineUtils.buildSendAnalogFeedbackNotificationTimelineElement(
+                TEST_REC_INDEX, notification, serviceLevel, notificationDate,
+                deliveryDetail, deliveryType, attachments, sendRequestId, registeredLetterCode,
+                physicalAddress, responseStatus, requestTimelineId, newAddress, sentAttemptMade);
+
+        // Assert
+        Assertions.assertAll(
+                () -> assertEquals(TEST_IUN, actual.getIun()),
+                () -> assertEquals(SEND_ANALOG_MESSAGE_FEEDBACK, actual.getCategory()),
+                () -> assertEquals(expectedEventId, actual.getElementId()),
+                () -> assertEquals(TEST_PA_ID, actual.getPaId()),
+                () -> assertNotNull(actual.getTimestamp()),
+                () -> assertInstanceOf(SendAnalogMessageFeedbackDetailsInt.class, actual.getDetails())
+        );
+
+        SendAnalogMessageFeedbackDetailsInt details = (SendAnalogMessageFeedbackDetailsInt) actual.getDetails();
+        Assertions.assertAll(
+                () -> assertEquals(TEST_REC_INDEX, details.getRecIndex()),
+                () -> assertEquals(serviceLevel, details.getServiceLevel()),
+                () -> assertEquals(physicalAddress, details.getPhysicalAddress()),
+                () -> assertEquals(newAddress, details.getNewAddress()),
+                () -> assertEquals(attachments, details.getAttachments()),
+                () -> assertEquals(sendRequestId, details.getSendRequestId()),
+                () -> assertEquals(sentAttemptMade, details.getSentAttemptMade()),
+                () -> assertEquals(responseStatus, details.getResponseStatus()),
+                () -> assertEquals(requestTimelineId, details.getRequestTimelineId()),
+                () -> assertEquals(deliveryDetail, details.getDeliveryDetail()),
+                () -> assertEquals(registeredLetterCode, details.getRegisteredLetterCode()),
+                () -> assertEquals(notificationDate, details.getNotificationDate()),
+                () -> assertEquals(deliveryType, details.getDeliveryType())
+        );
+    }
+
+    @Test
+    void buildSendAnalogFeedbackTimelineEventId() {
+        // Arrange
+        NotificationInt notification = createNotification();
+
+        // Act
+        String result = TimelineUtils.buildSendAnalogFeedbackTimelineEventId(
+                TEST_REC_INDEX, notification, AnalogDeliveryTypeInt.RS, 0);
+
+        // Assert
+        assertNotNull(result);
+        assertTrue(result.contains(TEST_IUN));
     }
 
     private TimelineElementInternal createTimelineElement(TimelineElementCategoryInt category, int recIndex) {
