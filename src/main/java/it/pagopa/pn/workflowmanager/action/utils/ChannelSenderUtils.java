@@ -39,6 +39,8 @@ public class ChannelSenderUtils {
                 .build();
     }
 
+    //costruisci qui l'elemento di time
+
     public void saveSendDigitalMessageElement(
         NotificationInt notificationInt,
         String elementId,
@@ -55,6 +57,21 @@ public class ChannelSenderUtils {
                         digitalAddress,
                         digitalAddressChannel,
                         digitalAddressSource
+                ),
+                notificationInt
+        );
+    }
+
+    public void saveCoverpageCreationElement(
+            NotificationInt notificationInt,
+            int recIndex,
+            String fileKey
+    ) {
+        timelineService.addTimelineElement(
+                timelineUtils.buildCoverpageCreationTimelineElement(
+                        recIndex,
+                        fileKey,
+                        notificationInt
                 ),
                 notificationInt
         );

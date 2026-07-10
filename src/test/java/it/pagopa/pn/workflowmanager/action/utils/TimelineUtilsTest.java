@@ -1,6 +1,7 @@
 package it.pagopa.pn.workflowmanager.action.utils;
 
 import it.pagopa.pn.commons.exceptions.PnInternalException;
+import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.paperchannel.model.SendResponse;
 import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.timelineservice.model.NotificationHistoryResponse;
 import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.timelineservice.model.NotificationStatus;
 import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.timelineservice.model.SendingReceipt;
@@ -11,7 +12,9 @@ import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationIn
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationSenderInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.RecipientTypeInt;
+import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.CategorizedAttachmentsResultInt;
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.ResponseStatusInt;
+import it.pagopa.pn.workflowmanager.dto.ext.paperchannel.AnalogDtoInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.EventId;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineEventId;
@@ -869,6 +872,81 @@ class TimelineUtilsTest {
                 () -> Assertions.assertEquals(sentAttemptMade, details.getSentAttemptMade()),
                 () -> Assertions.assertEquals(relatedRequestId, details.getRelatedRequestId()),
                 () -> Assertions.assertEquals("ITALIA", details.getForeignState())
+        );
+    }
+
+    @Test
+    void buildSendAnalogNotificationTimelineElement_AndBuildSendAnalogTimelineEventId() {
+        // Arrange
+        NotificationInt notification = createNotification();
+        PhysicalAddressInt physicalAddress = PhysicalAddressInt.builder()
+                .address("Via Roma 1")
+                .zip("00100")
+                .municipality("Roma")
+                .province("RM")
+                .foreignState("ITALIA")
+                .build();
+
+        String productType = "AR";
+        Integer sentAttemptMade = 0;
+        String relatedRequestId = "related-request-001";
+        String prepareRequestId = "PREPARE_ANALOG_DELIVERY.IUN_TEST-IUN-001.RECINDEX_0.ATTEMPT_0.DELIVERYTYPE_RS";
+
+        SendResponse sendResponse = mock(SendResponse.class);
+        when(sendResponse.getAmount()).thenReturn(5);
+        when(sendResponse.getNumberOfPages()).thenReturn(3);
+        when(sendResponse.getEnvelopeWeight()).thenReturn(100);
+
+        AnalogDtoInt analogDtoInfo = AnalogDtoInt.builder()
+                .sentAttemptMade(sentAttemptMade)
+                .sendResponse(sendResponse)
+                .relatedRequestId(relatedRequestId)
+                .productType(productType)
+                .prepareRequestId(prepareRequestId)
+                .build();
+
+        List<String> replacedF24AttachmentUrls = List.of("f24-url-1", "f24-url-2");
+        CategorizedAttachmentsResultInt categorizedAttachmentsResult = mock(CategorizedAttachmentsResultInt.class);
+        ServiceLevelInt serviceLevelInt = ServiceLevelInt.AR_REGISTERED_LETTER;
+
+        // Act - Test buildSendAnalogTimelineEventId
+        String eventId = TimelineUtils.buildSendAnalogTimelineEventId(TEST_REC_INDEX, notification, analogDtoInfo);
+
+        // Assert - verify eventId
+        assertNotNull(eventId);
+        assertTrue(eventId.contains(TEST_IUN));
+        assertTrue(eventId.contains("SEND_ANALOG_MESSAGE"));
+
+        // Act - Test buildSendAnalogNotificationTimelineElement
+        TimelineElementInternal actual = timelineUtils.buildSendAnalogNotificationTimelineElement(
+                physicalAddress, TEST_REC_INDEX, notification, analogDtoInfo,
+                replacedF24AttachmentUrls, categorizedAttachmentsResult, serviceLevelInt, prepareRequestId);
+
+        // Assert - verify timeline element
+        Assertions.assertAll(
+                () -> assertEquals(TEST_IUN, actual.getIun()),
+                () -> assertEquals(SEND_ANALOG_MESSAGE, actual.getCategory()),
+                () -> assertNotNull(actual.getElementId()),
+                () -> assertEquals(TEST_PA_ID, actual.getPaId()),
+                () -> assertNotNull(actual.getTimestamp()),
+                () -> assertNotNull(actual.getDetails()),
+                () -> assertInstanceOf(SendAnalogMessageDetailsInt.class, actual.getDetails())
+        );
+
+        SendAnalogMessageDetailsInt details = (SendAnalogMessageDetailsInt) actual.getDetails();
+        Assertions.assertAll(
+                () -> assertEquals(TEST_REC_INDEX, details.getRecIndex()),
+                () -> assertEquals(physicalAddress, details.getPhysicalAddress()),
+                () -> assertEquals(serviceLevelInt, details.getServiceLevel()),
+                () -> assertEquals(sentAttemptMade, details.getSentAttemptMade()),
+                () -> assertEquals(relatedRequestId, details.getRelatedRequestId()),
+                () -> assertEquals(5, details.getAnalogCost()),
+                () -> assertEquals(productType, details.getProductType()),
+                () -> assertEquals(3, details.getNumberOfPages()),
+                () -> assertEquals(100, details.getEnvelopeWeight()),
+                () -> assertEquals(replacedF24AttachmentUrls, details.getF24Attachments()),
+                () -> assertEquals(categorizedAttachmentsResult, details.getCategorizedAttachmentsResult()),
+                () -> assertNotNull(details.getPrepareRequestId())
         );
     }
 

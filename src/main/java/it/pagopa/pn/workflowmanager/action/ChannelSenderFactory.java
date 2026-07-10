@@ -1,5 +1,6 @@
 package it.pagopa.pn.workflowmanager.action;
 
+import it.pagopa.pn.workflowmanager.action.start_workflow.AnalogChannelSender;
 import it.pagopa.pn.workflowmanager.action.start_workflow.EmailChannelSender;
 import it.pagopa.pn.workflowmanager.action.start_workflow.IoChannelSender;
 import it.pagopa.pn.workflowmanager.action.start_workflow.PecChannelSender;
@@ -16,12 +17,14 @@ public class ChannelSenderFactory {
     private final IoChannelSender ioChannelSender;
     private final EmailChannelSender emailChannelSender;
     private final PecChannelSender pecChannelSender;
+    private final AnalogChannelSender analogChannelSender;
 
     public ChannelSender getChannelSender(@Nonnull ChannelType channel){
         return switch (channel) {
             case IO -> ioChannelSender;
             case PEC -> pecChannelSender;
             case EMAIL -> emailChannelSender;
+            case ANALOG -> analogChannelSender;
             default -> throw new IllegalArgumentException("Unsupported channel type: " + channel);
         };
     }
