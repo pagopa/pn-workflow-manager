@@ -4,6 +4,7 @@ import it.pagopa.pn.workflowmanager.action.start_workflow.AnalogChannelSender;
 import it.pagopa.pn.workflowmanager.action.start_workflow.EmailChannelSender;
 import it.pagopa.pn.workflowmanager.action.start_workflow.IoChannelSender;
 import it.pagopa.pn.workflowmanager.action.start_workflow.PecChannelSender;
+import it.pagopa.pn.workflowmanager.action.start_workflow.SmsChannelSender;
 import it.pagopa.pn.workflowmanager.models.internal.campaign.ChannelType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,6 +17,7 @@ class ChannelSenderFactoryTest {
     private IoChannelSender ioChannelSender;
     private PecChannelSender pecChannelSender;
     private EmailChannelSender emailChannelSender;
+    private SmsChannelSender smsChannelSender;
     private ChannelSenderFactory channelSenderFactory;
     private AnalogChannelSender analogChannelSender;
 
@@ -24,8 +26,9 @@ class ChannelSenderFactoryTest {
         ioChannelSender = mock(IoChannelSender.class);
         emailChannelSender = mock(EmailChannelSender.class);
         pecChannelSender = mock(PecChannelSender.class);
+        smsChannelSender = mock(SmsChannelSender.class);
         analogChannelSender = mock(AnalogChannelSender.class);
-        channelSenderFactory = new ChannelSenderFactory(ioChannelSender, emailChannelSender, pecChannelSender, analogChannelSender);
+        channelSenderFactory = new ChannelSenderFactory(ioChannelSender, emailChannelSender, pecChannelSender, smsChannelSender,analogChannelSender);    
     }
 
     @Test
@@ -52,6 +55,13 @@ class ChannelSenderFactoryTest {
     }
 
     @Test
+    void shouldReturnSmsChannelSender_whenChannelIsSms() {
+        ChannelSender result = channelSenderFactory.getChannelSender(ChannelType.SMS);
+
+        assertSame(smsChannelSender, result);
+    }
+    
+  @Test
     void shouldReturnAnalogChannelSender_whenChannelIsAnalog() {
         ChannelSender result = channelSenderFactory.getChannelSender(ChannelType.ANALOG);
 
