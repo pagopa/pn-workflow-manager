@@ -347,7 +347,6 @@ class WorkflowUtilsTest {
     void shouldScheduleWithoutErrorsWhenTimeoutIsDefinedForCurrentChannel() {
         String iun = "IUN_123";
         int recIndex = 0;
-        int currentStepIdx = 1;
         Campaign campaign = mock(Campaign.class);
         WorkFlowEntity workflowEntity = mock(WorkFlowEntity.class);
         WorkFlowEntity secondEntity = mock(WorkFlowEntity.class);
@@ -361,7 +360,7 @@ class WorkflowUtilsTest {
         when(secondEntity.getChannel()).thenReturn(ChannelType.PEC);
 
 
-        assertDoesNotThrow(() -> workflowUtils.scheduleTimeoutForCurrentChannel(iun, recIndex, currentStepIdx, campaign, ChannelType.IO));
+        assertDoesNotThrow(() -> workflowUtils.scheduleTimeoutForCurrentChannel(iun, recIndex, campaign, ChannelType.IO));
         verify(schedulerService).scheduleEvent(
                 eq(iun),
                 eq(recIndex),
@@ -375,7 +374,6 @@ class WorkflowUtilsTest {
     void shouldNotThrowWhenTimeoutIsNullForCurrentChannel() {
         String iun = "IUN_123";
         int recIndex = 0;
-        int currentStepIdx = 1;
         Campaign campaign = mock(Campaign.class);
         WorkFlowEntity workflowEntity = mock(WorkFlowEntity.class);
 
@@ -384,7 +382,7 @@ class WorkflowUtilsTest {
         when(workflowEntity.getChannel()).thenReturn(ChannelType.IO);
         when(workflowEntity.getTimeout()).thenReturn(null);
 
-        assertDoesNotThrow(() -> workflowUtils.scheduleTimeoutForCurrentChannel(iun, recIndex, currentStepIdx, campaign, ChannelType.IO));
+        assertDoesNotThrow(() -> workflowUtils.scheduleTimeoutForCurrentChannel(iun, recIndex, campaign, ChannelType.IO));
         verifyNoInteractions(schedulerService);
     }
 
@@ -392,7 +390,6 @@ class WorkflowUtilsTest {
     void shouldThrowPnWorkflowExceptionWhenNoWorkflowEntityMatchesChannel() {
         String iun = "IUN_123";
         int recIndex = 0;
-        int currentStepIdx = 1;
         Campaign campaign = mock(Campaign.class);
         WorkFlowEntity workflowEntity = mock(WorkFlowEntity.class);
 
@@ -402,7 +399,7 @@ class WorkflowUtilsTest {
 
         assertThrows(
                 PnWorkflowException.class,
-                () -> workflowUtils.scheduleTimeoutForCurrentChannel(iun, recIndex, currentStepIdx, campaign, ChannelType.IO)
+                () -> workflowUtils.scheduleTimeoutForCurrentChannel(iun, recIndex, campaign, ChannelType.IO)
         );
     }
 
@@ -410,13 +407,12 @@ class WorkflowUtilsTest {
     void shouldThrowPnWorkflowExceptionWhenWorkflowListIsNull() {
         String iun = "IUN_123";
         int recIndex = 0;
-        int currentStepIdx = 1;
         Campaign campaign = mock(Campaign.class);
 
         when(campaign.getCampaignId()).thenReturn("campaign-5");
         when(campaign.getWorkflow()).thenReturn(null);
 
-        assertThrows(PnWorkflowException.class, () -> workflowUtils.scheduleTimeoutForCurrentChannel(iun, recIndex, currentStepIdx, campaign, ChannelType.IO));
+        assertThrows(PnWorkflowException.class, () -> workflowUtils.scheduleTimeoutForCurrentChannel(iun, recIndex, campaign, ChannelType.IO));
     }
 
     @Test

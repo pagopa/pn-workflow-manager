@@ -1,6 +1,7 @@
 package it.pagopa.pn.workflowmanager.action.utils;
 
 import it.pagopa.pn.commons.exceptions.PnInternalException;
+import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.paperchannel.model.SendResponse;
 import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.timelineservice.model.NotificationHistoryResponse;
 import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.timelineservice.model.NotificationStatus;
 import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.timelineservice.model.SendingReceipt;
@@ -8,7 +9,9 @@ import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
 import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.address.PhysicalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
+import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.CategorizedAttachmentsResultInt;
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.ResponseStatusInt;
+import it.pagopa.pn.workflowmanager.dto.ext.paperchannel.AnalogDtoInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.EventId;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineEventId;
@@ -116,6 +119,50 @@ public class TimelineUtils {
                 .foreignState(physicalAddressInt.getForeignState())
                 .build();
         return buildTimeline(notification, TimelineElementCategoryInt.PREPARE_ANALOG_DELIVERY, eventId, details);
+    }
+
+    public TimelineElementInternal buildSendAnalogNotificationTimelineElement(PhysicalAddressInt address,
+                                                                              Integer recIndex,
+                                                                              NotificationInt notification,
+                                                                              AnalogDtoInt analogDtoInfo,
+                                                                              List<String> replacedF24AttachmentUrls,
+                                                                              CategorizedAttachmentsResultInt categorizedAttachmentsResult,
+                                                                              ServiceLevelInt serviceLevelInt,
+                                                                              String prepareRequestId) {
+        SendResponse sendResponse = analogDtoInfo.getSendResponse();
+        log.debug("buildSendAnalogNotificationTimelineElement - IUN={} and id={} analogCost={} relatedRequestId={} replacedF24AttachmentUrls={}", notification.getIun(), recIndex, sendResponse.getAmount(), analogDtoInfo.getRelatedRequestId(), replacedF24AttachmentUrls);
+        prepareRequestId = buildSendAnalogTimelineEventId(recIndex, notification, analogDtoInfo);
+
+        SendAnalogMessageDetailsInt details = SendAnalogMessageDetailsInt.builder()
+                .recIndex(recIndex)
+                .physicalAddress(address)
+                .serviceLevel(serviceLevelInt)
+                .sentAttemptMade(analogDtoInfo.getSentAttemptMade())
+                .relatedRequestId(analogDtoInfo.getRelatedRequestId())
+                .analogCost(sendResponse.getAmount())
+                .productType(analogDtoInfo.getProductType())
+                .numberOfPages(sendResponse.getNumberOfPages())
+                .envelopeWeight(sendResponse.getEnvelopeWeight())
+                .f24Attachments(replacedF24AttachmentUrls)
+                .categorizedAttachmentsResult(categorizedAttachmentsResult)
+                .prepareRequestId(prepareRequestId)
+                .vat(notification.getVat())
+                .build();
+
+        TimelineElementInternal.TimelineElementInternalBuilder timelineBuilder = TimelineElementInternal.builder();
+
+        return buildTimeline(notification, TimelineElementCategoryInt.SEND_ANALOG_MESSAGE, prepareRequestId, details, timelineBuilder);
+    }
+
+    public static String buildSendAnalogTimelineEventId(Integer recIndex, NotificationInt notification, AnalogDtoInt analogDtoInfo) {
+        return TimelineEventId.SEND_ANALOG_MESSAGE.buildEventId(
+                EventId.builder()
+                        .iun(notification.getIun())
+                        .recIndex(recIndex)
+                        .deliveryType(AnalogDeliveryTypeInt.RS.name())
+                        .sentAttemptMade(analogDtoInfo.getSentAttemptMade())
+                        .build()
+        );
     }
 
     public TimelineElementInternal buildWorkflowEndedUnreachedTimelineElement(Integer recIndex, NotificationInt notification,
@@ -305,13 +352,19 @@ public class TimelineUtils {
                 .anyMatch(details -> details.getRecIndex() == recIndex);
     }
 
+    public TimelineElementInternal buildCoverpageCreationTimelineElement(Integer recIndex, String fileKey, NotificationInt notification) {
+        log.debug("buildCoverpageCreationTimelineElement - IUN={} and id={}", notification.getIun(), recIndex);
+        String eventId = buildCoverpageCreationTimelineEventId(notification.getIun(), recIndex);
+
+        CoverpageCreationRequestDetailsInt details = CoverpageCreationRequestDetailsInt.builder()
+                .recIndex(recIndex)
+                .fileKey(fileKey)
+                .build();
+        return buildTimeline(notification, TimelineElementCategoryInt.COVERPAGE_CREATION_REQUEST, eventId, details);
+    }
+
     public String retrieveCoverpageFileKey(String iun, int recIndex) {
-        String timelineId = TimelineEventId.COVERPAGE_CREATION_REQUEST.buildEventId(
-                EventId.builder()
-                        .iun(iun)
-                        .recIndex(recIndex)
-                        .build()
-        );
+        String timelineId = buildCoverpageCreationTimelineEventId(iun, recIndex);
 
         log.debug("retrieveCoverpageFileKey - iun={} recIndex={} timelineId={}", iun, recIndex, timelineId);
 
@@ -332,6 +385,15 @@ public class TimelineUtils {
         }
 
         return details.getFileKey();
+    }
+
+    public static String buildCoverpageCreationTimelineEventId(String iun, int recIndex) {
+        return TimelineEventId.COVERPAGE_CREATION_REQUEST.buildEventId(
+                EventId.builder()
+                        .iun(iun)
+                        .recIndex(recIndex)
+                        .build()
+        );
     }
 
     private PnInternalException buildTimelineElementNotPresentException(String iun, int recIndex, String timelineId) {

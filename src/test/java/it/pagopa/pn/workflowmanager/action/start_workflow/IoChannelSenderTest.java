@@ -89,7 +89,7 @@ class IoChannelSenderTest {
                 eq(DigitalChannelsInt.IO),
                 isNull()
         );
-        verify(workflowUtils).scheduleTimeoutForCurrentChannel(iun, 0, 0, campaign, ChannelType.IO);
+        verify(workflowUtils).scheduleTimeoutForCurrentChannel(iun, 0, campaign, ChannelType.IO);
         verify(auditLogService).buildAuditLogEvent(iun, 0, PnAuditLogEventType.AUD_COM_SEND_IO, "Sending message for notification {} to recipient {} with requestId {}", iun, 0, expectedRequestId);
         verify(auditLogEvent).generateSuccess(any());
     }

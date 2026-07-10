@@ -12,7 +12,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TimeoutWorkflowDetails implements ActionDetails {
-    private int stepIdx;
     private ChannelType channel;
 }
 

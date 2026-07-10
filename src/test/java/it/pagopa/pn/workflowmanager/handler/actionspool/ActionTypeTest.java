@@ -66,7 +66,6 @@ class ActionTypeTest {
     @Test
     void testTimeoutWorkflowBuildActionId() {
         TimeoutWorkflowDetails details = TimeoutWorkflowDetails.builder()
-                .stepIdx(3)
                 .channel(null)
                 .build();
 
@@ -77,7 +76,7 @@ class ActionTypeTest {
                 .build();
 
         String actionId = ActionType.TIMEOUT_WORKFLOW.buildActionId(action);
-        assertEquals("IUN-999_timeout_workflow_recIndex_2_stepIndex_3_channel_null", actionId);
+        assertEquals("IUN-999_timeout_workflow_recIndex_2_channel_null", actionId);
     }
 
     @Test

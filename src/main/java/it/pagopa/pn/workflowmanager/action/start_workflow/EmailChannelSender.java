@@ -46,17 +46,15 @@ public class EmailChannelSender implements ChannelSender {
         NotificationRecipientInt recipient = notification.getRecipients().get(recIndex);
         boolean emailMissing = ObjectUtils.isEmpty(recipient.getEmail());
         if (emailMissing) {
-            handleMissingEmail(notification, campaign, recIndex, currentStep, channel, recipient);
+            handleMissingEmail(notification, campaign, recIndex, channel, recipient);
         } else {
             handleEmailPresent(notification, campaign, recIndex, currentStep, channel, recipient);
         }
     }
 
     private void handleMissingEmail(NotificationInt notification, Campaign campaign, int recIndex,
-                                    int currentStep, ChannelType channel,
-                                    NotificationRecipientInt recipient) {
-        log.info("Recipient email is not present - iun={} recIndex={} currentStep={} channel={}",
-                notification.getIun(), recIndex, currentStep, channel);
+                                    ChannelType channel, NotificationRecipientInt recipient) {
+        log.info("Recipient email is not present - iun={} recIndex={}", notification.getIun(), recIndex);
         String requestId = ChannelSenderUtils.buildSendDigitalMessageSkipTimelineElementId(recIndex, notification.getIun(), channel);
         channelSenderUtils.saveSendDigitalMessageSkipElement(
                 recIndex, notification, requestId,
@@ -70,8 +68,7 @@ public class EmailChannelSender implements ChannelSender {
     private void handleEmailPresent(NotificationInt notification, Campaign campaign, int recIndex,
                                     int currentStep, ChannelType channel,
                                     NotificationRecipientInt recipient) {
-        log.info("Recipient email is present - iun={} recIndex={} currentStep={} channel={}",
-                notification.getIun(), recIndex, currentStep, channel);
+        log.info("Recipient email is present - iun={} recIndex={}", notification.getIun(), recIndex);
         String requestId = ChannelSenderUtils.buildSendDigitalMessageEventId(notification.getIun(), recIndex, channel);
         PnAuditLogEvent auditLogEvent = buildAuditLogEvent(notification.getIun(), recIndex, requestId);
 
@@ -89,7 +86,7 @@ public class EmailChannelSender implements ChannelSender {
                     notification, requestId, recIndex, emailAddress,
                     DigitalChannelsInt.EMAIL, DigitalAddressSourceInt.SPECIAL
             );
-            workflowUtils.scheduleTimeoutForCurrentChannel(notification.getIun(), recIndex, currentStep, campaign, channel);
+            workflowUtils.scheduleTimeoutForCurrentChannel(notification.getIun(), recIndex, campaign, channel);
             auditLogEvent.generateSuccess("Email sent successfully").log();
         } catch (Exception e) {
             auditLogEvent.generateFailure("Error sending message", e).log();
