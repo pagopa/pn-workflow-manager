@@ -8,6 +8,8 @@ import it.pagopa.pn.workflowmanager.action.utils.TimelineUtils;
 import it.pagopa.pn.workflowmanager.dto.address.PhysicalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.CategorizedAttachmentsResultInt;
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.ResultFilterInt;
+import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.ChannelEventProcessor;
+import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.analog.AnalogEventNormalizer;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.event.PrepareEventInt;
 import it.pagopa.pn.workflowmanager.middleware.responsehandler.PaperChannelResponseHandler;
 import org.junit.jupiter.api.Assertions;
@@ -28,12 +30,24 @@ class PaperChannelResponseHandlerTest {
 
     private PaperChannelResponseHandler handler;
 
+    private ChannelEventProcessor channelEventProcessor;
+
+    private AnalogEventNormalizer analogEventNormalizer;
+
 
     @BeforeEach
     void setup() {
-        analogWorkflowPaperChannelResponseHandler = Mockito.mock(AnalogWorkflowPaperChannelResponseHandler.class);
+        channelEventProcessor = Mockito.mock(ChannelEventProcessor.class);
+        analogEventNormalizer = Mockito.mock(AnalogEventNormalizer.class);
         timelineUtils = Mockito.mock(TimelineUtils.class);
-        handler = new PaperChannelResponseHandler(analogWorkflowPaperChannelResponseHandler, timelineUtils);
+        analogWorkflowPaperChannelResponseHandler = Mockito.mock(AnalogWorkflowPaperChannelResponseHandler.class);
+
+        handler = new PaperChannelResponseHandler(
+                analogWorkflowPaperChannelResponseHandler,
+                timelineUtils,
+                channelEventProcessor,
+                analogEventNormalizer
+        );
     }
 
     @Test
@@ -277,6 +291,30 @@ class PaperChannelResponseHandlerTest {
 
         Assertions.assertThrows(PnInternalException.class, ()-> handler.paperChannelResponseReceiver(singleStatusUpdate));
 
+    }
+
+    @Test
+    void shouldProcessSendEventWhenPrepareEventIsAbsent() {
+        // Arrange
+        String requestId = "iun_event_idx_0";
+        String iun = "IUN-TEST-SEND-001";
+
+        SendEvent sendEvent = new SendEvent();
+        sendEvent.setRequestId(requestId);
+        sendEvent.setStatusDescription("OK");
+
+        PaperChannelUpdate update = new PaperChannelUpdate();
+        // prepareEvent non impostato → null → entra nell'else if
+        update.setSendEvent(sendEvent);
+
+        Mockito.when(timelineUtils.getIunFromTimelineId(requestId)).thenReturn(iun);
+
+        // Act
+        handler.paperChannelResponseReceiver(update);
+
+        // Assert — verifica che il processor venga invocato con il normalizer corretto
+        Mockito.verify(channelEventProcessor, Mockito.times(1))
+                .process(Mockito.any(), Mockito.eq(analogEventNormalizer));
     }
 
 

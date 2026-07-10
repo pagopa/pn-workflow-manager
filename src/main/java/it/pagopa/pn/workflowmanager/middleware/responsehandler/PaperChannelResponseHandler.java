@@ -7,12 +7,16 @@ import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.paperchannel
 import it.pagopa.pn.workflowmanager.action.analogworkflow.AnalogWorkflowPaperChannelResponseHandler;
 import it.pagopa.pn.workflowmanager.action.utils.TimelineUtils;
 import it.pagopa.pn.workflowmanager.dto.address.PhysicalAddressInt;
+import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.AttachmentDetailsInt;
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.CategorizedAttachmentsResultInt;
 
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.ResultFilterEnum;
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.ResultFilterInt;
 import it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.paperchannel.PaperMessagesClient;
+import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.ChannelEventProcessor;
+import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.analog.AnalogEventNormalizer;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.event.PrepareEventInt;
+import it.pagopa.pn.workflowmanager.middleware.queue.consumer.event.SendEventInt;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.utils.HandleEventUtils;
 import lombok.AllArgsConstructor;
 import lombok.CustomLog;
@@ -31,6 +35,8 @@ public class PaperChannelResponseHandler {
     public static final String EXCEPTION_PREPARE_UPDATE = "Exception PrepareUpdate";
     private final AnalogWorkflowPaperChannelResponseHandler analogWorkflowPaperChannelResponseHandler;
     private final TimelineUtils timelineUtils;
+    private final ChannelEventProcessor channelEventProcessor;
+    private final AnalogEventNormalizer analogEventNormalizer;
 
     /**
      * Handle notification response from external channel. Positive response means notification is delivered correctly, so the workflow can be completed successfully.
@@ -41,6 +47,8 @@ public class PaperChannelResponseHandler {
     public void paperChannelResponseReceiver(PaperChannelUpdate response) {
         if (response.getPrepareEvent() != null)
             prepareUpdate(response.getPrepareEvent());
+        else if (response.getSendEvent() != null)
+            channelEventProcessor.process(mapExternalToInternal(response.getSendEvent()), analogEventNormalizer);
         else
             handleError(response);
     }
@@ -166,6 +174,50 @@ public class PaperChannelResponseHandler {
                 throw new PnInternalException("No address specified, invalid event update received from paper-channel", ERROR_CODE_WORKFLOWMANAGER_PAPERUPDATEFAILED);
             }
         }
+    }
+
+    private SendEventInt mapExternalToInternal(SendEvent event) {
+        return SendEventInt.builder()
+                .iun(timelineUtils.getIunFromTimelineId(event.getRequestId()))
+                .requestId(event.getRequestId())
+                .statusCode(Optional.ofNullable(event.getStatusCode()).map(StatusCodeEnum::getValue).orElse(null))
+                .statusDateTime(event.getStatusDateTime())
+                .statusDetail(event.getStatusDetail())
+                .statusDescription(event.getStatusDescription())
+                .attachments(event.getAttachments() == null ? null : event.getAttachments().stream()
+                                                                     .map(this::mapAttachmentDetailsToInternal)
+                                                                     .toList())
+                .discoveredAddress(mapAnalogAddressToInternal(event.getDiscoveredAddress()))
+                .deliveryFailureCause(Optional.ofNullable(event.getDeliveryFailureCause()).map(Object::toString).orElse(null))
+                .registeredLetterCode(event.getRegisteredLetterCode())
+                .build();
+    }
+
+    private AttachmentDetailsInt mapAttachmentDetailsToInternal(AttachmentDetails attachmentDetails) {
+        return AttachmentDetailsInt.builder()
+                .id(attachmentDetails.getId())
+                .documentType(attachmentDetails.getDocumentType())
+                .url(attachmentDetails.getUrl())
+                .date(attachmentDetails.getDate())
+                .build();
+    }
+
+    private PhysicalAddressInt mapAnalogAddressToInternal(AnalogAddress rawAddress) {
+        if (rawAddress == null) {
+            return null;
+        }
+
+        return PhysicalAddressInt.builder()
+                .fullname(rawAddress.getFullname())
+                .address(rawAddress.getAddress())
+                .addressDetails(rawAddress.getAddressRow2())
+                .municipality(rawAddress.getCity())
+                .municipalityDetails(rawAddress.getCity2())
+                .province(rawAddress.getPr())
+                .zip(rawAddress.getCap())
+                .foreignState(rawAddress.getCountry())
+                .at(rawAddress.getNameRow2())
+                .build();
     }
 
     private void handleError(PaperChannelUpdate response) {

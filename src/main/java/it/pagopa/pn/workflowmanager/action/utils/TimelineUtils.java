@@ -9,6 +9,7 @@ import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
 import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.address.PhysicalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
+import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.AttachmentDetailsInt;
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.CategorizedAttachmentsResultInt;
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.ResponseStatusInt;
 import it.pagopa.pn.workflowmanager.dto.ext.paperchannel.AnalogDtoInt;
@@ -152,6 +153,101 @@ public class TimelineUtils {
         TimelineElementInternal.TimelineElementInternalBuilder timelineBuilder = TimelineElementInternal.builder();
 
         return buildTimeline(notification, TimelineElementCategoryInt.SEND_ANALOG_MESSAGE, prepareRequestId, details, timelineBuilder);
+    }
+
+    public TimelineElementInternal buildSendAnalogProgressNotificationTimelineElement(Integer recIndex,
+                                                                                      NotificationInt notification,
+                                                                                      ServiceLevelInt serviceLevelInt,
+                                                                                      Instant notificationDate,
+                                                                                      AnalogDeliveryDetailsInt deliveryDetail,
+                                                                                      AnalogDeliveryTypeInt deliveryType,
+                                                                                      List<AttachmentDetailsInt> attachments,
+                                                                                      String sendRequestId,
+                                                                                      String registeredLetterCode,
+                                                                                      Integer sentAttemptMade) {
+        log.debug("buildSendAnalogProgressNotificationTimelineElement - IUN={} and id={} ", notification.getIun(), recIndex);
+
+        Integer progressIndex = timelineService.retrieveAndIncrementCounterForTimelineEvent(sendRequestId).intValue();
+        String eventId = buildSendAnalogProgressTimelineEventId(recIndex, notification, progressIndex,deliveryType,sentAttemptMade);
+
+        SendAnalogMessageProgressDetailsInt details = SendAnalogMessageProgressDetailsInt.builder()
+                .recIndex(recIndex)
+                .serviceLevel(serviceLevelInt)
+                .attachments(attachments)
+                .sendRequestId(sendRequestId)
+                .deliveryDetail(deliveryDetail)
+                .registeredLetterCode(registeredLetterCode)
+                .notificationDate(notificationDate)
+                .deliveryType(deliveryType)
+                .sentAttemptMade(sentAttemptMade)
+                .build();
+
+        TimelineElementInternal.TimelineElementInternalBuilder timelineBuilder = TimelineElementInternal.builder();
+
+        return buildTimeline(notification, TimelineElementCategoryInt.SEND_ANALOG_MESSAGE_PROGRESS, eventId, details, timelineBuilder);
+    }
+
+    public static String buildSendAnalogProgressTimelineEventId(Integer recIndex, NotificationInt notification, Integer progressIndex,
+                                                                AnalogDeliveryTypeInt deliveryType,Integer sentAttemptMade) {
+        return TimelineEventId.SEND_ANALOG_MESSAGE_PROGRESS.buildEventId(
+                EventId.builder()
+                        .iun(notification.getIun())
+                        .recIndex(recIndex)
+                        .deliveryType(deliveryType.name())
+                        .sentAttemptMade(sentAttemptMade)
+                        .progressIndex(progressIndex)
+                        .build()
+        );
+    }
+
+    public TimelineElementInternal buildSendAnalogFeedbackNotificationTimelineElement(Integer recIndex,
+                                                                                      NotificationInt notification,
+                                                                                      ServiceLevelInt serviceLevelInt,
+                                                                                      Instant notificationDate,
+                                                                                      AnalogDeliveryDetailsInt deliveryDetail,
+                                                                                      AnalogDeliveryTypeInt deliveryType,
+                                                                                      List<AttachmentDetailsInt> attachments,
+                                                                                      String sendRequestId,
+                                                                                      String registeredLetterCode,
+                                                                                      PhysicalAddressInt physicalAddressInt,
+                                                                                      ResponseStatusInt responseStatus,
+                                                                                      String requestTimelineId,
+                                                                                      PhysicalAddressInt newAddress,
+                                                                                      Integer sentAttemptMade) {
+        log.debug("buildSendAnalogFeedbackNotificationTimelineElement - IUN={} and id={} ", notification.getIun(), recIndex);
+
+        String eventId = buildSendAnalogFeedbackTimelineEventId(recIndex, notification, deliveryType, sentAttemptMade);
+
+        SendAnalogMessageFeedbackDetailsInt details = SendAnalogMessageFeedbackDetailsInt.builder()
+                .recIndex(recIndex)
+                .serviceLevel(serviceLevelInt)
+                .physicalAddress(physicalAddressInt)
+                .newAddress(newAddress)
+                .attachments(attachments)
+                .sendRequestId(sendRequestId)
+                .sentAttemptMade(sentAttemptMade)
+                .responseStatus(responseStatus)
+                .requestTimelineId(requestTimelineId)
+                .deliveryDetail(deliveryDetail)
+                .registeredLetterCode(registeredLetterCode)
+                .notificationDate(notificationDate)
+                .deliveryType(deliveryType)
+                .build();
+
+        TimelineElementInternal.TimelineElementInternalBuilder timelineBuilder = TimelineElementInternal.builder();
+
+        return buildTimeline(notification, TimelineElementCategoryInt.SEND_ANALOG_MESSAGE_FEEDBACK, eventId, details, timelineBuilder);
+    }
+
+    public static String buildSendAnalogFeedbackTimelineEventId(Integer recIndex, NotificationInt notification,AnalogDeliveryTypeInt deliveryType,Integer sentAttemptMade) {
+        return TimelineEventId.SEND_ANALOG_MESSAGE_FEEDBACK.buildEventId(
+                EventId.builder()
+                        .iun(notification.getIun())
+                        .recIndex(recIndex)
+                        .deliveryType(deliveryType.name())
+                        .sentAttemptMade(sentAttemptMade)
+                        .build()
+        );
     }
 
     public static String buildSendAnalogTimelineEventId(Integer recIndex, NotificationInt notification, AnalogDtoInt analogDtoInfo) {
