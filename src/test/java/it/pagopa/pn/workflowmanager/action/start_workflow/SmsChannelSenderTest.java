@@ -86,7 +86,7 @@ class SmsChannelSenderTest {
                 eq(DigitalChannelsInt.SMS),
                 eq(DigitalAddressSourceInt.SPECIAL)
         );
-        verify(workflowUtils).scheduleTimeoutForCurrentChannel(IUN, recIndex, currentStep, campaign, ChannelType.SMS);
+        verify(workflowUtils).scheduleTimeoutForCurrentChannel(IUN, recIndex, campaign, ChannelType.SMS);
         verify(auditLogEvent).generateSuccess("Sms sent successfully");
     }
 
@@ -149,7 +149,7 @@ class SmsChannelSenderTest {
 
         verify(auditLogEvent).generateFailure(eq("Error sending SMS notification"), any(RuntimeException.class));
         verify(channelSenderUtils, never()).saveSendDigitalMessageElement(any(), any(), anyInt(), any(), any(), any());
-        verify(workflowUtils, never()).scheduleTimeoutForCurrentChannel(any(), anyInt(), anyInt(), any(), any());
+        verify(workflowUtils, never()).scheduleTimeoutForCurrentChannel(any(), anyInt(), any(), any());
     }
 
     // Helper methods

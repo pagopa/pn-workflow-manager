@@ -42,7 +42,7 @@ public class SmsChannelSender implements ChannelSender {
         if (ObjectUtils.isEmpty(phoneNumber)) {
             handleMissingPhoneNumber(notification, campaign, recIndex, channel);
         } else {
-            handlePhoneNumberPresent(notification, campaign, recIndex, currentStep, channel, phoneNumber);
+            handlePhoneNumberPresent(notification, campaign, recIndex, channel, phoneNumber);
         }
     }
 
@@ -56,8 +56,7 @@ public class SmsChannelSender implements ChannelSender {
         workflowUtils.advanceWorkflow(notification.getIun(), recIndex, channel, campaign, notification.getRecipients().get(recIndex).getRecipientType());
     }
 
-    private void handlePhoneNumberPresent(NotificationInt notification, Campaign campaign, int recIndex,
-                                          int currentStep, ChannelType channel, String phoneNumber) {
+    private void handlePhoneNumberPresent(NotificationInt notification, Campaign campaign, int recIndex, ChannelType channel, String phoneNumber) {
         log.info("Recipient phone number is present - iun={} recIndex={}", notification.getIun(), recIndex);
 
         String requestId = ChannelSenderUtils.buildSendDigitalMessageEventId(notification.getIun(), recIndex, channel);
@@ -71,7 +70,7 @@ public class SmsChannelSender implements ChannelSender {
             pnExternalChannelsClient.sendNotificationSMS(requestId, subject, phoneNumber);
 
             channelSenderUtils.saveSendDigitalMessageElement(notification, requestId, recIndex, smsAddress, DigitalChannelsInt.SMS, DigitalAddressSourceInt.SPECIAL);
-            workflowUtils.scheduleTimeoutForCurrentChannel(notification.getIun(), recIndex, currentStep, campaign, channel);
+            workflowUtils.scheduleTimeoutForCurrentChannel(notification.getIun(), recIndex, campaign, channel);
             auditLogEvent.generateSuccess("Sms sent successfully").log();
 
         } catch (Exception e) {
