@@ -8,7 +8,9 @@ import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.timelineserv
 import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
 import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.address.PhysicalAddressInt;
+import it.pagopa.pn.workflowmanager.dto.event.NotificationPaidInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
+import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.CategorizedAttachmentsResultInt;
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.ResponseStatusInt;
 import it.pagopa.pn.workflowmanager.dto.ext.paperchannel.AnalogDtoInt;
@@ -513,5 +515,19 @@ public class TimelineUtils {
         }
 
         return (SendRelatedTimelineElement) requestElement.getDetails();
+    }
+
+    public NotificationPaidDetailsInt buildNotificationPaidDetails(NotificationPaidInt payment,
+                                                                   NotificationRecipientInt recipient) {
+        return NotificationPaidDetailsInt.builder()
+                .recIndex(payment.getRecIndex())
+                .recipientType(recipient.getRecipientType().getValue())
+                .amount(payment.getAmount())
+                .creditorTaxId(payment.getCreditorTaxId())
+                .noticeCode(payment.getNoticeCode())
+                .paymentSourceChannel(payment.getPaymentSourceChannel())
+                .uncertainPaymentDate(false)
+                .eventTimestamp(payment.getEventTimestamp())
+                .build();
     }
 }
