@@ -61,7 +61,7 @@ public class IoChannelSender implements ChannelSender {
                     null
             );
 
-            workflowUtils.scheduleTimeoutForCurrentChannel(notification.getIun(), recIndex, currentStep, campaign, channel);
+            workflowUtils.scheduleTimeoutForCurrentChannel(notification.getIun(), recIndex, campaign, channel);
             auditLogEvent.generateSuccess("Message sent succesfully").log();
         } catch (Exception e) {
             auditLogEvent.generateFailure("Error sending message", e).log();

@@ -43,7 +43,8 @@ public class EndWorkflowActionEventHandler extends AbstractActionEventHandler {
                             timelineElements,
                             action.getIun(),
                             action.getRecipientIndex(),
-                            action.getTimelineId())
+                            action.getTimelineId()
+                    )
             );
             log.logEndingProcess(processName);
         } catch (Exception ex) {

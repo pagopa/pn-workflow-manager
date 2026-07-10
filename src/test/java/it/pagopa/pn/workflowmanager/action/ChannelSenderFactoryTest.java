@@ -1,5 +1,6 @@
 package it.pagopa.pn.workflowmanager.action;
 
+import it.pagopa.pn.workflowmanager.action.start_workflow.AnalogChannelSender;
 import it.pagopa.pn.workflowmanager.action.start_workflow.EmailChannelSender;
 import it.pagopa.pn.workflowmanager.action.start_workflow.IoChannelSender;
 import it.pagopa.pn.workflowmanager.action.start_workflow.PecChannelSender;
@@ -18,6 +19,7 @@ class ChannelSenderFactoryTest {
     private EmailChannelSender emailChannelSender;
     private SmsChannelSender smsChannelSender;
     private ChannelSenderFactory channelSenderFactory;
+    private AnalogChannelSender analogChannelSender;
 
     @BeforeEach
     void setUp() {
@@ -25,7 +27,8 @@ class ChannelSenderFactoryTest {
         emailChannelSender = mock(EmailChannelSender.class);
         pecChannelSender = mock(PecChannelSender.class);
         smsChannelSender = mock(SmsChannelSender.class);
-        channelSenderFactory = new ChannelSenderFactory(ioChannelSender, emailChannelSender, pecChannelSender, smsChannelSender);
+        analogChannelSender = mock(AnalogChannelSender.class);
+        channelSenderFactory = new ChannelSenderFactory(ioChannelSender, emailChannelSender, pecChannelSender, smsChannelSender,analogChannelSender);    
     }
 
     @Test
@@ -56,5 +59,12 @@ class ChannelSenderFactoryTest {
         ChannelSender result = channelSenderFactory.getChannelSender(ChannelType.SMS);
 
         assertSame(smsChannelSender, result);
+    }
+    
+  @Test
+    void shouldReturnAnalogChannelSender_whenChannelIsAnalog() {
+        ChannelSender result = channelSenderFactory.getChannelSender(ChannelType.ANALOG);
+
+        assertSame(analogChannelSender, result);
     }
 }

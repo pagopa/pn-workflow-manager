@@ -5,6 +5,7 @@ import it.pagopa.pn.workflowmanager.dto.action.common.ActionType;
 import it.pagopa.pn.workflowmanager.dto.action.details.NotHandledDetails;
 import it.pagopa.pn.workflowmanager.dto.action.details.StartWorkflowDetails;
 import it.pagopa.pn.workflowmanager.dto.action.details.TimeoutWorkflowDetails;
+import it.pagopa.pn.workflowmanager.dto.action.details.WorkflowDoneDetails;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -65,7 +66,6 @@ class ActionTypeTest {
     @Test
     void testTimeoutWorkflowBuildActionId() {
         TimeoutWorkflowDetails details = TimeoutWorkflowDetails.builder()
-                .stepIdx(3)
                 .channel(null)
                 .build();
 
@@ -76,14 +76,14 @@ class ActionTypeTest {
                 .build();
 
         String actionId = ActionType.TIMEOUT_WORKFLOW.buildActionId(action);
-        assertEquals("IUN-999_timeout_workflow_recIndex_2_stepIndex_3_channel_null", actionId);
+        assertEquals("IUN-999_timeout_workflow_recIndex_2_channel_null", actionId);
     }
 
     @Test
     void testGetDetailsJavaClass() {
         assertEquals(NotHandledDetails.class, ActionType.POST_ACCEPTED_PROCESSING_COMPLETED.getDetailsJavaClass());
         assertEquals(NotHandledDetails.class, ActionType.END_WORKFLOW.getDetailsJavaClass());
-        assertEquals(NotHandledDetails.class, ActionType.WORKFLOW_DONE.getDetailsJavaClass());
+        assertEquals(WorkflowDoneDetails.class, ActionType.WORKFLOW_DONE.getDetailsJavaClass());
         assertEquals(StartWorkflowDetails.class, ActionType.START_WORKFLOW.getDetailsJavaClass());
         assertEquals(TimeoutWorkflowDetails.class, ActionType.TIMEOUT_WORKFLOW.getDetailsJavaClass());
     }

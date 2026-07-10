@@ -102,7 +102,7 @@ class EmailChannelSenderTest {
                 eq(DigitalChannelsInt.EMAIL),
                 eq(DigitalAddressSourceInt.SPECIAL)
         );
-        verify(workflowUtils).scheduleTimeoutForCurrentChannel(IUN, recIndex, currentStep, campaign, ChannelType.EMAIL);
+        verify(workflowUtils).scheduleTimeoutForCurrentChannel(IUN, recIndex, campaign, ChannelType.EMAIL);
         verify(auditLogEvent).generateSuccess("Email sent successfully");
     }
 
@@ -143,7 +143,7 @@ class EmailChannelSenderTest {
                 eq(List.of())
         );
         verify(attachmentUtils, never()).retrieveAttachments(any(), anyInt(), any(), anyBoolean());
-        verify(workflowUtils).scheduleTimeoutForCurrentChannel(IUN, recIndex, currentStep, campaign, ChannelType.EMAIL);
+        verify(workflowUtils).scheduleTimeoutForCurrentChannel(IUN, recIndex, campaign, ChannelType.EMAIL);
     }
 
     @Test

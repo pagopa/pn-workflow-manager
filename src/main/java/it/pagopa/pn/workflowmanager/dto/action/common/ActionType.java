@@ -1,10 +1,7 @@
 package it.pagopa.pn.workflowmanager.dto.action.common;
 
 import it.pagopa.pn.workflowmanager.dto.action.ActionDetails;
-import it.pagopa.pn.workflowmanager.dto.action.details.DocumentCreationResponseActionDetails;
-import it.pagopa.pn.workflowmanager.dto.action.details.NotHandledDetails;
-import it.pagopa.pn.workflowmanager.dto.action.details.StartWorkflowDetails;
-import it.pagopa.pn.workflowmanager.dto.action.details.TimeoutWorkflowDetails;
+import it.pagopa.pn.workflowmanager.dto.action.details.*;
 import lombok.Getter;
 
 @Getter
@@ -26,7 +23,7 @@ public enum ActionType {
       );
     }
   },
-  WORKFLOW_DONE(NotHandledDetails.class) {
+  WORKFLOW_DONE(WorkflowDoneDetails.class) {
     @Override
     public String buildActionId(Action action) {
       return String.format(
@@ -54,10 +51,9 @@ public enum ActionType {
     public String buildActionId(Action action) {
       TimeoutWorkflowDetails details = (TimeoutWorkflowDetails) action.getDetails();
       return String.format(
-              "%s_timeout_workflow_recIndex_%d_stepIndex_%d_channel_%s",
+              "%s_timeout_workflow_recIndex_%d_channel_%s",
               action.getIun(),
               action.getRecipientIndex(),
-              details.getStepIdx(),
               details.getChannel()
       );
     }

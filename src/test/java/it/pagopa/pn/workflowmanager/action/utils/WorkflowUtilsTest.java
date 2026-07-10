@@ -3,6 +3,7 @@ package it.pagopa.pn.workflowmanager.action.utils;
 import it.pagopa.pn.workflowmanager.dto.action.common.ActionType;
 import it.pagopa.pn.workflowmanager.dto.action.details.NotHandledDetails;
 import it.pagopa.pn.workflowmanager.dto.action.details.StartWorkflowDetails;
+import it.pagopa.pn.workflowmanager.dto.action.details.WorkflowDoneDetails;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.RecipientTypeInt;
 import it.pagopa.pn.workflowmanager.exceptions.PnWorkflowException;
 import it.pagopa.pn.workflowmanager.models.internal.campaign.Campaign;
@@ -14,6 +15,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Duration;
@@ -345,7 +347,6 @@ class WorkflowUtilsTest {
     void shouldScheduleWithoutErrorsWhenTimeoutIsDefinedForCurrentChannel() {
         String iun = "IUN_123";
         int recIndex = 0;
-        int currentStepIdx = 1;
         Campaign campaign = mock(Campaign.class);
         WorkFlowEntity workflowEntity = mock(WorkFlowEntity.class);
         WorkFlowEntity secondEntity = mock(WorkFlowEntity.class);
@@ -359,7 +360,7 @@ class WorkflowUtilsTest {
         when(secondEntity.getChannel()).thenReturn(ChannelType.PEC);
 
 
-        assertDoesNotThrow(() -> workflowUtils.scheduleTimeoutForCurrentChannel(iun, recIndex, currentStepIdx, campaign, ChannelType.IO));
+        assertDoesNotThrow(() -> workflowUtils.scheduleTimeoutForCurrentChannel(iun, recIndex, campaign, ChannelType.IO));
         verify(schedulerService).scheduleEvent(
                 eq(iun),
                 eq(recIndex),
@@ -373,7 +374,6 @@ class WorkflowUtilsTest {
     void shouldNotThrowWhenTimeoutIsNullForCurrentChannel() {
         String iun = "IUN_123";
         int recIndex = 0;
-        int currentStepIdx = 1;
         Campaign campaign = mock(Campaign.class);
         WorkFlowEntity workflowEntity = mock(WorkFlowEntity.class);
 
@@ -382,7 +382,7 @@ class WorkflowUtilsTest {
         when(workflowEntity.getChannel()).thenReturn(ChannelType.IO);
         when(workflowEntity.getTimeout()).thenReturn(null);
 
-        assertDoesNotThrow(() -> workflowUtils.scheduleTimeoutForCurrentChannel(iun, recIndex, currentStepIdx, campaign, ChannelType.IO));
+        assertDoesNotThrow(() -> workflowUtils.scheduleTimeoutForCurrentChannel(iun, recIndex, campaign, ChannelType.IO));
         verifyNoInteractions(schedulerService);
     }
 
@@ -390,7 +390,6 @@ class WorkflowUtilsTest {
     void shouldThrowPnWorkflowExceptionWhenNoWorkflowEntityMatchesChannel() {
         String iun = "IUN_123";
         int recIndex = 0;
-        int currentStepIdx = 1;
         Campaign campaign = mock(Campaign.class);
         WorkFlowEntity workflowEntity = mock(WorkFlowEntity.class);
 
@@ -400,7 +399,7 @@ class WorkflowUtilsTest {
 
         assertThrows(
                 PnWorkflowException.class,
-                () -> workflowUtils.scheduleTimeoutForCurrentChannel(iun, recIndex, currentStepIdx, campaign, ChannelType.IO)
+                () -> workflowUtils.scheduleTimeoutForCurrentChannel(iun, recIndex, campaign, ChannelType.IO)
         );
     }
 
@@ -408,13 +407,12 @@ class WorkflowUtilsTest {
     void shouldThrowPnWorkflowExceptionWhenWorkflowListIsNull() {
         String iun = "IUN_123";
         int recIndex = 0;
-        int currentStepIdx = 1;
         Campaign campaign = mock(Campaign.class);
 
         when(campaign.getCampaignId()).thenReturn("campaign-5");
         when(campaign.getWorkflow()).thenReturn(null);
 
-        assertThrows(PnWorkflowException.class, () -> workflowUtils.scheduleTimeoutForCurrentChannel(iun, recIndex, currentStepIdx, campaign, ChannelType.IO));
+        assertThrows(PnWorkflowException.class, () -> workflowUtils.scheduleTimeoutForCurrentChannel(iun, recIndex, campaign, ChannelType.IO));
     }
 
     @Test
@@ -594,17 +592,19 @@ class WorkflowUtilsTest {
         String elementId = "ELEMENT_456";
 
         // Act
-        workflowUtils.scheduleWorkflowDone(iun, recIndex, elementId);
+        workflowUtils.scheduleWorkflowDone(iun, recIndex, elementId, DesiredFeedbackType.SENT);
 
         // Assert
+        ArgumentCaptor<WorkflowDoneDetails> workflowDoneDetailsArgumentCaptor = ArgumentCaptor.forClass(WorkflowDoneDetails.class);
         verify(schedulerService).scheduleEvent(
                 eq(iun),
                 eq(recIndex),
                 any(Instant.class),
                 eq(ActionType.WORKFLOW_DONE),
                 eq(elementId),
-                any(NotHandledDetails.class)
+                workflowDoneDetailsArgumentCaptor.capture()
         );
+        assertEquals(DesiredFeedbackType.SENT, workflowDoneDetailsArgumentCaptor.getValue().getCompletionFeedback());
     }
 
     private Campaign createCampaignWithMultipleChannels(List<ChannelType> channels) {

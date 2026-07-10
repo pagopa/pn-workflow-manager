@@ -4,6 +4,7 @@ import it.pagopa.pn.workflowmanager.dto.action.common.ActionType;
 import it.pagopa.pn.workflowmanager.dto.action.details.NotHandledDetails;
 import it.pagopa.pn.workflowmanager.dto.action.details.StartWorkflowDetails;
 import it.pagopa.pn.workflowmanager.dto.action.details.TimeoutWorkflowDetails;
+import it.pagopa.pn.workflowmanager.dto.action.details.WorkflowDoneDetails;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.RecipientTypeInt;
 import it.pagopa.pn.workflowmanager.exceptions.PnWorkflowException;
 import it.pagopa.pn.workflowmanager.models.internal.campaign.Campaign;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Component;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Component
@@ -43,7 +45,7 @@ public class WorkflowUtils {
         return Optional.empty();
     }
 
-    public void scheduleTimeoutForCurrentChannel(String iun, int recIndex, int currentStepIdx, Campaign campaign, ChannelType channel) {
+    public void scheduleTimeoutForCurrentChannel(String iun, int recIndex, Campaign campaign, ChannelType channel) {
         log.info("Start scheduleTimeoutForCurrentChannel for campaignId={} channel={}", campaign.getCampaignId(), channel);
         Optional<Duration> timeout = getTimeoutForCurrentChannel(campaign, channel);
         if (timeout.isPresent()) {
@@ -51,7 +53,6 @@ public class WorkflowUtils {
             log.debug("Scheduling timeout for campaignId={} channel={} at {}", campaign.getCampaignId(), channel, timeoutInstant);
             TimeoutWorkflowDetails actionDetails = TimeoutWorkflowDetails.builder()
                     .channel(channel)
-                    .stepIdx(currentStepIdx)
                     .build();
             schedulerService.scheduleEvent(iun, recIndex, timeoutInstant, ActionType.TIMEOUT_WORKFLOW, actionDetails);
         } else {
@@ -61,8 +62,12 @@ public class WorkflowUtils {
 
     private Optional<Duration> getTimeoutForCurrentChannel(Campaign campaign, ChannelType channel) {
         return Optional.of(getWorkflowEntityForCurrentChannel(campaign, channel))
-                .map(WorkFlowEntity::getTimeout);
+                .stream()
+                .map(WorkFlowEntity::getTimeout)
+                .filter(Objects::nonNull)
+                .findFirst();
     }
+
 
     private WorkFlowEntity getWorkflowEntityForCurrentChannel(Campaign campaign, ChannelType channel) {
         if(campaign.getWorkflow() == null || campaign.getWorkflow().isEmpty()) {
@@ -127,7 +132,7 @@ public class WorkflowUtils {
         );
     }
 
-    public void scheduleWorkflowDone(String iun,  int recIndex, String elementId) {
+    public void scheduleWorkflowDone(String iun,  int recIndex, String elementId, DesiredFeedbackType completionFeedback) {
         log.info("Scheduling workflow done for iun={} recIndex={} triggered by element={}", iun, recIndex, elementId);
         schedulerService.scheduleEvent(
                 iun,
@@ -135,7 +140,7 @@ public class WorkflowUtils {
                 Instant.now(),
                 ActionType.WORKFLOW_DONE,
                 elementId,
-                new NotHandledDetails()
+                WorkflowDoneDetails.builder().completionFeedback(completionFeedback).build()
         );
     }
 

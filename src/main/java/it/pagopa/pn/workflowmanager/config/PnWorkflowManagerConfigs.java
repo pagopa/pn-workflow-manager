@@ -1,6 +1,7 @@
 package it.pagopa.pn.workflowmanager.config;
 
 import it.pagopa.pn.commons.conf.SharedAutoConfiguration;
+import it.pagopa.pn.workflowmanager.dto.address.PhysicalAddressInt;
 import jakarta.annotation.PostConstruct;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +22,7 @@ public class PnWorkflowManagerConfigs {
     private Topics topics;
     private String cxId;
     private List<String> pnSendMode;
+    private PaperChannel paperChannel;
     //external client
     private String timelineClientBaseUrl;
     private String actionManagerBaseUrl;
@@ -40,6 +42,33 @@ public class PnWorkflowManagerConfigs {
         private String analogQueue;
         private String ioQueue;
         private String safeStorageEvents;
+    }
+
+    @Data
+    public static class SenderAddress {
+        private String fullname;
+        private String address;
+        private String zipcode;
+        private String city;
+        private String pr;
+        private String country;
+    }
+
+    @Data
+    public static class PaperChannel {
+
+        private SenderAddress senderAddress;
+
+        public PhysicalAddressInt getSenderPhysicalAddress(){
+            return PhysicalAddressInt.builder()
+                    .fullname(senderAddress.getFullname())
+                    .address(senderAddress.getAddress())
+                    .zip(senderAddress.getZipcode())
+                    .province(senderAddress.getPr())
+                    .municipality(senderAddress.getCity())
+                    .foreignState(senderAddress.getCountry())
+                    .build();
+        }
     }
 
     @PostConstruct

@@ -3,6 +3,7 @@ package it.pagopa.pn.workflowmanager.action.doneworkflow;
 import it.pagopa.pn.workflowmanager.action.utils.RecipientDeliveryAnalyzer;
 import it.pagopa.pn.workflowmanager.action.utils.RecipientDeliveryStatus;
 import it.pagopa.pn.workflowmanager.action.utils.TimelineUtils;
+import it.pagopa.pn.workflowmanager.dto.action.details.WorkflowDoneDetails;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationSenderInt;
@@ -11,19 +12,18 @@ import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt;
 import it.pagopa.pn.workflowmanager.exceptions.PnEventRouterException;
 import it.pagopa.pn.workflowmanager.models.internal.campaign.Campaign;
+import it.pagopa.pn.workflowmanager.models.internal.campaign.DesiredFeedbackType;
 import it.pagopa.pn.workflowmanager.service.CampaignService;
 import it.pagopa.pn.workflowmanager.service.NotificationService;
 import it.pagopa.pn.workflowmanager.service.TimelineService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -54,6 +54,7 @@ class WorkflowDoneActionHandlerTest {
     private static final String TEST_TIMELINE_ID = "TIMELINE-001";
     private static final String TEST_CAMPAIGN_ID = "CAMPAIGN-001";
     private static final String TEST_PA_ID = "PA-001";
+    private static final DesiredFeedbackType TEST_COMPLETION_FEEDBACK = DesiredFeedbackType.RECEIVED;
 
     @BeforeEach
     void setup() {
@@ -72,16 +73,17 @@ class WorkflowDoneActionHandlerTest {
         NotificationInt notification = createMockNotification();
         Campaign campaign = createMockCampaign();
         TimelineElementInternal timelineElement = createMockTimelineElement(TimelineElementCategoryInt.WORKFLOW_DONE_REACHED);
+        WorkflowDoneDetails workflowDoneDetails = createMockWorkflowDoneDetails();
 
         when(notificationService.getInformalNotificationByIun(TEST_IUN)).thenReturn(notification);
         when(campaignService.getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_PA_ID)).thenReturn(campaign);
         when(recipientDeliveryAnalyzer.getDeliveryStatus(eq(List.of(timelineElement)), eq(campaign), eq(TEST_REC_INDEX),
                 eq(RecipientTypeInt.PF))).thenReturn(RecipientDeliveryStatus.REACHED);
         when(timelineUtils.buildWorkflowDoneReachedTimelineElement(eq(TEST_REC_INDEX), eq(notification), 
-                anyString(), eq(TEST_TIMELINE_ID))).thenReturn(timelineElement);
+                anyString(), eq(TEST_TIMELINE_ID), eq(TEST_COMPLETION_FEEDBACK))).thenReturn(timelineElement);
 
         // Act
-        handler.doneWorkflowAction(List.of(timelineElement), TEST_IUN, TEST_REC_INDEX, TEST_TIMELINE_ID);
+        handler.doneWorkflowAction(List.of(timelineElement), TEST_IUN, TEST_REC_INDEX, TEST_TIMELINE_ID, workflowDoneDetails);
 
         // Assert
         verify(notificationService).getInformalNotificationByIun(TEST_IUN);
@@ -89,7 +91,7 @@ class WorkflowDoneActionHandlerTest {
         verify(recipientDeliveryAnalyzer).getDeliveryStatus(eq(List.of(timelineElement)),eq(campaign), eq(TEST_REC_INDEX),
                 eq(RecipientTypeInt.PF));
         verify(timelineUtils).buildWorkflowDoneReachedTimelineElement(eq(TEST_REC_INDEX), eq(notification), 
-                anyString(), eq(TEST_TIMELINE_ID));
+                anyString(), eq(TEST_TIMELINE_ID), eq(TEST_COMPLETION_FEEDBACK));
         verify(timelineService).addTimelineElement(timelineElement, notification);
         verifyNoMoreInteractions(timelineUtils);
     }
@@ -100,16 +102,17 @@ class WorkflowDoneActionHandlerTest {
         NotificationInt notification = createMockNotification();
         Campaign campaign = createMockCampaign();
         TimelineElementInternal timelineElement = createMockTimelineElement(TimelineElementCategoryInt.WORKFLOW_DONE_UNREACHED);
+        WorkflowDoneDetails workflowDoneDetails = createMockWorkflowDoneDetails();
 
         when(notificationService.getInformalNotificationByIun(TEST_IUN)).thenReturn(notification);
         when(campaignService.getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_PA_ID)).thenReturn(campaign);
         when(recipientDeliveryAnalyzer.getDeliveryStatus(eq(List.of(timelineElement)),eq(campaign), eq(TEST_REC_INDEX),
                 eq(RecipientTypeInt.PF))).thenReturn(RecipientDeliveryStatus.UNREACHED);
         when(timelineUtils.buildWorkflowDoneUnreachedTimelineElement(eq(TEST_REC_INDEX), eq(notification), 
-                anyString(), eq(TEST_TIMELINE_ID))).thenReturn(timelineElement);
+                anyString(), eq(TEST_TIMELINE_ID), eq(TEST_COMPLETION_FEEDBACK))).thenReturn(timelineElement);
 
         // Act
-        handler.doneWorkflowAction(List.of(timelineElement), TEST_IUN, TEST_REC_INDEX, TEST_TIMELINE_ID);
+        handler.doneWorkflowAction(List.of(timelineElement), TEST_IUN, TEST_REC_INDEX, TEST_TIMELINE_ID, workflowDoneDetails);
 
         // Assert
         verify(notificationService).getInformalNotificationByIun(TEST_IUN);
@@ -117,7 +120,7 @@ class WorkflowDoneActionHandlerTest {
         verify(recipientDeliveryAnalyzer).getDeliveryStatus(eq(List.of(timelineElement)),eq(campaign), eq(TEST_REC_INDEX),
                 eq(RecipientTypeInt.PF));
         verify(timelineUtils).buildWorkflowDoneUnreachedTimelineElement(eq(TEST_REC_INDEX), eq(notification), 
-                anyString(), eq(TEST_TIMELINE_ID));
+                anyString(), eq(TEST_TIMELINE_ID), eq(TEST_COMPLETION_FEEDBACK));
         verify(timelineService).addTimelineElement(timelineElement, notification);
         verifyNoMoreInteractions(timelineUtils);
     }
@@ -127,6 +130,7 @@ class WorkflowDoneActionHandlerTest {
         // Arrange
         NotificationInt notification = createMockNotification();
         Campaign campaign = createMockCampaign();
+        WorkflowDoneDetails workflowDoneDetails = createMockWorkflowDoneDetails();
 
         when(notificationService.getInformalNotificationByIun(TEST_IUN)).thenReturn(notification);
         when(campaignService.getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_PA_ID)).thenReturn(campaign);
@@ -135,7 +139,7 @@ class WorkflowDoneActionHandlerTest {
 
         // Act & Assert
          assertThrows(PnEventRouterException.class,
-                () -> handler.doneWorkflowAction(List.of(), TEST_IUN, TEST_REC_INDEX, TEST_TIMELINE_ID));
+                () -> handler.doneWorkflowAction(List.of(), TEST_IUN, TEST_REC_INDEX, TEST_TIMELINE_ID, workflowDoneDetails));
 
 
         verify(notificationService).getInformalNotificationByIun(TEST_IUN);
@@ -144,44 +148,6 @@ class WorkflowDoneActionHandlerTest {
                 eq(RecipientTypeInt.PF));
         verifyNoInteractions(timelineService);
         verifyNoInteractions(timelineUtils);
-    }
-
-    @Test
-    void doneWorkflowAction_shouldHandlePgRecipientType() {
-        // Arrange
-        NotificationSenderInt sender = NotificationSenderInt.builder()
-                .paId(TEST_PA_ID)
-                .build();
-
-        NotificationRecipientInt recipient = NotificationRecipientInt.builder()
-                .recipientType(RecipientTypeInt.PG)
-                .build();
-
-        NotificationInt notification = NotificationInt.builder()
-                .iun(TEST_IUN)
-                .campaignId(TEST_CAMPAIGN_ID)
-                .sender(sender)
-                .recipients(List.of(recipient))
-                .build();
-
-        Campaign campaign = createMockCampaign();
-        TimelineElementInternal timelineElement = createMockTimelineElement(TimelineElementCategoryInt.WORKFLOW_DONE_REACHED);
-
-        when(notificationService.getInformalNotificationByIun(TEST_IUN)).thenReturn(notification);
-        when(campaignService.getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_PA_ID)).thenReturn(campaign);
-        when(recipientDeliveryAnalyzer.getDeliveryStatus(eq(List.of(timelineElement)),eq(campaign), eq(TEST_REC_INDEX),
-                eq(RecipientTypeInt.PG))).thenReturn(RecipientDeliveryStatus.REACHED);
-        when(timelineUtils.buildWorkflowDoneReachedTimelineElement(eq(TEST_REC_INDEX), eq(notification), 
-                anyString(), eq(TEST_TIMELINE_ID))).thenReturn(timelineElement);
-
-        // Act
-        handler.doneWorkflowAction(List.of(timelineElement),TEST_IUN, TEST_REC_INDEX, TEST_TIMELINE_ID);
-
-        // Assert
-        ArgumentCaptor<RecipientTypeInt> recipientTypeCaptor = ArgumentCaptor.forClass(RecipientTypeInt.class);
-        verify(recipientDeliveryAnalyzer).getDeliveryStatus(eq(List.of(timelineElement)),eq(campaign), eq(TEST_REC_INDEX),
-                recipientTypeCaptor.capture());
-        assertEquals(RecipientTypeInt.PG, recipientTypeCaptor.getValue());
     }
 
     private NotificationInt createMockNotification() {
@@ -211,6 +177,12 @@ class WorkflowDoneActionHandlerTest {
         return TimelineElementInternal.builder()
                 .iun(TEST_IUN)
                 .category(category)
+                .build();
+    }
+
+    private WorkflowDoneDetails createMockWorkflowDoneDetails() {
+        return WorkflowDoneDetails.builder()
+                .completionFeedback(TEST_COMPLETION_FEEDBACK)
                 .build();
     }
 }

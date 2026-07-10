@@ -3,11 +3,13 @@ package it.pagopa.pn.workflowmanager.action.doneworkflow;
 import it.pagopa.pn.workflowmanager.action.utils.RecipientDeliveryAnalyzer;
 import it.pagopa.pn.workflowmanager.action.utils.RecipientDeliveryStatus;
 import it.pagopa.pn.workflowmanager.action.utils.TimelineUtils;
+import it.pagopa.pn.workflowmanager.dto.action.details.WorkflowDoneDetails;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.RecipientTypeInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.exceptions.PnEventRouterException;
 import it.pagopa.pn.workflowmanager.models.internal.campaign.Campaign;
+import it.pagopa.pn.workflowmanager.models.internal.campaign.DesiredFeedbackType;
 import it.pagopa.pn.workflowmanager.service.CampaignService;
 import it.pagopa.pn.workflowmanager.service.NotificationService;
 import it.pagopa.pn.workflowmanager.service.TimelineService;
@@ -31,7 +33,7 @@ public class WorkflowDoneActionHandler {
     private final RecipientDeliveryAnalyzer recipientDeliveryAnalyzer;
     private final TimelineService timelineService;
 
-    public void doneWorkflowAction(List<TimelineElementInternal> timelineElements,String iun, int recIndex, String timelineId) {
+    public void doneWorkflowAction(List<TimelineElementInternal> timelineElements, String iun, int recIndex, String timelineId, WorkflowDoneDetails details) {
         log.info("Done informal notification workflow for recipient - iun {} id {}", iun, recIndex);
 
         NotificationInt notificationInt = notificationService.getInformalNotificationByIun(iun);
@@ -47,19 +49,24 @@ public class WorkflowDoneActionHandler {
                 campaign, recIndex, currentRecipientType);
 
         log.info("Recipient delivery status for iun {} recIndex {}: {}", notificationInt.getIun(), recIndex, recipientDeliveryStatus);
-        createAndPersistTimelineElement(recIndex, recipientDeliveryStatus, timelineId, notificationInt);
+        createAndPersistTimelineElement(recIndex, recipientDeliveryStatus, timelineId, notificationInt, details.getCompletionFeedback());
     }
 
-    private void createAndPersistTimelineElement(int recIndex, RecipientDeliveryStatus status,
-                                                 String sourceTimelineId, NotificationInt notification) {
+    private void createAndPersistTimelineElement(
+            int recIndex,
+            RecipientDeliveryStatus status,
+            String sourceTimelineId,
+            NotificationInt notification,
+            DesiredFeedbackType completionFeedback
+    ) {
         switch (status) {
             case REACHED:
                 addTimelineElement(timelineUtils.buildWorkflowDoneReachedTimelineElement(recIndex, notification,
-                        getWorkflowDoneReachedTimelineElementId(recIndex, notification.getIun()), sourceTimelineId),notification);
+                        getWorkflowDoneReachedTimelineElementId(recIndex, notification.getIun()), sourceTimelineId, completionFeedback),notification);
                 break;
             case UNREACHED:
                 addTimelineElement(timelineUtils.buildWorkflowDoneUnreachedTimelineElement(recIndex, notification,
-                        getWorkflowDoneUnreachedTimelineElementId(recIndex, notification.getIun()), sourceTimelineId),notification);
+                        getWorkflowDoneUnreachedTimelineElementId(recIndex, notification.getIun()), sourceTimelineId, completionFeedback),notification);
                 break;
 
             case UNDELIVERABLE:
