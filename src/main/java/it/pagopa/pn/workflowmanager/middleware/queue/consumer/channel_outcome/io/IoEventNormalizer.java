@@ -10,6 +10,7 @@ import it.pagopa.pn.workflowmanager.dto.timeline.details.DigitalChannelsInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.DigitalDeliveryDetailsInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.SendDigitalMessageDetailsInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.SendRelatedTimelineElement;
+import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.ChannelOutcomeCategory;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.ChannelOutcomeClassification;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.event.IoOutcomeEvent;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.event.IoOutcomeEventType;
@@ -74,7 +75,7 @@ public class IoEventNormalizer implements ChannelOutcomeNormalizer<IoOutcomeEven
         SendDigitalMessageDetailsInt digitalSendMessageDetails = (SendDigitalMessageDetailsInt) sourceSendRequestDetails;
         int recIndex = digitalSendMessageDetails.getRecIndex();
         return switch (classification.getCategory()) {
-            case PROGRESS -> timelineUtils.buildSendDigitalMessageProgress(
+            case ChannelOutcomeCategory.Progress ignore -> timelineUtils.buildSendDigitalMessageProgress(
                     notificationInt,
                     recIndex,
                     DigitalChannelsInt.IO,
@@ -87,7 +88,7 @@ public class IoEventNormalizer implements ChannelOutcomeNormalizer<IoOutcomeEven
                     digitalSendMessageDetails.getDigitalAddressSource(),
                     ioEvent.getEventTimestamp()
             );
-            case FEEDBACK -> timelineUtils.buildSendDigitalMessageFeedback(
+            case ChannelOutcomeCategory.Feedback ignore -> timelineUtils.buildSendDigitalMessageFeedback(
                     notificationInt,
                     recIndex,
                     DigitalChannelsInt.IO,

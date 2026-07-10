@@ -8,5 +8,4 @@ public interface ChannelOutcomeClassification {
     ChannelOutcomeCategory getCategory();
     boolean isRecipientReached();
     Optional<DesiredFeedbackType> getSatisfiedDesiredFeedback();
-
 }
