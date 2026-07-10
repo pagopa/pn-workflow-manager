@@ -22,7 +22,7 @@ import java.util.Optional;
 @Getter
 public enum AnalogEventClassification implements ChannelOutcomeClassification {
 
-    PROGRESS(false, ChannelOutcomeCategory.progress(), null),
+    PROGRESS(false, ChannelOutcomeCategory.progress(), DesiredFeedbackType.SENT),
     OK(true, ChannelOutcomeCategory.positiveFeedback(), DesiredFeedbackType.RECEIVED),
     KO(false, ChannelOutcomeCategory.negativeFeedback(), null);
 

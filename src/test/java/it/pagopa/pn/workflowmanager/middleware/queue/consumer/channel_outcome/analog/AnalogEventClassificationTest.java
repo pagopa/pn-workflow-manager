@@ -36,7 +36,7 @@ class AnalogEventClassificationTest {
     }
 
     @ParameterizedTest(name = "{0} -> desiredFeedback assente")
-    @ValueSource(strings = {"PROGRESS", "KO"})
+    @ValueSource(strings = {"KO"})
     void shouldReturnEmptyDesiredFeedbackWhenNotApplicable(String enumName) {
         AnalogEventClassification classification = AnalogEventClassification.valueOf(enumName);
 
@@ -48,6 +48,13 @@ class AnalogEventClassificationTest {
         assertEquals(Optional.of(DesiredFeedbackType.RECEIVED),
                 AnalogEventClassification.OK.getSatisfiedDesiredFeedback());
     }
+
+    @Test
+    void shouldReturnSentDesiredFeedbackForProgress() {
+        assertEquals(Optional.of(DesiredFeedbackType.SENT),
+                AnalogEventClassification.PROGRESS.getSatisfiedDesiredFeedback());
+    }
+
 
     @ParameterizedTest(name = "fromStatusEventCode(\"{0}\")")
     @ValueSource(strings = {"PROGRESS", "OK", "KO"})
