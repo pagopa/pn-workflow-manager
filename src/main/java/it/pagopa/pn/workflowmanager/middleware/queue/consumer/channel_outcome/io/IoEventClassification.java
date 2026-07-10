@@ -11,11 +11,11 @@ import java.util.Optional;
 
 @Getter
 public enum IoEventClassification implements ChannelOutcomeClassification {
-    DELIVERED_TO_USER(true, ChannelOutcomeCategory.PROGRESS, DesiredFeedbackType.RECEIVED),
-    SENDER_NOT_ALLOWED(false, ChannelOutcomeCategory.FEEDBACK, null),
-    SENT_TO_IO(false, ChannelOutcomeCategory.PROGRESS, null),
-    READ(true, ChannelOutcomeCategory.PROGRESS, DesiredFeedbackType.READ),
-    PAID(true, ChannelOutcomeCategory.PROGRESS, DesiredFeedbackType.PAID);
+    DELIVERED_TO_USER(true, ChannelOutcomeCategory.progress(), DesiredFeedbackType.RECEIVED),
+    SENDER_NOT_ALLOWED(false, ChannelOutcomeCategory.negativeFeedback(), null),
+    SENT_TO_IO(false, ChannelOutcomeCategory.progress(), null),
+    READ(true, ChannelOutcomeCategory.progress(), DesiredFeedbackType.READ),
+    PAID(true, ChannelOutcomeCategory.progress(), DesiredFeedbackType.PAID);
 
     private final boolean recipientReached;
     private final ChannelOutcomeCategory category;

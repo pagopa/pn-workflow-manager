@@ -9,6 +9,7 @@ import it.pagopa.pn.workflowmanager.dto.timeline.details.DigitalChannelsInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.DigitalDeliveryDetailsInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.SendDigitalMessageDetailsInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.SendRelatedTimelineElement;
+import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.ChannelOutcomeCategory;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.ChannelOutcomeNormalizer;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.NormalizedChannelOutcome;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.event.ExtChannelOutcomeEvent;
@@ -54,7 +55,7 @@ public class PecEventNormalizer implements ChannelOutcomeNormalizer<ExtChannelOu
                 .build();
 
         return switch(classification.getCategory()) {
-            case PROGRESS -> timelineUtils.buildSendDigitalMessageProgress(
+            case ChannelOutcomeCategory.Progress ignore -> timelineUtils.buildSendDigitalMessageProgress(
                     notification,
                     recIndex,
                     DigitalChannelsInt.PEC,
@@ -64,7 +65,7 @@ public class PecEventNormalizer implements ChannelOutcomeNormalizer<ExtChannelOu
                     digitalSendMessageDetails.getDigitalAddressSource(),
                     pecEvent.getEventTimestamp()
             );
-            case FEEDBACK -> timelineUtils.buildSendDigitalMessageFeedback(
+            case ChannelOutcomeCategory.Feedback f -> timelineUtils.buildSendDigitalMessageFeedback(
                     notification,
                     recIndex,
                     DigitalChannelsInt.PEC,
@@ -72,7 +73,7 @@ public class PecEventNormalizer implements ChannelOutcomeNormalizer<ExtChannelOu
                     deliveryDetail,
                     digitalSendMessageDetails.getDigitalAddress(),
                     digitalSendMessageDetails.getDigitalAddressSource(),
-                    classification.isSuccessfulDelivery() ? ResponseStatusInt.OK : ResponseStatusInt.KO,
+                    f.isNegativeFeedback() ? ResponseStatusInt.KO : ResponseStatusInt.OK,
                     mapSendingReceipts(pecEvent),
                     pecEvent.getEventTimestamp()
             );
