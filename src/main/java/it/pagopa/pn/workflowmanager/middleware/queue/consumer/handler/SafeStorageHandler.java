@@ -1,6 +1,6 @@
-package it.pagopa.pn.workflowmanager.middleware.responsehandler;
+package it.pagopa.pn.workflowmanager.middleware.queue.consumer.handler;
 
-import it.pagopa.pn.deliverypushvalidator.generated.openapi.msclient.pnsafestorage.model.FileDownloadResponse;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.safestorage.model.FileDownloadResponse;
 import it.pagopa.pn.workflowmanager.dto.action.details.DocumentCreationResponseActionDetails;
 import it.pagopa.pn.workflowmanager.service.SchedulerService;
 import lombok.AllArgsConstructor;
@@ -16,7 +16,7 @@ import static it.pagopa.pn.workflowmanager.dto.action.common.ActionType.DOCUMENT
 @Component
 @CustomLog
 @AllArgsConstructor
-public class SafeStorageResponseHandler {
+public class SafeStorageHandler {
 
     private static final String TAG_IUN = "iun";
     private static final String TAG_REC_INDEX = "recIndex";

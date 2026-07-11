@@ -8,6 +8,7 @@ import it.pagopa.pn.workflowmanager.dto.timeline.details.DigitalChannelsInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.DigitalDeliveryDetailsInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.SendDigitalMessageDetailsInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.SendRelatedTimelineElement;
+import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.ChannelOutcomeCategory;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.ChannelOutcomeNormalizer;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.NormalizedChannelOutcome;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.event.ExtChannelOutcomeEvent;
@@ -48,7 +49,7 @@ public class EmailEventNormalizer implements ChannelOutcomeNormalizer<ExtChannel
                 .build();
 
         return switch(classification.getCategory()) {
-            case PROGRESS -> timelineUtils.buildSendDigitalMessageProgress(
+            case ChannelOutcomeCategory.Progress ignored -> timelineUtils.buildSendDigitalMessageProgress(
                     notification,
                     recIndex,
                     DigitalChannelsInt.EMAIL,
@@ -58,7 +59,7 @@ public class EmailEventNormalizer implements ChannelOutcomeNormalizer<ExtChannel
                     digitalSendMessageDetails.getDigitalAddressSource(),
                     emailEvent.getEventTimestamp()
             );
-            case FEEDBACK -> timelineUtils.buildSendDigitalMessageFeedback(
+            case ChannelOutcomeCategory.Feedback ignored -> timelineUtils.buildSendDigitalMessageFeedback(
                     notification,
                     recIndex,
                     DigitalChannelsInt.EMAIL,

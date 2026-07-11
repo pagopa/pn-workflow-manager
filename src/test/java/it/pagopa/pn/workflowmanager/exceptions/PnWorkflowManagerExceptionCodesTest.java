@@ -1,6 +1,5 @@
-package it.pagopa.pn.workflowmanager.exception;
+package it.pagopa.pn.workflowmanager.exceptions;
 
-import it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCodes;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -15,5 +14,5 @@ class PnWorkflowManagerExceptionCodesTest {
                 () -> Assertions.assertEquals("PN_WORKFLOWMANAGER_ERROR_CODE_INVALID_CAMPAIGN_STATUS", WorkflowManagerExceptionCodes.ERROR_CODE_WORKFLOWMANAGER_INVALID_CAMPAIGN_STATUS)
         );
     }
-
 }
+

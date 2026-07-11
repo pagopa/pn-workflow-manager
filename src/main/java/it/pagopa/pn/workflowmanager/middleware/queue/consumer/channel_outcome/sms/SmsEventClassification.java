@@ -11,9 +11,9 @@ import java.util.Optional;
 
 @Getter
 public enum SmsEventClassification implements ChannelOutcomeClassification {
-    S003(false, ChannelOutcomeCategory.FEEDBACK, DesiredFeedbackType.SENT),
-    S008(false, ChannelOutcomeCategory.FEEDBACK, null),
-    S010(false, ChannelOutcomeCategory.FEEDBACK, null);
+    S003(false, ChannelOutcomeCategory.positiveFeedback(), DesiredFeedbackType.SENT),
+    S008(false, ChannelOutcomeCategory.negativeFeedback(), null),
+    S010(false, ChannelOutcomeCategory.negativeFeedback(), null);
 
     private final ChannelOutcomeCategory category;
     private final boolean recipientReached;
@@ -36,10 +36,6 @@ public enum SmsEventClassification implements ChannelOutcomeClassification {
         } catch (IllegalArgumentException ex) {
             throw new PnUnknownEventCodeException(eventCode, ChannelType.SMS);
         }
-    }
-
-    public boolean isSuccessEvent() {
-        return this == S003;
     }
 }
 

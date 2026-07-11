@@ -1,6 +1,6 @@
 package it.pagopa.pn.workflowmanager.middleware.queue.consumer.handler.action;
 
-import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.actionmanager.model.ActionType;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.actionmanager.model.ActionType;
 import it.pagopa.pn.workflowmanager.action.doneworkflow.WorkflowDoneActionHandler;
 import it.pagopa.pn.workflowmanager.action.utils.TimelineUtils;
 import it.pagopa.pn.workflowmanager.dto.action.common.Action;

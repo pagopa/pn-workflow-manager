@@ -57,7 +57,7 @@ public class SmsEventNormalizer implements ChannelOutcomeNormalizer<ExtChannelOu
                 deliveryDetail,
                 digitalSendMessageDetails.getDigitalAddress(),
                 digitalSendMessageDetails.getDigitalAddressSource(),
-                classification.isSuccessEvent() ? ResponseStatusInt.OK : ResponseStatusInt.KO,
+                classification.getCategory().isNegativeFeedback() ? ResponseStatusInt.KO : ResponseStatusInt.OK,
                 null,
                 smsEvent.getEventTimestamp()
         );

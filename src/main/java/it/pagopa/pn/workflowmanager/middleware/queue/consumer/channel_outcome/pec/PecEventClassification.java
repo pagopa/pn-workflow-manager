@@ -16,18 +16,18 @@ import java.util.Optional;
 @Getter
 public enum PecEventClassification implements ChannelOutcomeClassification {
     // codici in arrivo da ext-Channel (C) con/senza busta indica se lo stato contiene allegati
-    C000(false, ChannelOutcomeCategory.PROGRESS, null), // COMUNICAZIONE CON SERVER PEC AVVENUTA  (senza busta)
-    C001(false, ChannelOutcomeCategory.PROGRESS, DesiredFeedbackType.SENT), // StatusPec.ACCETTAZIONE  (con busta)
-    C002(false, ChannelOutcomeCategory.FEEDBACK, null), // StatusPec.NON_ACCETTAZIONE  (con busta)
-    C003(true, ChannelOutcomeCategory.FEEDBACK, DesiredFeedbackType.RECEIVED), // StatusPec.AVVENUTA_CONSEGNA  (con busta)
-    C004(false, ChannelOutcomeCategory.FEEDBACK, null), // StatusPec.ERRORE_CONSEGNA (con busta)
-    C005(false, ChannelOutcomeCategory.PROGRESS, null), // StatusPec.PRESA_IN_CARICO  (senza busta)
-    C006(false, ChannelOutcomeCategory.FEEDBACK, null), // StatusPec.RILEVAZIONE_VIRUS (con busta)
-    C007(false, ChannelOutcomeCategory.PROGRESS, null), // StatusPec.PREAVVISO_ERRORE_CONSEGNA  (senza busta)
-    C008(false, ChannelOutcomeCategory.FEEDBACK, null), // StatusPec.ERRORE_COMUNICAZIONE_SERVER_PEC  - con retry da parte di PN (senza busta)
-    C009(false, ChannelOutcomeCategory.FEEDBACK, null), // StatusPec.ERRORE_DOMINIO_PEC_NON_VALIDO - senza retry:  indica un dominio pec non valido; (senza busta)
-    C010(false, ChannelOutcomeCategory.FEEDBACK, null), // StatusPec.ERROR_INVIO_PEC - con retry da parte di PN: indica un errore generico di invio pec (senza busta)
-    C011(false, ChannelOutcomeCategory.FEEDBACK, null); // PEC - ADDRESS_ERROR
+    C000(false, ChannelOutcomeCategory.progress(), null), // COMUNICAZIONE CON SERVER PEC AVVENUTA  (senza busta)
+    C001(false, ChannelOutcomeCategory.progress(), DesiredFeedbackType.SENT), // StatusPec.ACCETTAZIONE  (con busta)
+    C002(false, ChannelOutcomeCategory.negativeFeedback(), null), // StatusPec.NON_ACCETTAZIONE  (con busta)
+    C003(true, ChannelOutcomeCategory.positiveFeedback(), DesiredFeedbackType.RECEIVED), // StatusPec.AVVENUTA_CONSEGNA  (con busta)
+    C004(false, ChannelOutcomeCategory.negativeFeedback(), null), // StatusPec.ERRORE_CONSEGNA (con busta)
+    C005(false, ChannelOutcomeCategory.progress(), null), // StatusPec.PRESA_IN_CARICO  (senza busta)
+    C006(false, ChannelOutcomeCategory.negativeFeedback(), null), // StatusPec.RILEVAZIONE_VIRUS (con busta)
+    C007(false, ChannelOutcomeCategory.progress(), null), // StatusPec.PREAVVISO_ERRORE_CONSEGNA  (senza busta)
+    C008(false, ChannelOutcomeCategory.negativeFeedback(), null), // StatusPec.ERRORE_COMUNICAZIONE_SERVER_PEC  - con retry da parte di PN (senza busta)
+    C009(false, ChannelOutcomeCategory.negativeFeedback(), null), // StatusPec.ERRORE_DOMINIO_PEC_NON_VALIDO - senza retry:  indica un dominio pec non valido; (senza busta)
+    C010(false, ChannelOutcomeCategory.negativeFeedback(), null), // StatusPec.ERROR_INVIO_PEC - con retry da parte di PN: indica un errore generico di invio pec (senza busta)
+    C011(false, ChannelOutcomeCategory.negativeFeedback(), null); // PEC - ADDRESS_ERROR
 
 
     private final ChannelOutcomeCategory category;
@@ -57,14 +57,6 @@ public enum PecEventClassification implements ChannelOutcomeClassification {
         } catch (IllegalArgumentException ex) {
             throw new PnUnknownEventCodeException(eventCode, ChannelType.PEC);
         }
-    }
-
-    /**
-     * Check if the event code represents a successful delivery
-     * @return true if it's a successful delivery (C003)
-     */
-    public boolean isSuccessfulDelivery() {
-        return this == C003;
     }
 }
 

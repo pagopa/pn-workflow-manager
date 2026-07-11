@@ -5,29 +5,33 @@ import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.Ch
 import it.pagopa.pn.workflowmanager.models.internal.campaign.DesiredFeedbackType;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class EmailEventClassificationTest {
-    @ParameterizedTest(name = "Tipo {0} -> recipientReached={1}, category={2}")
-    @CsvSource({
-            "M003, false, PROGRESS",
-            "M004, true,  PROGRESS",
-            "M005, false, FEEDBACK",
-            "M006, false, FEEDBACK",
-            "M008, false, FEEDBACK",
-            "M009, false, FEEDBACK",
-            "M010, false, FEEDBACK",
-            "M011, false, FEEDBACK"
-    })
-    void shouldMapCorrectBooleanFlags(String enumName, boolean expectedReached, ChannelOutcomeCategory expectedCategory) {
-        // Act
-        EmailEventClassification classification = EmailEventClassification.valueOf(enumName);
+    private static Stream<Arguments> emailClassificationCases() {
+        return Stream.of(
+                Arguments.of(EmailEventClassification.M003, false, ChannelOutcomeCategory.progress()),
+                Arguments.of(EmailEventClassification.M004, true, ChannelOutcomeCategory.progress()),
+                Arguments.of(EmailEventClassification.M005, false, ChannelOutcomeCategory.negativeFeedback()),
+                Arguments.of(EmailEventClassification.M006, false, ChannelOutcomeCategory.negativeFeedback()),
+                Arguments.of(EmailEventClassification.M008, false, ChannelOutcomeCategory.negativeFeedback()),
+                Arguments.of(EmailEventClassification.M009, false, ChannelOutcomeCategory.negativeFeedback()),
+                Arguments.of(EmailEventClassification.M010, false, ChannelOutcomeCategory.negativeFeedback()),
+                Arguments.of(EmailEventClassification.M011, false, ChannelOutcomeCategory.negativeFeedback())
+        );
+    }
 
+    @ParameterizedTest(name = "Tipo {0} -> recipientReached={1}, category={2}")
+    @MethodSource("emailClassificationCases")
+    void shouldMapCorrectBooleanFlags(EmailEventClassification classification, boolean expectedReached, ChannelOutcomeCategory expectedCategory) {
         // Assert
         assertEquals(expectedReached, classification.isRecipientReached());
         assertEquals(expectedCategory, classification.getCategory());

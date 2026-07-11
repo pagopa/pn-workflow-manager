@@ -1,7 +1,7 @@
 package it.pagopa.pn.workflowmanager.config.msclient;
 
-import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.timelineservice.ApiClient;
-import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.timelineservice.api.TimelineControllerApi;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.ApiClient;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.api.TimelineControllerApi;
 import it.pagopa.pn.workflowmanager.config.PnWorkflowManagerConfigs;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;

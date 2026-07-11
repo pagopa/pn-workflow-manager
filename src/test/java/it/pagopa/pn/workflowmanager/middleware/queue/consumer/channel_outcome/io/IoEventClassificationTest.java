@@ -5,26 +5,29 @@ import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.Ch
 import it.pagopa.pn.workflowmanager.models.internal.campaign.DesiredFeedbackType;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class IoEventClassificationTest {
-    @ParameterizedTest(name = "Tipo {0} -> recipientReached={1}, category={2}")
-    @CsvSource({
-            "DELIVERED_TO_USER, true,  PROGRESS",
-            "SENDER_NOT_ALLOWED, false, FEEDBACK",
-            "SENT_TO_IO,         false, PROGRESS",
-            "READ,               true,  PROGRESS",
-            "PAID,               true,  PROGRESS"
-    })
-    void shouldMapCorrectBooleanFlags(String enumName, boolean expectedReached, ChannelOutcomeCategory expectedCategory) {
-        // Act
-        IoEventClassification classification = IoEventClassification.valueOf(enumName);
+    private static Stream<Arguments> ioClassificationCases() {
+        return Stream.of(
+                Arguments.of(IoEventClassification.DELIVERED_TO_USER, true, ChannelOutcomeCategory.progress()),
+                Arguments.of(IoEventClassification.SENDER_NOT_ALLOWED, false, ChannelOutcomeCategory.negativeFeedback()),
+                Arguments.of(IoEventClassification.SENT_TO_IO, false, ChannelOutcomeCategory.progress()),
+                Arguments.of(IoEventClassification.READ, true, ChannelOutcomeCategory.progress()),
+                Arguments.of(IoEventClassification.PAID, true, ChannelOutcomeCategory.progress())
+        );
+    }
 
+    @ParameterizedTest(name = "Tipo {0} -> recipientReached={1}, category={2}")
+    @MethodSource("ioClassificationCases")
+    void shouldMapCorrectBooleanFlags(IoEventClassification classification, boolean expectedReached, ChannelOutcomeCategory expectedCategory) {
         // Assert
         assertEquals(expectedReached, classification.isRecipientReached());
         assertEquals(expectedCategory, classification.getCategory());

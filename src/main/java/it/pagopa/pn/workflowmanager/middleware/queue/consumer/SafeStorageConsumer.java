@@ -2,9 +2,9 @@ package it.pagopa.pn.workflowmanager.middleware.queue.consumer;
 
 import io.awspring.cloud.sqs.annotation.SqsListener;
 import it.pagopa.pn.commons.utils.MDCUtils;
-import it.pagopa.pn.deliverypushvalidator.generated.openapi.msclient.pnsafestorage.model.FileDownloadResponse;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.safestorage.model.FileDownloadResponse;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.utils.MdcUtils;
-import it.pagopa.pn.workflowmanager.middleware.responsehandler.SafeStorageResponseHandler;
+import it.pagopa.pn.workflowmanager.middleware.queue.consumer.handler.SafeStorageHandler;
 import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.MDC;
@@ -21,7 +21,7 @@ public class SafeStorageConsumer {
     private static final String SAFE_STORAGE_DOCUMENT_TYPE_PN_COMMUNICATIONS_COVERPAGE = "PN_COMMUNICATIONS_COVERPAGE";
     private static final String SAFE_STORAGE_CLIENT_NAME = "SAFE_STORAGE";
 
-    private final SafeStorageResponseHandler handler;
+    private final SafeStorageHandler handler;
 
     @SqsListener(queueNames = "#{@pnWorkflowManagerConfigs.topics.safeStorageEvents}")
     public void pnSafeStorageEventInboundConsumer(Message<FileDownloadResponse> message) {

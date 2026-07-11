@@ -11,14 +11,14 @@ import java.util.Optional;
 
 @Getter
 public enum EmailEventClassification implements ChannelOutcomeClassification {
-    M003(false, ChannelOutcomeCategory.PROGRESS, DesiredFeedbackType.SENT),
-    M004(true, ChannelOutcomeCategory.PROGRESS, DesiredFeedbackType.RECEIVED),
-    M005(false, ChannelOutcomeCategory.FEEDBACK, null),
-    M006(false, ChannelOutcomeCategory.FEEDBACK, null),
-    M008(false, ChannelOutcomeCategory.FEEDBACK, null),
-    M009(false, ChannelOutcomeCategory.FEEDBACK, null),
-    M010(false, ChannelOutcomeCategory.FEEDBACK, null),
-    M011(false, ChannelOutcomeCategory.FEEDBACK, null);
+    M003(false, ChannelOutcomeCategory.progress(), DesiredFeedbackType.SENT),
+    M004(true, ChannelOutcomeCategory.progress(), DesiredFeedbackType.RECEIVED),
+    M005(false, ChannelOutcomeCategory.negativeFeedback(), null),
+    M006(false, ChannelOutcomeCategory.negativeFeedback(), null),
+    M008(false, ChannelOutcomeCategory.negativeFeedback(), null),
+    M009(false, ChannelOutcomeCategory.negativeFeedback(), null),
+    M010(false, ChannelOutcomeCategory.negativeFeedback(), null),
+    M011(false, ChannelOutcomeCategory.negativeFeedback(), null);
 
     private final ChannelOutcomeCategory category;
     private final boolean recipientReached;

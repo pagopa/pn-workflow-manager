@@ -3,9 +3,9 @@ package it.pagopa.pn.workflowmanager.service.mapper;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.actionmanager.model.ActionType;
-import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.actionmanager.model.CommunicationType;
-import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.actionmanager.model.NewAction;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.actionmanager.model.ActionType;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.actionmanager.model.CommunicationType;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.actionmanager.model.NewAction;
 import it.pagopa.pn.workflowmanager.dto.action.common.Action;
 import org.springframework.stereotype.Component;
 

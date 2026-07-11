@@ -85,7 +85,7 @@ class ChannelOutcomeHandlerTest {
         Set<ChannelEventTrigger> triggers = Set.of(mock(ChannelEventTrigger.class));
         when(outcome.getTriggers()).thenReturn(triggers);
         when(classification.getSatisfiedDesiredFeedback()).thenReturn(Optional.empty());
-        when(classification.getCategory()).thenReturn(ChannelOutcomeCategory.PROGRESS);
+        when(classification.getCategory()).thenReturn(ChannelOutcomeCategory.progress());
 
         // Act
         channelOutcomeHandler.handleOutcome(outcome, notification, campaign);
@@ -101,6 +101,7 @@ class ChannelOutcomeHandlerTest {
         when(outcome.getTriggers()).thenReturn(Collections.emptySet());
         when(classification.isRecipientReached()).thenReturn(true);
         when(classification.getSatisfiedDesiredFeedback()).thenReturn(Optional.empty());
+        when(classification.getCategory()).thenReturn(ChannelOutcomeCategory.progress());
 
         TimelineElementInternal reachedElement = mock(TimelineElementInternal.class);
         when(timelineUtils.buildDeliveredTimelineElement(notification, recIndex, channel, elementId, eventTimestamp))
@@ -132,11 +133,11 @@ class ChannelOutcomeHandlerTest {
     }
 
     @Test
-    void shouldAdvanceWorkflowWhenFeedbackIsFinalButNotDesired() {
+    void shouldAdvanceWorkflowWhenFeedbackIsNegativeButNotDesired() {
         // Arrange
         when(outcome.getTriggers()).thenReturn(Collections.emptySet());
         when(classification.getSatisfiedDesiredFeedback()).thenReturn(Optional.empty());
-        when(classification.getCategory()).thenReturn(ChannelOutcomeCategory.FEEDBACK);
+        when(classification.getCategory()).thenReturn(ChannelOutcomeCategory.negativeFeedback());
 
         // Act
         channelOutcomeHandler.handleOutcome(outcome, notification, campaign);
@@ -147,11 +148,27 @@ class ChannelOutcomeHandlerTest {
     }
 
     @Test
+    void shouldDoNothingElseWhenFeedbackIsPositiveButNotDesired() {
+        // Arrange
+        when(outcome.getTriggers()).thenReturn(Collections.emptySet());
+        when(classification.getSatisfiedDesiredFeedback()).thenReturn(Optional.empty());
+        when(classification.getCategory()).thenReturn(ChannelOutcomeCategory.positiveFeedback());
+
+        // Act
+        channelOutcomeHandler.handleOutcome(outcome, notification, campaign);
+
+        // Assert
+        verify(timelineService, times(1)).addTimelineElement(timelineElement, notification);
+        verifyNoMoreInteractions(timelineService);
+        verifyNoInteractions(workflowUtils);
+    }
+
+    @Test
     void shouldDoNothingElseWhenFeedbackIsNeitherFinalNorDesired() {
         // Arrange
         when(outcome.getTriggers()).thenReturn(Collections.emptySet());
         when(classification.getSatisfiedDesiredFeedback()).thenReturn(Optional.empty());
-        when(classification.getCategory()).thenReturn(ChannelOutcomeCategory.PROGRESS);
+        when(classification.getCategory()).thenReturn(ChannelOutcomeCategory.progress());
 
         // Act
         channelOutcomeHandler.handleOutcome(outcome, notification, campaign);

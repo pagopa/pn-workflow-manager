@@ -1,7 +1,7 @@
 package it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.delivery;
 
 import it.pagopa.pn.commons.log.PnLogger;
-import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.delivery.model.InformalSentNotificationV1;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.delivery.model.InformalSentNotificationV1;
 
 public interface PnDeliveryClient {
     String CLIENT_NAME = PnLogger.EXTERNAL_SERVICES.PN_DELIVERY;

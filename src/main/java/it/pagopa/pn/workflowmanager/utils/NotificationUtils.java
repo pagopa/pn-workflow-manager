@@ -5,7 +5,7 @@ import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationIn
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-
+//ToDo: utilizzare la classe notificationUtils presente nel package ../action/utils/NotificationUtils
 @Component
 @Slf4j
 public class NotificationUtils {
