@@ -1,4 +1,4 @@
-package it.pagopa.pn.workflowmanager.action.start_workflow;
+package it.pagopa.pn.workflowmanager.action.startworkflow;
 
 import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.commons.log.PnAuditLogEvent;
@@ -50,6 +50,11 @@ class IoChannelSenderTest {
     private IoChannelSender ioChannelSender;
 
     @Test
+    void shouldReturnCorrectChannelType() {
+        assertEquals(ChannelType.IO, ioChannelSender.getChannelType());
+    }
+
+    @Test
     void shouldSendMessagePersistDigitalEventAndScheduleTimeoutWhenInputIsValid() {
         String iun = "IUN_123";
         NotificationInt notification = mock(NotificationInt.class);
@@ -69,7 +74,7 @@ class IoChannelSenderTest {
 
         when(templateGeneratorService.generateIoMessageTemplate(notification, recipient0, campaign)).thenReturn("markdown-content");
 
-        ioChannelSender.send(notification, campaign,0,0, ChannelType.IO);
+        ioChannelSender.send(notification, campaign,0,0);
 
         ArgumentCaptor<IoMessageRequest> requestCaptor = ArgumentCaptor.forClass(IoMessageRequest.class);
         verify(ioConnectorClient).sendMessage(requestCaptor.capture());
@@ -104,7 +109,7 @@ class IoChannelSenderTest {
         when(notification.getIun()).thenReturn("IUN_789");
         when(notification.getRecipients()).thenReturn(List.of(recipient));
 
-        assertThrows(IndexOutOfBoundsException.class, () -> ioChannelSender.send(notification, campaign,3,0, ChannelType.IO));
+        assertThrows(IndexOutOfBoundsException.class, () -> ioChannelSender.send(notification, campaign,3,0));
 
         verifyNoInteractions(templateGeneratorService, ioConnectorClient, channelSenderUtils, workflowUtils, auditLogService);
     }
@@ -129,7 +134,7 @@ class IoChannelSenderTest {
 
         doThrow(new RuntimeException("IO Connector failure")).when(ioConnectorClient).sendMessage(any(IoMessageRequest.class));
 
-        assertThrows(PnInternalException.class, () -> ioChannelSender.send(notification, campaign,0,0, ChannelType.IO));
+        assertThrows(PnInternalException.class, () -> ioChannelSender.send(notification, campaign,0,0));
 
         verify(auditLogService).buildAuditLogEvent(eq(iun), eq(0), eq(PnAuditLogEventType.AUD_COM_SEND_IO), anyString(), eq(iun), eq(0), anyString());
         verify(auditLogEvent).generateFailure(eq("Error sending message"), any(RuntimeException.class));

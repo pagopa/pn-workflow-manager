@@ -1,19 +1,20 @@
 package it.pagopa.pn.workflowmanager.service.channelsender;
 
-import it.pagopa.pn.workflowmanager.action.start_workflow.PecChannelSender;
-import it.pagopa.pn.workflowmanager.action.utils.AttachmentType;
-import it.pagopa.pn.workflowmanager.action.utils.AttachmentUtils;
+import it.pagopa.pn.commons.exceptions.PnInternalException;
+import it.pagopa.pn.commons.log.PnAuditLogEvent;
+import it.pagopa.pn.commons.log.PnAuditLogEventType;
+import it.pagopa.pn.workflowmanager.action.startworkflow.PecChannelSender;
 import it.pagopa.pn.workflowmanager.action.utils.ChannelSenderUtils;
 import it.pagopa.pn.workflowmanager.action.utils.WorkflowUtils;
 import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
-import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.*;
-import it.pagopa.pn.workflowmanager.dto.timeline.details.DigitalChannelsInt;
-import it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.externalchannel.PnExternalChannelsClient;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.WorkFlowEntity;
+import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.*;
+import it.pagopa.pn.workflowmanager.dto.timeline.details.DigitalChannelsInt;
+import it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.externalchannel.PnExternalChannelsClient;
+import it.pagopa.pn.workflowmanager.service.AuditLogService;
 import it.pagopa.pn.workflowmanager.service.TemplateGeneratorService;
-import it.pagopa.pn.workflowmanager.utils.SendAttachmentMode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,19 +38,20 @@ class PecChannelSenderTest {
     @Mock
     private TemplateGeneratorService templateGeneratorService;
     @Mock
-    private AttachmentUtils attachmentUtils;
-    @Mock
     private PnExternalChannelsClient pnExternalChannelsClient;
     @Mock
     private ChannelSenderUtils channelSenderUtils;
     @Mock
     private WorkflowUtils workflowUtils;
+    @Mock
+    private AuditLogService auditLogService;
 
     @InjectMocks
     private PecChannelSender pecChannelSender;
 
     private NotificationInt notification;
     private Campaign campaign;
+    private static final String IUN = "IUN123";
 
     @BeforeEach
     void setUp() {
@@ -69,7 +71,7 @@ class PecChannelSenderTest {
                 .build();
 
         notification = NotificationInt.builder()
-                .iun("IUN123")
+                .iun(IUN)
                 .sentAt(Instant.parse("2026-07-02T10:00:00Z"))
                 .sender(NotificationSenderInt.builder().paDenomination("PA").build())
                 .documents(List.of(NotificationDocumentInt.builder()
@@ -92,19 +94,31 @@ class PecChannelSenderTest {
     }
 
     @Test
-    void send_shouldInvokeDependenciesAndPersistTimelineAndScheduleTimeout() {
-        SendAttachmentMode sendAttachmentMode = new SendAttachmentMode(Set.of(AttachmentType.DOCUMENTS));
-        NotificationRecipientInt recipient = notification.getRecipients().getFirst();
+    void shouldReturnCorrectChannelType() {
+        assertEquals(ChannelType.PEC, pecChannelSender.getChannelType());
+    }
 
+    @Test
+    void send_shouldInvokeDependenciesAndPersistTimelineAndScheduleTimeout() {
+        int recIndex = 0;
+        int currentStep = 0;
+        NotificationRecipientInt recipient = notification.getRecipients().getFirst();
+        PnAuditLogEvent auditLogEvent = mock(PnAuditLogEvent.class);
+
+        String expectedRequestId = ChannelSenderUtils.buildSendDigitalMessageEventId(IUN, recIndex, ChannelType.PEC);
+        when(auditLogService.buildAuditLogEvent(eq(IUN), eq(recIndex), eq(PnAuditLogEventType.AUD_COM_SEND_PEC),
+                anyString(), eq(IUN), eq(recIndex), eq(expectedRequestId)))
+                .thenReturn(auditLogEvent);
+        when(auditLogEvent.generateSuccess(anyString())).thenReturn(auditLogEvent);
+        when(auditLogEvent.log()).thenReturn(auditLogEvent);
         when(templateGeneratorService.generatePecBodyTemplate(notification, recipient, campaign))
                 .thenReturn("<html>PEC</html>");
         when(templateGeneratorService.generatePecSubjectTemplate(notification, recipient))
                 .thenReturn("Oggetto PEC");
-        when(attachmentUtils.retrieveAttachmentTypesToSend(notification, ChannelType.PEC)).thenReturn(sendAttachmentMode);
-        when(attachmentUtils.retrieveAttachments(notification, 0, sendAttachmentMode, false))
+        when(channelSenderUtils.resolveAttachmentsForChannel(notification, recIndex, currentStep, campaign, ChannelType.PEC))
                 .thenReturn(List.of("safestorage://doc1"));
 
-        pecChannelSender.send(notification, campaign, 0, 0, ChannelType.PEC);
+        pecChannelSender.send(notification, campaign, recIndex, currentStep);
 
         ArgumentCaptor<String> requestIdCaptor = ArgumentCaptor.forClass(String.class);
         verify(pnExternalChannelsClient).sendNotificationPEC(
@@ -124,7 +138,7 @@ class PecChannelSenderTest {
         verify(channelSenderUtils).saveSendDigitalMessageElement(
                 eq(notification),
                 eq(timelineId),
-                eq(0),
+                eq(recIndex),
                 digitalAddressCaptor.capture(),
                 eq(DigitalChannelsInt.PEC),
                 isNull()
@@ -134,7 +148,49 @@ class PecChannelSenderTest {
         assertEquals("destinatario@pec.it", capturedDigitalAddress.getAddress());
         assertEquals(InformalDigitalAddressInt.INFORMAL_DIGITAL_ADDRESS_TYPE.PEC, capturedDigitalAddress.getType());
 
-        verify(workflowUtils).scheduleTimeoutForCurrentChannel("IUN123", 0, campaign, ChannelType.PEC);
+        verify(workflowUtils).scheduleTimeoutForCurrentChannel("IUN123", recIndex, campaign, ChannelType.PEC);
+        verify(auditLogEvent).generateSuccess("Pec sent successfully");
+    }
+
+    @Test
+    void send_shouldPrintAuditLogFailureIfSomethingFails() {
+        int recIndex = 0;
+        int currentStep = 0;
+        NotificationRecipientInt recipient = notification.getRecipients().getFirst();
+        PnAuditLogEvent auditLogEvent = mock(PnAuditLogEvent.class);
+
+        String expectedRequestId = ChannelSenderUtils.buildSendDigitalMessageEventId(IUN, recIndex, ChannelType.PEC);
+        when(auditLogService.buildAuditLogEvent(eq(IUN), eq(recIndex), eq(PnAuditLogEventType.AUD_COM_SEND_PEC),
+                anyString(), eq(IUN), eq(recIndex), eq(expectedRequestId)))
+                .thenReturn(auditLogEvent);
+        when(auditLogEvent.generateFailure(anyString(), any(RuntimeException.class))).thenReturn(auditLogEvent);
+        when(auditLogEvent.log()).thenReturn(auditLogEvent);
+        when(templateGeneratorService.generatePecBodyTemplate(notification, recipient, campaign))
+                .thenThrow(new RuntimeException("Template generation failed"));
+
+        assertThrows(PnInternalException.class, () -> pecChannelSender.send(notification, campaign, recIndex, currentStep));
+
+        verify(pnExternalChannelsClient, never()).sendNotificationPEC(
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any()
+        );
+
+        verify(channelSenderUtils, never()).saveSendDigitalMessageElement(
+                any(),
+                any(),
+                anyInt(),
+                any(),
+                any(),
+                any()
+        );
+
+        verify(workflowUtils, never()).scheduleTimeoutForCurrentChannel(any(), anyInt(), any(), any());
+        verify(auditLogEvent).generateFailure(eq("Error sending pec"), any(RuntimeException.class));
     }
 }
 

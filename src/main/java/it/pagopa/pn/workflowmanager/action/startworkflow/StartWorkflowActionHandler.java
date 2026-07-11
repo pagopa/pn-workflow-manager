@@ -35,7 +35,7 @@ public class StartWorkflowActionHandler {
 
         log.info("Sending notification via channel {} for iun {} recipient {} campaignId {}",
                 startWorkflowDetails.getChannel(), iun, recIndex, campaign.getCampaignId());
-        channelSender.send(notificationInt, campaign, recIndex, 0, startWorkflowDetails.getChannel());
+        channelSender.send(notificationInt, campaign, recIndex, startWorkflowDetails.getStepIdx());
 
         log.info("Workflow started successfully for iun {} recipient {}", iun, recIndex);
     }

@@ -1,4 +1,4 @@
-package it.pagopa.pn.workflowmanager.action.start_workflow;
+package it.pagopa.pn.workflowmanager.action.startworkflow;
 
 import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.commons.log.PnAuditLogEvent;
@@ -53,6 +53,11 @@ class SmsChannelSenderTest {
     private SmsChannelSender smsChannelSender;
 
     @Test
+    void shouldReturnCorrectChannelType() {
+        assertEquals(ChannelType.SMS, smsChannelSender.getChannelType());
+    }
+
+    @Test
     void shouldSendSmsWhenPhoneNumberPresent() {
         // Given
         NotificationInt notification = buildNotification(PHONE_NUMBER);
@@ -72,7 +77,7 @@ class SmsChannelSenderTest {
         when(auditLogEvent.log()).thenReturn(auditLogEvent);
 
         // When
-        smsChannelSender.send(notification, campaign, recIndex, currentStep, ChannelType.SMS);
+        smsChannelSender.send(notification, campaign, recIndex, currentStep);
 
         // Then
         verify(pnExternalChannelsClient).sendNotificationSMS(
@@ -102,7 +107,7 @@ class SmsChannelSenderTest {
                 recIndex, IUN, ChannelType.SMS);
 
         // When
-        smsChannelSender.send(notification, campaign, recIndex, currentStep, ChannelType.SMS);
+        smsChannelSender.send(notification, campaign, recIndex, currentStep);
 
         // Then
         verify(channelSenderUtils).saveSendDigitalMessageSkipElement(
@@ -145,7 +150,7 @@ class SmsChannelSenderTest {
 
         // When / Then
         assertThrows(PnInternalException.class,
-                () -> smsChannelSender.send(notification, campaign, recIndex, currentStep, ChannelType.SMS));
+                () -> smsChannelSender.send(notification, campaign, recIndex, currentStep));
 
         verify(auditLogEvent).generateFailure(eq("Error sending SMS notification"), any(RuntimeException.class));
         verify(channelSenderUtils, never()).saveSendDigitalMessageElement(any(), any(), anyInt(), any(), any(), any());

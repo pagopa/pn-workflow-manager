@@ -1,4 +1,4 @@
-package it.pagopa.pn.workflowmanager.action.start_workflow;
+package it.pagopa.pn.workflowmanager.action.startworkflow;
 
 import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.workflowmanager.action.ChannelSender;
@@ -23,15 +23,19 @@ public class AnalogChannelSender implements ChannelSender {
     private final SaveDocumentService saveDocumentService;
     private final ChannelSenderUtils channelSenderUtils;
 
+    @Override
+    public ChannelType getChannelType() {
+        return ChannelType.ANALOG;
+    }
 
     @Override
-    public void send(NotificationInt notification, Campaign campaign, int recIndex, int currentStep, ChannelType channel) {
-        log.info("AnalogChannelSender send - iun={} recIndex={} currentStep={} channel={}", notification.getIun(), recIndex, currentStep, channel);
+    public void send(NotificationInt notification, Campaign campaign, int recIndex, int currentStep) {
+        log.info("AnalogChannelSender send - iun={} recIndex={} currentStep={}", notification.getIun(), recIndex, currentStep);
         NotificationRecipientInt recipient = getRecipientFromIndex(notification, recIndex);
         try {
             String timelineEventId = TimelineUtils.buildCoverpageCreationTimelineEventId(notification.getIun(), recIndex);
             String fileKey = saveDocumentService.saveCoverpage(notification, recipient, campaign, timelineEventId, recIndex);
-            log.info("Coverpage saved for iun={} recIndex={} currentStep={} channel={} fileKey={}", notification.getIun(), recIndex, currentStep, channel, fileKey);
+            log.info("Coverpage saved for iun={} recIndex={} fileKey={}", notification.getIun(), recIndex, fileKey);
             channelSenderUtils.saveCoverpageCreationElement(notification, recIndex, fileKey);
         } catch (Exception e) {
             throw new PnInternalException(

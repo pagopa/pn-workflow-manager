@@ -3,6 +3,8 @@ package it.pagopa.pn.workflowmanager.action.utils;
 import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
 import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.address.PhysicalAddressInt;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.WorkFlowEntity;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.EventId;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineEventId;
@@ -10,11 +12,15 @@ import it.pagopa.pn.workflowmanager.dto.timeline.details.AnalogDeliveryTypeInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.DigitalChannelsInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.ServiceLevelInt;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
+import it.pagopa.pn.workflowmanager.exceptions.PnWorkflowException;
 import it.pagopa.pn.workflowmanager.service.TimelineService;
 import jakarta.annotation.Nonnull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -22,6 +28,8 @@ import org.springframework.stereotype.Component;
 public class ChannelSenderUtils {
     private final TimelineService timelineService;
     private final TimelineUtils timelineUtils;
+    private final AttachmentUtils attachmentUtils;
+
     public static String buildSendDigitalMessageEventId(String iun, int recIndex, @Nonnull ChannelType channel) {
         return TimelineEventId.SEND_DIGITAL_MESSAGE.buildEventId(
                 EventId.builder()
@@ -38,8 +46,6 @@ public class ChannelSenderUtils {
                 .type(type)
                 .build();
     }
-
-    //costruisci qui l'elemento di time
 
     public void saveSendDigitalMessageElement(
         NotificationInt notificationInt,
@@ -133,5 +139,37 @@ public class ChannelSenderUtils {
                 .sentAttemptMade(sentAttemptMade)
                 .build()
         );
+    }
+
+    public List<String> resolveAttachmentsForChannel(NotificationInt notification, int recIndex,
+                                           int currentStep, Campaign campaign, ChannelType channel) {
+        WorkFlowEntity currentWorkflowStep = getWorkFlowEntityFromStep(currentStep, campaign);
+
+        if(currentWorkflowStep.getChannel() != channel) {
+            throw new PnWorkflowException("Channel mismatch for campaign " + campaign.getCampaignId() + " at workflow step " + currentStep);
+        }
+
+        boolean includeAttachment = Boolean.TRUE.equals(campaign.getWorkflow().get(currentStep).getIncludeAttachment());
+        if (!includeAttachment) {
+            return List.of();
+        }
+        return attachmentUtils.retrieveAttachments(
+                notification, recIndex,
+                attachmentUtils.retrieveAttachmentTypesToSend(notification, channel),
+                false
+        );
+    }
+
+    private static @NotNull WorkFlowEntity getWorkFlowEntityFromStep(int currentStep, Campaign campaign) {
+        WorkFlowEntity currentWorkflowStep;
+        try {
+            currentWorkflowStep = campaign.getWorkflow().get(currentStep);
+        } catch (IndexOutOfBoundsException e) {
+            throw new PnWorkflowException("Current step index " + currentStep + " is out of bounds for campaign " + campaign.getCampaignId());
+        }
+        if(currentWorkflowStep == null) {
+            throw new PnWorkflowException("Workflow step not found for campaign " + campaign.getCampaignId() + " at index " + currentStep);
+        }
+        return currentWorkflowStep;
     }
 }

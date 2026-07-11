@@ -1,23 +1,21 @@
-package it.pagopa.pn.workflowmanager.action.start_workflow;
+package it.pagopa.pn.workflowmanager.action.startworkflow;
 
 import it.pagopa.pn.commons.log.PnAuditLogEvent;
 import it.pagopa.pn.commons.log.PnAuditLogEventType;
-import it.pagopa.pn.workflowmanager.action.utils.AttachmentUtils;
 import it.pagopa.pn.workflowmanager.action.utils.ChannelSenderUtils;
 import it.pagopa.pn.workflowmanager.action.utils.WorkflowUtils;
 import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
 import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.WorkFlowEntity;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.RecipientTypeInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.DigitalChannelsInt;
 import it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.externalchannel.PnExternalChannelsClient;
-import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
-import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
-import it.pagopa.pn.workflowmanager.dto.ext.campaign.WorkFlowEntity;
 import it.pagopa.pn.workflowmanager.service.AuditLogService;
 import it.pagopa.pn.workflowmanager.service.TemplateGeneratorService;
-import it.pagopa.pn.workflowmanager.utils.SendAttachmentMode;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -26,6 +24,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -50,11 +49,13 @@ class EmailChannelSenderTest {
     @Mock
     private WorkflowUtils workflowUtils;
 
-    @Mock
-    private AttachmentUtils attachmentUtils;
-
     @InjectMocks
     private EmailChannelSender emailChannelSender;
+
+    @Test
+    void shouldReturnCorrectChannelType() {
+        assertEquals(ChannelType.EMAIL, emailChannelSender.getChannelType());
+    }
 
     @Test
     void shouldSendEmailWithAttachmentsWhenEmailPresentAndIncludeAttachmentTrue() {
@@ -78,13 +79,11 @@ class EmailChannelSenderTest {
         when(auditLogEvent.generateSuccess(anyString())).thenReturn(auditLogEvent);
         when(auditLogEvent.log()).thenReturn(auditLogEvent);
 
-        SendAttachmentMode attachmentMode = mock(SendAttachmentMode.class);
-        when(attachmentUtils.retrieveAttachmentTypesToSend(notification, ChannelType.EMAIL)).thenReturn(attachmentMode);
-        when(attachmentUtils.retrieveAttachments(notification, recIndex, attachmentMode, false))
+        when(channelSenderUtils.resolveAttachmentsForChannel(notification, recIndex, currentStep, campaign, ChannelType.EMAIL))
                 .thenReturn(List.of("safestorage://doc1", "safestorage://doc2"));
 
         // When
-        emailChannelSender.send(notification, campaign, recIndex, currentStep, ChannelType.EMAIL);
+        emailChannelSender.send(notification, campaign, recIndex, currentStep);
 
         // Then
         verify(pnExternalChannelsClient).sendNotificationEMAIL(
@@ -130,7 +129,7 @@ class EmailChannelSenderTest {
         when(auditLogEvent.log()).thenReturn(auditLogEvent);
 
         // When
-        emailChannelSender.send(notification, campaign, recIndex, currentStep, ChannelType.EMAIL);
+        emailChannelSender.send(notification, campaign, recIndex, currentStep);
 
         // Then
         verify(pnExternalChannelsClient).sendNotificationEMAIL(
@@ -142,7 +141,7 @@ class EmailChannelSenderTest {
                 any(InformalDigitalAddressInt.class),
                 eq(List.of())
         );
-        verify(attachmentUtils, never()).retrieveAttachments(any(), anyInt(), any(), anyBoolean());
+        verify(channelSenderUtils).resolveAttachmentsForChannel(any(), anyInt(), anyInt(), any(), any());
         verify(workflowUtils).scheduleTimeoutForCurrentChannel(IUN, recIndex, campaign, ChannelType.EMAIL);
     }
 
@@ -158,7 +157,7 @@ class EmailChannelSenderTest {
                 recIndex, IUN, ChannelType.EMAIL);
 
         // When
-        emailChannelSender.send(notification, campaign, recIndex, currentStep, ChannelType.EMAIL);
+        emailChannelSender.send(notification, campaign, recIndex, currentStep);
 
         // Then
         verify(channelSenderUtils).saveSendDigitalMessageSkipElement(
@@ -175,7 +174,7 @@ class EmailChannelSenderTest {
                 eq(campaign),
                 eq(RecipientTypeInt.PF)
         );
-        verifyNoInteractions(pnExternalChannelsClient, templateGeneratorService, auditLogService, attachmentUtils);
+        verifyNoInteractions(pnExternalChannelsClient, templateGeneratorService, auditLogService);
     }
 
     // Helper methods
@@ -196,9 +195,8 @@ class EmailChannelSenderTest {
                 .includeAttachment(includeAttachment)
                 .build();
 
-        Campaign campaign = mock(Campaign.class);
-        when(campaign.getWorkflow()).thenReturn(List.of(workflowEntity));
-        return campaign;
+        return Campaign.builder()
+                .workflow(List.of(workflowEntity)).build();
     }
 
     private Campaign buildSimpleCampaign() {

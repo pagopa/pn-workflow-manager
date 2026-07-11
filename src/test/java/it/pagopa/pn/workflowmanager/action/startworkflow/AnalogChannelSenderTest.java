@@ -1,4 +1,4 @@
-package it.pagopa.pn.workflowmanager.action.start_workflow;
+package it.pagopa.pn.workflowmanager.action.startworkflow;
 
 import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.workflowmanager.action.utils.ChannelSenderUtils;
@@ -16,6 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
@@ -37,6 +38,11 @@ class AnalogChannelSenderTest {
     private AnalogChannelSender analogChannelSender;
 
     @Test
+    void shouldReturnCorrectChannelType() {
+        assertEquals(ChannelType.ANALOG, analogChannelSender.getChannelType());
+    }
+
+    @Test
     void send_Success() {
         // Given
         NotificationInt notification = buildNotification();
@@ -48,7 +54,7 @@ class AnalogChannelSenderTest {
                 .thenReturn(FILE_KEY);
 
         // When
-        analogChannelSender.send(notification, campaign, REC_INDEX, CURRENT_STEP, ChannelType.ANALOG);
+        analogChannelSender.send(notification, campaign, REC_INDEX, CURRENT_STEP);
 
         // Then
         verify(saveDocumentService).saveCoverpage(
@@ -70,7 +76,7 @@ class AnalogChannelSenderTest {
 
         // When & Then
         assertThrows(PnInternalException.class, () ->
-                analogChannelSender.send(notification, campaign, REC_INDEX, CURRENT_STEP, ChannelType.ANALOG)
+                analogChannelSender.send(notification, campaign, REC_INDEX, CURRENT_STEP)
         );
 
         verify(saveDocumentService).saveCoverpage(

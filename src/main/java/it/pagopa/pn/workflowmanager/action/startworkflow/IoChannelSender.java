@@ -1,4 +1,4 @@
-package it.pagopa.pn.workflowmanager.action.start_workflow;
+package it.pagopa.pn.workflowmanager.action.startworkflow;
 
 import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.commons.log.PnAuditLogEvent;
@@ -34,10 +34,15 @@ public class IoChannelSender implements ChannelSender {
     private final WorkflowUtils workflowUtils;
 
     @Override
-    public void send(NotificationInt notification, Campaign campaign, int recIndex, int currentStep, ChannelType channel) {
-        log.info("Sending message for notification {} to recipient {} via channel {}", notification.getIun(), recIndex, channel);
+    public ChannelType getChannelType() {
+        return ChannelType.IO;
+    }
+
+    @Override
+    public void send(NotificationInt notification, Campaign campaign, int recIndex, int currentStep) {
+        log.info("Sending message for notification {} to recipient {}", notification.getIun(), recIndex);
         NotificationRecipientInt recipient = notification.getRecipients().get(recIndex);
-        String requestId = ChannelSenderUtils.buildSendDigitalMessageEventId(notification.getIun(), recIndex, channel);
+        String requestId = ChannelSenderUtils.buildSendDigitalMessageEventId(notification.getIun(), recIndex, getChannelType());
         PnAuditLogEvent auditLogEvent = buildAuditLogEvent(notification.getIun(), recIndex, requestId);
         try {
             String markdown = templateGeneratorService.generateIoMessageTemplate(notification, recipient, campaign);
@@ -61,7 +66,7 @@ public class IoChannelSender implements ChannelSender {
                     null
             );
 
-            workflowUtils.scheduleTimeoutForCurrentChannel(notification.getIun(), recIndex, campaign, channel);
+            workflowUtils.scheduleTimeoutForCurrentChannel(notification.getIun(), recIndex, campaign, getChannelType());
             auditLogEvent.generateSuccess("Message sent succesfully").log();
         } catch (Exception e) {
             auditLogEvent.generateFailure("Error sending message", e).log();

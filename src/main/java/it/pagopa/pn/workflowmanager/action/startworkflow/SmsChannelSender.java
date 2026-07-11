@@ -1,4 +1,4 @@
-package it.pagopa.pn.workflowmanager.action.start_workflow;
+package it.pagopa.pn.workflowmanager.action.startworkflow;
 
 import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.commons.log.PnAuditLogEvent;
@@ -35,31 +35,36 @@ public class SmsChannelSender implements ChannelSender {
     private final PnExternalChannelsClient pnExternalChannelsClient;
 
     @Override
-    public void send(NotificationInt notification, Campaign campaign, int recIndex, int currentStep, ChannelType channel) {
+    public ChannelType getChannelType() {
+        return ChannelType.SMS;
+    }
+
+    @Override
+    public void send(NotificationInt notification, Campaign campaign, int recIndex, int currentStep) {
         NotificationRecipientInt recipient = notification.getRecipients().get(recIndex);
         String phoneNumber = recipient.getPhoneNumber();
 
         if (ObjectUtils.isEmpty(phoneNumber)) {
-            handleMissingPhoneNumber(notification, campaign, recIndex, channel);
+            handleMissingPhoneNumber(notification, campaign, recIndex);
         } else {
-            handlePhoneNumberPresent(notification, campaign, recIndex, channel, phoneNumber);
+            handlePhoneNumberPresent(notification, campaign, recIndex, phoneNumber);
         }
     }
 
-    private void handleMissingPhoneNumber(NotificationInt notification, Campaign campaign, int recIndex, ChannelType channel) {
+    private void handleMissingPhoneNumber(NotificationInt notification, Campaign campaign, int recIndex) {
         log.info("Recipient phone number is not present - iun={} recIndex={}", notification.getIun(), recIndex);
 
-        String requestId = ChannelSenderUtils.buildSendDigitalMessageSkipTimelineElementId(recIndex, notification.getIun(), channel);
+        String requestId = ChannelSenderUtils.buildSendDigitalMessageSkipTimelineElementId(recIndex, notification.getIun(), getChannelType());
         channelSenderUtils.saveSendDigitalMessageSkipElement(
                 recIndex, notification, requestId, DigitalChannelsInt.SMS, DigitalAddressSourceInt.SPECIAL
         );
-        workflowUtils.advanceWorkflow(notification.getIun(), recIndex, channel, campaign, notification.getRecipients().get(recIndex).getRecipientType());
+        workflowUtils.advanceWorkflow(notification.getIun(), recIndex, getChannelType(), campaign, notification.getRecipients().get(recIndex).getRecipientType());
     }
 
-    private void handlePhoneNumberPresent(NotificationInt notification, Campaign campaign, int recIndex, ChannelType channel, String phoneNumber) {
+    private void handlePhoneNumberPresent(NotificationInt notification, Campaign campaign, int recIndex, String phoneNumber) {
         log.info("Recipient phone number is present - iun={} recIndex={}", notification.getIun(), recIndex);
 
-        String requestId = ChannelSenderUtils.buildSendDigitalMessageEventId(notification.getIun(), recIndex, channel);
+        String requestId = ChannelSenderUtils.buildSendDigitalMessageEventId(notification.getIun(), recIndex, getChannelType());
         PnAuditLogEvent auditLogEvent = buildAuditLogEvent(notification.getIun(), recIndex, requestId);
 
         try {
@@ -70,7 +75,7 @@ public class SmsChannelSender implements ChannelSender {
             pnExternalChannelsClient.sendNotificationSMS(requestId, subject, phoneNumber);
 
             channelSenderUtils.saveSendDigitalMessageElement(notification, requestId, recIndex, smsAddress, DigitalChannelsInt.SMS, DigitalAddressSourceInt.SPECIAL);
-            workflowUtils.scheduleTimeoutForCurrentChannel(notification.getIun(), recIndex, campaign, channel);
+            workflowUtils.scheduleTimeoutForCurrentChannel(notification.getIun(), recIndex, campaign, getChannelType());
             auditLogEvent.generateSuccess("Sms sent successfully").log();
 
         } catch (Exception e) {

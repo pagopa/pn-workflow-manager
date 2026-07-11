@@ -1,20 +1,19 @@
-package it.pagopa.pn.workflowmanager.action.start_workflow;
+package it.pagopa.pn.workflowmanager.action.startworkflow;
 
 import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.commons.log.PnAuditLogEvent;
 import it.pagopa.pn.commons.log.PnAuditLogEventType;
 import it.pagopa.pn.workflowmanager.action.ChannelSender;
-import it.pagopa.pn.workflowmanager.action.utils.AttachmentUtils;
 import it.pagopa.pn.workflowmanager.action.utils.ChannelSenderUtils;
 import it.pagopa.pn.workflowmanager.action.utils.WorkflowUtils;
 import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
 import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.DigitalChannelsInt;
 import it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.externalchannel.PnExternalChannelsClient;
-import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
-import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
 import it.pagopa.pn.workflowmanager.service.AuditLogService;
 import it.pagopa.pn.workflowmanager.service.TemplateGeneratorService;
 import lombok.RequiredArgsConstructor;
@@ -36,19 +35,23 @@ public class EmailChannelSender implements ChannelSender {
     private final TemplateGeneratorService templateGeneratorService;
     private final ChannelSenderUtils channelSenderUtils;
     private final WorkflowUtils workflowUtils;
-    private final AttachmentUtils attachmentUtils;
 
     @Override
-    public void send(NotificationInt notification, Campaign campaign, int recIndex, int currentStep, ChannelType channel) {
+    public ChannelType getChannelType() {
+        return ChannelType.EMAIL;
+    }
+
+    @Override
+    public void send(NotificationInt notification, Campaign campaign, int recIndex, int currentStep) {
         log.info("Sending email notification - iun={} recIndex={} currentStep={} channel={}",
-                notification.getIun(), recIndex, currentStep, channel);
+                notification.getIun(), recIndex, currentStep, getChannelType());
 
         NotificationRecipientInt recipient = notification.getRecipients().get(recIndex);
         boolean emailMissing = ObjectUtils.isEmpty(recipient.getEmail());
         if (emailMissing) {
-            handleMissingEmail(notification, campaign, recIndex, channel, recipient);
+            handleMissingEmail(notification, campaign, recIndex, getChannelType(), recipient);
         } else {
-            handleEmailPresent(notification, campaign, recIndex, currentStep, channel, recipient);
+            handleEmailPresent(notification, campaign, recIndex, currentStep, getChannelType(), recipient);
         }
     }
 
@@ -75,7 +78,7 @@ public class EmailChannelSender implements ChannelSender {
         try {
             String subject = templateGeneratorService.generateEmailSubjectTemplate(notification, recipient);
             String htmlBody = templateGeneratorService.generateEmailBodyTemplate(notification, recipient, campaign);
-            List<String> attachmentUrls = resolveAttachments(notification, recIndex, currentStep, campaign, channel);
+            List<String> attachmentUrls = channelSenderUtils.resolveAttachmentsForChannel(notification, recIndex, currentStep, campaign, channel);
             InformalDigitalAddressInt emailAddress = ChannelSenderUtils.buildDigitalAddress(
                     recipient.getEmail(), InformalDigitalAddressInt.INFORMAL_DIGITAL_ADDRESS_TYPE.EMAIL
             );
@@ -94,20 +97,6 @@ public class EmailChannelSender implements ChannelSender {
                     "Error sending email for notification " + notification.getIun() + " to recipient " + recIndex,
                     ERROR_CODE_WORKFLOWMANAGER_SEND_ON_CHANNEL_ERROR, e);
         }
-    }
-
-
-    private List<String> resolveAttachments(NotificationInt notification, int recIndex,
-                                            int currentStep, Campaign campaign, ChannelType channel) {
-        boolean includeAttachment = Boolean.TRUE.equals(campaign.getWorkflow().get(currentStep).getIncludeAttachment());
-        if (!includeAttachment) {
-            return List.of();
-        }
-        return attachmentUtils.retrieveAttachments(
-                notification, recIndex,
-                attachmentUtils.retrieveAttachmentTypesToSend(notification, channel),
-                false
-        );
     }
 
     private PnAuditLogEvent buildAuditLogEvent(String iun, int recIndex, String requestId) {
