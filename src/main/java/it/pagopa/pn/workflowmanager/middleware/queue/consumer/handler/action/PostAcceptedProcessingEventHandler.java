@@ -3,18 +3,18 @@ package it.pagopa.pn.workflowmanager.middleware.queue.consumer.handler.action;
 
 import it.pagopa.pn.workflowmanager.action.postacceptedprocessing.PostAcceptedProcessingHandler;
 import it.pagopa.pn.workflowmanager.dto.action.common.Action;
-import it.pagopa.pn.workflowmanager.middleware.queue.consumer.handler.EventHandler;
 import it.pagopa.pn.workflowmanager.dto.action.common.ActionType;
+import it.pagopa.pn.workflowmanager.middleware.queue.consumer.handler.EventHandler;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.router.SupportedEventType;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.utils.MdcUtils;
-import lombok.AllArgsConstructor;
 import lombok.CustomLog;
+import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.stereotype.Component;
 
 @Component
 @CustomLog
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class PostAcceptedProcessingEventHandler implements EventHandler<Action> {
 
     private final PostAcceptedProcessingHandler postAcceptedProcessingHandler;
