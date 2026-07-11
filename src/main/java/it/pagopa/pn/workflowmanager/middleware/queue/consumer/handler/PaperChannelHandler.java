@@ -1,9 +1,9 @@
-package it.pagopa.pn.workflowmanager.middleware.responsehandler;
+package it.pagopa.pn.workflowmanager.middleware.queue.consumer.handler;
 
 import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.commons.exceptions.PnRuntimeException;
 import it.pagopa.pn.commons.utils.LogUtils;
-import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.paperchannel.model.*;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.model.*;
 import it.pagopa.pn.workflowmanager.action.analogworkflow.AnalogWorkflowPaperChannelResponseHandler;
 import it.pagopa.pn.workflowmanager.action.utils.TimelineUtils;
 import it.pagopa.pn.workflowmanager.dto.address.PhysicalAddressInt;
@@ -31,7 +31,7 @@ import static it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCo
 @Component
 @CustomLog
 @AllArgsConstructor
-public class PaperChannelResponseHandler {
+public class PaperChannelHandler {
     public static final String EXCEPTION_PREPARE_UPDATE = "Exception PrepareUpdate";
     private final AnalogWorkflowPaperChannelResponseHandler analogWorkflowPaperChannelResponseHandler;
     private final TimelineUtils timelineUtils;

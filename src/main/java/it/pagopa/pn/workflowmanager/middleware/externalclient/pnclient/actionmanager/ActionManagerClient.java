@@ -1,7 +1,7 @@
 package it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.actionmanager;
 
 import it.pagopa.pn.commons.log.PnLogger;
-import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.actionmanager.model.NewAction;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.actionmanager.model.NewAction;
 
 public interface ActionManagerClient {
     String CLIENT_NAME = PnLogger.EXTERNAL_SERVICES.PN_ACTION_MANAGER;

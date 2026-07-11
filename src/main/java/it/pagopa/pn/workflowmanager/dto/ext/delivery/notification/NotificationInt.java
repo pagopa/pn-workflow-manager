@@ -1,6 +1,6 @@
 package it.pagopa.pn.workflowmanager.dto.ext.delivery.notification;
 
-import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.delivery.model.NotificationFeePolicy;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.delivery.model.NotificationFeePolicy;
 import lombok.*;
 import java.time.Instant;
 import java.util.List;

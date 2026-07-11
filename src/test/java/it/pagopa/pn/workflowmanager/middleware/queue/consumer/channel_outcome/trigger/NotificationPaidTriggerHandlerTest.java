@@ -2,6 +2,7 @@ package it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.t
 
 import it.pagopa.pn.workflowmanager.dto.event.NotificationPaidInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
+import it.pagopa.pn.workflowmanager.middleware.queue.consumer.handler.NotificationPaidHandler;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

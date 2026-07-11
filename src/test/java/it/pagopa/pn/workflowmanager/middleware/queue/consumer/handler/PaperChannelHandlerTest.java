@@ -1,8 +1,8 @@
-package it.pagopa.pn.workflowmanager.middleware.queue.consumer.responsehandler;
+package it.pagopa.pn.workflowmanager.middleware.queue.consumer.handler;
 
 import it.pagopa.pn.commons.exceptions.PnInternalException;
 
-import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.paperchannel.model.*;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.model.*;
 import it.pagopa.pn.workflowmanager.action.analogworkflow.AnalogWorkflowPaperChannelResponseHandler;
 import it.pagopa.pn.workflowmanager.action.utils.TimelineUtils;
 import it.pagopa.pn.workflowmanager.dto.address.PhysicalAddressInt;
@@ -11,7 +11,6 @@ import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.ResultFilterInt;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.ChannelEventProcessor;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.analog.AnalogEventNormalizer;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.event.PrepareEventInt;
-import it.pagopa.pn.workflowmanager.middleware.responsehandler.PaperChannelResponseHandler;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,13 +21,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-class PaperChannelResponseHandlerTest {
+class PaperChannelHandlerTest {
 
     private AnalogWorkflowPaperChannelResponseHandler analogWorkflowPaperChannelResponseHandler;
 
     private TimelineUtils timelineUtils;
 
-    private PaperChannelResponseHandler handler;
+    private PaperChannelHandler handler;
 
     private ChannelEventProcessor channelEventProcessor;
 
@@ -42,7 +41,7 @@ class PaperChannelResponseHandlerTest {
         timelineUtils = Mockito.mock(TimelineUtils.class);
         analogWorkflowPaperChannelResponseHandler = Mockito.mock(AnalogWorkflowPaperChannelResponseHandler.class);
 
-        handler = new PaperChannelResponseHandler(
+        handler = new PaperChannelHandler(
                 analogWorkflowPaperChannelResponseHandler,
                 timelineUtils,
                 channelEventProcessor,

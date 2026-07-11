@@ -1,4 +1,4 @@
-package it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.trigger;
+package it.pagopa.pn.workflowmanager.middleware.queue.consumer.handler;
 
 import it.pagopa.pn.workflowmanager.action.utils.TimelineUtils;
 import it.pagopa.pn.workflowmanager.dto.event.NotificationPaidInt;
@@ -7,7 +7,6 @@ import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRe
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationSenderInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.RecipientTypeInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
-import it.pagopa.pn.workflowmanager.dto.timeline.details.NotificationPaidDetailsInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt;
 import it.pagopa.pn.workflowmanager.service.NotificationService;
 import it.pagopa.pn.workflowmanager.service.TimelineService;
@@ -65,17 +64,6 @@ class NotificationPaidHandlerTest {
                 .eventTimestamp(eventTimestamp)
                 .build();
 
-        NotificationPaidDetailsInt builtDetails = NotificationPaidDetailsInt.builder()
-                .recIndex(0)
-                .recipientType("PF")
-                .amount(100)
-                .creditorTaxId("CREDITOR_456")
-                .noticeCode("NOTICE_123")
-                .paymentSourceChannel("IO")
-                .uncertainPaymentDate(false)
-                .eventTimestamp(eventTimestamp)
-                .build();
-
         TimelineElementInternal builtTimelineElement = TimelineElementInternal.builder()
                 .iun("IUN_TEST")
                 .elementId("NOTIFICATION_PAID.IUN_IUN_TEST.CODE_PPANOTICE_123CREDITOR_456")
@@ -83,21 +71,12 @@ class NotificationPaidHandlerTest {
                 .build();
 
         when(notificationService.getInformalNotificationByIun("IUN_TEST")).thenReturn(notification);
-        when(timelineUtils.buildNotificationPaidDetails(eq(payment), eq(notification.getRecipients().getFirst())))
-                .thenReturn(builtDetails);
-        when(timelineUtils.buildTimeline(eq(notification), eq(TimelineElementCategoryInt.PAYMENT), eq("NOTIFICATION_PAID.IUN_IUN_TEST.CODE_PPANOTICE_123CREDITOR_456"), eq(builtDetails)))
+        when(timelineUtils.buildPaymentTimelineElement(eq(notification), eq(payment), eq(notification.getRecipients().getFirst())))
                 .thenReturn(builtTimelineElement);
 
         notificationPaidHandler.handlePaymentPaid(payment);
 
-        verify(timelineUtils).buildNotificationPaidDetails(eq(payment), eq(notification.getRecipients().getFirst()));
-        verify(timelineUtils).buildTimeline(
-                eq(notification),
-                eq(TimelineElementCategoryInt.PAYMENT),
-                eq("NOTIFICATION_PAID.IUN_IUN_TEST.CODE_PPANOTICE_123CREDITOR_456"),
-                eq(builtDetails)
-        );
-
+        verify(timelineUtils).buildPaymentTimelineElement(eq(notification), eq(payment), eq(notification.getRecipients().getFirst()));
         verify(timelineService).addTimelineElement(eq(builtTimelineElement), eq(notification));
     }
 }

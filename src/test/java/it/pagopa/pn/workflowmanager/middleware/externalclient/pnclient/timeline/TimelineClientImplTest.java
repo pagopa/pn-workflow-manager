@@ -1,8 +1,8 @@
 package it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.timeline;
 
 import it.pagopa.pn.commons.exceptions.PnHttpResponseException;
-import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.timelineservice.api.TimelineControllerApi;
-import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.timelineservice.model.*;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.api.TimelineControllerApi;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.model.*;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.AddTimelineElementResponse;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;

@@ -3,7 +3,7 @@ package it.pagopa.pn.workflowmanager.service.impl;
 import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.commons.log.PnAuditLogEvent;
 import it.pagopa.pn.commons.log.PnAuditLogEventType;
-import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.paperchannel.model.SendResponse;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.model.SendResponse;
 import it.pagopa.pn.workflowmanager.action.utils.ChannelSenderUtils;
 import it.pagopa.pn.workflowmanager.action.utils.PaperChannelUtils;
 import it.pagopa.pn.workflowmanager.dto.address.PhysicalAddressInt;

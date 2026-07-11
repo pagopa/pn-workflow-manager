@@ -1,6 +1,6 @@
 package it.pagopa.pn.workflowmanager.service.impl;
 
-import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.actionmanager.model.NewAction;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.actionmanager.model.NewAction;
 import it.pagopa.pn.workflowmanager.dto.action.common.Action;
 import it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.actionmanager.ActionManagerClient;
 import it.pagopa.pn.workflowmanager.service.mapper.ActionManagerMapper;

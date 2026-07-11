@@ -1,7 +1,7 @@
 package it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.delivery;
 
-import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.delivery.api.InternalOnlyApi;
-import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.delivery.model.InformalSentNotificationV1;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.delivery.api.InternalOnlyApi;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.delivery.model.InformalSentNotificationV1;
 import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

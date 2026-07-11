@@ -1,6 +1,6 @@
 package it.pagopa.pn.workflowmanager.service.mapper;
 
-import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.delivery.model.UsedServices;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.delivery.model.UsedServices;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.UsedServicesInt;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

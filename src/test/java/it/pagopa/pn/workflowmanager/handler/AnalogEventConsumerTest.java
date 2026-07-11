@@ -1,8 +1,8 @@
 package it.pagopa.pn.workflowmanager.handler;
 
-import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.paperchannel.model.PaperChannelUpdate;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.model.PaperChannelUpdate;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.AnalogEventConsumer;
-import it.pagopa.pn.workflowmanager.middleware.responsehandler.PaperChannelResponseHandler;
+import it.pagopa.pn.workflowmanager.middleware.queue.consumer.handler.PaperChannelHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,13 +18,13 @@ import static org.mockito.Mockito.*;
 class AnalogEventConsumerTest {
 
     @Mock
-    private PaperChannelResponseHandler paperChannelResponseHandler;
+    private PaperChannelHandler paperChannelHandler;
 
     private AnalogEventConsumer analogEventConsumer;
 
     @BeforeEach
     void setUp() {
-        analogEventConsumer = new AnalogEventConsumer(paperChannelResponseHandler);
+        analogEventConsumer = new AnalogEventConsumer(paperChannelHandler);
     }
 
     @Test
@@ -36,11 +36,11 @@ class AnalogEventConsumerTest {
                 .setHeader("iun", "IUN-ANALOG-001")
                 .build();
 
-        doNothing().when(paperChannelResponseHandler).paperChannelResponseReceiver(update);
+        doNothing().when(paperChannelHandler).paperChannelResponseReceiver(update);
 
         assertDoesNotThrow(() -> analogEventConsumer.workflowManagerAnalogEventConsumer(message));
 
-        verify(paperChannelResponseHandler, times(1)).paperChannelResponseReceiver(update);
+        verify(paperChannelHandler, times(1)).paperChannelResponseReceiver(update);
     }
 
     @Test
@@ -48,10 +48,10 @@ class AnalogEventConsumerTest {
         PaperChannelUpdate update = mock(PaperChannelUpdate.class);
         Message<PaperChannelUpdate> message = MessageBuilder.withPayload(update).build();
 
-        doNothing().when(paperChannelResponseHandler).paperChannelResponseReceiver(update);
+        doNothing().when(paperChannelHandler).paperChannelResponseReceiver(update);
 
         assertDoesNotThrow(() -> analogEventConsumer.workflowManagerAnalogEventConsumer(message));
 
-        verify(paperChannelResponseHandler, times(1)).paperChannelResponseReceiver(update);
+        verify(paperChannelHandler, times(1)).paperChannelResponseReceiver(update);
     }
 }

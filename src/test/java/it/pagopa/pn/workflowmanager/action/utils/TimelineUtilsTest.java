@@ -1,13 +1,14 @@
 package it.pagopa.pn.workflowmanager.action.utils;
 
 import it.pagopa.pn.commons.exceptions.PnInternalException;
-import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.paperchannel.model.SendResponse;
-import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.timelineservice.model.NotificationHistoryResponse;
-import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.timelineservice.model.NotificationStatus;
-import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.timelineservice.model.SendingReceipt;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.model.SendResponse;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.model.NotificationHistoryResponse;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.model.NotificationStatus;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.model.SendingReceipt;
 import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
 import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.address.PhysicalAddressInt;
+import it.pagopa.pn.workflowmanager.dto.event.NotificationPaidInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationSenderInt;
@@ -1087,6 +1088,55 @@ class TimelineUtilsTest {
         // Assert
         assertNotNull(result);
         assertTrue(result.contains(TEST_IUN));
+    }
+
+    @Test
+    void buildPaymentTimelineElement() {
+        // Arrange
+        NotificationInt notification = createNotification();
+        int recIndex = 0;
+        String noticeCode = "NOTICE_123";
+        String creditorTaxId = "CREDITOR_TAX_ID";
+        int amount = 100;
+        String paymentSourceChannel = "PPA";
+        Instant eventTimestamp = Instant.now();
+        NotificationPaidInt notificationPaid = NotificationPaidInt.builder()
+                .iun(notification.getIun())
+                .recIndex(recIndex)
+                .noticeCode(noticeCode)
+                .creditorTaxId(creditorTaxId)
+                .amount(amount)
+                .paymentSourceChannel(paymentSourceChannel)
+                .eventTimestamp(eventTimestamp)
+                .build();
+
+        String expectedElementId = TimelineEventId.NOTIFICATION_PAID.buildEventId(
+                EventId.builder()
+                        .iun(notification.getIun())
+                        .recIndex(recIndex)
+                        .noticeCode(noticeCode)
+                        .creditorTaxId(creditorTaxId)
+                        .build()
+        );
+
+        // Act
+        TimelineElementInternal actual = timelineUtils.buildPaymentTimelineElement(notification, notificationPaid, notification.getRecipients().getFirst());
+
+        // Assert
+        assertNotNull(actual);
+        assertEquals(notification.getIun(), actual.getIun());
+        assertEquals(expectedElementId, actual.getElementId());
+        assertEquals(PAYMENT, actual.getCategory());
+        assertNotNull(actual.getDetails());
+
+        NotificationPaidDetailsInt details = (NotificationPaidDetailsInt) actual.getDetails();
+        assertEquals(recIndex, details.getRecIndex());
+        assertEquals(RecipientTypeInt.PF.name(), details.getRecipientType());
+        assertEquals(amount, details.getAmount());
+        assertEquals(noticeCode, details.getNoticeCode());
+        assertEquals(paymentSourceChannel, details.getPaymentSourceChannel());
+        assertFalse(details.isUncertainPaymentDate());
+        assertEquals(eventTimestamp, details.getEventTimestamp());
     }
 
     private TimelineElementInternal createTimelineElement(TimelineElementCategoryInt category, int recIndex) {

@@ -1,20 +1,17 @@
 package it.pagopa.pn.workflowmanager.action.utils;
 
 import it.pagopa.pn.commons.exceptions.PnInternalException;
-import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.paperchannel.model.SendResponse;
-import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.timelineservice.model.NotificationHistoryResponse;
-import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.timelineservice.model.NotificationStatus;
-import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.timelineservice.model.SendingReceipt;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.model.SendResponse;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.model.NotificationHistoryResponse;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.model.NotificationStatus;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.model.SendingReceipt;
 import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
 import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.address.PhysicalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.event.NotificationPaidInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
-<<<<<<< feature/PN-20585
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.AttachmentDetailsInt;
-=======
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
->>>>>>> feature/PN-18681-epic
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.CategorizedAttachmentsResultInt;
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.ResponseStatusInt;
 import it.pagopa.pn.workflowmanager.dto.ext.paperchannel.AnalogDtoInt;
@@ -616,9 +613,18 @@ public class TimelineUtils {
         return (SendRelatedTimelineElement) requestElement.getDetails();
     }
 
-    public NotificationPaidDetailsInt buildNotificationPaidDetails(NotificationPaidInt payment,
+    public TimelineElementInternal buildPaymentTimelineElement(NotificationInt notification, NotificationPaidInt payment,
                                                                    NotificationRecipientInt recipient) {
-        return NotificationPaidDetailsInt.builder()
+        log.debug("buildPaymentTimelineElement - IUN={} and id={}", notification.getIun(), payment.getRecIndex());
+
+        String elementId = TimelineEventId.NOTIFICATION_PAID.buildEventId(
+                EventId.builder()
+                        .iun(payment.getIun())
+                        .noticeCode(payment.getNoticeCode())
+                        .creditorTaxId(payment.getCreditorTaxId())
+                        .build()
+        );
+        NotificationPaidDetailsInt detailsInt = NotificationPaidDetailsInt.builder()
                 .recIndex(payment.getRecIndex())
                 .recipientType(recipient.getRecipientType().getValue())
                 .amount(payment.getAmount())
@@ -628,5 +634,7 @@ public class TimelineUtils {
                 .uncertainPaymentDate(false)
                 .eventTimestamp(payment.getEventTimestamp())
                 .build();
+
+        return buildTimeline(notification, TimelineElementCategoryInt.PAYMENT, elementId, detailsInt);
     }
 }

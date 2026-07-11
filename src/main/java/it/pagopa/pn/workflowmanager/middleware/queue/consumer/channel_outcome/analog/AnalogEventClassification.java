@@ -1,6 +1,6 @@
 package it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.analog;
 
-import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.paperchannel.model.StatusCodeEnum;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.model.StatusCodeEnum;
 import it.pagopa.pn.workflowmanager.exceptions.PnUnknownEventCodeException;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.ChannelOutcomeCategory;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.ChannelOutcomeClassification;

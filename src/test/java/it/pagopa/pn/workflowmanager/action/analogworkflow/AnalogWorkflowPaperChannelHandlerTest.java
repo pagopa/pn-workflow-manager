@@ -29,7 +29,7 @@ import java.util.List;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class AnalogWorkflowPaperChannelResponseHandlerTest {
+class AnalogWorkflowPaperChannelHandlerTest {
 
     @Mock
     private NotificationService notificationService;
@@ -190,7 +190,7 @@ class AnalogWorkflowPaperChannelResponseHandlerTest {
 
     private TimelineElementInternal createTimelineElement() {
         PrepareAnalogDeliveryDetailsInt details = PrepareAnalogDeliveryDetailsInt.builder()
-                .recIndex(AnalogWorkflowPaperChannelResponseHandlerTest.REC_INDEX)
+                .recIndex(AnalogWorkflowPaperChannelHandlerTest.REC_INDEX)
                 .deliveryType(AnalogDeliveryTypeInt.RS)
                 .build();
 

@@ -1,7 +1,7 @@
 package it.pagopa.pn.workflowmanager.utils;
 
 import it.pagopa.pn.commons.utils.DateFormatUtils;
-import it.pagopa.pn.deliverypushworkflow.generated.openapi.msclient.delivery.model.NotificationFeePolicy;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.delivery.model.NotificationFeePolicy;
 import it.pagopa.pn.workflowmanager.dto.address.LegalDigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.*;
 

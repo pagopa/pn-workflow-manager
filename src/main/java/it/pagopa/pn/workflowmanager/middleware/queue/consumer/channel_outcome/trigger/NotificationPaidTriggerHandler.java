@@ -2,6 +2,7 @@ package it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.t
 
 import it.pagopa.pn.workflowmanager.dto.event.NotificationPaidInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
+import it.pagopa.pn.workflowmanager.middleware.queue.consumer.handler.NotificationPaidHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
