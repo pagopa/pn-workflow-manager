@@ -49,7 +49,7 @@ public class ChannelOutcomeHandler {
                 .orElse(false);
         if(isDesiredFeedbackForCampaign) {
             workflowUtils.scheduleWorkflowDone(iun, recIndex, normalizedChannelOutcome.getTimelineElementInternal().getElementId(), classification.getSatisfiedDesiredFeedback().get());
-        } else if(classification.getCategory().isNegativeFeedback()) {
+        } else if(classification.getCategory().shouldAdvanceWorkflow()) {
             workflowUtils.advanceWorkflow(iun, recIndex, channel, campaign, recipientTypeInt);
         }
         // Se non è un feedback finale o un feedback desiderato, devo solo persistere l'elemento in timeline, senza avanzare il workflow.

@@ -1,5 +1,7 @@
 package it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.sms;
 
+import it.pagopa.pn.commons.log.PnAuditLogEvent;
+import it.pagopa.pn.commons.log.PnAuditLogEventType;
 import it.pagopa.pn.workflowmanager.action.utils.TimelineUtils;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.ResponseStatusInt;
@@ -10,8 +12,10 @@ import it.pagopa.pn.workflowmanager.dto.timeline.details.SendDigitalMessageDetai
 import it.pagopa.pn.workflowmanager.dto.timeline.details.SendRelatedTimelineElement;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.ChannelOutcomeNormalizer;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.NormalizedChannelOutcome;
+import it.pagopa.pn.workflowmanager.middleware.queue.consumer.event.DigitalMessageReferenceInt;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.event.ExtChannelOutcomeEvent;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
+import it.pagopa.pn.workflowmanager.service.AuditLogService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -19,14 +23,16 @@ import org.springframework.stereotype.Component;
 @Component
 public class SmsEventNormalizer implements ChannelOutcomeNormalizer<ExtChannelOutcomeEvent> {
     private final TimelineUtils timelineUtils;
+    private final AuditLogService auditLogService;
 
     @Override
     public NormalizedChannelOutcome normalize(ExtChannelOutcomeEvent smsEvent, NotificationInt notification, SendRelatedTimelineElement sourceSendRequestDetails) {
         String eventCode = smsEvent.getEventCode().getValue();
         SmsEventClassification classification = SmsEventClassification.fromEventCode(eventCode);
+        SendDigitalMessageDetailsInt digitalSendMessageDetails = (SendDigitalMessageDetailsInt) sourceSendRequestDetails;
         int recIndex = sourceSendRequestDetails.getRecIndex();
 
-        TimelineElementInternal timelineElementInternal = buildTimelineElement(smsEvent, notification, sourceSendRequestDetails, classification);
+        TimelineElementInternal timelineElementInternal = buildTimelineElement(smsEvent, notification, digitalSendMessageDetails, classification);
 
         return NormalizedChannelOutcome.builder()
                 .iun(notification.getIun())
@@ -36,11 +42,11 @@ public class SmsEventNormalizer implements ChannelOutcomeNormalizer<ExtChannelOu
                 .timelineElementInternal(timelineElementInternal)
                 .originalEventType(eventCode)
                 .eventTimestamp(smsEvent.getEventTimestamp())
+                .pnAuditLogEvent(buildAuditLog(smsEvent, notification, recIndex, digitalSendMessageDetails))
                 .build();
     }
 
-    private TimelineElementInternal buildTimelineElement(ExtChannelOutcomeEvent smsEvent, NotificationInt notification, SendRelatedTimelineElement sourceSendRequestDetails, SmsEventClassification classification) {
-        SendDigitalMessageDetailsInt digitalSendMessageDetails = (SendDigitalMessageDetailsInt) sourceSendRequestDetails;
+    private TimelineElementInternal buildTimelineElement(ExtChannelOutcomeEvent smsEvent, NotificationInt notification, SendDigitalMessageDetailsInt digitalSendMessageDetails, SmsEventClassification classification) {
         int recIndex = digitalSendMessageDetails.getRecIndex();
 
         String eventCode = smsEvent.getEventCode().getValue();
@@ -61,6 +67,22 @@ public class SmsEventNormalizer implements ChannelOutcomeNormalizer<ExtChannelOu
                 null,
                 smsEvent.getEventTimestamp()
         );
+    }
+
+    private PnAuditLogEvent buildAuditLog(ExtChannelOutcomeEvent emailEvent, NotificationInt notification, int recIndex, SendDigitalMessageDetailsInt digitalSendMessageDetails) {
+        DigitalMessageReferenceInt digitalMessageReference = emailEvent.getGeneratedMessage();
+        String attachments = (digitalMessageReference!=null && digitalMessageReference.getLocation()!=null)?digitalMessageReference.getLocation():"";
+
+        String msg = String.format(
+                "Received sent SMS outcome event: %s for notification %s and recipient index %d for source %s, status=%s, attachments=%s",
+                emailEvent.getEventCode().getValue(),
+                notification.getIun(),
+                recIndex,
+                digitalSendMessageDetails.getDigitalAddressSource(),
+                emailEvent.getStatus(),
+                attachments
+        );
+        return auditLogService.buildAuditLogEvent(notification.getIun(), recIndex, PnAuditLogEventType.AUD_COM_DD_RECEIVE, msg);
     }
 }
 

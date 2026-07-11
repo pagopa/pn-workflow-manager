@@ -1036,7 +1036,6 @@ class TimelineUtilsTest {
         PhysicalAddressInt physicalAddress = PhysicalAddressInt.builder().address("Via Roma 1").build();
         PhysicalAddressInt newAddress = PhysicalAddressInt.builder().address("Via Milano 5").build();
         ResponseStatusInt responseStatus = ResponseStatusInt.OK;
-        String requestTimelineId = "timeline-req-001";
         Integer sentAttemptMade = 0;
 
         String expectedEventId = TimelineUtils.buildSendAnalogFeedbackTimelineEventId(
@@ -1046,7 +1045,7 @@ class TimelineUtilsTest {
         TimelineElementInternal actual = timelineUtils.buildSendAnalogFeedbackNotificationTimelineElement(
                 TEST_REC_INDEX, notification, serviceLevel, notificationDate,
                 deliveryDetail, deliveryType, attachments, sendRequestId, registeredLetterCode,
-                physicalAddress, responseStatus, requestTimelineId, newAddress, sentAttemptMade);
+                physicalAddress, responseStatus, newAddress, sentAttemptMade);
 
         // Assert
         Assertions.assertAll(
@@ -1068,7 +1067,7 @@ class TimelineUtilsTest {
                 () -> assertEquals(sendRequestId, details.getSendRequestId()),
                 () -> assertEquals(sentAttemptMade, details.getSentAttemptMade()),
                 () -> assertEquals(responseStatus, details.getResponseStatus()),
-                () -> assertEquals(requestTimelineId, details.getRequestTimelineId()),
+                () -> assertNull(details.getRequestTimelineId()),
                 () -> assertEquals(deliveryDetail, details.getDeliveryDetail()),
                 () -> assertEquals(registeredLetterCode, details.getRegisteredLetterCode()),
                 () -> assertEquals(notificationDate, details.getNotificationDate()),

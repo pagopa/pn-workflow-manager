@@ -11,7 +11,7 @@ import java.util.Optional;
 
 @Getter
 public enum SmsEventClassification implements ChannelOutcomeClassification {
-    S003(false, ChannelOutcomeCategory.positiveFeedback(), DesiredFeedbackType.SENT),
+    S003(false, ChannelOutcomeCategory.positiveFeedback(false), DesiredFeedbackType.SENT),
     S008(false, ChannelOutcomeCategory.negativeFeedback(), null),
     S010(false, ChannelOutcomeCategory.negativeFeedback(), null);
 

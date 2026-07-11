@@ -1,5 +1,6 @@
 package it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome;
 
+import it.pagopa.pn.commons.log.PnAuditLogEvent;
 import it.pagopa.pn.workflowmanager.action.utils.TimelineUtils;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.SendRelatedTimelineElement;
@@ -32,7 +33,14 @@ public class ChannelEventProcessor {
         Campaign campaign = campaignService.getCampaignByCampaignIdAndSenderId(notificationInt.getCampaignId(), notificationInt.getSender().getPaId());
 
         NormalizedChannelOutcome normalizedChannelOutcome = normalizer.normalize(event, notificationInt, sourceSendRequestDetails);
-        log.debug("Normalized channel outcome: {}", normalizedChannelOutcome);
-        channelOutcomeHandler.handleOutcome(normalizedChannelOutcome, notificationInt, campaign);
+        PnAuditLogEvent auditLogEvent = normalizedChannelOutcome.getPnAuditLogEvent();
+        try {
+            log.debug("Normalized channel outcome: {}", normalizedChannelOutcome);
+            channelOutcomeHandler.handleOutcome(normalizedChannelOutcome, notificationInt, campaign);
+            auditLogEvent.generateSuccess("Channel outcome event processed successfully");
+        } catch (Exception e) {
+            auditLogEvent.generateFailure("Error processing channel outcome event: " + e.getMessage(), e);
+            throw e;
+        }
     }
 }

@@ -18,7 +18,7 @@ class SmsEventClassificationTest {
 
     private static Stream<Arguments> smsClassificationCases() {
         return Stream.of(
-                Arguments.of(SmsEventClassification.S003, false, ChannelOutcomeCategory.positiveFeedback()),
+                Arguments.of(SmsEventClassification.S003, false, ChannelOutcomeCategory.positiveFeedback(false)),
                 Arguments.of(SmsEventClassification.S008, false, ChannelOutcomeCategory.negativeFeedback()),
                 Arguments.of(SmsEventClassification.S010, false, ChannelOutcomeCategory.negativeFeedback())
         );

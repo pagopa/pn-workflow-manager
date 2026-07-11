@@ -1,5 +1,7 @@
 package it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.pec;
 
+import it.pagopa.pn.commons.log.PnAuditLogEvent;
+import it.pagopa.pn.commons.log.PnAuditLogEventType;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.model.SendingReceipt;
 import it.pagopa.pn.workflowmanager.action.utils.TimelineUtils;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
@@ -12,8 +14,10 @@ import it.pagopa.pn.workflowmanager.dto.timeline.details.SendRelatedTimelineElem
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.ChannelOutcomeCategory;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.ChannelOutcomeNormalizer;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.NormalizedChannelOutcome;
+import it.pagopa.pn.workflowmanager.middleware.queue.consumer.event.DigitalMessageReferenceInt;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.event.ExtChannelOutcomeEvent;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
+import it.pagopa.pn.workflowmanager.service.AuditLogService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -23,15 +27,17 @@ import java.util.List;
 @Component
 public class PecEventNormalizer implements ChannelOutcomeNormalizer<ExtChannelOutcomeEvent> {
     private final TimelineUtils timelineUtils;
+    private final AuditLogService auditLogService;
 
     @Override
     public NormalizedChannelOutcome normalize(ExtChannelOutcomeEvent pecEvent, NotificationInt notification, SendRelatedTimelineElement sourceSendRequestDetails) {
         String eventCodeValue = pecEvent.getEventCode().getValue();
-        int recIndex = sourceSendRequestDetails.getRecIndex();
+        SendDigitalMessageDetailsInt digitalSendMessageDetails = (SendDigitalMessageDetailsInt) sourceSendRequestDetails;
+        int recIndex = digitalSendMessageDetails.getRecIndex();
 
         PecEventClassification classification = PecEventClassification.fromEventCode(eventCodeValue);
 
-        TimelineElementInternal timelineElement = buildTimelineElement(pecEvent, notification, sourceSendRequestDetails, classification);
+        TimelineElementInternal timelineElement = buildTimelineElement(pecEvent, notification, digitalSendMessageDetails, classification);
 
         return NormalizedChannelOutcome.builder()
                 .iun(notification.getIun())
@@ -41,11 +47,11 @@ public class PecEventNormalizer implements ChannelOutcomeNormalizer<ExtChannelOu
                 .timelineElementInternal(timelineElement)
                 .originalEventType(eventCodeValue)
                 .eventTimestamp(pecEvent.getEventTimestamp())
+                .pnAuditLogEvent(buildAuditLog(pecEvent, notification, recIndex, digitalSendMessageDetails))
                 .build();
     }
 
-    private TimelineElementInternal buildTimelineElement(ExtChannelOutcomeEvent pecEvent, NotificationInt notification, SendRelatedTimelineElement sourceSendRequestDetails, PecEventClassification classification) {
-        SendDigitalMessageDetailsInt digitalSendMessageDetails = (SendDigitalMessageDetailsInt) sourceSendRequestDetails;
+    private TimelineElementInternal buildTimelineElement(ExtChannelOutcomeEvent pecEvent, NotificationInt notification, SendDigitalMessageDetailsInt digitalSendMessageDetails, PecEventClassification classification) {
         int recIndex = digitalSendMessageDetails.getRecIndex();
 
         // Create delivery detail from event
@@ -89,6 +95,22 @@ public class PecEventNormalizer implements ChannelOutcomeNormalizer<ExtChannelOu
         sendingReceipt.setId(pecEvent.getGeneratedMessage().getId());
         sendingReceipt.setSystem(pecEvent.getGeneratedMessage().getSystem());
         return List.of(sendingReceipt);
+    }
+
+    private PnAuditLogEvent buildAuditLog(ExtChannelOutcomeEvent emailEvent, NotificationInt notification, int recIndex, SendDigitalMessageDetailsInt digitalSendMessageDetails) {
+        DigitalMessageReferenceInt digitalMessageReference = emailEvent.getGeneratedMessage();
+        String attachments = (digitalMessageReference!=null && digitalMessageReference.getLocation()!=null)?digitalMessageReference.getLocation():"";
+
+        String msg = String.format(
+                "Received sent PEC outcome event: %s for notification %s and recipient index %d for source %s, status=%s, attachments=%s",
+                emailEvent.getEventCode().getValue(),
+                notification.getIun(),
+                recIndex,
+                digitalSendMessageDetails.getDigitalAddressSource(),
+                emailEvent.getStatus(),
+                attachments
+        );
+        return auditLogService.buildAuditLogEvent(notification.getIun(), recIndex, PnAuditLogEventType.AUD_COM_DD_RECEIVE, msg);
     }
 }
 

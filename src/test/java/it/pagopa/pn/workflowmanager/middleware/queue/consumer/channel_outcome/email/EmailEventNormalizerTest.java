@@ -1,5 +1,6 @@
 package it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.email;
 
+import it.pagopa.pn.commons.log.PnAuditLogEventType;
 import it.pagopa.pn.workflowmanager.action.utils.TimelineUtils;
 import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
@@ -13,6 +14,7 @@ import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.No
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.event.ExtChannelOutcomeEvent;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.event.ExtChannelOutcomeEventCodeInt;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
+import it.pagopa.pn.workflowmanager.service.AuditLogService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,6 +36,8 @@ class EmailEventNormalizerTest {
 
     @Mock
     private TimelineUtils timelineUtils;
+    @Mock
+    private AuditLogService auditLogService;
 
     @InjectMocks
     private EmailEventNormalizer emailEventNormalizer;
@@ -174,5 +178,7 @@ class EmailEventNormalizerTest {
         assertEquals(expectedClassification.name(), result.getOriginalEventType());
         assertEquals(now, result.getEventTimestamp());
         assertEquals(mockTimelineElement, result.getTimelineElementInternal());
+        verify(auditLogService).buildAuditLogEvent(eq(iun), eq(recIndex), eq(PnAuditLogEventType.AUD_COM_DD_RECEIVE), anyString());
+
     }
 }

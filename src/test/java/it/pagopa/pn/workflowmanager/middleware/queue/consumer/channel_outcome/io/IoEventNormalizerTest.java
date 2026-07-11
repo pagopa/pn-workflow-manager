@@ -1,5 +1,6 @@
 package it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.io;
 
+import it.pagopa.pn.commons.log.PnAuditLogEventType;
 import it.pagopa.pn.workflowmanager.action.utils.TimelineUtils;
 import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.event.NotificationPaidInt;
@@ -16,6 +17,7 @@ import it.pagopa.pn.workflowmanager.middleware.queue.consumer.event.IoOutcomeEve
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.NormalizedChannelOutcome;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.trigger.ChannelEventTrigger;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
+import it.pagopa.pn.workflowmanager.service.AuditLogService;
 import it.pagopa.pn.workflowmanager.utils.NotificationPaymentUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,6 +41,8 @@ class IoEventNormalizerTest {
 
     @Mock
     private TimelineUtils timelineUtils;
+    @Mock
+    private AuditLogService auditLogService;
 
     @InjectMocks
     private IoEventNormalizer ioEventNormalizer;
@@ -235,5 +239,7 @@ class IoEventNormalizerTest {
         assertEquals(expectedClassification.name(), result.getOriginalEventType());
         assertEquals(now, result.getEventTimestamp());
         assertEquals(mockTimelineElement, result.getTimelineElementInternal());
+        verify(auditLogService).buildAuditLogEvent(eq(iun), eq(recIndex), eq(PnAuditLogEventType.AUD_COM_DD_RECEIVE), anyString());
+
     }
 }

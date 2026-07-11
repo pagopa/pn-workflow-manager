@@ -213,7 +213,6 @@ public class TimelineUtils {
                                                                                       String registeredLetterCode,
                                                                                       PhysicalAddressInt physicalAddressInt,
                                                                                       ResponseStatusInt responseStatus,
-                                                                                      String requestTimelineId,
                                                                                       PhysicalAddressInt newAddress,
                                                                                       Integer sentAttemptMade) {
         log.debug("buildSendAnalogFeedbackNotificationTimelineElement - IUN={} and id={} ", notification.getIun(), recIndex);
@@ -229,7 +228,6 @@ public class TimelineUtils {
                 .sendRequestId(sendRequestId)
                 .sentAttemptMade(sentAttemptMade)
                 .responseStatus(responseStatus)
-                .requestTimelineId(requestTimelineId)
                 .deliveryDetail(deliveryDetail)
                 .registeredLetterCode(registeredLetterCode)
                 .notificationDate(notificationDate)

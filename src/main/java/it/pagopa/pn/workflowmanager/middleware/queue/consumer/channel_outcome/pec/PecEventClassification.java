@@ -19,7 +19,7 @@ public enum PecEventClassification implements ChannelOutcomeClassification {
     C000(false, ChannelOutcomeCategory.progress(), null), // COMUNICAZIONE CON SERVER PEC AVVENUTA  (senza busta)
     C001(false, ChannelOutcomeCategory.progress(), DesiredFeedbackType.SENT), // StatusPec.ACCETTAZIONE  (con busta)
     C002(false, ChannelOutcomeCategory.negativeFeedback(), null), // StatusPec.NON_ACCETTAZIONE  (con busta)
-    C003(true, ChannelOutcomeCategory.positiveFeedback(), DesiredFeedbackType.RECEIVED), // StatusPec.AVVENUTA_CONSEGNA  (con busta)
+    C003(true, ChannelOutcomeCategory.positiveFeedback(false), DesiredFeedbackType.RECEIVED), // StatusPec.AVVENUTA_CONSEGNA  (con busta)
     C004(false, ChannelOutcomeCategory.negativeFeedback(), null), // StatusPec.ERRORE_CONSEGNA (con busta)
     C005(false, ChannelOutcomeCategory.progress(), null), // StatusPec.PRESA_IN_CARICO  (senza busta)
     C006(false, ChannelOutcomeCategory.negativeFeedback(), null), // StatusPec.RILEVAZIONE_VIRUS (con busta)
