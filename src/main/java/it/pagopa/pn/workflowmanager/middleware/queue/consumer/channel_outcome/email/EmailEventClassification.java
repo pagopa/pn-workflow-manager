@@ -3,8 +3,8 @@ package it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.e
 import it.pagopa.pn.workflowmanager.exceptions.PnUnknownEventCodeException;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.ChannelOutcomeCategory;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.ChannelOutcomeClassification;
-import it.pagopa.pn.workflowmanager.models.internal.campaign.ChannelType;
-import it.pagopa.pn.workflowmanager.models.internal.campaign.DesiredFeedbackType;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.DesiredFeedbackType;
 import lombok.Getter;
 
 import java.util.Optional;

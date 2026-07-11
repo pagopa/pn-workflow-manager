@@ -8,8 +8,8 @@ import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationIn
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationSenderInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
-import it.pagopa.pn.workflowmanager.models.internal.campaign.Campaign;
-import it.pagopa.pn.workflowmanager.models.internal.campaign.DesiredFeedbackType;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.DesiredFeedbackType;
 import it.pagopa.pn.workflowmanager.service.AuditLogService;
 import it.pagopa.pn.workflowmanager.service.CampaignService;
 import it.pagopa.pn.workflowmanager.service.NotificationService;

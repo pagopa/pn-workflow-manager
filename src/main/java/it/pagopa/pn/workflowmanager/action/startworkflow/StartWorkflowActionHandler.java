@@ -4,7 +4,7 @@ import it.pagopa.pn.workflowmanager.action.ChannelSender;
 import it.pagopa.pn.workflowmanager.action.ChannelSenderFactory;
 import it.pagopa.pn.workflowmanager.dto.action.details.StartWorkflowDetails;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
-import it.pagopa.pn.workflowmanager.models.internal.campaign.Campaign;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
 import it.pagopa.pn.workflowmanager.service.CampaignService;
 import it.pagopa.pn.workflowmanager.service.NotificationService;
 import lombok.AllArgsConstructor;

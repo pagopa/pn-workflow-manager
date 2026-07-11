@@ -1,6 +1,6 @@
 package it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome;
 
-import it.pagopa.pn.workflowmanager.models.internal.campaign.DesiredFeedbackType;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.DesiredFeedbackType;
 
 import java.util.Optional;
 

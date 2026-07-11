@@ -2,9 +2,9 @@ package it.pagopa.pn.workflowmanager.config;
 
 import it.pagopa.pn.commons.abstractions.ParameterConsumer;
 import it.pagopa.pn.commons.exceptions.PnInternalException;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.*;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.RecipientTypeInt;
 import it.pagopa.pn.workflowmanager.exceptions.PnCampaignNotFoundException;
-import it.pagopa.pn.workflowmanager.models.internal.campaign.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

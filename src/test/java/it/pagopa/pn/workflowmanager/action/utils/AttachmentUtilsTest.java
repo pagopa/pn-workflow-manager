@@ -5,7 +5,7 @@ import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationDo
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationPaymentInfoInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
-import it.pagopa.pn.workflowmanager.models.internal.campaign.ChannelType;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.PagoPaInt;
 import it.pagopa.pn.workflowmanager.utils.NotificationUtils;
 import it.pagopa.pn.workflowmanager.utils.PnSendMode;

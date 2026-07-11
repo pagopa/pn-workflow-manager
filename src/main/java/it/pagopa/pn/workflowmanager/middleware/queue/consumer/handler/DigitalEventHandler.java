@@ -12,7 +12,7 @@ import it.pagopa.pn.workflowmanager.middleware.queue.consumer.event.ExtChannelOu
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.event.ExtChannelOutcomeEventCodeInt;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.pec.PecEventNormalizer;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.sms.SmsEventNormalizer;
-import it.pagopa.pn.workflowmanager.models.internal.campaign.ChannelType;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

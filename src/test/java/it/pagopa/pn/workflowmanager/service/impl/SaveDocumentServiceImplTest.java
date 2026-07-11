@@ -6,7 +6,7 @@ import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRe
 import it.pagopa.pn.workflowmanager.dto.safestorage.DocumentType;
 import it.pagopa.pn.workflowmanager.dto.safestorage.FileCreationResponseInt;
 import it.pagopa.pn.workflowmanager.dto.safestorage.FileCreationWithContentRequest;
-import it.pagopa.pn.workflowmanager.models.internal.campaign.Campaign;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
 import it.pagopa.pn.workflowmanager.service.SafeStorageService;
 import it.pagopa.pn.workflowmanager.service.TemplateGeneratorService;
 import org.junit.jupiter.api.BeforeEach;

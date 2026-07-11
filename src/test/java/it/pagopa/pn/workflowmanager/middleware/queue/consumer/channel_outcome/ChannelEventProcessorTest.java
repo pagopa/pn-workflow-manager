@@ -6,7 +6,7 @@ import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationSe
 import it.pagopa.pn.workflowmanager.dto.timeline.details.SendRelatedTimelineElement;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.event.IoOutcomeEvent;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.io.IoEventNormalizer;
-import it.pagopa.pn.workflowmanager.models.internal.campaign.Campaign;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
 import it.pagopa.pn.workflowmanager.service.CampaignService;
 import it.pagopa.pn.workflowmanager.service.NotificationService;
 import org.junit.jupiter.api.BeforeEach;

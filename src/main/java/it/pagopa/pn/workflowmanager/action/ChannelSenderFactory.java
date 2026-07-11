@@ -5,7 +5,7 @@ import it.pagopa.pn.workflowmanager.action.start_workflow.EmailChannelSender;
 import it.pagopa.pn.workflowmanager.action.start_workflow.IoChannelSender;
 import it.pagopa.pn.workflowmanager.action.start_workflow.PecChannelSender;
 import it.pagopa.pn.workflowmanager.action.start_workflow.SmsChannelSender;
-import it.pagopa.pn.workflowmanager.models.internal.campaign.ChannelType;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
 import jakarta.annotation.Nonnull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,7 +28,6 @@ public class ChannelSenderFactory {
             case EMAIL -> emailChannelSender;
             case SMS -> smsChannelSender;
             case ANALOG -> analogChannelSender;
-            default -> throw new IllegalArgumentException("Unsupported channel type: " + channel);
         };
     }
 }

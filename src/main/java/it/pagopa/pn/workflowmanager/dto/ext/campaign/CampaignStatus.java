@@ -1,4 +1,4 @@
-package it.pagopa.pn.workflowmanager.models.internal.campaign;
+package it.pagopa.pn.workflowmanager.dto.ext.campaign;
 
 public enum CampaignStatus {
     DRAFT,

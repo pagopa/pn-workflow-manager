@@ -6,7 +6,7 @@ import it.pagopa.pn.workflowmanager.dto.action.common.Action;
 import it.pagopa.pn.workflowmanager.dto.action.details.WorkflowDoneDetails;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.router.SupportedEventType;
-import it.pagopa.pn.workflowmanager.models.internal.campaign.DesiredFeedbackType;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.DesiredFeedbackType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

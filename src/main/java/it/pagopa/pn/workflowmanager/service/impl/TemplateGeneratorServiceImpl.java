@@ -7,7 +7,7 @@ import it.pagopa.pn.workflowmanager.generated.openapi.msclient.templateengine.mo
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.templateengine.model.InformalSmsCommunication;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.templateengine.model.LanguageEnum;
 import it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.templateengine.TemplateEngineClient;
-import it.pagopa.pn.workflowmanager.models.internal.campaign.Campaign;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
 import it.pagopa.pn.workflowmanager.service.TemplateGeneratorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

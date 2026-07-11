@@ -13,7 +13,7 @@ import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.Ch
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.ChannelOutcomeNormalizer;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.NormalizedChannelOutcome;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.event.ExtChannelOutcomeEvent;
-import it.pagopa.pn.workflowmanager.models.internal.campaign.ChannelType;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

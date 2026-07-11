@@ -11,8 +11,8 @@ import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.RecipientTypeI
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt;
 import it.pagopa.pn.workflowmanager.exceptions.PnEventRouterException;
-import it.pagopa.pn.workflowmanager.models.internal.campaign.Campaign;
-import it.pagopa.pn.workflowmanager.models.internal.campaign.DesiredFeedbackType;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.DesiredFeedbackType;
 import it.pagopa.pn.workflowmanager.service.CampaignService;
 import it.pagopa.pn.workflowmanager.service.NotificationService;
 import it.pagopa.pn.workflowmanager.service.TimelineService;

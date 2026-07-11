@@ -8,9 +8,9 @@ import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.RecipientTypeI
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.trigger.ChannelEventTrigger;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.trigger.ChannelEventTriggerDispatcher;
-import it.pagopa.pn.workflowmanager.models.internal.campaign.Campaign;
-import it.pagopa.pn.workflowmanager.models.internal.campaign.ChannelType;
-import it.pagopa.pn.workflowmanager.models.internal.campaign.DesiredFeedbackType;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.DesiredFeedbackType;
 import it.pagopa.pn.workflowmanager.service.TimelineService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

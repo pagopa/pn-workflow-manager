@@ -2,8 +2,8 @@ package it.pagopa.pn.workflowmanager.service.impl;
 
 import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.workflowmanager.config.CampaignsParameterConsumer;
-import it.pagopa.pn.workflowmanager.models.internal.campaign.Campaign;
-import it.pagopa.pn.workflowmanager.models.internal.campaign.CampaignStatus;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.CampaignStatus;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

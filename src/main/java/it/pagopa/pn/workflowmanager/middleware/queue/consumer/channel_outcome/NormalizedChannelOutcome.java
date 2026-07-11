@@ -2,7 +2,7 @@ package it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome;
 
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.trigger.ChannelEventTrigger;
-import it.pagopa.pn.workflowmanager.models.internal.campaign.ChannelType;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
 import lombok.Builder;
 import lombok.Data;
 

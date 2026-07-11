@@ -4,8 +4,8 @@ import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.*;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.templateengine.model.InformalCommunication;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.templateengine.model.InformalEmailCommunicationSubject;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.templateengine.model.SharedInformalCommunicationRecipient;
-import it.pagopa.pn.workflowmanager.models.internal.campaign.Campaign;
-import it.pagopa.pn.workflowmanager.models.internal.campaign.CampaignStatus;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.CampaignStatus;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;

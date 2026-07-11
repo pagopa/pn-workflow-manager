@@ -4,7 +4,7 @@ import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationIn
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
 
 import java.io.File;
-import it.pagopa.pn.workflowmanager.models.internal.campaign.Campaign;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
 
 public interface TemplateGeneratorService {
     String generateIoMessageTemplate(NotificationInt notificationInt, NotificationRecipientInt notificationRecipientInt, Campaign campaign);

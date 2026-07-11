@@ -1,7 +1,7 @@
 package it.pagopa.pn.workflowmanager.exceptions;
 
 import it.pagopa.pn.commons.exceptions.PnInternalException;
-import it.pagopa.pn.workflowmanager.models.internal.campaign.ChannelType;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
 
 import static it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCodes.ERROR_CODE_WORKFLOWMANAGER_UNKNOWN_EVENT_CODE;
 

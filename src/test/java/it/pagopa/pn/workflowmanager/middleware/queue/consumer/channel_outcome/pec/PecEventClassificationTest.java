@@ -2,7 +2,7 @@ package it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.p
 
 import it.pagopa.pn.workflowmanager.exceptions.PnUnknownEventCodeException;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.ChannelOutcomeCategory;
-import it.pagopa.pn.workflowmanager.models.internal.campaign.DesiredFeedbackType;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.DesiredFeedbackType;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;

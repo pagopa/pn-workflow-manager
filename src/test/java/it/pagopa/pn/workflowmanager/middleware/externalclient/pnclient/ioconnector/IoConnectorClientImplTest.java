@@ -5,7 +5,7 @@ import it.pagopa.pn.workflowmanager.dto.client.IoMessageRequest;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.*;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.ioconnector.api.IoConnectorApi;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.ioconnector.model.MessageRequest;
-import it.pagopa.pn.workflowmanager.models.internal.campaign.Campaign;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

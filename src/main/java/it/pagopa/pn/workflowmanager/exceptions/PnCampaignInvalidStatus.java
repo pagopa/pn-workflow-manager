@@ -1,7 +1,7 @@
 package it.pagopa.pn.workflowmanager.exceptions;
 
 import it.pagopa.pn.commons.exceptions.PnInternalException;
-import it.pagopa.pn.workflowmanager.models.internal.campaign.CampaignStatus;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.CampaignStatus;
 
 import static it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCodes.ERROR_CODE_WORKFLOWMANAGER_INVALID_CAMPAIGN_STATUS;
 

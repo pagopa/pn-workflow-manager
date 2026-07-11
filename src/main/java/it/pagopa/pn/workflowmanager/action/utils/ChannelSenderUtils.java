@@ -9,7 +9,7 @@ import it.pagopa.pn.workflowmanager.dto.timeline.TimelineEventId;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.AnalogDeliveryTypeInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.DigitalChannelsInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.ServiceLevelInt;
-import it.pagopa.pn.workflowmanager.models.internal.campaign.ChannelType;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
 import it.pagopa.pn.workflowmanager.service.TimelineService;
 import jakarta.annotation.Nonnull;
 import lombok.RequiredArgsConstructor;
