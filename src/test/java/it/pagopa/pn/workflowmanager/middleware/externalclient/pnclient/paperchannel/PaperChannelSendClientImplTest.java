@@ -1,8 +1,6 @@
 package it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.paperchannel;
 
 import it.pagopa.pn.commons.exceptions.PnHttpResponseException;
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.api.PaperMessagesApi;
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.model.*;
 import it.pagopa.pn.workflowmanager.config.PnWorkflowManagerConfigs;
 import it.pagopa.pn.workflowmanager.dto.address.PhysicalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
@@ -10,6 +8,9 @@ import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRe
 import it.pagopa.pn.workflowmanager.dto.ext.paperchannel.PaperChannelPrepareRequest;
 import it.pagopa.pn.workflowmanager.dto.ext.paperchannel.PaperChannelSendRequest;
 import it.pagopa.pn.workflowmanager.exceptions.PnPaperChannelChangedCostException;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.api.InformalMessagesApi;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.api.PaperMessagesApi;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.model.*;
 import it.pagopa.pn.workflowmanager.utils.NotificationRecipientTestBuilder;
 import it.pagopa.pn.workflowmanager.utils.NotificationTestBuilder;
 import org.apache.http.HttpStatus;
@@ -23,6 +24,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.Instant;
 import java.util.List;
 
+import static it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.paperchannel.PaperMessagesClient.PRINT_TYPE_BN_FRONTE_RETRO;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -30,119 +32,62 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class PaperChannelSendClientImplTestIT {
+class PaperChannelSendClientImplTest {
     private static final String TEST_CX_ID = "test-cx-id";
 
     @Mock
     private PnWorkflowManagerConfigs cfg;
+    @Mock
+    private InformalMessagesApi informalMessagesApi;
     @Mock
     private PaperMessagesApi paperMessagesApi;
     @InjectMocks
     private PaperMessagesClientImpl client;
 
     @Test
-    void shouldBuildPrepareRequestFor890() {
-        when(cfg.getCxId()).thenReturn(TEST_CX_ID);
-
-        String requestId = "requestId";
-        NotificationRecipientInt recipient = NotificationRecipientTestBuilder.builder().build();
-        NotificationInt notification = NotificationTestBuilder.builder().build();
-        PaperChannelPrepareRequest paperChannelPrepareRequest = buildPrepareRequest(
-                requestId,
-                PhysicalAddressInt.ANALOG_TYPE.REGISTERED_LETTER_890,
-                notification,
-                recipient,
-                null
-        );
-
-        client.prepare(paperChannelPrepareRequest);
-
-        ArgumentCaptor<PrepareRequest> captor = ArgumentCaptor.forClass(PrepareRequest.class);
-        verify(paperMessagesApi).sendPaperPrepareRequest(eq(requestId), captor.capture(), eq(TEST_CX_ID));
-
-        PrepareRequest sent = captor.getValue();
-        assertEquals(requestId, sent.getRequestId());
-        assertEquals(notification.getIun(), sent.getIun());
-        assertEquals(ProposalTypeEnum._890, sent.getProposalProductType());
-        assertEquals(recipient.getTaxId(), sent.getReceiverFiscalCode());
-        assertEquals(recipient.getRecipientType().getValue(), sent.getReceiverType());
-        assertEquals("test", sent.getReceiverAddress().getAddress());
-        assertEquals(List.of("Att"), sent.getAttachmentUrls());
-    }
-
-    @Test
-    void shouldBuildPrepareRequestForAR() {
-        when(cfg.getCxId()).thenReturn(TEST_CX_ID);
-
-        String requestId = "requestId";
-        PaperChannelPrepareRequest paperChannelPrepareRequest = buildPrepareRequest(
-                requestId,
-                PhysicalAddressInt.ANALOG_TYPE.AR_REGISTERED_LETTER,
-                NotificationTestBuilder.builder().build(),
-                NotificationRecipientTestBuilder.builder().build(),
-                null
-        );
-
-        client.prepare(paperChannelPrepareRequest);
-
-        ArgumentCaptor<PrepareRequest> captor = ArgumentCaptor.forClass(PrepareRequest.class);
-        verify(paperMessagesApi).sendPaperPrepareRequest(eq(requestId), captor.capture(), eq(TEST_CX_ID));
-        assertEquals(ProposalTypeEnum.AR, captor.getValue().getProposalProductType());
-    }
-
-
-    @Test
-    void shouldBuildPrepareRequestForARSecondRequest() {
-        when(cfg.getCxId()).thenReturn(TEST_CX_ID);
-
-        String requestId = "requestId";
-        String relatedRequestId = "requestId_0";
-        PaperChannelPrepareRequest paperChannelPrepareRequest = buildPrepareRequest(
-                requestId,
-                PhysicalAddressInt.ANALOG_TYPE.AR_REGISTERED_LETTER,
-                NotificationTestBuilder.builder().build(),
-                NotificationRecipientTestBuilder.builder().build(),
-                relatedRequestId
-        );
-
-        client.prepare(paperChannelPrepareRequest);
-
-        ArgumentCaptor<PrepareRequest> captor = ArgumentCaptor.forClass(PrepareRequest.class);
-        verify(paperMessagesApi).sendPaperPrepareRequest(eq(requestId), captor.capture(), eq(TEST_CX_ID));
-        assertEquals(relatedRequestId, captor.getValue().getRelatedRequestId());
-    }
-
-    @Test
     void shouldBuildPrepareRequestForSimpleRegisteredLetterWithNotificationSentAt() {
         when(cfg.getCxId()).thenReturn(TEST_CX_ID);
 
-        String requestId = "requestId";
+        String TEST_IUN = "iun_12345";
+        Instant SENT_AT = Instant.EPOCH.plusMillis(57);
         NotificationInt notificationInt = NotificationTestBuilder.builder()
-                .withSentAt(Instant.EPOCH.plusMillis(57))
-                .withIun("iun_12345")
+                .withSentAt(SENT_AT)
+                .withIun(TEST_IUN)
                 .build();
 
         NotificationRecipientInt recipient = NotificationRecipientTestBuilder.builder()
                 .withTaxId("GeneratedTaxId_9ce24c59-862c-4024-aa75-40d888e6acac")
                 .build();
-        PaperChannelPrepareRequest paperChannelPrepareRequest = buildPrepareRequest(
-                requestId,
-                PhysicalAddressInt.ANALOG_TYPE.SIMPLE_REGISTERED_LETTER,
-                notificationInt,
-                recipient,
-                null
-        );
+
+        String TEST_REQUEST_ID = "requestId_12345";
+        PaperChannelPrepareRequest paperChannelPrepareRequest = PaperChannelPrepareRequest.builder()
+                .analogType(PhysicalAddressInt.ANALOG_TYPE.SIMPLE_REGISTERED_LETTER)
+                .requestId(TEST_REQUEST_ID)
+                .paAddress(PhysicalAddressInt.builder()
+                        .address("test")
+                        .build())
+                .recipientInt(recipient)
+                .notificationInt(notificationInt)
+                .attachments(List.of("Att"))
+                .build();
 
         client.prepare(paperChannelPrepareRequest);
 
-        ArgumentCaptor<PrepareRequest> captor = ArgumentCaptor.forClass(PrepareRequest.class);
-        verify(paperMessagesApi).sendPaperPrepareRequest(eq(requestId), captor.capture(), eq(TEST_CX_ID));
+        ArgumentCaptor<InformalPrepareRequest> captor = ArgumentCaptor.forClass(InformalPrepareRequest.class);
+        verify(informalMessagesApi).sendInformalPrepareRequest(captor.capture(), eq(TEST_CX_ID));
 
-        PrepareRequest sent = captor.getValue();
-        assertEquals(ProposalTypeEnum.RS, sent.getProposalProductType());
-        assertEquals(Instant.EPOCH.plusMillis(57), sent.getNotificationSentAt());
-        assertEquals("iun_12345", sent.getIun());
-        assertEquals("GeneratedTaxId_9ce24c59-862c-4024-aa75-40d888e6acac", sent.getReceiverFiscalCode());
+        InformalPrepareRequest sent = captor.getValue();
+        assertEquals(TEST_REQUEST_ID, sent.getRequestId());
+        assertEquals(TEST_IUN, sent.getIun());
+        assertEquals(PRINT_TYPE_BN_FRONTE_RETRO, sent.getPrintType());
+        assertEquals(InformalProposalProductTypeEnum.RS, sent.getProposalProductType());
+        assertNotNull(sent.getReceiverAddress());
+        String maskedAddress = sent.getReceiverAddress().getAddress();
+        assertEquals("test", maskedAddress);
+        assertEquals(paperChannelPrepareRequest.getAttachments(), sent.getAttachmentUrls());
+        assertEquals(recipient.getRecipientType().getValue(), sent.getReceiverType());
+        assertEquals(notificationInt.getSender().getPaId(), sent.getSenderPaId());
+        assertEquals(SENT_AT, sent.getNotificationSentAt());
     }
 
     @Test
@@ -170,8 +115,6 @@ class PaperChannelSendClientImplTestIT {
         assertNotNull(sent.getClientRequestTimeStamp());
     }
 
-
-
     @Test
     void shouldThrowChangedCostExceptionWhenUnprocessableErrorOccurs() {
         String requestId = "requestId1";
@@ -184,7 +127,6 @@ class PaperChannelSendClientImplTestIT {
         assertThrows(PnPaperChannelChangedCostException.class, () -> client.send(paperChannelSendRequest));
     }
 
-
     @Test
     void shouldRethrowPnHttpResponseExceptionWhenGenericErrorOccurs() {
         String requestId = "requestId2";
@@ -196,26 +138,6 @@ class PaperChannelSendClientImplTestIT {
 
         PnHttpResponseException thrown = assertThrows(PnHttpResponseException.class, () -> client.send(paperChannelSendRequest));
         assertEquals(HttpStatus.SC_INTERNAL_SERVER_ERROR, thrown.getStatusCode());
-    }
-
-    private PaperChannelPrepareRequest buildPrepareRequest(
-            String requestId,
-            PhysicalAddressInt.ANALOG_TYPE analogType,
-            NotificationInt notificationInt,
-            NotificationRecipientInt recipient,
-            String relatedRequestId
-    ) {
-        return PaperChannelPrepareRequest.builder()
-                .analogType(analogType)
-                .requestId(requestId)
-                .relatedRequestId(relatedRequestId)
-                .paAddress(PhysicalAddressInt.builder()
-                        .address("test")
-                        .build())
-                .recipientInt(recipient)
-                .notificationInt(notificationInt)
-                .attachments(List.of("Att"))
-                .build();
     }
 
     private PaperChannelSendRequest buildSendRequest(String requestId) {

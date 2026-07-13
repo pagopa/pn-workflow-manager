@@ -36,10 +36,9 @@ public class PaperChannelServiceImpl implements PaperChannelService {
     private final PaperChannelUtils paperChannelUtils;
     private final ChannelSenderUtils channelSenderUtils;
 
-    //Todo: modificare a partire dall'epica, modificare eliminando il campo coverpagefilekey perchè è recuperato internamente
     @Override
-    public void prepareSimpleRegisteredLetter(NotificationInt notification, Integer recIndex, String coverpageFileKey) {
-        log.info("Start prepareSimpleRegisteredLetter - iun={} recIndex={} coverpageFileKey={}", notification.getIun(), recIndex, coverpageFileKey);
+    public void prepareSimpleRegisteredLetter(NotificationInt notification, Integer recIndex) {
+        log.info("Start prepareSimpleRegisteredLetter - iun={} recIndex={}", notification.getIun(), recIndex);
         NotificationRecipientInt recipient = getRecipientFromIndex(notification, recIndex);
         PhysicalAddressInt physicalAddressInt = recipient.getPhysicalAddress();
         String requestId = ChannelSenderUtils.buildPrepareAnalogDeliveryTimelineElementId(recIndex, notification.getIun(), FIRST_ATTEMPT);// Per l'invio di una notifica bonaria si presuppone che ci sia un solo invio

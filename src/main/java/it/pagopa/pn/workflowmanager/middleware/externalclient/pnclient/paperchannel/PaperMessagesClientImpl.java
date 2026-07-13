@@ -2,6 +2,7 @@ package it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.papercha
 
 import it.pagopa.pn.commons.exceptions.PnHttpResponseException;
 import it.pagopa.pn.commons.utils.LogUtils;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.api.InformalMessagesApi;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.api.PaperMessagesApi;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.model.*;
 import it.pagopa.pn.workflowmanager.config.PnWorkflowManagerConfigs;
@@ -21,6 +22,7 @@ import java.time.Instant;
 @Component
 public class PaperMessagesClientImpl implements PaperMessagesClient {
     private final PaperMessagesApi paperMessagesApi;
+    private final InformalMessagesApi informalMessagesApi;
     private final PnWorkflowManagerConfigs cfg;
 
     @Override
@@ -28,24 +30,18 @@ public class PaperMessagesClientImpl implements PaperMessagesClient {
         log.logInvokingAsyncExternalService(CLIENT_NAME, PREPARE_ANALOG_NOTIFICATION, paperChannelPrepareRequest.getRequestId());
         log.debug("[enter] prepare iun={} address={} recipient={} requestId={} attachments={} relatedRequestId={}", paperChannelPrepareRequest.getNotificationInt().getIun(), LogUtils.maskGeneric(paperChannelPrepareRequest.getPaAddress()==null?"null":paperChannelPrepareRequest.getPaAddress().getAddress()), LogUtils.maskGeneric(paperChannelPrepareRequest.getRecipientInt().getDenomination()), paperChannelPrepareRequest.getRequestId(), paperChannelPrepareRequest.getAttachments(), paperChannelPrepareRequest.getRelatedRequestId());
 
-        //TODO rivedere campi necessari per notifiche bonarie
-        PrepareRequest prepareRequest = new PrepareRequest();
+        InformalPrepareRequest prepareRequest = new InformalPrepareRequest();
         prepareRequest.setRequestId(paperChannelPrepareRequest.getRequestId());
         prepareRequest.setIun(paperChannelPrepareRequest.getNotificationInt().getIun());
         prepareRequest.setPrintType(PRINT_TYPE_BN_FRONTE_RETRO);
         prepareRequest.setProposalProductType(getProductType(paperChannelPrepareRequest.getAnalogType()));
         prepareRequest.setReceiverAddress(mapInternalToExternal(paperChannelPrepareRequest.getPaAddress()));
         prepareRequest.setAttachmentUrls(paperChannelPrepareRequest.getAttachments());
-        prepareRequest.setReceiverFiscalCode(paperChannelPrepareRequest.getRecipientInt().getTaxId());
         prepareRequest.setReceiverType(paperChannelPrepareRequest.getRecipientInt().getRecipientType().getValue());
         prepareRequest.setNotificationSentAt(paperChannelPrepareRequest.getNotificationInt().getSentAt());
         prepareRequest.setSenderPaId(paperChannelPrepareRequest.getNotificationInt().getSender().getPaId());
-        //prepareRequest.setSenderPriority(paperChannelPrepareRequest.getNotificationInt().getSender().getPhysicalCommunicationPriority()); //Todo: Manca senderPriority
-        prepareRequest.setRelatedRequestId(paperChannelPrepareRequest.getRelatedRequestId());
-        //prepareRequest.setDiscoveredAddress(mapInternalToExternal(paperChannelPrepareRequest.getDiscoveredAddress()));
-        //prepareRequest.setAarWithRadd(paperChannelPrepareRequest.getAarWithRadd());
 
-        paperMessagesApi.sendPaperPrepareRequest(paperChannelPrepareRequest.getRequestId(), prepareRequest, cfg.getCxId());
+        informalMessagesApi.sendInformalPrepareRequest(prepareRequest, cfg.getCxId());
 
         log.debug("[exit] prepare iun={}  address={} recipient={} requestId={} attachments={} relatedRequestId={}",
                 paperChannelPrepareRequest.getNotificationInt().getIun(), LogUtils.maskGeneric(paperChannelPrepareRequest.getPaAddress()==null?"null":paperChannelPrepareRequest.getPaAddress().getAddress()), LogUtils.maskGeneric(paperChannelPrepareRequest.getRecipientInt().getDenomination()), paperChannelPrepareRequest.getRequestId(), paperChannelPrepareRequest.getAttachments(), paperChannelPrepareRequest.getRelatedRequestId());
@@ -57,7 +53,6 @@ public class PaperMessagesClientImpl implements PaperMessagesClient {
             log.logInvokingAsyncExternalService(CLIENT_NAME, SEND_ANALOG_NOTIFICATION, paperChannelSendRequest.getRequestId());
             log.debug("[enter] send iun={} address={} recipient={} requestId={} attachments={}", paperChannelSendRequest.getNotificationInt().getIun(), LogUtils.maskGeneric(paperChannelSendRequest.getReceiverAddress().getAddress()), LogUtils.maskGeneric(paperChannelSendRequest.getRecipientInt().getDenomination()), paperChannelSendRequest.getRequestId(), paperChannelSendRequest.getAttachments());
 
-            //TODO rivedere campi necessari per notifiche bonarie
             SendRequest sendRequest = new SendRequest();
             sendRequest.setIun(paperChannelSendRequest.getNotificationInt().getIun());
             sendRequest.setRequestId(paperChannelSendRequest.getRequestId());
@@ -102,12 +97,11 @@ public class PaperMessagesClientImpl implements PaperMessagesClient {
         return analogAddress;
     }
 
-    private ProposalTypeEnum getProductType(PhysicalAddressInt.ANALOG_TYPE serviceLevelType)
+    private InformalProposalProductTypeEnum getProductType(PhysicalAddressInt.ANALOG_TYPE serviceLevelType)
     {
         return switch (serviceLevelType) {
-            case REGISTERED_LETTER_890 -> ProposalTypeEnum._890;
-            case AR_REGISTERED_LETTER -> ProposalTypeEnum.AR;
-            case SIMPLE_REGISTERED_LETTER -> ProposalTypeEnum.RS;
+            case REGISTERED_LETTER_890, AR_REGISTERED_LETTER -> null;
+            case SIMPLE_REGISTERED_LETTER -> InformalProposalProductTypeEnum.RS;
         };
     }
 

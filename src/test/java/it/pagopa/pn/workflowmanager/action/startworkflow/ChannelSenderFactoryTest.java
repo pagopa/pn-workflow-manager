@@ -1,10 +1,5 @@
-package it.pagopa.pn.workflowmanager.action;
+package it.pagopa.pn.workflowmanager.action.startworkflow;
 
-import it.pagopa.pn.workflowmanager.action.startworkflow.AnalogChannelSender;
-import it.pagopa.pn.workflowmanager.action.startworkflow.EmailChannelSender;
-import it.pagopa.pn.workflowmanager.action.startworkflow.IoChannelSender;
-import it.pagopa.pn.workflowmanager.action.startworkflow.PecChannelSender;
-import it.pagopa.pn.workflowmanager.action.startworkflow.SmsChannelSender;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

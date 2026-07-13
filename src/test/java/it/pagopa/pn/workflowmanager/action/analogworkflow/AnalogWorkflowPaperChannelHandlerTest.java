@@ -4,7 +4,6 @@ import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.commons.log.PnAuditLogEvent;
 import it.pagopa.pn.commons.log.PnAuditLogEventType;
 import it.pagopa.pn.workflowmanager.action.utils.PaperChannelUtils;
-import it.pagopa.pn.workflowmanager.action.utils.TimelineUtils;
 import it.pagopa.pn.workflowmanager.dto.address.PhysicalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.CategorizedAttachmentsResultInt;
@@ -43,9 +42,6 @@ class AnalogWorkflowPaperChannelHandlerTest {
     @Mock
     private AuditLogService auditLogService;
 
-    @Mock
-    private TimelineUtils timelineUtils;
-
     private AnalogWorkflowPaperChannelResponseHandler handler;
 
     private static final String TEST_IUN = "TEST-IUN-001";
@@ -60,8 +56,7 @@ class AnalogWorkflowPaperChannelHandlerTest {
                 notificationService,
                 paperChannelService,
                 paperChannelUtils,
-                auditLogService,
-                timelineUtils
+                auditLogService
         );
     }
 
@@ -133,11 +128,9 @@ class AnalogWorkflowPaperChannelHandlerTest {
         // GIVEN
         PrepareEventInt prepareEvent = createPrepareEvent(PrepareEventInt.STATUS_CODE.OK.name());
         NotificationInt notification = mock(NotificationInt.class);
-        when(notification.getIun()).thenReturn(TEST_IUN);
 
         TimelineElementInternal timelineElement = createTimelineElement();
         PnAuditLogEvent auditLogEvent = mock(PnAuditLogEvent.class);
-        String coverpageFileKey = "coverpage-key-123";
         Throwable exception = new PnPaperChannelChangedCostException();
 
         when(notificationService.getInformalNotificationByIun(TEST_IUN)).thenReturn(notification);
@@ -150,7 +143,6 @@ class AnalogWorkflowPaperChannelHandlerTest {
                 eq(notification), eq(REC_INDEX), eq(TEST_REQUEST_ID), any(PhysicalAddressInt.class),
                 eq(PRODUCT_TYPE), anyList(), any(CategorizedAttachmentsResultInt.class)))
                 .thenThrow(exception);
-        when(timelineUtils.retrieveCoverpageFileKey(TEST_IUN, REC_INDEX)).thenReturn(coverpageFileKey);
         when(auditLogEvent.generateWarning(anyString())).thenReturn(auditLogEvent);
         when(auditLogEvent.log()).thenReturn(auditLogEvent);
 
@@ -163,7 +155,7 @@ class AnalogWorkflowPaperChannelHandlerTest {
         verify(paperChannelService).sendSimpleRegisteredLetter(
                 eq(notification), eq(REC_INDEX), eq(TEST_REQUEST_ID), any(PhysicalAddressInt.class),
                 eq(PRODUCT_TYPE), anyList(), any(CategorizedAttachmentsResultInt.class));
-        verify(paperChannelService).prepareSimpleRegisteredLetter(notification, REC_INDEX, coverpageFileKey);
+        verify(paperChannelService).prepareSimpleRegisteredLetter(notification, REC_INDEX);
         verify(auditLogEvent).generateWarning(anyString());
         verify(auditLogEvent).log();
     }

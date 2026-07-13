@@ -3,7 +3,6 @@ package it.pagopa.pn.workflowmanager.action.startworkflow;
 import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.commons.log.PnAuditLogEvent;
 import it.pagopa.pn.commons.log.PnAuditLogEventType;
-import it.pagopa.pn.workflowmanager.action.ChannelSender;
 import it.pagopa.pn.workflowmanager.action.utils.ChannelSenderUtils;
 import it.pagopa.pn.workflowmanager.action.utils.WorkflowUtils;
 import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;

@@ -4,7 +4,6 @@ import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
-import it.pagopa.pn.workflowmanager.utils.NotificationUtils;
 import it.pagopa.pn.workflowmanager.utils.PnSendMode;
 import it.pagopa.pn.workflowmanager.utils.PnSendModeUtils;
 import it.pagopa.pn.workflowmanager.utils.SendAttachmentMode;
@@ -24,7 +23,6 @@ import static it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCo
 @AllArgsConstructor
 public class AttachmentUtils {
     private final PnSendModeUtils pnSendModeUtils;
-    private final NotificationUtils notificationUtils;
     private final TimelineUtils timelineUtils;
 
     /**
@@ -61,7 +59,7 @@ public class AttachmentUtils {
         }
 
         if (sendAttachmentMode.includes(AttachmentType.PAYMENTS)) {
-            NotificationRecipientInt recipient = notificationUtils.getRecipientFromIndex(notification, recIndex);
+            NotificationRecipientInt recipient = NotificationUtils.getRecipientFromIndex(notification, recIndex);
             attachments.addAll(getNotificationPagoPaPayments(recipient, formatWithDocTag));
         }
 

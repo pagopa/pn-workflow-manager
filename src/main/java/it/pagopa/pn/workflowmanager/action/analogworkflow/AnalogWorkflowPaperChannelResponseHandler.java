@@ -4,7 +4,6 @@ import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.commons.log.PnAuditLogEvent;
 import it.pagopa.pn.commons.log.PnAuditLogEventType;
 import it.pagopa.pn.workflowmanager.action.utils.PaperChannelUtils;
-import it.pagopa.pn.workflowmanager.action.utils.TimelineUtils;
 import it.pagopa.pn.workflowmanager.dto.address.PhysicalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.CategorizedAttachmentsResultInt;
@@ -35,7 +34,6 @@ public class AnalogWorkflowPaperChannelResponseHandler {
     private final PaperChannelService paperChannelService;
     private final PaperChannelUtils paperChannelUtils;
     private final AuditLogService auditLogService;
-    private final TimelineUtils timelineUtils;
 
     public void paperChannelPrepareResponseHandler(PrepareEventInt response) {
 
@@ -85,8 +83,7 @@ public class AnalogWorkflowPaperChannelResponseHandler {
                 paperChannelUtils.scheduleTimeoutForAnalogChannel(notification, recIndex);
             } catch (PnPaperChannelChangedCostException e) {
                 String auditlogmessage = "send cost is different from prepare cost, need to re-do prepare";
-                this.paperChannelService.prepareSimpleRegisteredLetter(notification, recIndex,
-                        timelineUtils.retrieveCoverpageFileKey(notification.getIun(),recIndex));
+                this.paperChannelService.prepareSimpleRegisteredLetter(notification, recIndex);
                 auditLogEvent.generateWarning(auditlogmessage).log();
             }
         } else {

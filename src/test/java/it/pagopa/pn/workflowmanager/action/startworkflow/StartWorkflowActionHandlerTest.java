@@ -1,7 +1,5 @@
 package it.pagopa.pn.workflowmanager.action.startworkflow;
 
-import it.pagopa.pn.workflowmanager.action.ChannelSender;
-import it.pagopa.pn.workflowmanager.action.ChannelSenderFactory;
 import it.pagopa.pn.workflowmanager.dto.action.details.StartWorkflowDetails;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;

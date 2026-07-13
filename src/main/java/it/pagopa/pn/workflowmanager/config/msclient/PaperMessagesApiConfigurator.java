@@ -1,8 +1,9 @@
 package it.pagopa.pn.workflowmanager.config.msclient;
 
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.ApiClient;
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.api.PaperMessagesApi;
 import it.pagopa.pn.workflowmanager.config.PnWorkflowManagerConfigs;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.ApiClient;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.api.InformalMessagesApi;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.api.PaperMessagesApi;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,5 +18,13 @@ public class PaperMessagesApiConfigurator {
         ApiClient newApiClient = new ApiClient(restTemplate);
         newApiClient.setBasePath(cfg.getPaperMessagesClientBaseUrl());
         return new PaperMessagesApi( newApiClient );
+    }
+
+    @Bean
+    @Primary
+    public InformalMessagesApi informalMessagesApi(@Qualifier("withTracing") RestTemplate restTemplate, PnWorkflowManagerConfigs cfg){
+        ApiClient newApiClient = new ApiClient(restTemplate);
+        newApiClient.setBasePath(cfg.getPaperMessagesClientBaseUrl());
+        return new InformalMessagesApi( newApiClient );
     }
 }

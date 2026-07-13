@@ -1,16 +1,15 @@
-package it.pagopa.pn.workflowmanager.utils;
+package it.pagopa.pn.workflowmanager.action.utils;
 
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
+
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.*;
 
 class NotificationUtilsTest {
-
-    private final NotificationUtils notificationUtils = new NotificationUtils();
 
     @Test
     void getRecipientFromIndexReturnsRecipientAtRequestedPosition() {
@@ -20,9 +19,8 @@ class NotificationUtilsTest {
                 .recipients(List.of(firstRecipient, secondRecipient))
                 .build();
 
-        NotificationRecipientInt result = notificationUtils.getRecipientFromIndex(notification, 1);
+        NotificationRecipientInt result = NotificationUtils.getRecipientFromIndex(notification, 1);
 
         assertSame(secondRecipient, result);
     }
 }
-

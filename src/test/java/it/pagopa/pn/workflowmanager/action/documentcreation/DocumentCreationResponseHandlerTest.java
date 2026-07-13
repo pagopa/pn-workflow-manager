@@ -53,8 +53,7 @@ class DocumentCreationResponseHandlerTest {
 
         Mockito.doNothing().when(paperChannelService).prepareSimpleRegisteredLetter(
                 Mockito.any(NotificationInt.class),
-                Mockito.anyInt(),
-                Mockito.anyString()
+                Mockito.anyInt()
         );
 
         // WHEN
@@ -66,8 +65,7 @@ class DocumentCreationResponseHandlerTest {
         Mockito.verify(notificationService, Mockito.times(1)).getInformalNotificationByIun(TEST_IUN);
         Mockito.verify(paperChannelService, Mockito.times(1)).prepareSimpleRegisteredLetter(
                 notification,
-                TEST_REC_INDEX,
-                TEST_KEY
+                TEST_REC_INDEX
         );
     }
 
@@ -94,8 +92,7 @@ class DocumentCreationResponseHandlerTest {
         Mockito.verify(notificationService, Mockito.times(1)).getInformalNotificationByIun(TEST_IUN);
         Mockito.verify(paperChannelService, Mockito.never()).prepareSimpleRegisteredLetter(
                 Mockito.any(),
-                Mockito.anyInt(),
-                Mockito.anyString()
+                Mockito.anyInt()
         );
     }
 

@@ -1,4 +1,4 @@
-package it.pagopa.pn.workflowmanager.action;
+package it.pagopa.pn.workflowmanager.action.startworkflow;
 
 
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;

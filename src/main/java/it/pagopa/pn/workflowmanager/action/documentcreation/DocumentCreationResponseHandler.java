@@ -25,8 +25,7 @@ public class DocumentCreationResponseHandler{
         switch(documentCreationType) {
             case COVERPAGE -> paperChannelService.prepareSimpleRegisteredLetter(
                     notificationInt,
-                    recIndex,
-                    actionDetails.getKey()
+                    recIndex
             );
             default -> throw new PnInternalException(
                     String.format("Unsupported document creation type: %s", documentCreationType),

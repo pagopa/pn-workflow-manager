@@ -7,7 +7,6 @@ import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationPa
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.PagoPaInt;
-import it.pagopa.pn.workflowmanager.utils.NotificationUtils;
 import it.pagopa.pn.workflowmanager.utils.PnSendMode;
 import it.pagopa.pn.workflowmanager.utils.PnSendModeUtils;
 import it.pagopa.pn.workflowmanager.utils.SendAttachmentMode;
@@ -34,9 +33,6 @@ class AttachmentUtilsTest {
 
     @Mock
     private PnSendModeUtils pnSendModeUtils;
-
-    @Mock
-    private NotificationUtils notificationUtils;
 
     @Mock
     private TimelineUtils timelineUtils;
@@ -70,7 +66,6 @@ class AttachmentUtilsTest {
                 .build();
 
         when(timelineUtils.retrieveCoverpageFileKey(iun, recIndex)).thenReturn("coverpage-key");
-        when(notificationUtils.getRecipientFromIndex(notification, recIndex)).thenReturn(recipient);
 
         List<String> result = attachmentUtils.retrieveAttachments(
                 notification,
@@ -85,7 +80,6 @@ class AttachmentUtilsTest {
                 "safestorage://payment-key?docTag=ATTACHMENT_PAGOPA"
         ), result);
         verify(timelineUtils).retrieveCoverpageFileKey(iun, recIndex);
-        verify(notificationUtils).getRecipientFromIndex(notification, recIndex);
     }
 
     @Test
@@ -117,8 +111,6 @@ class AttachmentUtilsTest {
                 .recipients(List.of(recipient))
                 .build();
 
-        when(notificationUtils.getRecipientFromIndex(notification, recIndex)).thenReturn(recipient);
-
         List<String> result = attachmentUtils.retrieveAttachments(
                 notification,
                 recIndex,
@@ -130,7 +122,6 @@ class AttachmentUtilsTest {
                 "safestorage://document-key",
                 "safestorage://payment-key"
         ), result);
-        verify(notificationUtils).getRecipientFromIndex(notification, recIndex);
         verifyNoInteractions(timelineUtils);
     }
 

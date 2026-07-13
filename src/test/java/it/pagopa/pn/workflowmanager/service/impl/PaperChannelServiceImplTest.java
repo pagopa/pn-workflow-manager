@@ -62,7 +62,6 @@ class PaperChannelServiceImplTest {
         // GIVEN
         String iun = "TEST-IUN-001";
         Integer recIndex = 0;
-        String coverpageFileKey = "coverpage-key";
 
         NotificationInt notification = createNotification(iun);
         PnAuditLogEvent auditLogEvent = mock(PnAuditLogEvent.class);
@@ -83,7 +82,7 @@ class PaperChannelServiceImplTest {
 
         // WHEN
         Assertions.assertDoesNotThrow(() ->
-                service.prepareSimpleRegisteredLetter(notification, recIndex, coverpageFileKey)
+                service.prepareSimpleRegisteredLetter(notification, recIndex)
         );
 
         // THEN
@@ -101,7 +100,6 @@ class PaperChannelServiceImplTest {
         // GIVEN
         String iun = "TEST-IUN-002";
         Integer recIndex = 0;
-        String coverpageFileKey = "coverpage-key";
 
         NotificationInt notification = createNotification(iun);
         PnAuditLogEvent auditLogEvent = mock(PnAuditLogEvent.class);
@@ -119,7 +117,7 @@ class PaperChannelServiceImplTest {
                 .when(paperMessagesClient).prepare(any(PaperChannelPrepareRequest.class));
 
         Assertions.assertThrows(PnInternalException.class, () ->
-                service.prepareSimpleRegisteredLetter(notification, recIndex, coverpageFileKey)
+                service.prepareSimpleRegisteredLetter(notification, recIndex)
         );
 
         verify(paperMessagesClient, times(1)).prepare(any(PaperChannelPrepareRequest.class));

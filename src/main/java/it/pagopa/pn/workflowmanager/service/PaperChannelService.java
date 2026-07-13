@@ -7,7 +7,7 @@ import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.CategorizedAttachmen
 import java.util.List;
 
 public interface PaperChannelService {
-    void prepareSimpleRegisteredLetter(NotificationInt notification, Integer recIndex, String coverpageFileKey);
+    void prepareSimpleRegisteredLetter(NotificationInt notification, Integer recIndex);
     String sendSimpleRegisteredLetter(NotificationInt notification,
                                     Integer recIndex,
                                     String prepareRequestId,
