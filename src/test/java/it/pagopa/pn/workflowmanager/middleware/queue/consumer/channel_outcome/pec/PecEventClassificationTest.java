@@ -22,7 +22,7 @@ class PecEventClassificationTest {
                 Arguments.of(PecEventClassification.C000, false, ChannelOutcomeCategory.progress()),
                 Arguments.of(PecEventClassification.C001, false, ChannelOutcomeCategory.progress()),
                 Arguments.of(PecEventClassification.C002, false, ChannelOutcomeCategory.negativeFeedback()),
-                Arguments.of(PecEventClassification.C003, true, ChannelOutcomeCategory.positiveFeedback()),
+                Arguments.of(PecEventClassification.C003, true, ChannelOutcomeCategory.positiveFeedback(false)),
                 Arguments.of(PecEventClassification.C004, false, ChannelOutcomeCategory.negativeFeedback()),
                 Arguments.of(PecEventClassification.C005, false, ChannelOutcomeCategory.progress()),
                 Arguments.of(PecEventClassification.C006, false, ChannelOutcomeCategory.negativeFeedback()),

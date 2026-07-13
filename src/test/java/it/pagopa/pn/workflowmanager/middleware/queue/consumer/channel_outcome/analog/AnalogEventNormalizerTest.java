@@ -1,5 +1,6 @@
 package it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.analog;
 
+import it.pagopa.pn.commons.log.PnAuditLogEventType;
 import it.pagopa.pn.workflowmanager.action.utils.TimelineUtils;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.ResponseStatusInt;
@@ -10,6 +11,7 @@ import it.pagopa.pn.workflowmanager.dto.timeline.details.SendAnalogMessageDetail
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.NormalizedChannelOutcome;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.event.SendEventInt;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
+import it.pagopa.pn.workflowmanager.service.AuditLogService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,6 +31,8 @@ class AnalogEventNormalizerTest {
 
     @Mock
     private TimelineUtils timelineUtils;
+    @Mock
+    private AuditLogService auditLogService;
 
     @InjectMocks
     private AnalogEventNormalizer analogEventNormalizer;
@@ -79,7 +83,8 @@ class AnalogEventNormalizerTest {
         // Assert
         verifyCommonAssertions(result, AnalogEventClassification.PROGRESS);
         verify(timelineUtils, never()).buildSendAnalogFeedbackNotificationTimelineElement(
-                anyInt(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), anyInt());
+                anyInt(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), anyInt());
+        verify(auditLogService).buildAuditLogEvent(eq(IUN), eq(REC_INDEX), eq(PnAuditLogEventType.AUD_COM_PD_EXECUTE_RECEIVE), anyString());
     }
 
     @Test
@@ -97,7 +102,7 @@ class AnalogEventNormalizerTest {
                 eq(REC_INDEX), eq(notification), isNull(), eq(NOW),
                 any(AnalogDeliveryDetailsInt.class), eq(AnalogDeliveryTypeInt.RS),
                 isNull(), eq(REQUEST_ID), eq(REGISTERED_LETTER_CODE),
-                isNull(), eq(ResponseStatusInt.OK), isNull(), isNull(), eq(FIRST_ATTEMPT)))
+                isNull(), eq(ResponseStatusInt.OK), isNull(), eq(FIRST_ATTEMPT)))
                 .thenReturn(mockTimelineElement);
 
         // Act
@@ -124,7 +129,7 @@ class AnalogEventNormalizerTest {
                 eq(REC_INDEX), eq(notification), isNull(), eq(NOW),
                 any(AnalogDeliveryDetailsInt.class), eq(AnalogDeliveryTypeInt.RS),
                 isNull(), eq(REQUEST_ID), eq(REGISTERED_LETTER_CODE),
-                isNull(), eq(ResponseStatusInt.KO), isNull(), isNull(), eq(FIRST_ATTEMPT)))
+                isNull(), eq(ResponseStatusInt.KO), isNull(), eq(FIRST_ATTEMPT)))
                 .thenReturn(mockTimelineElement);
 
         // Act

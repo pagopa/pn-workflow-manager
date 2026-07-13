@@ -19,7 +19,7 @@ class AnalogEventClassificationTest {
     private static Stream<Arguments> analogClassificationCases() {
         return Stream.of(
                 Arguments.of(AnalogEventClassification.PROGRESS, false, ChannelOutcomeCategory.progress()),
-                Arguments.of(AnalogEventClassification.OK,       true,  ChannelOutcomeCategory.positiveFeedback()),
+                Arguments.of(AnalogEventClassification.OK,       true,  ChannelOutcomeCategory.positiveFeedback(true)),
                 Arguments.of(AnalogEventClassification.KO,       false, ChannelOutcomeCategory.negativeFeedback())
         );
     }

@@ -1,5 +1,6 @@
 package it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.pec;
 
+import it.pagopa.pn.commons.log.PnAuditLogEventType;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.model.SendingReceipt;
 import it.pagopa.pn.workflowmanager.action.utils.TimelineUtils;
 import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
@@ -15,6 +16,7 @@ import it.pagopa.pn.workflowmanager.middleware.queue.consumer.event.DigitalMessa
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.event.ExtChannelOutcomeEvent;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.event.ExtChannelOutcomeEventCodeInt;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
+import it.pagopa.pn.workflowmanager.service.AuditLogService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,6 +41,8 @@ class PecEventNormalizerTest {
 
     @Mock
     private TimelineUtils timelineUtils;
+    @Mock
+    private AuditLogService auditLogService;
 
     @InjectMocks
     private PecEventNormalizer pecEventNormalizer;
@@ -244,6 +248,7 @@ class PecEventNormalizerTest {
         assertEquals(expectedClassification.name(), result.getOriginalEventType());
         assertEquals(now, result.getEventTimestamp());
         assertEquals(mockTimelineElement, result.getTimelineElementInternal());
+        verify(auditLogService).buildAuditLogEvent(eq(iun), eq(recIndex), eq(PnAuditLogEventType.AUD_COM_DD_RECEIVE), anyString());
     }
 }
 

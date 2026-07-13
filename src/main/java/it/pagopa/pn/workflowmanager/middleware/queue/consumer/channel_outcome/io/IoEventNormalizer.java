@@ -1,5 +1,7 @@
 package it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.io;
 
+import it.pagopa.pn.commons.log.PnAuditLogEvent;
+import it.pagopa.pn.commons.log.PnAuditLogEventType;
 import it.pagopa.pn.workflowmanager.action.utils.TimelineUtils;
 import it.pagopa.pn.workflowmanager.dto.event.NotificationPaidInt;
 import it.pagopa.pn.workflowmanager.dto.event.NotificationViewedInt;
@@ -18,6 +20,7 @@ import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.Ch
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.NormalizedChannelOutcome;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.trigger.ChannelEventTrigger;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
+import it.pagopa.pn.workflowmanager.service.AuditLogService;
 import it.pagopa.pn.workflowmanager.utils.NotificationPaymentUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -29,6 +32,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class IoEventNormalizer implements ChannelOutcomeNormalizer<IoOutcomeEvent> {
     private final TimelineUtils timelineUtils;
+    private final AuditLogService auditLogService;
 
     @Override
     public NormalizedChannelOutcome normalize(IoOutcomeEvent ioEvent, NotificationInt notification, SendRelatedTimelineElement sourceSendRequestDetails) {
@@ -42,6 +46,7 @@ public class IoEventNormalizer implements ChannelOutcomeNormalizer<IoOutcomeEven
                 .timelineElementInternal(buildTimelineElement(ioEvent, notification, sourceSendRequestDetails, classification))
                 .originalEventType(ioEvent.getEventType().name())
                 .eventTimestamp(ioEvent.getEventTimestamp())
+                .pnAuditLogEvent(buildAuditLog(ioEvent, notification, recIndex))
                 .build();
     }
 
@@ -104,5 +109,16 @@ public class IoEventNormalizer implements ChannelOutcomeNormalizer<IoOutcomeEven
                     ioEvent.getEventTimestamp()
             );
         };
+    }
+
+    private PnAuditLogEvent buildAuditLog(IoOutcomeEvent ioEvent, NotificationInt notification, int recIndex) {
+        String msg = String.format(
+                "Received IO event: %s for notification %s and recipient index %d for requestId %s",
+                ioEvent.getEventType().name(),
+                notification.getIun(),
+                recIndex,
+                ioEvent.getRequestId()
+        );
+        return auditLogService.buildAuditLogEvent(notification.getIun(), recIndex, PnAuditLogEventType.AUD_COM_DD_RECEIVE,  msg);
     }
 }

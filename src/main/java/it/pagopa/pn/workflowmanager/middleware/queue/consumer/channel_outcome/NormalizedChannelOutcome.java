@@ -1,5 +1,6 @@
 package it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome;
 
+import it.pagopa.pn.commons.log.PnAuditLogEvent;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.trigger.ChannelEventTrigger;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
@@ -20,4 +21,5 @@ public class NormalizedChannelOutcome {
     private String originalEventType;
     private Instant eventTimestamp;
     private TimelineElementInternal timelineElementInternal;
+    private PnAuditLogEvent pnAuditLogEvent;
 }

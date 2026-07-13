@@ -133,10 +133,11 @@ class ChannelOutcomeHandlerTest {
     }
 
     @Test
-    void shouldAdvanceWorkflowWhenFeedbackIsNegativeButNotDesired() {
+    void shouldAdvanceWorkflowWhenFeedbackRequiresItAndIsNotDesired() {
         // Arrange
         when(outcome.getTriggers()).thenReturn(Collections.emptySet());
         when(classification.getSatisfiedDesiredFeedback()).thenReturn(Optional.empty());
+        // Il feedback negativo di default richiede l'avanzamento del workflow, quindi simulo questa condizione
         when(classification.getCategory()).thenReturn(ChannelOutcomeCategory.negativeFeedback());
 
         // Act
@@ -152,7 +153,7 @@ class ChannelOutcomeHandlerTest {
         // Arrange
         when(outcome.getTriggers()).thenReturn(Collections.emptySet());
         when(classification.getSatisfiedDesiredFeedback()).thenReturn(Optional.empty());
-        when(classification.getCategory()).thenReturn(ChannelOutcomeCategory.positiveFeedback());
+        when(classification.getCategory()).thenReturn(ChannelOutcomeCategory.positiveFeedback(false));
 
         // Act
         channelOutcomeHandler.handleOutcome(outcome, notification, campaign);
