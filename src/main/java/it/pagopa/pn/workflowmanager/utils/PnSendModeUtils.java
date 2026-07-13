@@ -15,9 +15,9 @@ import java.util.List;
 public class PnSendModeUtils {
     public static final String SEPARATOR = ";";
     public static final int INDEX_START_DATE = 0;
-    public static final int PEC_SEND_ATTACHMENT_MODE_INDEX = 2;
-    public static final int EMAIL_SEND_ATTACHMENT_MODE_INDEX = 3;
-    public static final int SIMPLE_REGISTERED_LETTER_SEND_ATTACHMENT_MODE_INDEX = 4;
+    public static final int PEC_SEND_ATTACHMENT_MODE_INDEX = 1;
+    public static final int EMAIL_SEND_ATTACHMENT_MODE_INDEX = 2;
+    public static final int SIMPLE_REGISTERED_LETTER_SEND_ATTACHMENT_MODE_INDEX = 3;
     private final List<PnSendMode> pnSendModesList;
     
     public PnSendModeUtils(PnWorkflowManagerConfigs pnWorkflowManagerConfigs){
@@ -27,7 +27,7 @@ public class PnSendModeUtils {
     
     public PnSendMode getPnSendMode(Instant time){
         log.debug("Start getPnSendMode for time={}", time);
-        PnSendMode pnSendMode =  getCorrectPnSendModeFromDate(time, pnSendModesList);
+        PnSendMode pnSendMode = getCorrectPnSendModeFromDate(time, pnSendModesList);
         log.debug("End getPnSendMode. PnSendMode for time={} is {}", time, pnSendMode);
         return pnSendMode;
     }

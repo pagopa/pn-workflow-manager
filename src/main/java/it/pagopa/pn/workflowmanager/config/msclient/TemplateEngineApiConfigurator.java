@@ -15,7 +15,7 @@ import org.springframework.web.client.RestTemplate;
 public class TemplateEngineApiConfigurator {
     @Bean
     @Primary
-    public TemplateApi ioConnectorApi(@Qualifier("withTracing") RestTemplate restTemplate, PnWorkflowManagerConfigs cfg){
+    public TemplateApi templateApi(@Qualifier("withTracing") RestTemplate restTemplate, PnWorkflowManagerConfigs cfg){
         ApiClient newApiClient = new ApiClient(restTemplate);
         newApiClient.setBasePath(cfg.getTemplateEngineBaseUrl());
         return new TemplateApi( newApiClient );

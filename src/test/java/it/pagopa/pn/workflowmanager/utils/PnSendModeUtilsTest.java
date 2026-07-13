@@ -17,7 +17,7 @@ class PnSendModeUtilsTest {
     @Test
     void getPnSendModeReturnsNullWhenTimeIsBeforeFirstConfiguration() {
         PnSendModeUtils pnSendModeUtils = new PnSendModeUtils(buildConfigs(List.of(
-                "2024-03-01T00:00:00Z;IGNORED;DOCUMENTS;PAYMENTS;COVERPAGE"
+                "2024-03-01T00:00:00Z;DOCUMENTS;PAYMENTS;COVERPAGE"
         )));
 
         PnSendMode result = pnSendModeUtils.getPnSendMode(Instant.parse("2024-02-29T23:59:59Z"));
@@ -28,8 +28,8 @@ class PnSendModeUtilsTest {
     @Test
     void getPnSendModeReturnsMatchingConfigurationForExactStartDateAfterSorting() {
         PnSendModeUtils pnSendModeUtils = new PnSendModeUtils(buildConfigs(List.of(
-                "2024-06-01T00:00:00Z;IGNORED;PAYMENTS;COVERPAGE;COVERPAGE|PAYMENTS",
-                "2024-01-01T00:00:00Z;IGNORED;COVERPAGE|DOCUMENTS;DOCUMENTS;PAYMENTS"
+                "2024-06-01T00:00:00Z;PAYMENTS;COVERPAGE;COVERPAGE|PAYMENTS",
+                "2024-01-01T00:00:00Z;COVERPAGE|DOCUMENTS;DOCUMENTS;PAYMENTS"
         )));
 
         PnSendMode result = pnSendModeUtils.getPnSendMode(Instant.parse("2024-01-01T00:00:00Z"));
@@ -45,8 +45,8 @@ class PnSendModeUtilsTest {
     @Test
     void getPnSendModeReturnsMostRecentConfigurationBeforeRequestedTime() {
         PnSendModeUtils pnSendModeUtils = new PnSendModeUtils(buildConfigs(List.of(
-                "2024-06-01T00:00:00Z;IGNORED;PAYMENTS;COVERPAGE;COVERPAGE|PAYMENTS",
-                "2024-01-01T00:00:00Z;IGNORED;COVERPAGE|DOCUMENTS;DOCUMENTS;PAYMENTS"
+                "2024-06-01T00:00:00Z;PAYMENTS;COVERPAGE;COVERPAGE|PAYMENTS",
+                "2024-01-01T00:00:00Z;COVERPAGE|DOCUMENTS;DOCUMENTS;PAYMENTS"
         )));
 
         PnSendMode result = pnSendModeUtils.getPnSendMode(Instant.parse("2024-06-15T12:00:00Z"));

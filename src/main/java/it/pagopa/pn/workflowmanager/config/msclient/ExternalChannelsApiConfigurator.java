@@ -2,6 +2,7 @@ package it.pagopa.pn.workflowmanager.config.msclient;
 
 import it.pagopa.pn.workflowmanager.config.PnWorkflowManagerConfigs;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.externalchannels.ApiClient;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.externalchannels.api.DigitalCourtesyMessagesApi;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.externalchannels.api.DigitalLegalMessagesApi;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -17,5 +18,13 @@ public class ExternalChannelsApiConfigurator {
         ApiClient newApiClient = new ApiClient(restTemplate);
         newApiClient.setBasePath(cfg.getExternalChannelsBaseUrl());
         return new DigitalLegalMessagesApi( newApiClient );
+    }
+
+    @Bean
+    @Primary
+    public DigitalCourtesyMessagesApi digitalCourtesyMessagesApi(@Qualifier("withTracing") RestTemplate restTemplate, PnWorkflowManagerConfigs cfg){
+        ApiClient newApiClient = new ApiClient(restTemplate);
+        newApiClient.setBasePath(cfg.getExternalChannelsBaseUrl());
+        return new DigitalCourtesyMessagesApi( newApiClient );
     }
 }
