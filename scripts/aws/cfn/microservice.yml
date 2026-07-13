@@ -812,7 +812,7 @@ Resources:
                   "ingestionTime": <aws.events.event.ingestion-time>,
                   "originalEvent": <aws.events.event.json>
               }
-        - Id: !Sub '${ProjectName}-CoreEventBus-InformalNotificationEventToWorkflowManagerInputsQueue'
+        - Id: !Sub '${ProjectName}-CoreEventBus-NotificationEventToWorkflowManagerInputsQueue'
           Arn: !Ref WorkflowManagerInputsQueueARN
           InputPath: $.detail
           DeadLetterConfig:
