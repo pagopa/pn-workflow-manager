@@ -31,7 +31,7 @@ public class IoConnectorClientImpl implements IoConnectorClient {
         MessageRequest messageRequest = new MessageRequest();
         messageRequest.setRequestId(ioMessageRequest.getRequestId());
         messageRequest.setIun(ioMessageRequest.getNotificationInt().getIun());
-        messageRequest.setRecipientTaxId(ioMessageRequest.getNotificationRecipientInt().getTaxId());
+        messageRequest.setRecipientTaxId(ioMessageRequest.getNotificationRecipientInt().getInternalId());
         messageRequest.senderServiceId(ioMessageRequest.getCampaign().getServiceId());
         messageRequest.setSubject(ioMessageRequest.getNotificationRecipientInt().getMessage().getPrimaryMessage().getSubject());
         messageRequest.setMarkdown(ioMessageRequest.getMarkdown());

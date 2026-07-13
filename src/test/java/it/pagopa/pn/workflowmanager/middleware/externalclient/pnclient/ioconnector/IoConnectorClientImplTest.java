@@ -52,7 +52,7 @@ class IoConnectorClientImplTest {
         MessageRequest sent = captor.getValue();
         assertEquals("req-1", sent.getRequestId());
         assertEquals("IUN_123", sent.getIun());
-        assertEquals("TAXID123", sent.getRecipientTaxId());
+        assertEquals("INTERNAL_ID_123", sent.getRecipientTaxId());
         assertEquals("service-id", sent.getSenderServiceId());
         assertEquals("subject", sent.getSubject());
         assertEquals("This is a markdown message", sent.getMarkdown());
@@ -126,6 +126,7 @@ class IoConnectorClientImplTest {
                         .build())
                 .notificationRecipientInt(NotificationRecipientInt.builder()
                         .taxId("TAXID123")
+                        .internalId("INTERNAL_ID_123")
                         .payments(payments)
                         .message(
                             NotificationMessageInt.builder()
