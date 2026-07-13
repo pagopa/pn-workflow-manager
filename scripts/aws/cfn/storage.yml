@@ -146,6 +146,12 @@ Outputs:
   SafeStorageToWorkflowManagerQueueARN:
     Value: !GetAtt SafeStorageToWorkflowManagerQueue.Outputs.QueueARN
     Description: SafeStore2WorkflowManager queue ARN
+  SafeStorageToWorkflowManagerQueueAlarmARN:
+    Value: !GetAtt SafeStorageToWorkflowManagerQueue.Outputs.SqsDLQAlarmArn
+    Description: SafeStore2WorkflowManager queue dlq alarm ARN
+  SafeStorageToWorkflowManagerQueueAgeAlarmARN:
+    Value: !GetAtt SafeStorageToWorkflowManagerQueue.Outputs.SqsAgeAlarmArn
+    Description: SafeStore2WorkflowManager queue age alarm ARN
 
   WorkflowManagerAnalogEventQueueName:
     Value: !GetAtt WorkflowManagerAnalogEventQueue.Outputs.QueueName
