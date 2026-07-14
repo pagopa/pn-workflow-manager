@@ -78,7 +78,15 @@ class TemplateEngineMapperTest {
     @Test
     void shouldMapToInformalSmsCommunication() {
         NotificationInt notification = buildNotification(List.of());
-        var result = TemplateEngineMapper.mapToInformalSmsCommunication(notification);
+        NotificationRecipientInt recipient = buildNotificationRecipient(List.of());
+        recipient.getMessage().setAdditionalMessage(
+                LocalizedMessageInt.builder()
+                        .longBody("Secondary content")
+                        .subject("Secondary subject")
+                        .language("DE")
+                        .build()
+        );
+        var result = TemplateEngineMapper.mapToInformalSmsCommunication(notification, recipient);
 
         assertEquals("senderDenomination", result.getSenderPaDenomination());
     }
