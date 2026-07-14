@@ -1,11 +1,11 @@
 package it.pagopa.pn.workflowmanager.service.mapper;
 
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationMessageInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationSenderInt;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.templateengine.model.*;
-import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
 import org.springframework.util.CollectionUtils;
 
 public class TemplateEngineMapper {
@@ -41,7 +41,7 @@ public class TemplateEngineMapper {
         return new SharedInformalCommunicationRecipient()
                 .taxId(recipient.getTaxId())
                 .denomination(recipient.getDenomination())
-                .recipientType(SharedInformalCommunicationRecipient.RecipientTypeEnum.fromValue(recipient.getRecipientType().name()));
+                .recipientType(RecipientTypeEnum.fromValue(recipient.getRecipientType().name()));
     }
 
     public static InformalEmailCommunicationSubject mapToInformalEmailCommunicationSubject(NotificationInt notification, NotificationRecipientInt recipient) {
