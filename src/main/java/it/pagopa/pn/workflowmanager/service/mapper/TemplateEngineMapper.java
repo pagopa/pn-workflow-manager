@@ -50,8 +50,9 @@ public class TemplateEngineMapper {
                 .recipientDenomination(recipient.getDenomination())
                 .senderDenomination(notification.getSender().getPaDenomination());
     }
-    public static InformalSmsCommunication mapToInformalSmsCommunication(NotificationInt notification) {
+    public static InformalSmsCommunication mapToInformalSmsCommunication(NotificationInt notification, NotificationRecipientInt recipient) {
         return new InformalSmsCommunication()
+                .recipientType(RecipientTypeEnum.fromValue(recipient.getRecipientType().name()))
                 .senderPaDenomination(notification.getSender().getPaDenomination());
     }
 

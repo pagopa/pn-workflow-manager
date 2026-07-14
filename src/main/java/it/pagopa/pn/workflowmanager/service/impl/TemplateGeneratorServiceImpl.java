@@ -70,7 +70,7 @@ public class TemplateGeneratorServiceImpl implements TemplateGeneratorService {
     @Override
     public String generateSmsTemplate(NotificationInt notificationInt, NotificationRecipientInt notificationRecipientInt) {
         LanguageEnum language = getLanguage(notificationRecipientInt.getAdditionalLanguages());
-        InformalSmsCommunication informalSmsCommunication = mapToInformalSmsCommunication(notificationInt);
+        InformalSmsCommunication informalSmsCommunication = mapToInformalSmsCommunication(notificationInt, notificationRecipientInt);
         return templateEngineClient.smsTemplate(language, informalSmsCommunication);
     }
 
