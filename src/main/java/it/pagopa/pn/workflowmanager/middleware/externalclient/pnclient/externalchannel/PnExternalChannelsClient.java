@@ -37,6 +37,6 @@ public interface PnExternalChannelsClient {
     void sendNotificationSMS(
             String requestIdx,
             String textMessage,
-            String senderDigitalAddress
+            String receiverDigitalAddress
     );
 }

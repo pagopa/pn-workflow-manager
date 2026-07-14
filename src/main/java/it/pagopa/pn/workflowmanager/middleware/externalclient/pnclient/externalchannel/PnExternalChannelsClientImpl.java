@@ -108,11 +108,11 @@ public class PnExternalChannelsClientImpl implements PnExternalChannelsClient {
     public void sendNotificationSMS(
             String requestIdx,
             String textMessage,
-            String senderDigitalAddress
+            String receiverDigitalAddress   
     ) {
         try {
             log.logInvokingAsyncExternalService(CLIENT_NAME, COURTESY_NOTIFICATION_REQUEST + "[SMS]", requestIdx);
-            log.debug("[enter] sendNotificationSMS requestId={} senderDigitalAddress={}", requestIdx, LogUtils.maskNumber(senderDigitalAddress));
+            log.debug("[enter] sendNotificationSMS requestId={} receiverDigitalAddress={}", requestIdx, LogUtils.maskNumber(receiverDigitalAddress));
 
             DigitalCourtesySmsRequest digitalNotificationRequest = new DigitalCourtesySmsRequest();
             digitalNotificationRequest.setChannel(DigitalCourtesySmsRequest.ChannelEnum.SMS);
@@ -120,12 +120,12 @@ public class PnExternalChannelsClientImpl implements PnExternalChannelsClient {
             digitalNotificationRequest.setCorrelationId(requestIdx);
             digitalNotificationRequest.setEventType(EVENT_TYPE_INFORMAL);
             digitalNotificationRequest.setQos(DigitalCourtesySmsRequest.QosEnum.BATCH);
-            digitalNotificationRequest.setReceiverDigitalAddress(senderDigitalAddress);
+            digitalNotificationRequest.setReceiverDigitalAddress(receiverDigitalAddress);
             digitalNotificationRequest.setClientRequestTimeStamp(Instant.now());
             digitalNotificationRequest.setMessageText(textMessage);
 
             digitalCourtesyMessagesApi.sendCourtesyShortMessage(requestIdx, cfg.getCxId(), digitalNotificationRequest);
-            log.debug("[exit] sendNotificationSMS requestId={} senderDigitalAddress={}", requestIdx, LogUtils.maskNumber(senderDigitalAddress));
+            log.debug("[exit] sendNotificationSMS requestId={} receiverDigitalAddress={}", requestIdx, LogUtils.maskNumber(receiverDigitalAddress));
         } catch (Exception e) {
             log.error("error sending SMS notification for requestIdx={}", requestIdx);
             throw new PnInternalException("error sending SMS notification", ERROR_CODE_WORKFLOWMANAGER_SENDSMSNOTIFICATIONFAILED, e);
