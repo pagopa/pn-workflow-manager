@@ -86,37 +86,7 @@ class TimelineServiceMapperTest {
         assertEquals("IUN_TEST", result.getTimelineElement().getIun());
         assertEquals("PROT_123", result.getNotificationInfo().getPaProtocolNumber());
         assertEquals(2, result.getNotificationInfo().getNumberOfRecipients());
-    }
-
-    @Test
-    void getNewTimelineElement_mapsFieldsCorrectly_withLegalFacts() {
-        // Arrange
-        TimelineElementInternal timelineElementInternal = TimelineElementInternal.builder()
-                .iun("IUN_TEST")
-                .elementId("ELEM_ID")
-                .category(TimelineElementCategoryInt.INFORMAL_NOTIFICATION_VIEWED)
-                .build();
-
-        NotificationRecipientInt recipient1 = NotificationRecipientInt.builder().internalId("rec1").build();
-        NotificationRecipientInt recipient2 = NotificationRecipientInt.builder().internalId("rec2").build();
-
-        NotificationInt notificationInt = NotificationInt.builder()
-                .iun("IUN_TEST")
-                .paProtocolNumber("PROT_123")
-                .sentAt(Instant.now())
-                .recipients(List.of(recipient1, recipient2))
-                .build();
-
-        // Act
-        NewTimelineElement result = timelineServiceMapper.getNewTimelineElement(timelineElementInternal, notificationInt);
-
-        // Assert
-        assertNotNull(result);
-        assertNotNull(result.getTimelineElement());
-        assertNotNull(result.getNotificationInfo());
-        assertEquals("IUN_TEST", result.getTimelineElement().getIun());
-        assertEquals("PROT_123", result.getNotificationInfo().getPaProtocolNumber());
-        assertEquals(2, result.getNotificationInfo().getNumberOfRecipients());
+        assertEquals(CommunicationType.INFORMAL, result.getTimelineElement().getCommunicationType());
     }
 
     @Test

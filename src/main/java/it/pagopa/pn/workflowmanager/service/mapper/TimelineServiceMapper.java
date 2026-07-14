@@ -1,5 +1,6 @@
 package it.pagopa.pn.workflowmanager.service.mapper;
 
+import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.CommunicationType;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.model.*;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.StatusInfoInternal;
@@ -40,6 +41,7 @@ public class TimelineServiceMapper {
                 .notificationSentAt(timelineElement.getNotificationSentAt())
                 .ingestionTimestamp(timelineElement.getIngestionTimestamp())
                 .eventTimestamp(timelineElement.getEventTimestamp())
+                .communicationType(CommunicationType.INFORMAL)
                 .build();
     }
 
@@ -59,7 +61,8 @@ public class TimelineServiceMapper {
                 .paId(timelineElementInternal.getPaId())
                 .category(TimelineCategory.valueOf(timelineElementInternal.getCategory().name()))
                 .details(toTimelineElementDetails(timelineElementInternal.getDetails(), timelineElementInternal.getCategory().name()))
-                .notificationSentAt(timelineElementInternal.getNotificationSentAt());
+                .notificationSentAt(timelineElementInternal.getNotificationSentAt())
+                .communicationType(it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.model.CommunicationType.INFORMAL);
     }
 
     private TimelineElementDetails toTimelineElementDetails(TimelineElementDetailsInt detailsInt, String category) {

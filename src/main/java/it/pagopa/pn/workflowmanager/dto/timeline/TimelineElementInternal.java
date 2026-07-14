@@ -1,5 +1,6 @@
 package it.pagopa.pn.workflowmanager.dto.timeline;
 
+import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.CommunicationType;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementDetailsInt;
 import jakarta.validation.constraints.NotNull;
@@ -24,6 +25,7 @@ public class TimelineElementInternal implements Comparable<TimelineElementIntern
     private Instant notificationSentAt;
     private Instant ingestionTimestamp; //Questo campo viene valorizzato solo ed esclusivamente in uscita per api e webhook dal mapper
     private Instant eventTimestamp; //Questo campo viene valorizzato solo ed esclusivamente in uscita per api e webhook dal mapper
+    private CommunicationType communicationType;
 
     @Override
     public int compareTo(@NotNull TimelineElementInternal o) {
