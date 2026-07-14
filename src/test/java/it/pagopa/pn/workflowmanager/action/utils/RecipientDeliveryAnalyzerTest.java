@@ -8,6 +8,7 @@ import it.pagopa.pn.workflowmanager.dto.timeline.details.SendDigitalMessageSkipD
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.WorkFlowEntity;
+import it.pagopa.pn.workflowmanager.exceptions.PnWorkflowException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,7 +21,9 @@ import java.util.Set;
 
 import static it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt.SEND_DIGITAL_MESSAGE_FEEDBACK;
 import static it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt.SEND_DIGITAL_MESSAGE_SKIP;
+import static it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCodes.ERROR_CODE_WORKFLOWMANAGER_GENERIC_WORKFLOW_ERROR;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -160,7 +163,7 @@ class RecipientDeliveryAnalyzerTest {
     }
 
     @Test
-    void getDeliveryStatus_shouldReturnUndeliverable_whenNoChannelsConfigured() {
+    void getDeliveryStatus_shouldThrowPnWorkflowError_whenNoChannelsConfigured() {
         // Arrange
         Campaign campaign = createCampaign(List.of());
         List<TimelineElementInternal> timelineElements = List.of();
@@ -169,11 +172,14 @@ class RecipientDeliveryAnalyzerTest {
                 .thenReturn(false);
 
         // Act
-        RecipientDeliveryStatus result = analyzer.getDeliveryStatus(
-                timelineElements, campaign, TEST_REC_INDEX, RecipientTypeInt.PF);
+        PnWorkflowException exception = assertThrows(
+                PnWorkflowException.class,
+                () -> analyzer.getDeliveryStatus(timelineElements, campaign, TEST_REC_INDEX, RecipientTypeInt.PF)
+        );
 
         // Assert
-        assertEquals(RecipientDeliveryStatus.UNDELIVERABLE, result);
+        assertEquals(ERROR_CODE_WORKFLOWMANAGER_GENERIC_WORKFLOW_ERROR,
+                exception.getProblem().getErrors().getFirst().getCode());
     }
 
     @Test

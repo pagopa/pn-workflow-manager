@@ -8,11 +8,13 @@ import it.pagopa.pn.workflowmanager.dto.timeline.details.SendDigitalMessageSkipD
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.WorkFlowEntity;
+import it.pagopa.pn.workflowmanager.exceptions.PnWorkflowException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Set;
 
 import static it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt.*;
 
@@ -21,6 +23,13 @@ import static it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementC
 @Slf4j
 public class RecipientDeliveryAnalyzer {
     private final TimelineUtils timelineUtils;
+
+    //Canali che possono generare uno SKIP
+    private static final Set<ChannelType> VOLATILE_CHANNELS = Set.of(
+            ChannelType.IO,
+            ChannelType.EMAIL,
+            ChannelType.SMS
+    );
 
     public RecipientDeliveryStatus getDeliveryStatus(List<TimelineElementInternal> timelineElements,
                                                      Campaign campaign,
@@ -38,63 +47,68 @@ public class RecipientDeliveryAnalyzer {
         return timelineUtils.checkTimelineCategories(timelineElements, recIndex, DELIVERED, INFORMAL_NOTIFICATION_VIEWED, PAYMENT);
     }
 
-    private boolean isRecipientUndeliverable(List<TimelineElementInternal> timelineElements, int recIndex,
-                                             Campaign campaign, RecipientTypeInt recipientType) {
-
-        List<WorkFlowEntity> filteredWorkflow = campaign.getWorkflow().stream()
+    private boolean isRecipientUndeliverable(
+            List<TimelineElementInternal> timelineElements,
+            int recIndex,
+            Campaign campaign,
+            RecipientTypeInt recipientType
+    ) {
+        List<ChannelType> activeChannels = campaign.getWorkflow().stream()
                 .filter(w -> w.getRecipientType().contains(recipientType))
+                .map(WorkFlowEntity::getChannel)
                 .toList();
 
-        boolean hasIO = false;
-        boolean hasEmail = false;
-        boolean hasSms = false;
 
-        for (WorkFlowEntity workflow : filteredWorkflow) {
-            if (ChannelType.IO.equals(workflow.getChannel())) {
-                hasIO = true;
-            } else if (ChannelType.EMAIL.equals(workflow.getChannel())) {
-                hasEmail = true;
-            } else if (ChannelType.SMS.equals(workflow.getChannel())) {
-                hasSms = true;
-            }
+        if (activeChannels.isEmpty()) {
+            throw new PnWorkflowException("Workflow configuration error: no active channels for recipient type " + recipientType);
         }
 
-        boolean hasAppIoFeedback = hasAppIoFeedbackInTimeline(timelineElements, recIndex, hasIO);
+        boolean hasOnlyVolatileChannels = VOLATILE_CHANNELS.containsAll(activeChannels);
+        if (!hasOnlyVolatileChannels) {
+            return false;
+        }
 
-        boolean hasEmailSkip = hasEmailSkipInTimeline(timelineElements, recIndex, hasEmail);
-
-        boolean hasSmsSkip = hasSmsSkipInTimeline(timelineElements, recIndex, hasSms);
-
-        // Il destinatario è undeliverable SOLO SE tutti i canali attivi hanno soddisfatto la loro condizione di skip/feedback
-        return hasAppIoFeedback && hasEmailSkip && hasSmsSkip;
+        return activeChannels.stream()
+                .allMatch(channel -> hasChannelBeenSkipped(timelineElements, recIndex, channel));
     }
 
-    private static boolean hasEmailSkipInTimeline(List<TimelineElementInternal> timelineElements, int recIndex, boolean hasEmail) {
-        return hasDigitalChannelSkipInTimeline(timelineElements, recIndex, hasEmail, DigitalChannelsInt.EMAIL);
+    /**
+     * Metodo centralizzato che verifica lo skip in base al tipo di canale.
+     */
+    private static boolean hasChannelBeenSkipped(
+            List<TimelineElementInternal> timelineElements,
+            int recIndex,
+            ChannelType channel
+    ) {
+        if (ChannelType.IO.equals(channel)) {
+            return hasAppIoFeedbackInTimeline(timelineElements, recIndex);
+        } else if (ChannelType.EMAIL.equals(channel)) {
+            return hasDigitalChannelSkipInTimeline(timelineElements, recIndex, DigitalChannelsInt.EMAIL);
+        } else if (ChannelType.SMS.equals(channel)) {
+            return hasDigitalChannelSkipInTimeline(timelineElements, recIndex, DigitalChannelsInt.SMS);
+        }
+        return false;
     }
 
-    private static boolean hasSmsSkipInTimeline(List<TimelineElementInternal> timelineElements, int recIndex, boolean hasSms) {
-        return hasDigitalChannelSkipInTimeline(timelineElements, recIndex, hasSms, DigitalChannelsInt.SMS);
-    }
-
-    private static boolean hasAppIoFeedbackInTimeline(List<TimelineElementInternal> timelineElements, int recIndex, boolean hasIO) {
-        return !hasIO || timelineElements.stream()
+    private static boolean hasAppIoFeedbackInTimeline(List<TimelineElementInternal> timelineElements, int recIndex) {
+        return timelineElements.stream()
                 .filter(e -> SEND_DIGITAL_MESSAGE_FEEDBACK.equals(e.getCategory()))
                 .map(TimelineElementInternal::getDetails)
-                .filter(d -> d instanceof SendDigitalMessageFeedbackDetailsInt)
-                .map(d -> (SendDigitalMessageFeedbackDetailsInt) d)
+                .filter(SendDigitalMessageFeedbackDetailsInt.class::isInstance)
+                .map(SendDigitalMessageFeedbackDetailsInt.class::cast)
                 .anyMatch(d -> d.getRecIndex() == recIndex && DigitalChannelsInt.IO.equals(d.getChannel()));
     }
 
-    private static boolean hasDigitalChannelSkipInTimeline(List<TimelineElementInternal> timelineElements,
-                                                           int recIndex,
-                                                           boolean hasChannel,
-                                                           DigitalChannelsInt channel) {
-        return !hasChannel || timelineElements.stream()
+    private static boolean hasDigitalChannelSkipInTimeline(
+            List<TimelineElementInternal> timelineElements,
+            int recIndex,
+            DigitalChannelsInt channel
+    ) {
+        return timelineElements.stream()
                 .filter(e -> SEND_DIGITAL_MESSAGE_SKIP.equals(e.getCategory()))
                 .map(TimelineElementInternal::getDetails)
-                .filter(d -> d instanceof SendDigitalMessageSkipDetailsInt)
-                .map(d -> (SendDigitalMessageSkipDetailsInt) d)
+                .filter(SendDigitalMessageSkipDetailsInt.class::isInstance)
+                .map(SendDigitalMessageSkipDetailsInt.class::cast)
                 .anyMatch(d -> d.getRecIndex() == recIndex && channel.equals(d.getChannel()));
     }
 }
