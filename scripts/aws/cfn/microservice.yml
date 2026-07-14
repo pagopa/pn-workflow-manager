@@ -433,6 +433,12 @@ Resources:
               - !Ref WorkflowManagerIoEventQueueARN
               - !Ref SafeStorageToWorkflowManagerQueueARN
               - !Ref WorkflowManagerInputsQueueARN
+          - Effect: Allow
+            Action:
+              - 'ssm:GetParameter'
+              - 'ssm:GetParameters'
+            Resource:
+              - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/MVPCampaigns'
 
   EventBusEnqueueRole:
     Type: AWS::IAM::Role
