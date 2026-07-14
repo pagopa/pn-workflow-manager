@@ -34,7 +34,7 @@ public class PostAcceptedProcessingEventHandler implements EventHandler<Action> 
         final String processName = ActionType.POST_ACCEPTED_PROCESSING_COMPLETED.name();
 
         try {
-            log.debug("Handle action of type ANALOG_WORKFLOW, with payload {}", action);
+            log.debug("Handle action of type POST_ACCEPTED_PROCESSING_COMPLETED, with payload {}", action);
             MdcUtils.addIunAndRecIndexAndCorrIdToMdc(action.getIun(), action.getRecipientIndex(), action.getActionId());
 
             log.logStartingProcess(processName);
