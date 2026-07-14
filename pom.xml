@@ -318,6 +318,7 @@
 							<additionalProperties>removeEnumValuePrefix=false</additionalProperties>
 							<typeMappings>
 								<typeMapping>OffsetDateTime=java.time.Instant</typeMapping>
+								<typeMapping>file=byte[]</typeMapping>
 							</typeMappings>
 							<configOptions>
 								<useOneOfInterfaces>true</useOneOfInterfaces>

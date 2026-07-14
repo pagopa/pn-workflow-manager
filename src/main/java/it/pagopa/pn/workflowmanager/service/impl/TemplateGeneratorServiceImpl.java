@@ -14,7 +14,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import java.io.File;
 import java.util.List;
 
 import static it.pagopa.pn.workflowmanager.service.mapper.TemplateEngineMapper.*;
@@ -61,7 +60,7 @@ public class TemplateGeneratorServiceImpl implements TemplateGeneratorService {
     }
 
     @Override
-    public File generateCoverpageTemplate(NotificationInt notificationInt, NotificationRecipientInt notificationRecipientInt, Campaign campaign) {
+    public byte[] generateCoverpageTemplate(NotificationInt notificationInt, NotificationRecipientInt notificationRecipientInt, Campaign campaign) {
         LanguageEnum language = getLanguage(notificationRecipientInt.getAdditionalLanguages());
         InformalCommunication informalCommunication = mapToInformalCommunication(notificationInt, notificationRecipientInt, campaign);
         return templateEngineClient.coverpageTemplate(language, informalCommunication);

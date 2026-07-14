@@ -11,7 +11,6 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
 
-import java.io.File;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
@@ -140,11 +139,11 @@ class TemplateGeneratorServiceImplTest {
         NotificationInt notificationInt = buildNotification();
         NotificationRecipientInt notificationRecipientInt = buildNotificationRecipient(additionalLanguages);
         Campaign campaign = buildCampaign();
-        File expectedCoverpageTemplate = mock(File.class);
+        byte[] expectedCoverpageTemplate = "template-content".getBytes();
 
         when(templateEngineClient.coverpageTemplate(Mockito.eq(expectedLanguage), Mockito.any())).thenReturn(expectedCoverpageTemplate);
 
-        File result = templateGeneratorService.generateCoverpageTemplate(notificationInt, notificationRecipientInt, campaign);
+        byte[] result = templateGeneratorService.generateCoverpageTemplate(notificationInt, notificationRecipientInt, campaign);
 
         assertEquals(expectedCoverpageTemplate, result);
         verify(templateEngineClient).coverpageTemplate(Mockito.eq(expectedLanguage), Mockito.any());

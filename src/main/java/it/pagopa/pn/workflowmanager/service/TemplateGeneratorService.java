@@ -3,7 +3,6 @@ package it.pagopa.pn.workflowmanager.service;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
 
-import java.io.File;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
 
 public interface TemplateGeneratorService {
@@ -12,6 +11,6 @@ public interface TemplateGeneratorService {
     String generatePecSubjectTemplate(NotificationInt notificationInt, NotificationRecipientInt notificationRecipientInt);
     String generateEmailBodyTemplate(NotificationInt notificationInt, NotificationRecipientInt notificationRecipientInt, Campaign campaign);
     String generateEmailSubjectTemplate(NotificationInt notificationInt, NotificationRecipientInt notificationRecipientInt);
-    File generateCoverpageTemplate(NotificationInt notificationInt, NotificationRecipientInt notificationRecipientInt, Campaign campaign);
+    byte[] generateCoverpageTemplate(NotificationInt notificationInt, NotificationRecipientInt notificationRecipientInt, Campaign campaign);
     String generateSmsTemplate(NotificationInt notificationInt, NotificationRecipientInt notificationRecipientInt);
 }

@@ -1,26 +1,22 @@
 package it.pagopa.pn.workflowmanager.service.impl;
 
 import it.pagopa.pn.commons.exceptions.PnInternalException;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
 import it.pagopa.pn.workflowmanager.dto.safestorage.DocumentType;
 import it.pagopa.pn.workflowmanager.dto.safestorage.FileCreationResponseInt;
 import it.pagopa.pn.workflowmanager.dto.safestorage.FileCreationWithContentRequest;
-import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
 import it.pagopa.pn.workflowmanager.service.SafeStorageService;
 import it.pagopa.pn.workflowmanager.service.TemplateGeneratorService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.api.io.TempDir;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.io.File;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
@@ -38,9 +34,6 @@ class SaveDocumentServiceImplTest {
 
     @Mock
     private SafeStorageService safeStorageService;
-
-    @TempDir
-    Path tempDir;
 
     private SaveDocumentServiceImpl saveDocumentService;
 
@@ -82,17 +75,14 @@ class SaveDocumentServiceImplTest {
     }
 
     @Test
-    void saveCoverpageShouldGenerateAndStoreCoverpageWithExpectedTags() throws Exception {
+    void saveCoverpageShouldGenerateAndStoreCoverpageWithExpectedTags() {
         byte[] fileBytes = "pdfcontent".getBytes(StandardCharsets.UTF_8);
-        Path coverpagePath = tempDir.resolve("coverpage.pdf");
-        Files.write(coverpagePath, fileBytes);
-        File tmp = coverpagePath.toFile();
 
         NotificationInt notification = NotificationInt.builder().iun("iun-123").build();
         NotificationRecipientInt recipient = NotificationRecipientInt.builder().taxId("tax-1").build();
         Campaign campaign = Campaign.builder().campaignId("camp-1").senderId("sender-1").build();
 
-        when(templateGeneratorService.generateCoverpageTemplate(notification, recipient, campaign)).thenReturn(tmp);
+        when(templateGeneratorService.generateCoverpageTemplate(notification, recipient, campaign)).thenReturn(fileBytes);
         when(safeStorageService.createAndUploadContent(any())).thenReturn(new FileCreationResponseInt("k1"));
 
         String res = saveDocumentService.saveCoverpage(notification, recipient, campaign,"timeline-1", 0);
@@ -116,34 +106,14 @@ class SaveDocumentServiceImplTest {
     }
 
     @Test
-    void saveCoverpageShouldWrapFileReadFailuresInPnInternalException() {
-        NotificationInt notification = NotificationInt.builder().iun("iun-999").build();
-        NotificationRecipientInt recipient = NotificationRecipientInt.builder().taxId("tax-999").build();
-        Campaign campaign = Campaign.builder().campaignId("camp-1").senderId("sender-1").build();
-        File missingFile = tempDir.resolve("missing.pdf").toFile();
-
-        when(templateGeneratorService.generateCoverpageTemplate(notification, recipient, campaign)).thenReturn(missingFile);
-
-        PnInternalException exc = assertThrows(PnInternalException.class, () ->
-                saveDocumentService.saveCoverpage(notification, recipient, campaign, "t-1", 1)
-        );
-
-        assertEquals(String.format(SaveDocumentServiceImpl.SAVE_DOCUMENT_EXCEPTION_MESSAGE,
-                "COVERPAGE", notification.getIun(), 1), exc.getProblem().getDetail());
-        assertEquals(ERROR_CODE_WORKFLOWMANAGER_SAVELEGALFACTSFAILED, exc.getProblem().getErrors().getFirst().getCode());
-        assertNotNull(exc.getCause());
-    }
-
-    @Test
-    void saveCoverpageShouldWrapStorageFailuresInPnInternalException() throws Exception {
-        Path coverpagePath = tempDir.resolve("coverpage-storage-failure.pdf");
-        Files.writeString(coverpagePath, "pdfcontent");
+    void saveCoverpageShouldWrapStorageFailuresInPnInternalException() {
+        byte[] fileBytes = "pdfcontent".getBytes(StandardCharsets.UTF_8);
         NotificationInt notification = NotificationInt.builder().iun("iun-999").build();
         NotificationRecipientInt recipient = NotificationRecipientInt.builder().taxId("tax-999").build();
         Campaign campaign = Campaign.builder().campaignId("camp-1").senderId("sender-1").build();
         RuntimeException storageException = new RuntimeException("generation failed");
 
-        when(templateGeneratorService.generateCoverpageTemplate(notification, recipient, campaign)).thenReturn(coverpagePath.toFile());
+        when(templateGeneratorService.generateCoverpageTemplate(notification, recipient, campaign)).thenReturn(fileBytes);
         when(safeStorageService.createAndUploadContent(any())).thenThrow(storageException);
 
         PnInternalException exc = assertThrows(PnInternalException.class, () ->

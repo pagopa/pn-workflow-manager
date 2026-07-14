@@ -42,6 +42,7 @@ public class TimelineServiceMapper {
                 .ingestionTimestamp(timelineElement.getIngestionTimestamp())
                 .eventTimestamp(timelineElement.getEventTimestamp())
                 .communicationType(CommunicationType.INFORMAL)
+                .campaignId(timelineElement.getCampaignId())
                 .build();
     }
 
@@ -62,6 +63,7 @@ public class TimelineServiceMapper {
                 .category(TimelineCategory.valueOf(timelineElementInternal.getCategory().name()))
                 .details(toTimelineElementDetails(timelineElementInternal.getDetails(), timelineElementInternal.getCategory().name()))
                 .notificationSentAt(timelineElementInternal.getNotificationSentAt())
+                .campaignId(timelineElementInternal.getCampaignId())
                 .communicationType(it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.model.CommunicationType.INFORMAL);
     }
 

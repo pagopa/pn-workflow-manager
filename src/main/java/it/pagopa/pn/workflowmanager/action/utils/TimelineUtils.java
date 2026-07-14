@@ -66,6 +66,7 @@ public class TimelineUtils {
                 .details(details)
                 .paId(notification.getSender().getPaId())
                 .notificationSentAt(notification.getSentAt())
+                .campaignId(notification.getCampaignId())
                 .build();
     }
 

@@ -1,11 +1,11 @@
 package it.pagopa.pn.workflowmanager.service.impl;
 
 import it.pagopa.pn.commons.exceptions.PnInternalException;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
 import it.pagopa.pn.workflowmanager.dto.safestorage.DocumentType;
 import it.pagopa.pn.workflowmanager.dto.safestorage.FileCreationWithContentRequest;
-import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
 import it.pagopa.pn.workflowmanager.service.SafeStorageService;
 import it.pagopa.pn.workflowmanager.service.SaveDocumentService;
 import it.pagopa.pn.workflowmanager.service.TemplateGeneratorService;
@@ -14,8 +14,6 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
-import java.nio.file.Files;
 import java.util.List;
 import java.util.Map;
 
@@ -58,15 +56,14 @@ public class SaveDocumentServiceImpl implements SaveDocumentService {
     ) {
         try {
             log.debug("Start saveCoverpage - iun={}", notification.getIun());
-            File legalFactFile = templateGeneratorService.generateCoverpageTemplate(notification, recipient, campaign);
-            byte[] legalFact = Files.readAllBytes(legalFactFile.toPath());
+            byte[] document = templateGeneratorService.generateCoverpageTemplate(notification, recipient, campaign);
             Map<String, List<String>> tags = Map.of(
                     "iun", List.of(notification.getIun()),
                     "recIndex", List.of(String.valueOf(recIndex)),
                     "documentType", List.of(DocumentType.COVERPAGE.name()),
                     "timelineElementId", List.of(timelineElementId)
             );
-            return saveDocument(legalFact, tags);
+            return saveDocument(document, tags);
         } catch (Exception exc) {
             String msg = String.format(SAVE_DOCUMENT_EXCEPTION_MESSAGE, "COVERPAGE", notification.getIun(), recIndex);
             throw new PnInternalException(msg, ERROR_CODE_WORKFLOWMANAGER_SAVELEGALFACTSFAILED, exc);

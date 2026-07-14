@@ -9,8 +9,6 @@ import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.io.File;
-
 @CustomLog
 @RequiredArgsConstructor
 @Component
@@ -48,7 +46,7 @@ public class TemplateEngineClientImpl implements TemplateEngineClient {
     }
 
     @Override
-    public File coverpageTemplate(LanguageEnum xLanguage, InformalCommunication informalCommunication) {
+    public byte[] coverpageTemplate(LanguageEnum xLanguage, InformalCommunication informalCommunication) {
         log.logInvokingExternalService(CLIENT_NAME, COVERPAGE_TEMPLATE);
         return templateApi.informalAnalogCommunication(xLanguage, informalCommunication);
     }

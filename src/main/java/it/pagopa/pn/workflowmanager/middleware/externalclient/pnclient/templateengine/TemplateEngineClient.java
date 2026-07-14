@@ -6,8 +6,6 @@ import it.pagopa.pn.workflowmanager.generated.openapi.msclient.templateengine.mo
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.templateengine.model.InformalSmsCommunication;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.templateengine.model.LanguageEnum;
 
-import java.io.File;
-
 public interface TemplateEngineClient {
     String CLIENT_NAME = PnLogger.EXTERNAL_SERVICES.PN_TEMPLATE_ENGINE;
 
@@ -30,7 +28,7 @@ public interface TemplateEngineClient {
 
     String emailSubjectTemplate(LanguageEnum language, InformalEmailCommunicationSubject informalCommunicationSubject);
 
-    File coverpageTemplate(LanguageEnum xLanguage, InformalCommunication informalCommunication);
+    byte[] coverpageTemplate(LanguageEnum xLanguage, InformalCommunication informalCommunication);
 
     String smsTemplate(LanguageEnum language, InformalSmsCommunication informalCommunication);
 }

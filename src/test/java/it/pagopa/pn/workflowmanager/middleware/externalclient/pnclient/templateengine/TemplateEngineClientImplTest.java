@@ -12,8 +12,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.io.File;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -222,12 +220,12 @@ class TemplateEngineClientImplTest {
     @Test
     void coverpageTemplate_shouldReturnTemplate_whenCoverpageTemplateApiRespondsSuccessfully() {
         // given
-        File expectedTemplate = mock(File.class);
+        byte[] expectedTemplate = "template content".getBytes();
         when(templateApi.informalAnalogCommunication(language, informalCommunication))
                 .thenReturn(expectedTemplate);
 
         // when
-        File result = templateEngineClient.coverpageTemplate(language, informalCommunication);
+        byte[] result = templateEngineClient.coverpageTemplate(language, informalCommunication);
 
         // then
         assertEquals(expectedTemplate, result);
@@ -242,7 +240,7 @@ class TemplateEngineClientImplTest {
                 .thenReturn(null);
 
         // when
-        File result = templateEngineClient.coverpageTemplate(language, informalCommunication);
+        byte[] result = templateEngineClient.coverpageTemplate(language, informalCommunication);
 
         // then
         assertNull(result);
