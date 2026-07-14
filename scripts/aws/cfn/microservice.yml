@@ -822,7 +822,7 @@ Resources:
     Type: AWS::SQS::QueuePolicy
     Properties:
       Queues:
-        - !Ref WorkflowManagerInputsQueueARN
+        - !Ref WorkflowManagerInputsQueueURL
       PolicyDocument:
         Statement:
           - Sid: AllowEventBridgeToSendMessage
