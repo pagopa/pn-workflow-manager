@@ -319,6 +319,10 @@ Parameters:
     Type: String
     Description: 'Client ID for workflow manager, used to route events from event bus to workflow manager queue'
 
+  SandboxSafeStorageBaseUrl:
+    Type: String
+    Description: "Url to the SafeStorage microservice"
+
 Resources:
   WorkflowManagerMicroservice:
     Type: AWS::CloudFormation::Stack
@@ -359,7 +363,7 @@ Resources:
         ContainerEnvEntry13: !Sub 'PN_WORKFLOWMANAGER_TEMPLATEENGINEBASEURL=http://${ApplicationLoadBalancerDomain}:8080'
         ContainerEnvEntry14: !Sub 'PN_WORKFLOWMANAGER_PAPERMESSAGESCLIENTBASEURL=http://${ApplicationLoadBalancerDomain}:8080'
         ContainerEnvEntry15: !Sub 'PN_WORKFLOWMANAGER_EXTERNALCHANNELSBASEURL=http://${ApplicationLoadBalancerDomain}:8080'
-        ContainerEnvEntry16: !Sub 'PN_WORKFLOWMANAGER_SAFESTORAGEBASEURL=http://${ApplicationLoadBalancerDomain}:8080'
+        ContainerEnvEntry16: !Sub 'PN_WORKFLOWMANAGER_SAFESTORAGEBASEURL=${SandboxSafeStorageBaseUrl}'
         ContainerEnvEntry17: !Sub 'PN_WORKFLOWMANAGER_TOPICS_SAFESTORAGEEVENTS=${SafeStorageToWorkflowManagerQueueName}'
         ContainerEnvEntry18: !Sub 'PN_WORKFLOWMANAGER_TOPICS_INFORMALQUEUE=${WorkflowManagerInputsQueueName}'
         ApplicativeEnvFileChecksum: !Ref ApplicativeEnvFileChecksum
