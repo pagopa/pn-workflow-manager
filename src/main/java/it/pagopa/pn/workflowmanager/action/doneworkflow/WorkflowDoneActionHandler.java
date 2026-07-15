@@ -1,6 +1,7 @@
 package it.pagopa.pn.workflowmanager.action.doneworkflow;
 
 import it.pagopa.pn.workflowmanager.action.utils.RecipientDeliveryAnalyzer;
+import it.pagopa.pn.workflowmanager.action.utils.RecipientDeliveryInfo;
 import it.pagopa.pn.workflowmanager.action.utils.RecipientDeliveryStatus;
 import it.pagopa.pn.workflowmanager.action.utils.TimelineUtils;
 import it.pagopa.pn.workflowmanager.dto.action.details.WorkflowDoneDetails;
@@ -45,11 +46,11 @@ public class WorkflowDoneActionHandler {
                 notificationInt.getCampaignId(),
                 notificationInt.getSender().getPaId());
 
-        RecipientDeliveryStatus recipientDeliveryStatus = recipientDeliveryAnalyzer.getDeliveryStatus(timelineElements,
+        RecipientDeliveryInfo recipientDeliveryInfo = recipientDeliveryAnalyzer.getDeliveryInfo(timelineElements,
                 campaign, recIndex, currentRecipientType);
 
-        log.info("Recipient delivery status for iun {} recIndex {}: {}", notificationInt.getIun(), recIndex, recipientDeliveryStatus);
-        createAndPersistTimelineElement(recIndex, recipientDeliveryStatus, timelineId, notificationInt, details.getCompletionFeedback());
+        log.info("Recipient delivery info for iun {} recIndex {}: {}", notificationInt.getIun(), recIndex, recipientDeliveryInfo);
+        createAndPersistTimelineElement(recIndex, recipientDeliveryInfo.status(), timelineId, notificationInt, details.getCompletionFeedback());
     }
 
     private void createAndPersistTimelineElement(

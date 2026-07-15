@@ -97,9 +97,8 @@ class InformalWorkflowDetailsIntTest {
     void workflowEndedUnreachedToLog() {
         WorkflowEndedUnreachedDetailsInt details = WorkflowEndedUnreachedDetailsInt.builder()
                 .recIndex(7)
-                .sourceElementId("elementId")
                 .build();
 
-        Assertions.assertEquals("recIndex=7 sourceElementId=elementId", details.toLog());
+        Assertions.assertEquals("recIndex=7", details.toLog());
     }
 }

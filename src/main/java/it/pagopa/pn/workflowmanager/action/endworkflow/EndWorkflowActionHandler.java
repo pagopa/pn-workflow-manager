@@ -1,6 +1,7 @@
 package it.pagopa.pn.workflowmanager.action.endworkflow;
 
 import it.pagopa.pn.workflowmanager.action.utils.RecipientDeliveryAnalyzer;
+import it.pagopa.pn.workflowmanager.action.utils.RecipientDeliveryInfo;
 import it.pagopa.pn.workflowmanager.action.utils.RecipientDeliveryStatus;
 import it.pagopa.pn.workflowmanager.action.utils.TimelineUtils;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
@@ -29,7 +30,7 @@ public class EndWorkflowActionHandler {
     private final RecipientDeliveryAnalyzer recipientDeliveryAnalyzer;
     private final TimelineService timelineService;
 
-    public void endWorkflowAction(List<TimelineElementInternal> timelineElements, String iun, int recIndex, String timelineId) {
+    public void endWorkflowAction(List<TimelineElementInternal> timelineElements, String iun, int recIndex) {
         log.info("End informal notification workflow for recipient - iun {} id {}", iun, recIndex);
 
         NotificationInt notificationInt = notificationService.getInformalNotificationByIun(iun);
@@ -41,11 +42,11 @@ public class EndWorkflowActionHandler {
                 notificationInt.getCampaignId(),
                 notificationInt.getSender().getPaId());
 
-        RecipientDeliveryStatus recipientDeliveryStatus = recipientDeliveryAnalyzer.getDeliveryStatus(
+        RecipientDeliveryInfo recipientDeliveryInfo = recipientDeliveryAnalyzer.getDeliveryInfo(
                 timelineElements,campaign, recIndex, currentRecipientType);
 
-        log.info("Recipient delivery status for iun {} recIndex {}: {}", notificationInt.getIun(), recIndex, recipientDeliveryStatus);
-        createAndPersistTimelineElement(recIndex, recipientDeliveryStatus, timelineId, notificationInt);
+        log.info("Recipient delivery info for iun {} recIndex {}: {}", notificationInt.getIun(), recIndex, recipientDeliveryInfo);
+        createAndPersistTimelineElement(recIndex, recipientDeliveryInfo.status(), recipientDeliveryInfo.sourceElementId(), notificationInt);
     }
 
     private void createAndPersistTimelineElement(int recIndex, RecipientDeliveryStatus status,
@@ -58,7 +59,7 @@ public class EndWorkflowActionHandler {
 
             case UNREACHED:
                 addTimelineElement(timelineUtils.buildWorkflowEndedUnreachedTimelineElement(recIndex, notification,
-                        getWorkflowEndedUnreachedTimelineElementId(recIndex, notification.getIun()), sourceTimelineId),notification);
+                        getWorkflowEndedUnreachedTimelineElementId(recIndex, notification.getIun())),notification);
                 break;
 
             case UNDELIVERABLE:

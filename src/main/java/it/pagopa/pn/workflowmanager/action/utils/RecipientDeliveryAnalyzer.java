@@ -24,27 +24,24 @@ import static it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementC
 public class RecipientDeliveryAnalyzer {
     private final TimelineUtils timelineUtils;
 
-    //Canali che possono generare uno SKIP
+    //Canali per i quali è possibile l'assenza di un indirizzo di recapito.
     private static final Set<ChannelType> VOLATILE_CHANNELS = Set.of(
             ChannelType.IO,
             ChannelType.EMAIL,
             ChannelType.SMS
     );
 
-    public RecipientDeliveryStatus getDeliveryStatus(List<TimelineElementInternal> timelineElements,
-                                                     Campaign campaign,
-                                                     int recIndex, RecipientTypeInt recipientType) {
-        if (isRecipientReached(timelineElements,recIndex)) {
-            return RecipientDeliveryStatus.REACHED;
+    public RecipientDeliveryInfo getDeliveryInfo(List<TimelineElementInternal> timelineElements,
+                                                 Campaign campaign,
+                                                 int recIndex, RecipientTypeInt recipientType) {
+        TimelineElementInternal reachedTimelineElement = timelineUtils.findFirstReachedTimelineElement(timelineElements, recIndex).orElse(null);
+        if (reachedTimelineElement != null) {
+            return new RecipientDeliveryInfo(RecipientDeliveryStatus.REACHED, reachedTimelineElement.getElementId());
         } else if (isRecipientUndeliverable(timelineElements, recIndex, campaign, recipientType)) {
-            return RecipientDeliveryStatus.UNDELIVERABLE;
+            return new RecipientDeliveryInfo(RecipientDeliveryStatus.UNDELIVERABLE);
         } else {
-            return RecipientDeliveryStatus.UNREACHED;
+            return new RecipientDeliveryInfo(RecipientDeliveryStatus.UNREACHED);
         }
-    }
-
-    private boolean isRecipientReached(List<TimelineElementInternal> timelineElements, int recIndex) {
-        return timelineUtils.checkTimelineCategories(timelineElements, recIndex, DELIVERED, INFORMAL_NOTIFICATION_VIEWED, PAYMENT);
     }
 
     private boolean isRecipientUndeliverable(

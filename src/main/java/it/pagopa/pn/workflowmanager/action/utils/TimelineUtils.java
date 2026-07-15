@@ -1,17 +1,15 @@
 package it.pagopa.pn.workflowmanager.action.utils;
 
 import it.pagopa.pn.commons.exceptions.PnInternalException;
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.model.SendResponse;
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.model.NotificationHistoryResponse;
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.model.NotificationStatus;
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.model.SendingReceipt;
 import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
 import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.address.PhysicalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.event.NotificationPaidInt;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.DesiredFeedbackType;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
-import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.AttachmentDetailsInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
+import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.AttachmentDetailsInt;
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.CategorizedAttachmentsResultInt;
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.ResponseStatusInt;
 import it.pagopa.pn.workflowmanager.dto.ext.paperchannel.AnalogDtoInt;
@@ -20,8 +18,10 @@ import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineEventId;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineEventIdBuilder;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.*;
-import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
-import it.pagopa.pn.workflowmanager.dto.ext.campaign.DesiredFeedbackType;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.model.SendResponse;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.model.NotificationHistoryResponse;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.model.NotificationStatus;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.model.SendingReceipt;
 import it.pagopa.pn.workflowmanager.service.TimelineService;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -263,12 +263,11 @@ public class TimelineUtils {
     }
 
     public TimelineElementInternal buildWorkflowEndedUnreachedTimelineElement(Integer recIndex, NotificationInt notification,
-                                                                            String eventId, String sourceTimelineId) {
+                                                                            String eventId) {
         log.debug("buildWorkflowEndedUnreachedTimelineElement - IUN={} and id={}", notification.getIun(), recIndex);
 
         WorkflowEndedUnreachedDetailsInt details = WorkflowEndedUnreachedDetailsInt.builder()
                 .recIndex(recIndex)
-                .sourceElementId(sourceTimelineId)
                 .build();
 
 
@@ -423,14 +422,31 @@ public class TimelineUtils {
         return buildTimeline(notification, TimelineElementCategoryInt.DELIVERED, elementId, detailsInt);
     }
 
-    public boolean checkTimelineCategories(List<TimelineElementInternal> timelineElements,
-                                           int recIndex, TimelineElementCategoryInt... categories) {
-        return hasAnyTimelineCategory(timelineElements, recIndex, categories);
+
+    public Optional<TimelineElementInternal> findFirstReachedTimelineElement(List<TimelineElementInternal> timelineElements, int recIndex) {
+        return timelineElements.stream()
+                .filter(element -> isRecipientRelated(element, recIndex))
+                .filter(element -> element.getDetails() instanceof RecipientReachedTimelineElement)
+                .sorted()
+                .findFirst();
+    }
+
+    private boolean isRecipientRelated(TimelineElementInternal element, int recIndex) {
+        return Optional.ofNullable(element.getDetails())
+                .filter(RecipientRelatedTimelineElementDetails.class::isInstance)
+                .map(RecipientRelatedTimelineElementDetails.class::cast)
+                .map(details -> details.getRecIndex() == recIndex)
+                .orElse(false);
     }
 
     public Stream<TimelineElementInternal> getTimelineElementInternals(String iun) {
         Set<TimelineElementInternal> timeline = timelineService.getTimeline(iun, false);
         return timeline.stream();
+    }
+
+    public boolean checkTimelineCategories(List<TimelineElementInternal> timelineElements,
+                                           int recIndex, TimelineElementCategoryInt... categories) {
+        return hasAnyTimelineCategory(timelineElements, recIndex, categories);
     }
 
     private boolean hasAnyTimelineCategory(List<TimelineElementInternal> timelineElements, int recIndex,
@@ -442,11 +458,7 @@ public class TimelineUtils {
     private boolean isTimelineElementPresent(List<TimelineElementInternal> timelineElements, int recIndex,
                                              TimelineElementCategoryInt category) {
         return timelineElements.stream()
-                .filter(element -> category.equals(element.getCategory()))
-                .map(TimelineElementInternal::getDetails)
-                .filter(details -> details instanceof RecipientRelatedTimelineElementDetails)
-                .map(details -> (RecipientRelatedTimelineElementDetails) details)
-                .anyMatch(details -> details.getRecIndex() == recIndex);
+                .anyMatch(element -> category.equals(element.getCategory()) && isRecipientRelated(element, recIndex));
     }
 
     public TimelineElementInternal buildCoverpageCreationTimelineElement(Integer recIndex, String fileKey, NotificationInt notification) {

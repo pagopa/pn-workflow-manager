@@ -1,6 +1,7 @@
 package it.pagopa.pn.workflowmanager.action.doneworkflow;
 
 import it.pagopa.pn.workflowmanager.action.utils.RecipientDeliveryAnalyzer;
+import it.pagopa.pn.workflowmanager.action.utils.RecipientDeliveryInfo;
 import it.pagopa.pn.workflowmanager.action.utils.RecipientDeliveryStatus;
 import it.pagopa.pn.workflowmanager.action.utils.TimelineUtils;
 import it.pagopa.pn.workflowmanager.dto.action.details.WorkflowDoneDetails;
@@ -77,8 +78,8 @@ class WorkflowDoneActionHandlerTest {
 
         when(notificationService.getInformalNotificationByIun(TEST_IUN)).thenReturn(notification);
         when(campaignService.getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_PA_ID)).thenReturn(campaign);
-        when(recipientDeliveryAnalyzer.getDeliveryStatus(eq(List.of(timelineElement)), eq(campaign), eq(TEST_REC_INDEX),
-                eq(RecipientTypeInt.PF))).thenReturn(RecipientDeliveryStatus.REACHED);
+        when(recipientDeliveryAnalyzer.getDeliveryInfo(eq(List.of(timelineElement)), eq(campaign), eq(TEST_REC_INDEX),
+                eq(RecipientTypeInt.PF))).thenReturn(new RecipientDeliveryInfo(RecipientDeliveryStatus.REACHED, TEST_TIMELINE_ID));
         when(timelineUtils.buildWorkflowDoneReachedTimelineElement(eq(TEST_REC_INDEX), eq(notification), 
                 anyString(), eq(TEST_TIMELINE_ID), eq(TEST_COMPLETION_FEEDBACK))).thenReturn(timelineElement);
 
@@ -88,7 +89,7 @@ class WorkflowDoneActionHandlerTest {
         // Assert
         verify(notificationService).getInformalNotificationByIun(TEST_IUN);
         verify(campaignService).getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_PA_ID);
-        verify(recipientDeliveryAnalyzer).getDeliveryStatus(eq(List.of(timelineElement)),eq(campaign), eq(TEST_REC_INDEX),
+        verify(recipientDeliveryAnalyzer).getDeliveryInfo(eq(List.of(timelineElement)),eq(campaign), eq(TEST_REC_INDEX),
                 eq(RecipientTypeInt.PF));
         verify(timelineUtils).buildWorkflowDoneReachedTimelineElement(eq(TEST_REC_INDEX), eq(notification), 
                 anyString(), eq(TEST_TIMELINE_ID), eq(TEST_COMPLETION_FEEDBACK));
@@ -106,8 +107,8 @@ class WorkflowDoneActionHandlerTest {
 
         when(notificationService.getInformalNotificationByIun(TEST_IUN)).thenReturn(notification);
         when(campaignService.getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_PA_ID)).thenReturn(campaign);
-        when(recipientDeliveryAnalyzer.getDeliveryStatus(eq(List.of(timelineElement)),eq(campaign), eq(TEST_REC_INDEX),
-                eq(RecipientTypeInt.PF))).thenReturn(RecipientDeliveryStatus.UNREACHED);
+        when(recipientDeliveryAnalyzer.getDeliveryInfo(eq(List.of(timelineElement)),eq(campaign), eq(TEST_REC_INDEX),
+                eq(RecipientTypeInt.PF))).thenReturn(new RecipientDeliveryInfo(RecipientDeliveryStatus.UNREACHED));
         when(timelineUtils.buildWorkflowDoneUnreachedTimelineElement(eq(TEST_REC_INDEX), eq(notification), 
                 anyString(), eq(TEST_TIMELINE_ID), eq(TEST_COMPLETION_FEEDBACK))).thenReturn(timelineElement);
 
@@ -117,7 +118,7 @@ class WorkflowDoneActionHandlerTest {
         // Assert
         verify(notificationService).getInformalNotificationByIun(TEST_IUN);
         verify(campaignService).getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_PA_ID);
-        verify(recipientDeliveryAnalyzer).getDeliveryStatus(eq(List.of(timelineElement)),eq(campaign), eq(TEST_REC_INDEX),
+        verify(recipientDeliveryAnalyzer).getDeliveryInfo(eq(List.of(timelineElement)),eq(campaign), eq(TEST_REC_INDEX),
                 eq(RecipientTypeInt.PF));
         verify(timelineUtils).buildWorkflowDoneUnreachedTimelineElement(eq(TEST_REC_INDEX), eq(notification), 
                 anyString(), eq(TEST_TIMELINE_ID), eq(TEST_COMPLETION_FEEDBACK));
@@ -134,8 +135,8 @@ class WorkflowDoneActionHandlerTest {
 
         when(notificationService.getInformalNotificationByIun(TEST_IUN)).thenReturn(notification);
         when(campaignService.getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_PA_ID)).thenReturn(campaign);
-        when(recipientDeliveryAnalyzer.getDeliveryStatus(eq(List.of()), eq(campaign), eq(TEST_REC_INDEX),
-                eq(RecipientTypeInt.PF))).thenReturn(RecipientDeliveryStatus.UNDELIVERABLE);
+        when(recipientDeliveryAnalyzer.getDeliveryInfo(eq(List.of()), eq(campaign), eq(TEST_REC_INDEX),
+                eq(RecipientTypeInt.PF))).thenReturn(new RecipientDeliveryInfo(RecipientDeliveryStatus.UNDELIVERABLE));
 
         // Act & Assert
          assertThrows(PnEventRouterException.class,
@@ -144,7 +145,7 @@ class WorkflowDoneActionHandlerTest {
 
         verify(notificationService).getInformalNotificationByIun(TEST_IUN);
         verify(campaignService).getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_PA_ID);
-        verify(recipientDeliveryAnalyzer).getDeliveryStatus(eq(List.of()), eq(campaign), eq(TEST_REC_INDEX),
+        verify(recipientDeliveryAnalyzer).getDeliveryInfo(eq(List.of()), eq(campaign), eq(TEST_REC_INDEX),
                 eq(RecipientTypeInt.PF));
         verifyNoInteractions(timelineService);
         verifyNoInteractions(timelineUtils);

@@ -12,7 +12,7 @@ import java.time.Instant;
 @SuperBuilder(toBuilder = true)
 @EqualsAndHashCode(callSuper = true)
 @ToString
-public class NotificationPaidDetailsInt extends CategoryTypeTimelineElementDetailsInt implements RecipientRelatedTimelineElementDetails {
+public class NotificationPaidDetailsInt extends CategoryTypeTimelineElementDetailsInt implements RecipientReachedTimelineElement {
     private int recIndex;
     private String recipientType;
     private Integer amount;

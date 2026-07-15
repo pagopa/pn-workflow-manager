@@ -104,7 +104,7 @@ class TimelineUtilsTest {
 
         // Act
         TimelineElementInternal actual = timelineUtils.buildWorkflowEndedUnreachedTimelineElement(
-                TEST_REC_INDEX, notification, TEST_EVENT_ID, TEST_SOURCE_TIMELINE_ID);
+                TEST_REC_INDEX, notification, TEST_EVENT_ID);
 
         // Assert
         Assertions.assertAll(
@@ -119,8 +119,7 @@ class TimelineUtilsTest {
 
         WorkflowEndedUnreachedDetailsInt details = (WorkflowEndedUnreachedDetailsInt) actual.getDetails();
         Assertions.assertAll(
-                () -> Assertions.assertEquals(TEST_REC_INDEX, details.getRecIndex()),
-                () -> Assertions.assertEquals(TEST_SOURCE_TIMELINE_ID, details.getSourceElementId())
+                () -> Assertions.assertEquals(TEST_REC_INDEX, details.getRecIndex())
         );
     }
 
@@ -350,6 +349,111 @@ class TimelineUtilsTest {
         // Assert
         Assertions.assertTrue(result);
     }
+
+    @Test
+    void findFirstReachedTimelineElement_shouldReturnElement_whenReachedElementExistsForRecipient() {
+        // Arrange
+        TimelineElementInternal element = createReachedTimelineElement(TEST_REC_INDEX, Instant.now());
+        List<TimelineElementInternal> timelineElements = List.of(element);
+
+        // Act
+        Optional<TimelineElementInternal> result =
+                timelineUtils.findFirstReachedTimelineElement(timelineElements, TEST_REC_INDEX);
+
+        // Assert
+        Assertions.assertTrue(result.isPresent());
+        Assertions.assertEquals(element, result.get());
+    }
+
+    @Test
+    void findFirstReachedTimelineElement_shouldReturnEmpty_whenListIsEmpty() {
+        // Arrange
+        List<TimelineElementInternal> timelineElements = List.of();
+
+        // Act
+        Optional<TimelineElementInternal> result =
+                timelineUtils.findFirstReachedTimelineElement(timelineElements, TEST_REC_INDEX);
+
+        // Assert
+        Assertions.assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void findFirstReachedTimelineElement_shouldReturnEmpty_whenElementIsNotReachedType() {
+        // Arrange
+        TimelineElementInternal element = createTimelineElement(SEND_DIGITAL_MESSAGE, TEST_REC_INDEX);
+        List<TimelineElementInternal> timelineElements = List.of(element);
+
+        // Act
+        Optional<TimelineElementInternal> result =
+                timelineUtils.findFirstReachedTimelineElement(timelineElements, TEST_REC_INDEX);
+
+        // Assert
+        Assertions.assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void findFirstReachedTimelineElement_shouldReturnEmpty_whenReachedElementExistsForDifferentRecipient() {
+        // Arrange
+        int differentRecIndex = 1;
+        TimelineElementInternal element = createReachedTimelineElement(differentRecIndex, Instant.now());
+        List<TimelineElementInternal> timelineElements = List.of(element);
+
+        // Act
+        Optional<TimelineElementInternal> result =
+                timelineUtils.findFirstReachedTimelineElement(timelineElements, TEST_REC_INDEX);
+
+        // Assert
+        Assertions.assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void findFirstReachedTimelineElement_shouldReturnEarliestElement_whenMultipleReachedElementsExist() {
+        // Arrange
+        Instant now = Instant.now();
+        TimelineElementInternal earliest = createReachedTimelineElement(TEST_REC_INDEX, now);
+        TimelineElementInternal middle = createReachedTimelineElement(TEST_REC_INDEX, now.plusSeconds(60));
+        TimelineElementInternal latest = createReachedTimelineElement(TEST_REC_INDEX, now.plusSeconds(120));
+
+        List<TimelineElementInternal> timelineElements = List.of(latest, earliest, middle);
+
+        // Act
+        Optional<TimelineElementInternal> result =
+                timelineUtils.findFirstReachedTimelineElement(timelineElements, TEST_REC_INDEX);
+
+        // Assert
+        Assertions.assertTrue(result.isPresent());
+        Assertions.assertEquals(earliest, result.get());
+    }
+
+    @Test
+    void findFirstReachedTimelineElement_shouldIgnoreNonMatchingElements_whenListIsMixed() {
+        // Arrange
+        Instant now = Instant.now();
+        TimelineElementInternal wrongRecipient = createReachedTimelineElement(1, now);
+        TimelineElementInternal wrongType = createTimelineElement(DELIVERED, TEST_REC_INDEX);
+        TimelineElementInternal expected = createReachedTimelineElement(TEST_REC_INDEX, now.plusSeconds(30));
+
+        List<TimelineElementInternal> timelineElements = List.of(wrongRecipient, wrongType, expected);
+
+        // Act
+        Optional<TimelineElementInternal> result =
+                timelineUtils.findFirstReachedTimelineElement(timelineElements, TEST_REC_INDEX);
+
+        // Assert
+        Assertions.assertTrue(result.isPresent());
+        Assertions.assertEquals(expected, result.get());
+    }
+
+    private TimelineElementInternal createReachedTimelineElement(int recIndex, Instant timestamp) {
+        return TimelineElementInternal.builder()
+            .elementId("REACHED-ELEMENT")
+            .category(DELIVERED)
+            .timestamp(timestamp)
+            .details(DeliveredDetailsInt.builder().recIndex(recIndex).build())
+            .build();
+    }
+
 
     @Test
     void getTimelineElementInternals_shouldReturnStreamFromService() {

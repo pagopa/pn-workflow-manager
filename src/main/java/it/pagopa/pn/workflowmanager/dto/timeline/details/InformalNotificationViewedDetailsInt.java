@@ -11,7 +11,7 @@ import java.time.Instant;
 @SuperBuilder(toBuilder = true)
 @EqualsAndHashCode(callSuper = true)
 @ToString
-public class InformalNotificationViewedDetailsInt extends CategoryTypeTimelineElementDetailsInt implements RecipientRelatedTimelineElementDetails {
+public class InformalNotificationViewedDetailsInt extends CategoryTypeTimelineElementDetailsInt implements RecipientReachedTimelineElement {
     private int recIndex;
     private Instant eventTimestamp;
     private String sourceChannel;
