@@ -172,11 +172,9 @@ class InformalEventConsumerTest {
 
     // --- helpers ---
 
-    private Message<PnDeliveryNotificationViewedEvent> buildMessage(PnDeliveryNotificationViewedEvent.Payload payload) {
-        PnDeliveryNotificationViewedEvent event = PnDeliveryNotificationViewedEvent.builder()
-                .payload(payload)
-                .build();
-        return MessageBuilder.withPayload(event).build();
+    private Message<PnDeliveryNotificationViewedEvent.Payload> buildMessage(PnDeliveryNotificationViewedEvent.Payload payload) {
+
+        return MessageBuilder.withPayload(payload).build();
     }
 }
 
