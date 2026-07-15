@@ -1,9 +1,9 @@
 package it.pagopa.pn.workflowmanager.action.utils;
 
 import it.pagopa.pn.commons.exceptions.PnInternalException;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
-import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
 import it.pagopa.pn.workflowmanager.utils.PnSendMode;
 import it.pagopa.pn.workflowmanager.utils.PnSendModeUtils;
 import it.pagopa.pn.workflowmanager.utils.SendAttachmentMode;
@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCodes.ERROR_CODE_WORKFLOWMANAGER_CONFIGURATION_NOT_FOUND;
@@ -68,7 +69,7 @@ public class AttachmentUtils {
     }
 
     private List<String> getNotificationAttachments(NotificationInt notification, Boolean formatWithDocTag) {
-        return notification.getDocuments().stream()
+        return nullSafeList(notification.getDocuments()).stream()
                 .map(attachment -> FileUtils.getKeyWithStoragePrefix(attachment.getRef().getKey()))
                 .map(u -> formatWithDocTag(u, FileTagEnumInt.DOCUMENT, formatWithDocTag))
                 .toList();
@@ -76,12 +77,16 @@ public class AttachmentUtils {
 
     @NotNull
     private List<String> getNotificationPagoPaPayments(NotificationRecipientInt recipient, Boolean formatWithDocTag) {
-        return recipient.getPayments().stream()
+        return nullSafeList(recipient.getPayments()).stream()
                 .filter(notificationPaymentInfoIntV2 -> notificationPaymentInfoIntV2.getPagoPA() != null && notificationPaymentInfoIntV2.getPagoPA().getAttachment() != null)
                 .map(payment -> payment.getPagoPA().getAttachment())
                 .map(attachment -> FileUtils.getKeyWithStoragePrefix(attachment.getRef().getKey()))
                 .map(u -> formatWithDocTag(u, FileTagEnumInt.ATTACHMENT_PAGOPA, formatWithDocTag))
                 .toList();
+    }
+
+    private <T> List<T> nullSafeList(List<T> list) {
+        return list != null ? list : Collections.emptyList();
     }
 
     private String formatWithDocTag(String uri, FileTagEnumInt docTag, Boolean formatWithDocTag){
