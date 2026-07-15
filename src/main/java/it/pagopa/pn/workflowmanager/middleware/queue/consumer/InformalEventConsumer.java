@@ -23,13 +23,12 @@ public class InformalEventConsumer {
     private final NotificationViewedHandler notificationViewedHandler;
 
     @SqsListener(value = "${pn.workflow-manager.topics.informal-queue}")
-    public void workflowManagerInformalEventConsumer(Message<PnDeliveryNotificationViewedEvent> message) {
+    public void workflowManagerInformalEventConsumer(Message<PnDeliveryNotificationViewedEvent.Payload> message) {
         setMdc(message);
         final String processName = "INFORMAL_EVENT_INBOUND";
         try {
             log.info("Handle action workflowManagerInformalEventConsumer, with content {}", message);
             log.logStartingProcess(processName);
-
             NotificationViewedInt notificationViewed = mapNotificationViewed(message.getPayload());
             addIunAndRecIndexToMdc(notificationViewed.getIun(), notificationViewed.getRecipientIndex());
             notificationViewedHandler.handleViewNotification(notificationViewed);
@@ -41,20 +40,20 @@ public class InformalEventConsumer {
         }
     }
 
-    private NotificationViewedInt mapNotificationViewed(PnDeliveryNotificationViewedEvent event) {
-        if (event == null) {
+    private NotificationViewedInt mapNotificationViewed(PnDeliveryNotificationViewedEvent.Payload eventPayload) {
+        if (eventPayload == null) {
             throw invalidEvent("Invalid event received: event must not be null");
         }
 
-        PnDeliveryNotificationViewedEvent.Payload payload = event.getPayload();
-        validatePayload(payload);
+        //PnDeliveryNotificationViewedEvent.Payload payload = event.getPayload();
+        validatePayload(eventPayload);
 
         return NotificationViewedInt.builder()
-                .iun(payload.getIun())
-                .recipientIndex(payload.getRecipientIndex())
-                .viewedDate(payload.getViewedDate())
-                .sourceChannel(payload.getSourceChannel())
-                .sourceChannelDetails(payload.getSourceChannelDetails())
+                .iun(eventPayload.getIun())
+                .recipientIndex(eventPayload.getRecipientIndex())
+                .viewedDate(eventPayload.getViewedDate())
+                .sourceChannel(eventPayload.getSourceChannel())
+                .sourceChannelDetails(eventPayload.getSourceChannelDetails())
                 .build();
     }
 
