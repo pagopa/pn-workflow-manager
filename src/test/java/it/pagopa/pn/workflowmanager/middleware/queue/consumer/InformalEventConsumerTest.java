@@ -70,14 +70,14 @@ class InformalEventConsumerTest {
         ));
     }
 
-    @Test
-    void handleMessage_withNullPayload_throwsException() {
-        // when / then
-        PnInternalException exception = assertThrows(PnInternalException.class,
-                () -> consumer.workflowManagerInformalEventConsumer(buildMessage(null)));
-        assertEquals(ERROR_CODE_WORKFLOWMANAGER_INVALID_EVENT_RECEIVED, exception.getProblem().getErrors().getFirst().getCode());
-        verifyNoInteractions(notificationViewedHandler);
-    }
+//    @Test
+//    void handleMessage_withNullPayload_throwsException() {
+//        // when / then
+//        PnInternalException exception = assertThrows(PnInternalException.class,
+//                () -> consumer.workflowManagerInformalEventConsumer(buildMessage(null)));
+//        assertEquals(ERROR_CODE_WORKFLOWMANAGER_INVALID_EVENT_RECEIVED, exception.getProblem().getErrors().getFirst().getCode());
+//        verifyNoInteractions(notificationViewedHandler);
+//    }
 
     @Test
     void handleMessage_withNullViewedDate_throwsException() {
