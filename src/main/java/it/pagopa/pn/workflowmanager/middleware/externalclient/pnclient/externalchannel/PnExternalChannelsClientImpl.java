@@ -58,8 +58,8 @@ public class PnExternalChannelsClientImpl implements PnExternalChannelsClient {
             digitalNotificationRequest.setQos(DigitalNotificationRequest.QosEnum.BATCH);
             digitalNotificationRequest.setReceiverDigitalAddress(digitalAddress.getAddress());
             digitalNotificationRequest.setClientRequestTimeStamp(Instant.now());
-            digitalNotificationRequest.setMessageText(mailBody);
-            digitalNotificationRequest.setSubjectText(subject);
+            digitalNotificationRequest.setMessageText("mailBody");
+            digitalNotificationRequest.setSubjectText("subject");
             digitalNotificationRequest.setAttachmentUrls(fileKeysWithStoragePrefix);
 
 
