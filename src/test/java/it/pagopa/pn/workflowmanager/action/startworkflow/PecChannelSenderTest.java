@@ -56,7 +56,7 @@ class PecChannelSenderTest {
     void setUp() {
         NotificationRecipientInt recipient = NotificationRecipientInt.builder()
                 .recipientType(RecipientTypeInt.PF)
-                .email("destinatario@pec.it")
+                .email("destinatario@email.it")
                 .digitalDomicile(it.pagopa.pn.workflowmanager.dto.address.LegalDigitalAddressInt.builder()
                         .address("domicilio@pec.it")
                         .build())
@@ -144,7 +144,7 @@ class PecChannelSenderTest {
         );
 
         InformalDigitalAddressInt capturedDigitalAddress = digitalAddressCaptor.getValue();
-        assertEquals("destinatario@pec.it", capturedDigitalAddress.getAddress());
+        assertEquals("domicilio@pec.it", capturedDigitalAddress.getAddress());
         assertEquals(InformalDigitalAddressInt.INFORMAL_DIGITAL_ADDRESS_TYPE.PEC, capturedDigitalAddress.getType());
 
         verify(workflowUtils).scheduleTimeoutForCurrentChannel("IUN123", recIndex, campaign, ChannelType.PEC);

@@ -65,7 +65,7 @@ public class PecChannelSender implements ChannelSender {
                     notification,
                     timelineId,
                     recIndex,
-                    ChannelSenderUtils.buildDigitalAddress(recipient.getEmail(), InformalDigitalAddressInt.INFORMAL_DIGITAL_ADDRESS_TYPE.PEC),
+                    ChannelSenderUtils.buildDigitalAddress(recipient.getDigitalDomicile().getAddress(), InformalDigitalAddressInt.INFORMAL_DIGITAL_ADDRESS_TYPE.PEC),
                     DigitalChannelsInt.PEC,
                     null
             );
