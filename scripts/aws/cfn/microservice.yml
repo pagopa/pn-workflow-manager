@@ -625,7 +625,7 @@ Resources:
       EventPattern:
         detail-type: [ "IoConnectorOutcomeEvent" ]
         detail:
-          clientId: [ !Ref WorkflowManagerCxId ]
+          xPagopaIoConCxId: [ !Ref WorkflowManagerCxId ]
       Targets:
         - Arn: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:PnCoreEventBusMatchedEventLogger
           Id: !Sub ${ProjectName}-Logger-IoToWorkflowManagerQueue
