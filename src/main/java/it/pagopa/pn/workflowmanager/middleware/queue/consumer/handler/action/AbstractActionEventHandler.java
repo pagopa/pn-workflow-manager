@@ -10,8 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.List;
 import java.util.function.Consumer;
 
-import static it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt.WORKFLOW_DONE_REACHED;
-import static it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt.WORKFLOW_DONE_UNREACHED;
+import static it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt.*;
 
 @Slf4j
 public abstract class AbstractActionEventHandler implements EventHandler<Action> {
@@ -23,15 +22,15 @@ public abstract class AbstractActionEventHandler implements EventHandler<Action>
     }
 
     protected void checkWorkflowDoneOrExecute(List<TimelineElementInternal> timelineElements,Action action, Consumer<Action> functionToCall) {
-        if(!isWorkflowDoneReachedOrUnreached(timelineElements, action.getRecipientIndex())) {
+        if(!isWorkflowAlreadyCompleted(timelineElements, action.getRecipientIndex())) {
             functionToCall.accept(action);
         } else {
             log.info("Workflow is already DONE, the action will not be executed - iun={}", action.getIun());
         }
     }
 
-    private boolean isWorkflowDoneReachedOrUnreached(List<TimelineElementInternal> timelineElements, int recIndex) {
-        return timelineUtils.checkTimelineCategories(timelineElements, recIndex, WORKFLOW_DONE_REACHED, WORKFLOW_DONE_UNREACHED);
+    private boolean isWorkflowAlreadyCompleted(List<TimelineElementInternal> timelineElements, int recIndex) {
+        return timelineUtils.checkTimelineCategories(timelineElements, recIndex, WORKFLOW_DONE_REACHED, WORKFLOW_DONE_UNREACHED, WORKFLOW_ENDED_REACHED, WORKFLOW_ENDED_UNREACHED, WORKFLOW_ENDED_UNDELIVERABLE);
     }
 
     public Class<Action> getPayloadType() {
