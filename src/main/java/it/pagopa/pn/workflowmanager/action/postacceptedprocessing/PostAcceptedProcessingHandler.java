@@ -1,13 +1,12 @@
 package it.pagopa.pn.workflowmanager.action.postacceptedprocessing;
 
 import it.pagopa.pn.workflowmanager.action.utils.WorkflowUtils;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.RecipientTypeInt;
 import it.pagopa.pn.workflowmanager.exceptions.PnWorkflowException;
-import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
-import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
-import it.pagopa.pn.workflowmanager.dto.ext.campaign.WorkFlowEntity;
 import it.pagopa.pn.workflowmanager.service.CampaignService;
 import it.pagopa.pn.workflowmanager.service.NotificationService;
 import lombok.AllArgsConstructor;
@@ -39,27 +38,14 @@ public class PostAcceptedProcessingHandler {
 
         for (int recIndex = 0; recIndex < recipients.size(); recIndex++) {
             RecipientTypeInt recipientType = recipients.get(recIndex).getRecipientType();
-            ChannelType firstChannel = getFirstChannelForRecipientType(campaign, recipientType, iun, recIndex);
+            ChannelType firstChannel = getFirstChannelForRecipientType(campaign, recipientType);
 
             workflowUtils.scheduleStartWorkflow(iun, recIndex, 0, firstChannel);
         }
     }
 
-    private ChannelType getFirstChannelForRecipientType(Campaign campaign, RecipientTypeInt recipientType, String iun, int recIndex) {
-        if (campaign.getWorkflow() == null || campaign.getWorkflow().isEmpty()) {
-            throw new PnWorkflowException(String.format("No workflow configured for campaignId %s", campaign.getCampaignId()));
-        }
-
-        return campaign.getWorkflow().stream()
-                .filter(workflowStep -> workflowStep.getRecipientType() != null && workflowStep.getRecipientType().contains(recipientType))
-                .findFirst()
-                .map(WorkFlowEntity::getChannel)
-                .orElseThrow(() -> new PnWorkflowException(String.format(
-                        "No workflow step found for recipientType %s and iun %s recIndex %d",
-                        recipientType,
-                        iun,
-                        recIndex
-                )));
+    private ChannelType getFirstChannelForRecipientType(Campaign campaign, RecipientTypeInt recipientType) {
+        return campaign.getWorkflowsByRecipientType(recipientType).getFirst().getChannel();
     }
 }
 

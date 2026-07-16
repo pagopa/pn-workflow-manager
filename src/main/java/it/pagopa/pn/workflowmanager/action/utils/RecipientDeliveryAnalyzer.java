@@ -50,8 +50,8 @@ public class RecipientDeliveryAnalyzer {
             Campaign campaign,
             RecipientTypeInt recipientType
     ) {
-        List<ChannelType> activeChannels = campaign.getWorkflow().stream()
-                .filter(w -> w.getRecipientType().contains(recipientType))
+        List<ChannelType> activeChannels = campaign.getWorkflowsByRecipientType(recipientType)
+                .stream()
                 .map(WorkFlowEntity::getChannel)
                 .toList();
 

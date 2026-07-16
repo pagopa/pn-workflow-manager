@@ -50,7 +50,7 @@ public class EmailChannelSender implements ChannelSender {
         if (emailMissing) {
             handleMissingEmail(notification, campaign, recIndex, getChannelType(), recipient);
         } else {
-            handleEmailPresent(notification, campaign, recIndex, currentStep, getChannelType(), recipient);
+            handleEmailPresent(notification, campaign, recIndex, getChannelType(), recipient);
         }
     }
 
@@ -68,7 +68,7 @@ public class EmailChannelSender implements ChannelSender {
     }
 
     private void handleEmailPresent(NotificationInt notification, Campaign campaign, int recIndex,
-                                    int currentStep, ChannelType channel,
+                                    ChannelType channel,
                                     NotificationRecipientInt recipient) {
         log.info("Recipient email is present - iun={} recIndex={}", notification.getIun(), recIndex);
         String requestId = ChannelSenderUtils.buildSendDigitalMessageEventId(notification.getIun(), recIndex, channel);
@@ -77,7 +77,7 @@ public class EmailChannelSender implements ChannelSender {
         try {
             String subject = templateGeneratorService.generateEmailSubjectTemplate(notification, recipient);
             String htmlBody = templateGeneratorService.generateEmailBodyTemplate(notification, recipient, campaign);
-            List<String> attachmentUrls = channelSenderUtils.resolveAttachmentsForChannel(notification, recIndex, currentStep, campaign, channel);
+            List<String> attachmentUrls = channelSenderUtils.resolveAttachmentsForChannel(notification, recIndex, campaign, channel);
             InformalDigitalAddressInt emailAddress = ChannelSenderUtils.buildDigitalAddress(
                     recipient.getEmail(), InformalDigitalAddressInt.INFORMAL_DIGITAL_ADDRESS_TYPE.EMAIL
             );

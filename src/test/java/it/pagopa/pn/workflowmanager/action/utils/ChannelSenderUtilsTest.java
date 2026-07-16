@@ -133,7 +133,6 @@ class ChannelSenderUtilsTest {
     void resolveAttachmentsForChannelShouldRetrieveAttachmentsWhenChannelRequires() {
         NotificationInt notification = mock(NotificationInt.class);
         int recIndex = 0;
-        int currentStep = 0;
         ChannelType channelType = ChannelType.EMAIL;
         // build campaign that has workflow with channel that requires attachments
         WorkFlowEntity workflowEntity = WorkFlowEntity.builder()
@@ -148,7 +147,7 @@ class ChannelSenderUtilsTest {
         when(attachmentUtils.retrieveAttachmentTypesToSend(notification, channelType)).thenReturn(sendAttachmentMode);
         when(attachmentUtils.retrieveAttachments(notification, recIndex, sendAttachmentMode, false)).thenReturn(List.of("attachment1", "attachment2"));
 
-        List<String> attachments = channelSenderUtils.resolveAttachmentsForChannel(notification, recIndex, currentStep, campaign, channelType);
+        List<String> attachments = channelSenderUtils.resolveAttachmentsForChannel(notification, recIndex, campaign, channelType);
 
         verify(attachmentUtils).retrieveAttachmentTypesToSend(notification, channelType);
         verify(attachmentUtils).retrieveAttachments(notification, recIndex, sendAttachmentMode, false);
@@ -160,7 +159,6 @@ class ChannelSenderUtilsTest {
         // Arrange
         NotificationInt notification = mock(NotificationInt.class);
         int recIndex = 0;
-        int currentStep = 5; // Indice non presente
         ChannelType channelType = ChannelType.EMAIL;
 
         Campaign campaign = Campaign.builder()
@@ -169,7 +167,7 @@ class ChannelSenderUtilsTest {
                 .build();
 
         // Act & Assert
-        assertThrows(PnWorkflowException.class, () -> channelSenderUtils.resolveAttachmentsForChannel(notification, recIndex, currentStep, campaign, channelType));
+        assertThrows(PnWorkflowException.class, () -> channelSenderUtils.resolveAttachmentsForChannel(notification, recIndex, campaign, channelType));
 
         verifyNoInteractions(attachmentUtils);
     }
@@ -179,7 +177,6 @@ class ChannelSenderUtilsTest {
         // Arrange
         NotificationInt notification = mock(NotificationInt.class);
         int recIndex = 0;
-        int currentStep = 0;
         ChannelType requestedChannel = ChannelType.EMAIL;
         ChannelType workflowChannel = ChannelType.SMS; // Canale differente
 
@@ -193,7 +190,7 @@ class ChannelSenderUtilsTest {
                 .build();
 
         // Act & Assert
-        assertThrows(PnWorkflowException.class, () -> channelSenderUtils.resolveAttachmentsForChannel(notification, recIndex, currentStep, campaign, requestedChannel));
+        assertThrows(PnWorkflowException.class, () -> channelSenderUtils.resolveAttachmentsForChannel(notification, recIndex, campaign, requestedChannel));
 
         verifyNoInteractions(attachmentUtils);
     }
@@ -203,7 +200,6 @@ class ChannelSenderUtilsTest {
         // Arrange
         NotificationInt notification = mock(NotificationInt.class);
         int recIndex = 0;
-        int currentStep = 0;
         ChannelType channelType = ChannelType.EMAIL;
 
         WorkFlowEntity workflowEntity = WorkFlowEntity.builder()
@@ -216,7 +212,7 @@ class ChannelSenderUtilsTest {
                 .build();
 
         // Act
-        List<String> attachments = channelSenderUtils.resolveAttachmentsForChannel(notification, recIndex, currentStep, campaign, channelType);
+        List<String> attachments = channelSenderUtils.resolveAttachmentsForChannel(notification, recIndex, campaign, channelType);
 
         // Assert
         assertTrue(attachments.isEmpty());
@@ -229,7 +225,6 @@ class ChannelSenderUtilsTest {
         // Arrange
         NotificationInt notification = mock(NotificationInt.class);
         int recIndex = 0;
-        int currentStep = 0;
         ChannelType channelType = ChannelType.EMAIL;
 
         WorkFlowEntity workflowEntity = WorkFlowEntity.builder()
@@ -242,7 +237,7 @@ class ChannelSenderUtilsTest {
                 .build();
 
         // Act
-        List<String> attachments = channelSenderUtils.resolveAttachmentsForChannel(notification, recIndex, currentStep, campaign, channelType);
+        List<String> attachments = channelSenderUtils.resolveAttachmentsForChannel(notification, recIndex, campaign, channelType);
 
         // Assert
         Assertions.assertTrue(attachments.isEmpty());

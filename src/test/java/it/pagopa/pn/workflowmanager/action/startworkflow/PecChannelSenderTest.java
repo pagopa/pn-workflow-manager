@@ -114,7 +114,7 @@ class PecChannelSenderTest {
                 .thenReturn("<html>PEC</html>");
         when(templateGeneratorService.generatePecSubjectTemplate(notification, recipient))
                 .thenReturn("Oggetto PEC");
-        when(channelSenderUtils.resolveAttachmentsForChannel(notification, recIndex, currentStep, campaign, ChannelType.PEC))
+        when(channelSenderUtils.resolveAttachmentsForChannel(notification, recIndex, campaign, ChannelType.PEC))
                 .thenReturn(List.of("safestorage://doc1"));
 
         pecChannelSender.send(notification, campaign, recIndex, currentStep);

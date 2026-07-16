@@ -1,19 +1,21 @@
 package it.pagopa.pn.workflowmanager.action.postacceptedprocessing;
 
 import it.pagopa.pn.workflowmanager.action.utils.WorkflowUtils;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.WorkFlowEntity;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationSenderInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.RecipientTypeInt;
 import it.pagopa.pn.workflowmanager.exceptions.PnWorkflowException;
-import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
-import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
-import it.pagopa.pn.workflowmanager.dto.ext.campaign.WorkFlowEntity;
 import it.pagopa.pn.workflowmanager.service.CampaignService;
 import it.pagopa.pn.workflowmanager.service.NotificationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -111,6 +113,29 @@ class PostAcceptedProcessingHandlerTest {
                 .recipients(List.of(
                         NotificationRecipientInt.builder().recipientType(RecipientTypeInt.PF).build()
                 ))
+                .build();
+
+        Campaign campaign = Campaign.builder()
+                .campaignId(TEST_CAMPAIGN_ID)
+                .workflow(List.of(
+                        WorkFlowEntity.builder().channel(ChannelType.PEC).recipientType(Set.of(RecipientTypeInt.PG)).build()
+                ))
+                .build();
+
+        when(notificationService.getInformalNotificationByIun(TEST_IUN)).thenReturn(notification);
+        when(campaignService.getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_PA_ID)).thenReturn(campaign);
+
+        assertThrows(PnWorkflowException.class, () -> handler.handle(TEST_IUN));
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    void handleShouldThrowWhenRecipientsIsNullOrEmptyExists(List<NotificationRecipientInt> recipients) {
+        NotificationInt notification = NotificationInt.builder()
+                .iun(TEST_IUN)
+                .campaignId(TEST_CAMPAIGN_ID)
+                .sender(NotificationSenderInt.builder().paId(TEST_PA_ID).build())
+                .recipients(recipients)
                 .build();
 
         Campaign campaign = Campaign.builder()

@@ -79,7 +79,7 @@ class EmailChannelSenderTest {
         when(auditLogEvent.generateSuccess(anyString())).thenReturn(auditLogEvent);
         when(auditLogEvent.log()).thenReturn(auditLogEvent);
 
-        when(channelSenderUtils.resolveAttachmentsForChannel(notification, recIndex, currentStep, campaign, ChannelType.EMAIL))
+        when(channelSenderUtils.resolveAttachmentsForChannel(notification, recIndex, campaign, ChannelType.EMAIL))
                 .thenReturn(List.of("safestorage://doc1", "safestorage://doc2"));
 
         // When
@@ -141,7 +141,7 @@ class EmailChannelSenderTest {
                 any(InformalDigitalAddressInt.class),
                 eq(List.of())
         );
-        verify(channelSenderUtils).resolveAttachmentsForChannel(any(), anyInt(), anyInt(), any(), any());
+        verify(channelSenderUtils).resolveAttachmentsForChannel(any(), anyInt(), any(), any());
         verify(workflowUtils).scheduleTimeoutForCurrentChannel(IUN, recIndex, campaign, ChannelType.EMAIL);
     }
 

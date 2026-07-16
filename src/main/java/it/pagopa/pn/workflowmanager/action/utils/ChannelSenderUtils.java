@@ -4,6 +4,7 @@ import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
 import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.address.PhysicalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.WorkFlowEntity;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.EventId;
@@ -11,13 +12,10 @@ import it.pagopa.pn.workflowmanager.dto.timeline.TimelineEventId;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.AnalogDeliveryTypeInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.DigitalChannelsInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.ServiceLevelInt;
-import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
-import it.pagopa.pn.workflowmanager.exceptions.PnWorkflowException;
 import it.pagopa.pn.workflowmanager.service.TimelineService;
 import jakarta.annotation.Nonnull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -141,15 +139,11 @@ public class ChannelSenderUtils {
         );
     }
 
-    public List<String> resolveAttachmentsForChannel(NotificationInt notification, int recIndex,
-                                           int currentStep, Campaign campaign, ChannelType channel) {
-        WorkFlowEntity currentWorkflowStep = getWorkFlowEntityFromStep(currentStep, campaign);
+    public List<String> resolveAttachmentsForChannel(NotificationInt notification, int recIndex, Campaign campaign, ChannelType channel) {
 
-        if(currentWorkflowStep.getChannel() != channel) {
-            throw new PnWorkflowException("Channel mismatch for campaign " + campaign.getCampaignId() + " at workflow step " + currentStep);
-        }
+        WorkFlowEntity currentWorkflowStep = campaign.getWorkflowByChannel(channel);
 
-        boolean includeAttachment = Boolean.TRUE.equals(campaign.getWorkflow().get(currentStep).getIncludeAttachment());
+        boolean includeAttachment = Boolean.TRUE.equals(currentWorkflowStep.getIncludeAttachment());
         if (!includeAttachment) {
             return List.of();
         }
@@ -158,18 +152,5 @@ public class ChannelSenderUtils {
                 attachmentUtils.retrieveAttachmentTypesToSend(notification, channel),
                 false
         );
-    }
-
-    private static @NotNull WorkFlowEntity getWorkFlowEntityFromStep(int currentStep, Campaign campaign) {
-        WorkFlowEntity currentWorkflowStep;
-        try {
-            currentWorkflowStep = campaign.getWorkflow().get(currentStep);
-        } catch (IndexOutOfBoundsException e) {
-            throw new PnWorkflowException("Current step index " + currentStep + " is out of bounds for campaign " + campaign.getCampaignId());
-        }
-        if(currentWorkflowStep == null) {
-            throw new PnWorkflowException("Workflow step not found for campaign " + campaign.getCampaignId() + " at index " + currentStep);
-        }
-        return currentWorkflowStep;
     }
 }

@@ -49,7 +49,7 @@ public class PecChannelSender implements ChannelSender {
             String messageText = templateGeneratorService.generatePecBodyTemplate(notification, recipient, campaign);
             String subject = templateGeneratorService.generatePecSubjectTemplate(notification, recipient);
 
-            List<String> attachmentUrls = channelSenderUtils.resolveAttachmentsForChannel(notification, recIndex, currentStep, campaign, getChannelType());
+            List<String> attachmentUrls = channelSenderUtils.resolveAttachmentsForChannel(notification, recIndex, campaign, getChannelType());
 
             pnExternalChannelsClient.sendNotificationPEC(
                     timelineId,
