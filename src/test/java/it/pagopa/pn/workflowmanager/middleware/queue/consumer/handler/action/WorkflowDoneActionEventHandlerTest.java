@@ -17,7 +17,6 @@ import org.springframework.messaging.MessageHeaders;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -74,53 +73,13 @@ class WorkflowDoneActionEventHandlerTest {
         List<TimelineElementInternal> timelineElements = List.of();
 
         when(timelineUtils.getTimelineElementInternals(TEST_IUN)).thenReturn(timelineElements.stream());
-        when(timelineUtils.checkTimelineCategories(
-                anyList(),
-                eq(TEST_REC_INDEX),
-                eq(WORKFLOW_DONE_REACHED),
-                eq(WORKFLOW_DONE_UNREACHED),
-                eq(WORKFLOW_ENDED_REACHED),
-                eq(WORKFLOW_ENDED_UNREACHED),
-                eq(WORKFLOW_ENDED_UNDELIVERABLE)
-        )).thenReturn(false);
 
         // Act
         assertDoesNotThrow(() -> handler.handle(action, headers));
 
         // Assert
         verify(timelineUtils).getTimelineElementInternals(TEST_IUN);
-        verify(timelineUtils).checkTimelineCategories(anyList(), eq(TEST_REC_INDEX),
-                eq(WORKFLOW_DONE_REACHED), eq(WORKFLOW_DONE_UNREACHED), eq(WORKFLOW_ENDED_REACHED),
-                eq(WORKFLOW_ENDED_UNREACHED), eq(WORKFLOW_ENDED_UNDELIVERABLE));
         verify(workflowDoneActionHandler).doneWorkflowAction(anyList(), eq(TEST_IUN), eq(TEST_REC_INDEX), eq(TEST_TIMELINE_ID), eq(TEST_WORKFLOW_DONE_DETAILS));
-    }
-
-    @Test
-    void handle_shouldNotExecuteWorkflowDoneAction_whenWorkflowIsAlreadyCompleted() {
-        // Arrange
-        Action action = createAction();
-        List<TimelineElementInternal> timelineElements = List.of();
-
-        when(timelineUtils.getTimelineElementInternals(TEST_IUN)).thenReturn(timelineElements.stream());
-        when(timelineUtils.checkTimelineCategories(
-                anyList(),
-                eq(TEST_REC_INDEX),
-                eq(WORKFLOW_DONE_REACHED),
-                eq(WORKFLOW_DONE_UNREACHED),
-                eq(WORKFLOW_ENDED_REACHED),
-                eq(WORKFLOW_ENDED_UNREACHED),
-                eq(WORKFLOW_ENDED_UNDELIVERABLE)
-        )).thenReturn(true);
-
-        // Act
-        assertDoesNotThrow(() -> handler.handle(action, headers));
-
-        // Assert
-        verify(timelineUtils).getTimelineElementInternals(TEST_IUN);
-        verify(timelineUtils).checkTimelineCategories(anyList(), eq(TEST_REC_INDEX),
-                eq(WORKFLOW_DONE_REACHED), eq(WORKFLOW_DONE_UNREACHED), eq(WORKFLOW_ENDED_REACHED),
-                eq(WORKFLOW_ENDED_UNREACHED), eq(WORKFLOW_ENDED_UNDELIVERABLE));
-        verify(workflowDoneActionHandler, never()).doneWorkflowAction(anyList(), anyString(), anyInt(), anyString(), any(WorkflowDoneDetails.class));
     }
 
     @Test
@@ -130,15 +89,6 @@ class WorkflowDoneActionEventHandlerTest {
         RuntimeException expectedException = new RuntimeException("Test exception");
 
         when(timelineUtils.getTimelineElementInternals(anyString())).thenReturn(Stream.empty());
-        when(timelineUtils.checkTimelineCategories(
-                anyList(),
-                eq(TEST_REC_INDEX),
-                eq(WORKFLOW_DONE_REACHED),
-                eq(WORKFLOW_DONE_UNREACHED),
-                eq(WORKFLOW_ENDED_REACHED),
-                eq(WORKFLOW_ENDED_UNREACHED),
-                eq(WORKFLOW_ENDED_UNDELIVERABLE)
-        )).thenReturn(false);
         doThrow(expectedException).when(workflowDoneActionHandler).doneWorkflowAction(anyList(), anyString(), anyInt(), anyString(), any(WorkflowDoneDetails.class));
 
         // Act & Assert

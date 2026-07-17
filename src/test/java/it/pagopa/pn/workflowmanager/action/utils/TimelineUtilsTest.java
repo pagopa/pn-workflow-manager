@@ -28,6 +28,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -682,14 +684,15 @@ class TimelineUtilsTest {
         Assertions.assertEquals(notificationDate, detailsInt.getNotificationDate());
     }
 
-    @Test
-    void handleTransitionToReachedStatusIfNecessaryPersistWorkflowEndedReachedElement() {
+    @ParameterizedTest
+    @EnumSource(value = NotificationStatus.class, names = {"COMPLETED_UNREACHED", "UNDELIVERABLE"})
+    void handleTransitionToReachedStatusIfNecessaryPersistWorkflowEndedReachedElement(NotificationStatus status) {
         NotificationInt notification = createNotification();
         int recIndex = 0;
         String sourceId = "source_001";
 
         NotificationHistoryResponse historyResponse = new NotificationHistoryResponse();
-        historyResponse.setNotificationStatus(NotificationStatus.COMPLETED_UNREACHED);
+        historyResponse.setNotificationStatus(status);
         when(timelineService.getTimelineAndStatusHistory(notification.getIun(), notification.getRecipients().size(), notification.getSentAt()))
                         .thenReturn(historyResponse);
 

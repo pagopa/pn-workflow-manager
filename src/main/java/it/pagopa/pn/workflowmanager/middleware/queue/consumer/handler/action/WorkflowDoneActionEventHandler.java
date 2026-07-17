@@ -37,16 +37,12 @@ public class WorkflowDoneActionEventHandler extends AbstractActionEventHandler {
             MdcUtils.addIunAndRecIndexAndCorrIdToMdc(action.getIun(), action.getRecipientIndex(), action.getActionId());
             log.logStartingProcess(processName);
             List<TimelineElementInternal> timelineElements = timelineUtils.getTimelineElementInternals(action.getIun()).toList();
-            checkWorkflowDoneOrExecute(
-                    timelineElements,
-                    action,
-                    a -> workflowDoneActionHandler.doneWorkflowAction(
-                            timelineElements,
-                            action.getIun(),
-                            action.getRecipientIndex(),
-                            action.getTimelineId(),
-                            (WorkflowDoneDetails) action.getDetails()
-                    )
+            workflowDoneActionHandler.doneWorkflowAction(
+                timelineElements,
+                action.getIun(),
+                action.getRecipientIndex(),
+                action.getTimelineId(),
+                (WorkflowDoneDetails) action.getDetails()
             );
             log.logEndingProcess(processName);
         } catch (Exception ex) {

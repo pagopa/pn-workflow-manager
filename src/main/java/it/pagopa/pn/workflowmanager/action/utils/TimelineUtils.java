@@ -522,7 +522,7 @@ public class TimelineUtils {
         Instant sentAt = notificationInt.getSentAt();
         NotificationHistoryResponse history = timelineService.getTimelineAndStatusHistory(iun, numOfRecipients, sentAt);
         NotificationStatus currentStatus = history.getNotificationStatus();
-        if(currentStatus == NotificationStatus.COMPLETED_UNREACHED) {
+        if(currentStatus == NotificationStatus.COMPLETED_UNREACHED || currentStatus == NotificationStatus.UNDELIVERABLE) {
             log.info("Notification {} is in COMPLETED_UNREACHED status, saving element with category WORKFLOW_ENDED_REACHED for recIndex {}", iun, recIndex);
             TimelineElementInternal completedReachedTimelineElement = buildWorkflowEndedReachedTimelineElement(
                     recIndex,

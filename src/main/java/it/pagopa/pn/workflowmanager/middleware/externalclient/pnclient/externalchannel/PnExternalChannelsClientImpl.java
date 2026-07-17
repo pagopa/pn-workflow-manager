@@ -82,7 +82,6 @@ public class PnExternalChannelsClientImpl implements PnExternalChannelsClient {
             log.logInvokingAsyncExternalService(CLIENT_NAME, COURTESY_NOTIFICATION_REQUEST + "[EMAIL]", requestId);
             log.debug("[enter] sendNotificationEMAIL address={} requestId={} recipient={}", LogUtils.maskNumber(digitalAddress.getAddress()), requestId, LogUtils.maskGeneric(recipientInt.getDenomination()));
 
-            log.info("Email body={} subject={}", mailBody, subject);
             DigitalCourtesyMailRequest digitalNotificationRequest = new DigitalCourtesyMailRequest();
             digitalNotificationRequest.setChannel(DigitalCourtesyMailRequest.ChannelEnum.EMAIL);
             digitalNotificationRequest.setRequestId(requestId);
@@ -92,8 +91,8 @@ public class PnExternalChannelsClientImpl implements PnExternalChannelsClient {
             digitalNotificationRequest.setReceiverDigitalAddress(digitalAddress.getAddress());
             digitalNotificationRequest.setClientRequestTimeStamp(Instant.now());
             digitalNotificationRequest.setMessageContentType(DigitalCourtesyMailRequest.MessageContentTypeEnum.TEXT_HTML);
-            digitalNotificationRequest.setMessageText("mailBody");
-            digitalNotificationRequest.setSubjectText("subject");
+            digitalNotificationRequest.setMessageText(mailBody);
+            digitalNotificationRequest.setSubjectText(subject);
             digitalNotificationRequest.setAttachmentUrls(attachmentUrls.stream().map(FileUtils::getKeyWithStoragePrefix).toList());
 
             digitalCourtesyMessagesApi.sendDigitalCourtesyMessage(requestId, cfg.getCxId(), digitalNotificationRequest);
