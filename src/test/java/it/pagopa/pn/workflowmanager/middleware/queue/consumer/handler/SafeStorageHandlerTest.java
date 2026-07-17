@@ -57,6 +57,7 @@ class SafeStorageHandlerTest {
                 eq(2),
                 any(Instant.class),
                 eq(ActionType.DOCUMENT_CREATION_RESPONSE),
+                eq("elem-999"),
                 detailsCaptor.capture()
         );
 

@@ -56,7 +56,7 @@ public class SafeStorageHandler {
         log.info("Scheduling HandleDocumentCreationResponse schedulingDate={} - iun={} recIndex={} docType={}",
                 schedulingDate, iun, recIndex, documentType);
 
-        schedulerService.scheduleEvent(iun, recIndex, schedulingDate, DOCUMENT_CREATION_RESPONSE, details);
+        schedulerService.scheduleEvent(iun, recIndex, schedulingDate, DOCUMENT_CREATION_RESPONSE, elementId, details);
 
         log.info("DocumentCreationResponse scheduled successfully - iun={} recIndex={}", iun, recIndex);
     }
