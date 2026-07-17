@@ -13,7 +13,6 @@ public interface PnSafeStorageClient {
 
     String CREATE_FILE = "CREATE FILE";
     String GET_FILE = "GET FILE";
-    String SAFE_STORAGE_URL_PREFIX = "safestorage://";
     String UPLOAD_FILE_CONTENT = "UPLOAD FILE CONTENT";
 
     FileCreationResponse createFile(String checksumValue, String checksum, FileCreationRequest fileCreationRequest);

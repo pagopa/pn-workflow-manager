@@ -11,17 +11,13 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
+import static it.pagopa.pn.workflowmanager.action.utils.FileUtils.*;
 import static it.pagopa.pn.workflowmanager.dto.action.common.ActionType.DOCUMENT_CREATION_RESPONSE;
 
 @Component
 @CustomLog
 @AllArgsConstructor
 public class SafeStorageHandler {
-
-    private static final String TAG_IUN = "iun";
-    private static final String TAG_REC_INDEX = "recIndex";
-    private static final String TAG_DOCUMENT_TYPE = "documentType";
-    private static final String TAG_ELEMENT_ID = "elementId";
 
     private final SchedulerService schedulerService;
 
@@ -40,22 +36,19 @@ public class SafeStorageHandler {
     }
 
     private void scheduleDocumentCreationResponse(FileDownloadResponse response) {
-        String iun = extractTagValue(response.getTags(), TAG_IUN);
-        String recIndexStr = extractTagValue(response.getTags(), TAG_REC_INDEX);
+        String iun = extractTagValue(response.getTags(), IUN_TAG);
+        String recIndexStr = extractTagValue(response.getTags(), RECIPIENT_INDEX_TAG);
         Integer recIndex = recIndexStr != null ? Integer.parseInt(recIndexStr) : null;
-        String documentType = extractTagValue(response.getTags(), TAG_DOCUMENT_TYPE);
-        String elementId = extractTagValue(response.getTags(), TAG_ELEMENT_ID);
+        String documentType = extractTagValue(response.getTags(), DOCUMENT_TYPE_TAG);
+        String elementId = extractTagValue(response.getTags(), TIMELINE_ELEMENT_ID_TAG);
 
         log.info("Scheduling DocumentCreationResponse - iun={} recIndex={} documentType={} elementId={}",
                 iun, recIndex, documentType, elementId);
 
         DocumentCreationResponseActionDetails details = DocumentCreationResponseActionDetails.builder()
                 .key(response.getKey())
-                .documentCreationType(response.getDocumentType())
-                .iun(iun)
-                .recIndex(recIndex)
-                .documentType(documentType)
-                .elementId(elementId)
+                .documentCreationType(documentType)
+                .timelineElementId(elementId)
                 .build();
 
         Instant schedulingDate = Instant.now();

@@ -41,7 +41,7 @@ class SafeStorageHandlerTest {
         tags.put("iun", List.of("IUN-12345"));
         tags.put("recIndex", List.of("2"));
         tags.put("documentType", List.of("DIGITAL_SIGN"));
-        tags.put("elementId", List.of("elem-999"));
+        tags.put("timelineElementId", List.of("elem-999"));
 
         FileDownloadResponse response = new FileDownloadResponse()
                 .key("file-key-123")
@@ -63,11 +63,8 @@ class SafeStorageHandlerTest {
         // Verifica i dettagli dell'azione mappati
         DocumentCreationResponseActionDetails details = detailsCaptor.getValue();
         assertEquals("file-key-123", details.getKey());
-        assertEquals("PDF", details.getDocumentCreationType());
-        assertEquals("IUN-12345", details.getIun());
-        assertEquals(2, details.getRecIndex());
-        assertEquals("DIGITAL_SIGN", details.getDocumentType());
-        assertEquals("elem-999", details.getElementId());
+        assertEquals("DIGITAL_SIGN", details.getDocumentCreationType());
+        assertEquals("elem-999", details.getTimelineElementId());
     }
 
 }
