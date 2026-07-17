@@ -10,6 +10,7 @@
     "MountEfs": "false",
     "PnCronAnalyzer": "-",
     "ActionQueueDetailType": "POST_ACCEPTED_PROCESSING_COMPLETED,START_WORKFLOW,TIMEOUT_WORKFLOW,END_WORKFLOW,WORKFLOW_DONE,DOCUMENT_CREATION_RESPONSE",
-    "WorkflowManagerCxId": "pn-workflow-manager"
+    "WorkflowManagerCxId": "pn-workflow-manager",
+    "ExternalChannelBaseUrl": "http://internal-pn-re-appli-48xpecmoe3ea-883877619.eu-south-1.elb.amazonaws.com"
   }
 }
