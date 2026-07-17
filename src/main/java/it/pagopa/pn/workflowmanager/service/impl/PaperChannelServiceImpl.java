@@ -50,7 +50,7 @@ public class PaperChannelServiceImpl implements PaperChannelService {
                 .analogType(PhysicalAddressInt.ANALOG_TYPE.SIMPLE_REGISTERED_LETTER)
                 .attachments(paperChannelUtils.retrieveAttachmentsToSend(notification, recIndex))
                 .build();
-        String msg = "Preparing simple registered letter notification {} to recipientIdx {} with requestId {}";
+        String msg = "Preparing simple registered letter notification with requestId {}";
         PnAuditLogEvent auditLogEvent = buildAuditLogEvent(notification.getIun(), recIndex, requestId, PnAuditLogEventType.AUD_COM_PD_PREPARE, msg);
         try {
             log.info("Preparing simple registered letter - iun={} recIndex={} requestId={}", notification.getIun(), recIndex, requestId);
@@ -82,7 +82,7 @@ public class PaperChannelServiceImpl implements PaperChannelService {
                                              CategorizedAttachmentsResultInt categorizedAttachmentsResult
     ) {
         log.info("Start sendSimpleRegisteredLetter - iun={} recIndex={}", notification.getIun(), recIndex);
-        String msg = "Sending simple registered letter notification {} to recipientIdx {} with requestId {}";
+        String msg = "Sending simple registered letter notification with requestId {}";
         PnAuditLogEvent auditLogEvent = buildAuditLogEvent(notification.getIun(), recIndex, prepareRequestId, PnAuditLogEventType.AUD_COM_PD_EXECUTE, msg);
         String timelineId;
         PaperChannelSendRequest paperChannelSendRequest = PaperChannelSendRequest.builder()

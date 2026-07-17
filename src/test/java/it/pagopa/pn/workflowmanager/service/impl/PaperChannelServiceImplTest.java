@@ -152,8 +152,8 @@ class PaperChannelServiceImplTest {
         PnAuditLogEvent auditLogEvent = Mockito.mock(PnAuditLogEvent.class);
         PhysicalAddressInt senderAddress = PhysicalAddressInt.builder().address("Via Sender").build();
 
-        Mockito.when(auditLogService.buildAuditLogEvent(Mockito.anyString(), Mockito.anyInt(),
-                        Mockito.eq(PnAuditLogEventType.AUD_COM_PD_EXECUTE), Mockito.anyString(), Mockito.anyString()))
+        when(auditLogService.buildAuditLogEvent(eq(iun), eq(recIndex), eq(PnAuditLogEventType.AUD_COM_PD_EXECUTE),
+                anyString(), anyString()))
                 .thenReturn(auditLogEvent);
         Mockito.when(auditLogEvent.generateFailure(Mockito.anyString(), Mockito.any())).thenReturn(auditLogEvent);
         Mockito.when(auditLogEvent.log()).thenReturn(auditLogEvent);
