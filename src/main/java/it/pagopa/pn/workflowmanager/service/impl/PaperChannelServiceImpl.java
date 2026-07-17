@@ -3,6 +3,7 @@ package it.pagopa.pn.workflowmanager.service.impl;
 import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.commons.log.PnAuditLogEvent;
 import it.pagopa.pn.commons.log.PnAuditLogEventType;
+import it.pagopa.pn.workflowmanager.dto.timeline.details.AnalogDeliveryTypeInt;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.model.SendResponse;
 import it.pagopa.pn.workflowmanager.action.utils.ChannelSenderUtils;
 import it.pagopa.pn.workflowmanager.action.utils.PaperChannelUtils;
@@ -108,7 +109,8 @@ public class PaperChannelServiceImpl implements PaperChannelService {
                             replacedF24AttachmentUrls,
                             categorizedAttachmentsResult,
                             prepareRequestId,
-                            null
+                            null,
+                            AnalogDeliveryTypeInt.RS
                     );
             log.info("Registered Letter sent to paperChannel - iun={} id={}", notification.getIun(), recIndex);
             auditLogEvent.generateSuccess("send success cost={} send timelineId={}", sendResponse.getAmount(), timelineId).log();

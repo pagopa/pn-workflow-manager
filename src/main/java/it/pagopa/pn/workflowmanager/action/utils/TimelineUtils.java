@@ -132,7 +132,8 @@ public class TimelineUtils {
                                                                               List<String> replacedF24AttachmentUrls,
                                                                               CategorizedAttachmentsResultInt categorizedAttachmentsResult,
                                                                               ServiceLevelInt serviceLevelInt,
-                                                                              String prepareRequestId) {
+                                                                              String prepareRequestId,
+                                                                              AnalogDeliveryTypeInt analogDeliveryType) {
         SendResponse sendResponse = analogDtoInfo.getSendResponse();
         log.debug("buildSendAnalogNotificationTimelineElement - IUN={} and id={} analogCost={} relatedRequestId={} replacedF24AttachmentUrls={}", notification.getIun(), recIndex, sendResponse.getAmount(), analogDtoInfo.getRelatedRequestId(), replacedF24AttachmentUrls);
         prepareRequestId = buildSendAnalogTimelineEventId(recIndex, notification, analogDtoInfo);
@@ -151,6 +152,7 @@ public class TimelineUtils {
                 .categorizedAttachmentsResult(categorizedAttachmentsResult)
                 .prepareRequestId(prepareRequestId)
                 .vat(notification.getVat())
+                .deliveryType(analogDeliveryType)
                 .build();
 
         TimelineElementInternal.TimelineElementInternalBuilder timelineBuilder = TimelineElementInternal.builder();

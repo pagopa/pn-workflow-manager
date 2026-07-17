@@ -1,6 +1,7 @@
 package it.pagopa.pn.workflowmanager.action.utils;
 
 import it.pagopa.pn.commons.exceptions.PnInternalException;
+import it.pagopa.pn.workflowmanager.dto.timeline.details.AnalogDeliveryTypeInt;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.model.SendResponse;
 import it.pagopa.pn.workflowmanager.config.PnWorkflowManagerConfigs;
 import it.pagopa.pn.workflowmanager.dto.address.PhysicalAddressInt;
@@ -84,12 +85,12 @@ class PaperChannelUtilsTest {
 
         when(timelineUtils.buildSendAnalogNotificationTimelineElement(
                 physicalAddress, REC_INDEX, notification, analogDtoInfo,
-                replacedF24AttachmentUrls, categorizedAttachmentsResult, serviceLevelInt, PREPARE_REQUEST_ID))
+                replacedF24AttachmentUrls, categorizedAttachmentsResult, serviceLevelInt, PREPARE_REQUEST_ID, AnalogDeliveryTypeInt.RS))
                 .thenReturn(timelineElement);
 
         String result = paperChannelUtils.addSendAnalogNotificationToTimeline(
                 notification, physicalAddress, REC_INDEX, analogDtoInfo,
-                replacedF24AttachmentUrls, categorizedAttachmentsResult, PREPARE_REQUEST_ID, serviceLevelInt);
+                replacedF24AttachmentUrls, categorizedAttachmentsResult, PREPARE_REQUEST_ID, serviceLevelInt, AnalogDeliveryTypeInt.RS);
 
         assertEquals(EVENT_ID, result);
         verify(timelineService).addTimelineElement(timelineElement, notification);

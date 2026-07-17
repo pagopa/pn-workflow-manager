@@ -1029,7 +1029,7 @@ class TimelineUtilsTest {
         // Act - Test buildSendAnalogNotificationTimelineElement
         TimelineElementInternal actual = timelineUtils.buildSendAnalogNotificationTimelineElement(
                 physicalAddress, TEST_REC_INDEX, notification, analogDtoInfo,
-                replacedF24AttachmentUrls, categorizedAttachmentsResult, serviceLevelInt, prepareRequestId);
+                replacedF24AttachmentUrls, categorizedAttachmentsResult, serviceLevelInt, prepareRequestId, AnalogDeliveryTypeInt.RS);
 
         // Assert - verify timeline element
         Assertions.assertAll(
@@ -1055,7 +1055,8 @@ class TimelineUtilsTest {
                 () -> assertEquals(100, details.getEnvelopeWeight()),
                 () -> assertEquals(replacedF24AttachmentUrls, details.getF24Attachments()),
                 () -> assertEquals(categorizedAttachmentsResult, details.getCategorizedAttachmentsResult()),
-                () -> assertNotNull(details.getPrepareRequestId())
+                () -> assertNotNull(details.getPrepareRequestId()),
+                () -> assertEquals(AnalogDeliveryTypeInt.RS, details.getDeliveryType())
         );
     }
 

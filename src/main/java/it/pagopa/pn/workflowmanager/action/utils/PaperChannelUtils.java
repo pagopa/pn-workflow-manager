@@ -1,17 +1,18 @@
 package it.pagopa.pn.workflowmanager.action.utils;
 
 import it.pagopa.pn.commons.exceptions.PnInternalException;
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.model.SendResponse;
 import it.pagopa.pn.workflowmanager.config.PnWorkflowManagerConfigs;
 import it.pagopa.pn.workflowmanager.dto.address.PhysicalAddressInt;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.CategorizedAttachmentsResultInt;
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.ResultFilterInt;
 import it.pagopa.pn.workflowmanager.dto.ext.paperchannel.AnalogDtoInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
+import it.pagopa.pn.workflowmanager.dto.timeline.details.AnalogDeliveryTypeInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.ServiceLevelInt;
-import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
-import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.model.SendResponse;
 import it.pagopa.pn.workflowmanager.service.CampaignService;
 import it.pagopa.pn.workflowmanager.service.TimelineService;
 import lombok.AllArgsConstructor;
@@ -40,13 +41,19 @@ public class PaperChannelUtils {
         return pnWorkflowManagerConfigs.getPaperChannel().getSenderPhysicalAddress();
     }
 
-    public String addSendAnalogNotificationToTimeline(NotificationInt notification, PhysicalAddressInt physicalAddress, Integer recIndex,
-                                                      AnalogDtoInt analogDtoInfo, List<String> replacedF24AttachmentUrls,
-                                                      CategorizedAttachmentsResultInt categorizedAttachmentsResult,
-                                                      String prepareRequestId,
-                                                      ServiceLevelInt serviceLevelInt) {
+    public String addSendAnalogNotificationToTimeline(
+            NotificationInt notification,
+            PhysicalAddressInt physicalAddress,
+            Integer recIndex,
+            AnalogDtoInt analogDtoInfo,
+            List<String> replacedF24AttachmentUrls,
+            CategorizedAttachmentsResultInt categorizedAttachmentsResult,
+            String prepareRequestId,
+            ServiceLevelInt serviceLevelInt,
+            AnalogDeliveryTypeInt analogDeliveryType
+    ) {
         TimelineElementInternal timelineElementInternal = timelineUtils.buildSendAnalogNotificationTimelineElement(
-                physicalAddress, recIndex, notification, analogDtoInfo, replacedF24AttachmentUrls, categorizedAttachmentsResult,serviceLevelInt,prepareRequestId);
+                physicalAddress, recIndex, notification, analogDtoInfo, replacedF24AttachmentUrls, categorizedAttachmentsResult,serviceLevelInt, prepareRequestId, analogDeliveryType);
         addTimelineElement(timelineElementInternal,
                 notification
         );

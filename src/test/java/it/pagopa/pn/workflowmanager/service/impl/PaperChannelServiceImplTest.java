@@ -172,7 +172,7 @@ class PaperChannelServiceImplTest {
         Mockito.verify(paperMessagesClient).send(Mockito.any());
         Mockito.verify(paperChannelUtils, Mockito.never()).addSendAnalogNotificationToTimeline(
                 Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-                Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
+                Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
         Mockito.verify(auditLogEvent).generateFailure(Mockito.anyString(), Mockito.any());
         Mockito.verify(auditLogEvent).log();
     }
