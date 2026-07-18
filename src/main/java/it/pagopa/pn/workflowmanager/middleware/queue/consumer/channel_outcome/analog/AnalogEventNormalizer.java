@@ -34,7 +34,7 @@ public class AnalogEventNormalizer implements ChannelOutcomeNormalizer<SendEvent
         SendAnalogMessageDetailsInt analogSendMessageDetails = (SendAnalogMessageDetailsInt) sourceSendRequestDetails;
         int recIndex = analogSendMessageDetails.getRecIndex();
 
-        String statusEventCode = sendEvent.getStatusDescription();
+        String statusEventCode = sendEvent.getStatusCode();
 
         AnalogEventClassification classification = AnalogEventClassification.fromStatusEventCode(statusEventCode);
 
@@ -46,7 +46,7 @@ public class AnalogEventNormalizer implements ChannelOutcomeNormalizer<SendEvent
                 .classification(classification)
                 .channel(ChannelType.ANALOG)
                 .timelineElementInternal(timelineElement)
-                .originalEventType(statusEventCode)
+                .originalEventType(statusEventCode + " - " + sendEvent.getStatusDetail())
                 .eventTimestamp(sendEvent.getStatusDateTime())
                 .pnAuditLogEvent(buildAuditLog(sendEvent, notification, recIndex, analogSendMessageDetails))
                 .build();

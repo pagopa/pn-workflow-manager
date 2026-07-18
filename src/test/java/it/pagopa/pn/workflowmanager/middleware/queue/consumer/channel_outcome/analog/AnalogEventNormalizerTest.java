@@ -14,7 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -46,8 +46,8 @@ class AnalogEventNormalizerTest {
     private static final int REC_INDEX = 0;
     private static final Instant NOW = Instant.now();
     private static final String REQUEST_ID = "req-analog-123";
-    private static final String STATUS_CODE = "CON080";
     private static final String REGISTERED_LETTER_CODE = "rlc-001";
+    private static final String STATUS_DETAIL = "CON080";
 
     private final SendAnalogMessageDetailsInt sendAnalogDetails = SendAnalogMessageDetailsInt.builder()
             .recIndex(REC_INDEX)
@@ -62,9 +62,10 @@ class AnalogEventNormalizerTest {
     @Test
     void shouldNormalizeProgressEvent() {
         // Arrange
+        String progressStatusCode = "PROGRESS";
         SendEventInt sendEvent = SendEventInt.builder()
-                .statusDescription("PROGRESS")
-                .statusCode(STATUS_CODE)
+                .statusCode(progressStatusCode)
+                .statusDetail(STATUS_DETAIL)
                 .statusDateTime(NOW)
                 .prepareRequestId(REQUEST_ID)
                 .registeredLetterCode(REGISTERED_LETTER_CODE)
@@ -78,42 +79,47 @@ class AnalogEventNormalizerTest {
         NormalizedChannelOutcome result = analogEventNormalizer.normalize(sendEvent, notification, sendAnalogDetails);
 
         // Assert
-        verifyCommonAssertions(result, AnalogEventClassification.PROGRESS);
+        verifyCommonAssertions(result, progressStatusCode, AnalogEventClassification.PROGRESS);
         verify(timelineUtils, never()).buildSendAnalogFeedbackNotificationTimelineElement(any(), anyInt(), any(), any(), any());
         verify(auditLogService).buildAuditLogEvent(eq(IUN), eq(REC_INDEX), eq(PnAuditLogEventType.AUD_COM_PD_EXECUTE_RECEIVE), anyString());
     }
 
     @ParameterizedTest
-    @EnumSource(value = AnalogEventClassification.class, names = {"OK", "KO"})
-    void shouldNormalizeFeedbackEvent(AnalogEventClassification classification) {
+    @CsvSource({"OK", "KO"})
+    void shouldNormalizeFeedbackEvent(String statusCode) {
         // Arrange
         SendEventInt sendEvent = SendEventInt.builder()
-                .statusDescription(classification.name())
-                .statusCode(STATUS_CODE)
+                .statusCode(statusCode)
+                .statusDetail(STATUS_DETAIL)
                 .statusDateTime(NOW)
                 .prepareRequestId(REQUEST_ID)
                 .registeredLetterCode(REGISTERED_LETTER_CODE)
                 .build();
 
         when(timelineUtils.buildSendAnalogFeedbackNotificationTimelineElement(
-                notification, REC_INDEX, sendEvent, sendAnalogDetails, ResponseStatusInt.valueOf(classification.name())
+                notification, REC_INDEX, sendEvent, sendAnalogDetails, ResponseStatusInt.valueOf(statusCode)
         )).thenReturn(mockTimelineElement);
 
         // Act
         NormalizedChannelOutcome result = analogEventNormalizer.normalize(sendEvent, notification, sendAnalogDetails);
 
         // Assert
-        verifyCommonAssertions(result, classification);
+        verifyCommonAssertions(result, statusCode, AnalogEventClassification.fromStatusEventCode(statusCode));
         verify(timelineUtils, never()).buildSendAnalogProgressNotificationTimelineElement(any(), anyInt(), any(), any());
     }
 
-    private void verifyCommonAssertions(NormalizedChannelOutcome result, AnalogEventClassification expectedClassification) {
+    private void verifyCommonAssertions(
+            NormalizedChannelOutcome result,
+            String statusCode,
+            AnalogEventClassification expectedClassification
+    ) {
         assertNotNull(result);
         assertEquals(IUN, result.getIun());
         assertEquals(REC_INDEX, result.getRecIndex());
         assertEquals(ChannelType.ANALOG, result.getChannel());
         assertEquals(expectedClassification, result.getClassification());
-        assertEquals(expectedClassification.name(), result.getOriginalEventType());
+        String expectedOriginalEventType = statusCode + " - " + STATUS_DETAIL;
+        assertEquals(expectedOriginalEventType, result.getOriginalEventType());
         assertEquals(NOW, result.getEventTimestamp());
         assertEquals(mockTimelineElement, result.getTimelineElementInternal());
     }
