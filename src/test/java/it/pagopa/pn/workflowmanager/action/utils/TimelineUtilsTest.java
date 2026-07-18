@@ -1087,10 +1087,11 @@ class TimelineUtilsTest {
         String registeredLetterCode = "rlc-001";
         Integer sentAttemptMade = 0;
         Integer progressIndex = 1;
-        String statusCode = "P000";
+        String statusDetail = "P000";
         String deliveryFailureCause = "test";
         SendEventInt sendEvent = SendEventInt.builder()
-                .statusCode("P000")
+                .statusCode("PROGRESS")
+                .statusDetail(statusDetail)
                 .deliveryFailureCause("test")
                 .statusDateTime(notificationDate)
                 .sendRequestId(sendRequestId)
@@ -1132,7 +1133,7 @@ class TimelineUtilsTest {
                 () -> assertEquals(serviceLevel, details.getServiceLevel()),
                 () -> assertEquals(attachments, details.getAttachments()),
                 () -> assertEquals(sendRequestId, details.getSendRequestId()),
-                () -> assertEquals(statusCode, details.getDeliveryDetail().getCode()),
+                () -> assertEquals(statusDetail, details.getDeliveryDetail().getCode()),
                 () -> assertEquals(deliveryFailureCause, details.getDeliveryDetail().getFailureCause()),
                 () -> assertEquals(notificationDate, details.getDeliveryDetail().getEventTimestamp()),
                 () -> assertEquals(registeredLetterCode, details.getRegisteredLetterCode()),
@@ -1171,10 +1172,11 @@ class TimelineUtilsTest {
         ResponseStatusInt responseStatus = ResponseStatusInt.OK;
         Integer sentAttemptMade = 0;
 
-        String statusCode = "P000";
+        String statusDetail = "P000";
         String deliveryFailureCause = "test";
         SendEventInt sendEvent = SendEventInt.builder()
-                .statusCode(statusCode)
+                .statusCode("OK")
+                .statusDetail(statusDetail)
                 .deliveryFailureCause(deliveryFailureCause)
                 .statusDateTime(notificationDate)
                 .sendRequestId(sendRequestId)
@@ -1220,7 +1222,7 @@ class TimelineUtilsTest {
                 () -> assertEquals(sentAttemptMade, details.getSentAttemptMade()),
                 () -> assertEquals(responseStatus, details.getResponseStatus()),
                 () -> assertNull(details.getRequestTimelineId()),
-                () -> assertEquals(statusCode, details.getDeliveryDetail().getCode()),
+                () -> assertEquals(statusDetail, details.getDeliveryDetail().getCode()),
                 () -> assertEquals(deliveryFailureCause, details.getDeliveryDetail().getFailureCause()),
                 () -> assertEquals(notificationDate, details.getDeliveryDetail().getEventTimestamp()),
                 () -> assertEquals(registeredLetterCode, details.getRegisteredLetterCode()),

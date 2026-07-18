@@ -173,7 +173,7 @@ public class TimelineUtils {
         String eventId = buildSendAnalogProgressTimelineEventId(recIndex, notification, progressIndex, deliveryType, sentAttemptMade);
 
         AnalogDeliveryDetailsInt deliveryDetail = AnalogDeliveryDetailsInt.builder()
-                .code(sendEventInt.getStatusCode())
+                .code(sendEventInt.getStatusDetail())
                 .eventTimestamp(sendEventInt.getStatusDateTime())
                 .failureCause(sendEventInt.getDeliveryFailureCause())
                 .build();
@@ -222,7 +222,7 @@ public class TimelineUtils {
         String eventId = buildSendAnalogFeedbackTimelineEventId(recIndex, notification, deliveryType, sentAttemptMade);
 
         AnalogDeliveryDetailsInt deliveryDetail = AnalogDeliveryDetailsInt.builder()
-                .code(sendEventInt.getStatusCode())
+                .code(sendEventInt.getStatusDetail())
                 .eventTimestamp(sendEventInt.getStatusDateTime())
                 .failureCause(sendEventInt.getDeliveryFailureCause())
                 .build();
