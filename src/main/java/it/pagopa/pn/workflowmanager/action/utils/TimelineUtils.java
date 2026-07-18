@@ -9,7 +9,6 @@ import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.DesiredFeedbackType;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
-import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.AttachmentDetailsInt;
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.CategorizedAttachmentsResultInt;
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.ResponseStatusInt;
 import it.pagopa.pn.workflowmanager.dto.ext.paperchannel.AnalogDtoInt;
@@ -22,6 +21,7 @@ import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.mode
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.model.NotificationHistoryResponse;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.model.NotificationStatus;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.model.SendingReceipt;
+import it.pagopa.pn.workflowmanager.middleware.queue.consumer.event.SendEventInt;
 import it.pagopa.pn.workflowmanager.service.TimelineService;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -132,11 +132,10 @@ public class TimelineUtils {
                                                                               List<String> replacedF24AttachmentUrls,
                                                                               CategorizedAttachmentsResultInt categorizedAttachmentsResult,
                                                                               ServiceLevelInt serviceLevelInt,
-                                                                              String prepareRequestId,
                                                                               AnalogDeliveryTypeInt analogDeliveryType) {
         SendResponse sendResponse = analogDtoInfo.getSendResponse();
         log.debug("buildSendAnalogNotificationTimelineElement - IUN={} and id={} analogCost={} relatedRequestId={} replacedF24AttachmentUrls={}", notification.getIun(), recIndex, sendResponse.getAmount(), analogDtoInfo.getRelatedRequestId(), replacedF24AttachmentUrls);
-        prepareRequestId = buildSendAnalogTimelineEventId(recIndex, notification, analogDtoInfo);
+        String sendElementId = buildSendAnalogTimelineEventId(recIndex, notification, analogDtoInfo.getSentAttemptMade());
 
         SendAnalogMessageDetailsInt details = SendAnalogMessageDetailsInt.builder()
                 .recIndex(recIndex)
@@ -150,39 +149,43 @@ public class TimelineUtils {
                 .envelopeWeight(sendResponse.getEnvelopeWeight())
                 .f24Attachments(replacedF24AttachmentUrls)
                 .categorizedAttachmentsResult(categorizedAttachmentsResult)
-                .prepareRequestId(prepareRequestId)
+                .prepareRequestId(analogDtoInfo.getPrepareRequestId())
                 .vat(notification.getVat())
                 .deliveryType(analogDeliveryType)
                 .build();
 
         TimelineElementInternal.TimelineElementInternalBuilder timelineBuilder = TimelineElementInternal.builder();
 
-        return buildTimeline(notification, TimelineElementCategoryInt.SEND_ANALOG_MESSAGE, prepareRequestId, details, timelineBuilder);
+        return buildTimeline(notification, TimelineElementCategoryInt.SEND_ANALOG_MESSAGE, sendElementId, details, timelineBuilder);
     }
 
-    public TimelineElementInternal buildSendAnalogProgressNotificationTimelineElement(Integer recIndex,
-                                                                                      NotificationInt notification,
-                                                                                      ServiceLevelInt serviceLevelInt,
-                                                                                      Instant notificationDate,
-                                                                                      AnalogDeliveryDetailsInt deliveryDetail,
-                                                                                      AnalogDeliveryTypeInt deliveryType,
-                                                                                      List<AttachmentDetailsInt> attachments,
-                                                                                      String sendRequestId,
-                                                                                      String registeredLetterCode,
-                                                                                      Integer sentAttemptMade) {
+    public TimelineElementInternal buildSendAnalogProgressNotificationTimelineElement(
+            NotificationInt notification,
+            Integer recIndex,
+            SendEventInt sendEventInt,
+            SendAnalogMessageDetailsInt analogSendMessageDetails
+    ) {
         log.debug("buildSendAnalogProgressNotificationTimelineElement - IUN={} and id={} ", notification.getIun(), recIndex);
 
-        Integer progressIndex = timelineService.retrieveAndIncrementCounterForTimelineEvent(sendRequestId).intValue();
-        String eventId = buildSendAnalogProgressTimelineEventId(recIndex, notification, progressIndex,deliveryType,sentAttemptMade);
+        Integer progressIndex = timelineService.retrieveAndIncrementCounterForTimelineEvent(sendEventInt.getSendRequestId()).intValue();
+        int sentAttemptMade = analogSendMessageDetails.getSentAttemptMade();
+        AnalogDeliveryTypeInt deliveryType = analogSendMessageDetails.getDeliveryType();
+        String eventId = buildSendAnalogProgressTimelineEventId(recIndex, notification, progressIndex, deliveryType, sentAttemptMade);
+
+        AnalogDeliveryDetailsInt deliveryDetail = AnalogDeliveryDetailsInt.builder()
+                .code(sendEventInt.getStatusCode())
+                .eventTimestamp(sendEventInt.getStatusDateTime())
+                .failureCause(sendEventInt.getDeliveryFailureCause())
+                .build();
 
         SendAnalogMessageProgressDetailsInt details = SendAnalogMessageProgressDetailsInt.builder()
                 .recIndex(recIndex)
-                .serviceLevel(serviceLevelInt)
-                .attachments(attachments)
-                .sendRequestId(sendRequestId)
+                .serviceLevel(analogSendMessageDetails.getServiceLevel())
+                .attachments(sendEventInt.getAttachments())
+                .sendRequestId(sendEventInt.getSendRequestId())
                 .deliveryDetail(deliveryDetail)
-                .registeredLetterCode(registeredLetterCode)
-                .notificationDate(notificationDate)
+                .registeredLetterCode(sendEventInt.getRegisteredLetterCode())
+                .notificationDate(sendEventInt.getStatusDateTime())
                 .deliveryType(deliveryType)
                 .sentAttemptMade(sentAttemptMade)
                 .build();
@@ -205,35 +208,37 @@ public class TimelineUtils {
         );
     }
 
-    public TimelineElementInternal buildSendAnalogFeedbackNotificationTimelineElement(Integer recIndex,
-                                                                                      NotificationInt notification,
-                                                                                      ServiceLevelInt serviceLevelInt,
-                                                                                      Instant notificationDate,
-                                                                                      AnalogDeliveryDetailsInt deliveryDetail,
-                                                                                      AnalogDeliveryTypeInt deliveryType,
-                                                                                      List<AttachmentDetailsInt> attachments,
-                                                                                      String sendRequestId,
-                                                                                      String registeredLetterCode,
-                                                                                      PhysicalAddressInt physicalAddressInt,
-                                                                                      ResponseStatusInt responseStatus,
-                                                                                      PhysicalAddressInt newAddress,
-                                                                                      Integer sentAttemptMade) {
+    public TimelineElementInternal buildSendAnalogFeedbackNotificationTimelineElement(
+            NotificationInt notification,
+            Integer recIndex,
+            SendEventInt sendEventInt,
+            SendAnalogMessageDetailsInt analogSendMessageDetails,
+            ResponseStatusInt responseStatus
+    ) {
         log.debug("buildSendAnalogFeedbackNotificationTimelineElement - IUN={} and id={} ", notification.getIun(), recIndex);
 
+        AnalogDeliveryTypeInt deliveryType = analogSendMessageDetails.getDeliveryType();
+        int sentAttemptMade = analogSendMessageDetails.getSentAttemptMade();
         String eventId = buildSendAnalogFeedbackTimelineEventId(recIndex, notification, deliveryType, sentAttemptMade);
+
+        AnalogDeliveryDetailsInt deliveryDetail = AnalogDeliveryDetailsInt.builder()
+                .code(sendEventInt.getStatusCode())
+                .eventTimestamp(sendEventInt.getStatusDateTime())
+                .failureCause(sendEventInt.getDeliveryFailureCause())
+                .build();
 
         SendAnalogMessageFeedbackDetailsInt details = SendAnalogMessageFeedbackDetailsInt.builder()
                 .recIndex(recIndex)
-                .serviceLevel(serviceLevelInt)
-                .physicalAddress(physicalAddressInt)
-                .newAddress(newAddress)
-                .attachments(attachments)
-                .sendRequestId(sendRequestId)
+                .serviceLevel(analogSendMessageDetails.getServiceLevel())
+                .physicalAddress(analogSendMessageDetails.getPhysicalAddress())
+                .newAddress(sendEventInt.getDiscoveredAddress())
+                .attachments(sendEventInt.getAttachments())
+                .sendRequestId(sendEventInt.getSendRequestId())
                 .sentAttemptMade(sentAttemptMade)
                 .responseStatus(responseStatus)
                 .deliveryDetail(deliveryDetail)
-                .registeredLetterCode(registeredLetterCode)
-                .notificationDate(notificationDate)
+                .registeredLetterCode(sendEventInt.getRegisteredLetterCode())
+                .notificationDate(sendEventInt.getStatusDateTime())
                 .deliveryType(deliveryType)
                 .build();
 
@@ -253,13 +258,13 @@ public class TimelineUtils {
         );
     }
 
-    public static String buildSendAnalogTimelineEventId(Integer recIndex, NotificationInt notification, AnalogDtoInt analogDtoInfo) {
+    public static String buildSendAnalogTimelineEventId(Integer recIndex, NotificationInt notification, int sentAttemptMade) {
         return TimelineEventId.SEND_ANALOG_MESSAGE.buildEventId(
                 EventId.builder()
                         .iun(notification.getIun())
                         .recIndex(recIndex)
                         .deliveryType(AnalogDeliveryTypeInt.RS.name())
-                        .sentAttemptMade(analogDtoInfo.getSentAttemptMade())
+                        .sentAttemptMade(sentAttemptMade)
                         .build()
         );
     }
@@ -425,12 +430,25 @@ public class TimelineUtils {
     }
 
 
-    public Optional<TimelineElementInternal> findFirstReachedTimelineElement(List<TimelineElementInternal> timelineElements, int recIndex) {
-        return timelineElements.stream()
+    public Optional<String> findFirstReachedElementId(List<TimelineElementInternal> timelineElements, int recIndex) {
+        Optional<TimelineElementInternal> firstReachedElement = timelineElements.stream()
                 .filter(element -> isRecipientRelated(element, recIndex))
                 .filter(element -> element.getDetails() instanceof RecipientReachedTimelineElement)
                 .sorted()
                 .findFirst();
+
+        if(firstReachedElement.isPresent()) {
+            log.debug("Found first reached timeline element for recIndex {}: {}", recIndex, firstReachedElement.get().getElementId());
+            TimelineElementInternal element = firstReachedElement.get();
+            if(element.getDetails() instanceof DeliveredDetailsInt deliveredDetailsInt) {
+                log.debug("Reached timeline element is of type DeliveredDetailsInt, returning sourceElementId: {}", deliveredDetailsInt.getSourceElementId());
+                return Optional.of(deliveredDetailsInt.getSourceElementId());
+            }
+            return Optional.of(element.getElementId());
+        } else {
+            log.debug("No reached timeline element found for recIndex {}", recIndex);
+            return Optional.empty();
+        }
     }
 
     private boolean isRecipientRelated(TimelineElementInternal element, int recIndex) {

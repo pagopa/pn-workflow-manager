@@ -79,16 +79,19 @@ public class IoEventNormalizer implements ChannelOutcomeNormalizer<IoOutcomeEven
     private TimelineElementInternal buildTimelineElement(IoOutcomeEvent ioEvent, NotificationInt notificationInt, SendRelatedTimelineElement sourceSendRequestDetails, ChannelOutcomeClassification classification) {
         SendDigitalMessageDetailsInt digitalSendMessageDetails = (SendDigitalMessageDetailsInt) sourceSendRequestDetails;
         int recIndex = digitalSendMessageDetails.getRecIndex();
+
+        DigitalDeliveryDetailsInt digitalDeliveryDetails = DigitalDeliveryDetailsInt.builder()
+                .code(ioEvent.getEventType().name())
+                .eventTimestamp(ioEvent.getEventTimestamp())
+                .build();
+
         return switch (classification.getCategory()) {
             case ChannelOutcomeCategory.Progress ignore -> timelineUtils.buildSendDigitalMessageProgress(
                     notificationInt,
                     recIndex,
                     DigitalChannelsInt.IO,
                     ioEvent.getRequestId(),
-                    DigitalDeliveryDetailsInt.builder()
-                            .code(ioEvent.getEventType().name())
-                            .eventTimestamp(ioEvent.getEventTimestamp())
-                            .build(),
+                    digitalDeliveryDetails,
                     digitalSendMessageDetails.getDigitalAddress(),
                     digitalSendMessageDetails.getDigitalAddressSource(),
                     ioEvent.getEventTimestamp()
@@ -98,10 +101,7 @@ public class IoEventNormalizer implements ChannelOutcomeNormalizer<IoOutcomeEven
                     recIndex,
                     DigitalChannelsInt.IO,
                     ioEvent.getRequestId(),
-                    DigitalDeliveryDetailsInt.builder()
-                            .code(ioEvent.getEventType().name())
-                            .eventTimestamp(ioEvent.getEventTimestamp())
-                            .build(),
+                    digitalDeliveryDetails,
                     digitalSendMessageDetails.getDigitalAddress(),
                     digitalSendMessageDetails.getDigitalAddressSource(),
                     ResponseStatusInt.KO,

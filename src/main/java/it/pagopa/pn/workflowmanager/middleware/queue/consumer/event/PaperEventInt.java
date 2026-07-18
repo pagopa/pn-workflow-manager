@@ -13,14 +13,13 @@ import java.time.Instant;
 @EqualsAndHashCode
 @ToString
 public class PaperEventInt implements ChannelOutcomeEvent {
-    private String requestId;
+    private String prepareRequestId;
     private String iun;
     private String statusCode;
     private Instant statusDateTime;
     private String statusDetail;
 
-    @Override
     public String getRequestId() {
-        return requestId;
+        return prepareRequestId;
     }
 }

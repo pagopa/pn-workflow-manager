@@ -108,7 +108,6 @@ public class PaperChannelServiceImpl implements PaperChannelService {
                             analogDtoInfo,
                             replacedF24AttachmentUrls,
                             categorizedAttachmentsResult,
-                            prepareRequestId,
                             null,
                             AnalogDeliveryTypeInt.RS
                     );

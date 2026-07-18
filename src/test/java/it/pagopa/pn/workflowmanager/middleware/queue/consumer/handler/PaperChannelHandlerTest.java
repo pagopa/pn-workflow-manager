@@ -2,6 +2,7 @@ package it.pagopa.pn.workflowmanager.middleware.queue.consumer.handler;
 
 import it.pagopa.pn.commons.exceptions.PnInternalException;
 
+import it.pagopa.pn.workflowmanager.action.utils.PaperChannelUtils;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.model.*;
 import it.pagopa.pn.workflowmanager.action.analogworkflow.AnalogWorkflowPaperChannelResponseHandler;
 import it.pagopa.pn.workflowmanager.action.utils.TimelineUtils;
@@ -33,6 +34,8 @@ class PaperChannelHandlerTest {
 
     private AnalogEventNormalizer analogEventNormalizer;
 
+    private PaperChannelUtils paperChannelUtils;
+
 
     @BeforeEach
     void setup() {
@@ -40,12 +43,14 @@ class PaperChannelHandlerTest {
         analogEventNormalizer = Mockito.mock(AnalogEventNormalizer.class);
         timelineUtils = Mockito.mock(TimelineUtils.class);
         analogWorkflowPaperChannelResponseHandler = Mockito.mock(AnalogWorkflowPaperChannelResponseHandler.class);
+        paperChannelUtils = Mockito.mock(PaperChannelUtils.class);
 
         handler = new PaperChannelHandler(
                 analogWorkflowPaperChannelResponseHandler,
                 timelineUtils,
                 channelEventProcessor,
-                analogEventNormalizer
+                analogEventNormalizer,
+                paperChannelUtils
         );
     }
 
@@ -80,7 +85,7 @@ class PaperChannelHandlerTest {
 
         PrepareEventInt tmp = PrepareEventInt.builder()
                 .iun("iun_event_idx_0")
-                .requestId("iun_event_idx_0")
+                .prepareRequestId("iun_event_idx_0")
                 .statusCode("OK")
                 .statusDateTime(instant)
                 .statusDetail("ok")
@@ -121,7 +126,7 @@ class PaperChannelHandlerTest {
 
         PrepareEventInt tmp = PrepareEventInt.builder()
                 .iun("iun_event_idx_0")
-                .requestId("iun_event_idx_0")
+                .prepareRequestId("iun_event_idx_0")
                 .statusCode("KO")
                 .statusDateTime(instant)
                 .failureDetailCode(FailureDetailCodeEnum.D00.getValue())
@@ -150,7 +155,7 @@ class PaperChannelHandlerTest {
 
         PrepareEventInt tmp = PrepareEventInt.builder()
                 .iun("iun_event_idx_0")
-                .requestId("iun_event_idx_0")
+                .prepareRequestId("iun_event_idx_0")
                 .statusCode("KO")
                 .statusDateTime(instant)
                 .failureDetailCode(FailureDetailCodeEnum.D01.getValue())
@@ -199,7 +204,7 @@ class PaperChannelHandlerTest {
 
         PrepareEventInt tmp = PrepareEventInt.builder()
                 .iun("iun_event_idx_0")
-                .requestId("iun_event_idx_0")
+                .prepareRequestId("iun_event_idx_0")
                 .statusCode("KO")
                 .statusDateTime(instant)
                 .failureDetailCode(FailureDetailCodeEnum.D02.getValue())
@@ -336,7 +341,7 @@ class PaperChannelHandlerTest {
 
         PrepareEventInt tmp = PrepareEventInt.builder()
                 .iun("iun_event_idx_0")
-                .requestId("iun_event_idx_0")
+                .prepareRequestId("iun_event_idx_0")
                 .statusCode("PROGRESS")
                 .statusDateTime(instant)
                 .statusDetail("progress")

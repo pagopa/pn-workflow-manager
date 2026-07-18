@@ -1,13 +1,13 @@
 package it.pagopa.pn.workflowmanager.action.utils;
 
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.WorkFlowEntity;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.RecipientTypeInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.DigitalChannelsInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.SendDigitalMessageFeedbackDetailsInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.SendDigitalMessageSkipDetailsInt;
-import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
-import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
-import it.pagopa.pn.workflowmanager.dto.ext.campaign.WorkFlowEntity;
 import it.pagopa.pn.workflowmanager.exceptions.PnWorkflowException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,7 +24,8 @@ import static it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementC
 import static it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt.SEND_DIGITAL_MESSAGE_SKIP;
 import static it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCodes.ERROR_CODE_WORKFLOWMANAGER_GENERIC_WORKFLOW_ERROR;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -48,8 +49,8 @@ class RecipientDeliveryAnalyzerTest {
         Campaign campaign = createCampaign(List.of(ChannelType.IO));
         List<TimelineElementInternal> timelineElements = List.of();
 
-        when(timelineUtils.findFirstReachedTimelineElement(anyList(), eq(TEST_REC_INDEX)))
-                .thenReturn(Optional.of(TimelineElementInternal.builder().elementId("reached_id").build()));
+        when(timelineUtils.findFirstReachedElementId(anyList(), eq(TEST_REC_INDEX)))
+                .thenReturn(Optional.of("reached_id"));
 
         // Act
         RecipientDeliveryInfo result = analyzer.getDeliveryInfo(
@@ -58,7 +59,7 @@ class RecipientDeliveryAnalyzerTest {
         // Assert
         assertEquals(RecipientDeliveryStatus.REACHED, result.status());
         assertEquals("reached_id", result.sourceElementId());
-        verify(timelineUtils).findFirstReachedTimelineElement(eq(timelineElements), eq(TEST_REC_INDEX));
+        verify(timelineUtils).findFirstReachedElementId(eq(timelineElements), eq(TEST_REC_INDEX));
     }
 
     @Test
@@ -67,7 +68,7 @@ class RecipientDeliveryAnalyzerTest {
         Campaign campaign = createCampaign(List.of(ChannelType.IO, ChannelType.EMAIL, ChannelType.SMS));
         List<TimelineElementInternal> timelineElements = createTimelineWithAllChannelsFailed();
 
-        when(timelineUtils.findFirstReachedTimelineElement(anyList(), eq(TEST_REC_INDEX)))
+        when(timelineUtils.findFirstReachedElementId(anyList(), eq(TEST_REC_INDEX)))
                 .thenReturn(Optional.empty());
 
         // Act
@@ -85,7 +86,7 @@ class RecipientDeliveryAnalyzerTest {
         Campaign campaign = createCampaign(List.of(ChannelType.IO));
         List<TimelineElementInternal> timelineElements = createTimelineWithAppIoFeedback();
 
-        when(timelineUtils.findFirstReachedTimelineElement(anyList(), eq(TEST_REC_INDEX)))
+        when(timelineUtils.findFirstReachedElementId(anyList(), eq(TEST_REC_INDEX)))
                 .thenReturn(Optional.empty());
 
         // Act
@@ -103,7 +104,7 @@ class RecipientDeliveryAnalyzerTest {
         Campaign campaign = createCampaign(List.of(ChannelType.EMAIL));
         List<TimelineElementInternal> timelineElements = createTimelineWithEmailSkip();
 
-        when(timelineUtils.findFirstReachedTimelineElement(anyList(), eq(TEST_REC_INDEX)))
+        when(timelineUtils.findFirstReachedElementId(anyList(), eq(TEST_REC_INDEX)))
                 .thenReturn(Optional.empty());
 
         // Act
@@ -121,7 +122,7 @@ class RecipientDeliveryAnalyzerTest {
         Campaign campaign = createCampaign(List.of(ChannelType.SMS));
         List<TimelineElementInternal> timelineElements = createTimelineWithSmsSkip();
 
-        when(timelineUtils.findFirstReachedTimelineElement(anyList(), eq(TEST_REC_INDEX)))
+        when(timelineUtils.findFirstReachedElementId(anyList(), eq(TEST_REC_INDEX)))
                 .thenReturn(Optional.empty());
 
         // Act
@@ -139,7 +140,7 @@ class RecipientDeliveryAnalyzerTest {
         Campaign campaign = createCampaignForRecipientType(List.of(ChannelType.IO), RecipientTypeInt.PG);
         List<TimelineElementInternal> timelineElements = createTimelineWithAppIoFeedback();
 
-        when(timelineUtils.findFirstReachedTimelineElement(anyList(), eq(TEST_REC_INDEX)))
+        when(timelineUtils.findFirstReachedElementId(anyList(), eq(TEST_REC_INDEX)))
                 .thenReturn(Optional.empty());
 
         // Act
@@ -157,7 +158,7 @@ class RecipientDeliveryAnalyzerTest {
         Campaign campaign = createCampaign(List.of());
         List<TimelineElementInternal> timelineElements = List.of();
 
-        when(timelineUtils.findFirstReachedTimelineElement(anyList(), eq(TEST_REC_INDEX)))
+        when(timelineUtils.findFirstReachedElementId(anyList(), eq(TEST_REC_INDEX)))
                 .thenReturn(Optional.empty());
 
         // Act
@@ -177,7 +178,7 @@ class RecipientDeliveryAnalyzerTest {
         Campaign campaign = createCampaign(List.of(ChannelType.IO, ChannelType.EMAIL));
         List<TimelineElementInternal> timelineElements = createTimelineWithAppIoFeedback();
 
-        when(timelineUtils.findFirstReachedTimelineElement(anyList(), eq(TEST_REC_INDEX)))
+        when(timelineUtils.findFirstReachedElementId(anyList(), eq(TEST_REC_INDEX)))
                 .thenReturn(Optional.empty());
 
         // Act

@@ -7,8 +7,6 @@ import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationIn
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.AttachmentDetailsInt;
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.ResponseStatusInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
-import it.pagopa.pn.workflowmanager.dto.timeline.details.AnalogDeliveryDetailsInt;
-import it.pagopa.pn.workflowmanager.dto.timeline.details.AnalogDeliveryTypeInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.SendAnalogMessageDetailsInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.SendRelatedTimelineElement;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.ChannelOutcomeCategory;
@@ -25,11 +23,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Component
 public class AnalogEventNormalizer implements ChannelOutcomeNormalizer<SendEventInt> {
-
-    private static final Integer FIRST_ATTEMPT = 0;
     private final TimelineUtils timelineUtils;
     private final AuditLogService auditLogService;
-
 
     @Override
     public NormalizedChannelOutcome normalize(SendEventInt sendEvent,
@@ -64,39 +59,19 @@ public class AnalogEventNormalizer implements ChannelOutcomeNormalizer<SendEvent
     ) {
         int recIndex = analogSendMessageDetails.getRecIndex();
 
-        // Create analog detail from event
-        AnalogDeliveryDetailsInt analogDeliveryDetails = AnalogDeliveryDetailsInt.builder()
-                .code(sendEventInt.getStatusCode())
-                .eventTimestamp(sendEventInt.getStatusDateTime())
-                .build();
-
         return switch(classification.getCategory()) {
             case ChannelOutcomeCategory.Progress ignore -> timelineUtils.buildSendAnalogProgressNotificationTimelineElement(
-                    recIndex,
                     notification,
-                    null,
-                    notification.getSentAt(),
-                    analogDeliveryDetails,
-                    AnalogDeliveryTypeInt.RS,
-                    sendEventInt.getAttachments(),
-                    sendEventInt.getRequestId(),
-                    sendEventInt.getRegisteredLetterCode(),
-                    FIRST_ATTEMPT
+                    recIndex,
+                    sendEventInt,
+                    analogSendMessageDetails
             );
             case ChannelOutcomeCategory.Feedback feedback -> timelineUtils.buildSendAnalogFeedbackNotificationTimelineElement(
-                    recIndex,
                     notification,
-                    null,
-                    notification.getSentAt(),
-                    analogDeliveryDetails,
-                    AnalogDeliveryTypeInt.RS,
-                    sendEventInt.getAttachments(),
-                    sendEventInt.getRequestId(),
-                    sendEventInt.getRegisteredLetterCode(),
-                    sendEventInt.getDiscoveredAddress(),
-                    determineStatus(feedback),
-                    null,
-                    FIRST_ATTEMPT
+                    recIndex,
+                    sendEventInt,
+                    analogSendMessageDetails,
+                    determineStatus(feedback)
             );
         };
     }
@@ -105,7 +80,7 @@ public class AnalogEventNormalizer implements ChannelOutcomeNormalizer<SendEvent
         String attachments = sendEvent.getAttachments()==null?"":sendEvent.getAttachments().stream().map(AttachmentDetailsInt::getUrl).collect(Collectors.joining(","));
         String msg = String.format(
                 "Analog workflow Paper channel execute response requestId=%s statusCode=%s sentAttemptMade=%d attachments=%s relatedRequestId=%s",
-                sendEvent.getRequestId(),
+                sendEvent.getPrepareRequestId(),
                 sendEvent.getStatusCode(),
                 analogSendMessageDetails.getSentAttemptMade(),
                 attachments,

@@ -23,6 +23,7 @@ import it.pagopa.pn.workflowmanager.dto.timeline.TimelineEventId;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.*;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.DesiredFeedbackType;
+import it.pagopa.pn.workflowmanager.middleware.queue.consumer.event.SendEventInt;
 import it.pagopa.pn.workflowmanager.service.TimelineService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -353,64 +354,60 @@ class TimelineUtilsTest {
     }
 
     @Test
-    void findFirstReachedTimelineElement_shouldReturnElement_whenReachedElementExistsForRecipient() {
+    void findFirstReachedElementId_shouldReturnElementId_whenReachedElementIdExistsForRecipient() {
         // Arrange
         TimelineElementInternal element = createReachedTimelineElement(TEST_REC_INDEX, Instant.now());
         List<TimelineElementInternal> timelineElements = List.of(element);
 
         // Act
-        Optional<TimelineElementInternal> result =
-                timelineUtils.findFirstReachedTimelineElement(timelineElements, TEST_REC_INDEX);
+        Optional<String> result = timelineUtils.findFirstReachedElementId(timelineElements, TEST_REC_INDEX);
 
         // Assert
         Assertions.assertTrue(result.isPresent());
-        Assertions.assertEquals(element, result.get());
+        Assertions.assertEquals(element.getElementId(), result.get());
     }
 
     @Test
-    void findFirstReachedTimelineElement_shouldReturnEmpty_whenListIsEmpty() {
+    void findFirstReachedElementId_shouldReturnEmpty_whenListIsEmpty() {
         // Arrange
         List<TimelineElementInternal> timelineElements = List.of();
 
         // Act
-        Optional<TimelineElementInternal> result =
-                timelineUtils.findFirstReachedTimelineElement(timelineElements, TEST_REC_INDEX);
+        Optional<String> result = timelineUtils.findFirstReachedElementId(timelineElements, TEST_REC_INDEX);
 
         // Assert
         Assertions.assertTrue(result.isEmpty());
     }
 
     @Test
-    void findFirstReachedTimelineElement_shouldReturnEmpty_whenElementIsNotReachedType() {
+    void findFirstReachedElementId_shouldReturnEmpty_whenElementIsNotReachedTypeId() {
         // Arrange
         TimelineElementInternal element = createTimelineElement(SEND_DIGITAL_MESSAGE, TEST_REC_INDEX);
         List<TimelineElementInternal> timelineElements = List.of(element);
 
         // Act
-        Optional<TimelineElementInternal> result =
-                timelineUtils.findFirstReachedTimelineElement(timelineElements, TEST_REC_INDEX);
+        Optional<String> result = timelineUtils.findFirstReachedElementId(timelineElements, TEST_REC_INDEX);
 
         // Assert
         Assertions.assertTrue(result.isEmpty());
     }
 
     @Test
-    void findFirstReachedTimelineElement_shouldReturnEmpty_whenReachedElementExistsForDifferentRecipient() {
+    void findFirstReachedElementId_shouldReturnEmpty_whenReachedElementIdExistsForDifferentRecipient() {
         // Arrange
         int differentRecIndex = 1;
         TimelineElementInternal element = createReachedTimelineElement(differentRecIndex, Instant.now());
         List<TimelineElementInternal> timelineElements = List.of(element);
 
         // Act
-        Optional<TimelineElementInternal> result =
-                timelineUtils.findFirstReachedTimelineElement(timelineElements, TEST_REC_INDEX);
+        Optional<String> result = timelineUtils.findFirstReachedElementId(timelineElements, TEST_REC_INDEX);
 
         // Assert
         Assertions.assertTrue(result.isEmpty());
     }
 
     @Test
-    void findFirstReachedTimelineElement_shouldReturnEarliestElement_whenMultipleReachedElementsExist() {
+    void findFirstReachedElementId_shouldReturnEarliestElementId_whenMultipleReachedElementsExist() {
         // Arrange
         Instant now = Instant.now();
         TimelineElementInternal earliest = createReachedTimelineElement(TEST_REC_INDEX, now);
@@ -420,16 +417,15 @@ class TimelineUtilsTest {
         List<TimelineElementInternal> timelineElements = List.of(latest, earliest, middle);
 
         // Act
-        Optional<TimelineElementInternal> result =
-                timelineUtils.findFirstReachedTimelineElement(timelineElements, TEST_REC_INDEX);
+        Optional<String> result = timelineUtils.findFirstReachedElementId(timelineElements, TEST_REC_INDEX);
 
         // Assert
         Assertions.assertTrue(result.isPresent());
-        Assertions.assertEquals(earliest, result.get());
+        Assertions.assertEquals(earliest.getElementId(), result.get());
     }
 
     @Test
-    void findFirstReachedTimelineElement_shouldIgnoreNonMatchingElements_whenListIsMixed() {
+    void findFirstReachedElementId_shouldIgnoreNonMatchingElements_whenListIsMixed() {
         // Arrange
         Instant now = Instant.now();
         TimelineElementInternal wrongRecipient = createReachedTimelineElement(1, now);
@@ -439,23 +435,42 @@ class TimelineUtilsTest {
         List<TimelineElementInternal> timelineElements = List.of(wrongRecipient, wrongType, expected);
 
         // Act
-        Optional<TimelineElementInternal> result =
-                timelineUtils.findFirstReachedTimelineElement(timelineElements, TEST_REC_INDEX);
+        Optional<String> result = timelineUtils.findFirstReachedElementId(timelineElements, TEST_REC_INDEX);
 
         // Assert
         Assertions.assertTrue(result.isPresent());
-        Assertions.assertEquals(expected, result.get());
+        Assertions.assertEquals(expected.getElementId(), result.get());
+    }
+
+    @Test
+    void findFirstReachedElementId_shouldReturnSourceElementId_whenReachedElementHasDeliveredDetails() {
+        // Arrange
+        String sourceElementId = "source-element-id";
+        TimelineElementInternal deliveredElement = TimelineElementInternal.builder()
+                .elementId("REACHED-ELEMENT")
+                .category(DELIVERED)
+                .timestamp(Instant.now())
+                .details(DeliveredDetailsInt.builder().recIndex(TEST_REC_INDEX).sourceElementId(sourceElementId).build())
+                .build();
+
+        List<TimelineElementInternal> timelineElements = List.of(deliveredElement);
+
+        // Act
+        Optional<String> result = timelineUtils.findFirstReachedElementId(timelineElements, TEST_REC_INDEX);
+
+        // Assert
+        Assertions.assertTrue(result.isPresent());
+        Assertions.assertEquals(sourceElementId, result.get());
     }
 
     private TimelineElementInternal createReachedTimelineElement(int recIndex, Instant timestamp) {
         return TimelineElementInternal.builder()
-            .elementId("REACHED-ELEMENT")
-            .category(DELIVERED)
-            .timestamp(timestamp)
-            .details(DeliveredDetailsInt.builder().recIndex(recIndex).build())
-            .build();
+                .elementId("REACHED-ELEMENT")
+                .category(DELIVERED)
+                .timestamp(timestamp)
+                .details(InformalNotificationViewedDetailsInt.builder().recIndex(recIndex).eventTimestamp(timestamp).build())
+                .build();
     }
-
 
     @Test
     void getTimelineElementInternals_shouldReturnStreamFromService() {
@@ -1019,7 +1034,7 @@ class TimelineUtilsTest {
         ServiceLevelInt serviceLevelInt = ServiceLevelInt.AR_REGISTERED_LETTER;
 
         // Act - Test buildSendAnalogTimelineEventId
-        String eventId = TimelineUtils.buildSendAnalogTimelineEventId(TEST_REC_INDEX, notification, analogDtoInfo);
+        String eventId = TimelineUtils.buildSendAnalogTimelineEventId(TEST_REC_INDEX, notification, sentAttemptMade);
 
         // Assert - verify eventId
         assertNotNull(eventId);
@@ -1029,7 +1044,7 @@ class TimelineUtilsTest {
         // Act - Test buildSendAnalogNotificationTimelineElement
         TimelineElementInternal actual = timelineUtils.buildSendAnalogNotificationTimelineElement(
                 physicalAddress, TEST_REC_INDEX, notification, analogDtoInfo,
-                replacedF24AttachmentUrls, categorizedAttachmentsResult, serviceLevelInt, prepareRequestId, AnalogDeliveryTypeInt.RS);
+                replacedF24AttachmentUrls, categorizedAttachmentsResult, serviceLevelInt, AnalogDeliveryTypeInt.RS);
 
         // Assert - verify timeline element
         Assertions.assertAll(
@@ -1066,16 +1081,29 @@ class TimelineUtilsTest {
         NotificationInt notification = createNotification();
         ServiceLevelInt serviceLevel = ServiceLevelInt.AR_REGISTERED_LETTER;
         Instant notificationDate = Instant.now();
-        AnalogDeliveryDetailsInt deliveryDetail = AnalogDeliveryDetailsInt.builder()
-                .code("P000")
-                .eventTimestamp(notificationDate)
-                .build();
         AnalogDeliveryTypeInt deliveryType = AnalogDeliveryTypeInt.RS;
         List<AttachmentDetailsInt> attachments = List.of(AttachmentDetailsInt.builder().id("att-1").build());
         String sendRequestId = "req-analog-001";
         String registeredLetterCode = "rlc-001";
         Integer sentAttemptMade = 0;
         Integer progressIndex = 1;
+        String statusCode = "P000";
+        String deliveryFailureCause = "test";
+        SendEventInt sendEvent = SendEventInt.builder()
+                .statusCode("P000")
+                .deliveryFailureCause("test")
+                .statusDateTime(notificationDate)
+                .sendRequestId(sendRequestId)
+                .registeredLetterCode(registeredLetterCode)
+                .attachments(attachments)
+                .build();
+
+        SendAnalogMessageDetailsInt sendAnalogMessageDetailsInt = SendAnalogMessageDetailsInt.builder()
+                .recIndex(TEST_REC_INDEX)
+                .serviceLevel(serviceLevel)
+                .deliveryType(deliveryType)
+                .sentAttemptMade(sentAttemptMade)
+                .build();
 
         when(timelineService.retrieveAndIncrementCounterForTimelineEvent(sendRequestId))
                 .thenReturn(progressIndex.longValue());
@@ -1085,8 +1113,7 @@ class TimelineUtilsTest {
 
         // Act
         TimelineElementInternal actual = timelineUtils.buildSendAnalogProgressNotificationTimelineElement(
-                TEST_REC_INDEX, notification, serviceLevel, notificationDate,
-                deliveryDetail, deliveryType, attachments, sendRequestId, registeredLetterCode, sentAttemptMade);
+                notification, TEST_REC_INDEX, sendEvent, sendAnalogMessageDetailsInt);
 
         // Assert
         verify(timelineService).retrieveAndIncrementCounterForTimelineEvent(sendRequestId);
@@ -1105,7 +1132,9 @@ class TimelineUtilsTest {
                 () -> assertEquals(serviceLevel, details.getServiceLevel()),
                 () -> assertEquals(attachments, details.getAttachments()),
                 () -> assertEquals(sendRequestId, details.getSendRequestId()),
-                () -> assertEquals(deliveryDetail, details.getDeliveryDetail()),
+                () -> assertEquals(statusCode, details.getDeliveryDetail().getCode()),
+                () -> assertEquals(deliveryFailureCause, details.getDeliveryDetail().getFailureCause()),
+                () -> assertEquals(notificationDate, details.getDeliveryDetail().getEventTimestamp()),
                 () -> assertEquals(registeredLetterCode, details.getRegisteredLetterCode()),
                 () -> assertEquals(notificationDate, details.getNotificationDate()),
                 () -> assertEquals(deliveryType, details.getDeliveryType()),
@@ -1133,10 +1162,6 @@ class TimelineUtilsTest {
         NotificationInt notification = createNotification();
         ServiceLevelInt serviceLevel = ServiceLevelInt.AR_REGISTERED_LETTER;
         Instant notificationDate = Instant.now();
-        AnalogDeliveryDetailsInt deliveryDetail = AnalogDeliveryDetailsInt.builder()
-                .code("CON080")
-                .eventTimestamp(notificationDate)
-                .build();
         AnalogDeliveryTypeInt deliveryType = AnalogDeliveryTypeInt.RS;
         List<AttachmentDetailsInt> attachments = List.of(AttachmentDetailsInt.builder().id("att-1").build());
         String sendRequestId = "req-analog-001";
@@ -1146,14 +1171,33 @@ class TimelineUtilsTest {
         ResponseStatusInt responseStatus = ResponseStatusInt.OK;
         Integer sentAttemptMade = 0;
 
+        String statusCode = "P000";
+        String deliveryFailureCause = "test";
+        SendEventInt sendEvent = SendEventInt.builder()
+                .statusCode(statusCode)
+                .deliveryFailureCause(deliveryFailureCause)
+                .statusDateTime(notificationDate)
+                .sendRequestId(sendRequestId)
+                .registeredLetterCode(registeredLetterCode)
+                .attachments(attachments)
+                .discoveredAddress(newAddress)
+                .build();
+
+        SendAnalogMessageDetailsInt sendAnalogMessageDetailsInt = SendAnalogMessageDetailsInt.builder()
+                .recIndex(TEST_REC_INDEX)
+                .serviceLevel(serviceLevel)
+                .deliveryType(deliveryType)
+                .sentAttemptMade(sentAttemptMade)
+                .physicalAddress(physicalAddress)
+                .build();
+
         String expectedEventId = TimelineUtils.buildSendAnalogFeedbackTimelineEventId(
                 TEST_REC_INDEX, notification, deliveryType, sentAttemptMade);
 
         // Act
         TimelineElementInternal actual = timelineUtils.buildSendAnalogFeedbackNotificationTimelineElement(
-                TEST_REC_INDEX, notification, serviceLevel, notificationDate,
-                deliveryDetail, deliveryType, attachments, sendRequestId, registeredLetterCode,
-                physicalAddress, responseStatus, newAddress, sentAttemptMade);
+                notification, TEST_REC_INDEX, sendEvent, sendAnalogMessageDetailsInt, responseStatus
+        );
 
         // Assert
         Assertions.assertAll(
@@ -1176,7 +1220,9 @@ class TimelineUtilsTest {
                 () -> assertEquals(sentAttemptMade, details.getSentAttemptMade()),
                 () -> assertEquals(responseStatus, details.getResponseStatus()),
                 () -> assertNull(details.getRequestTimelineId()),
-                () -> assertEquals(deliveryDetail, details.getDeliveryDetail()),
+                () -> assertEquals(statusCode, details.getDeliveryDetail().getCode()),
+                () -> assertEquals(deliveryFailureCause, details.getDeliveryDetail().getFailureCause()),
+                () -> assertEquals(notificationDate, details.getDeliveryDetail().getEventTimestamp()),
                 () -> assertEquals(registeredLetterCode, details.getRegisteredLetterCode()),
                 () -> assertEquals(notificationDate, details.getNotificationDate()),
                 () -> assertEquals(deliveryType, details.getDeliveryType())

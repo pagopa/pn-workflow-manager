@@ -2,6 +2,7 @@ package it.pagopa.pn.workflowmanager.action.utils;
 
 import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.AnalogDeliveryTypeInt;
+import it.pagopa.pn.workflowmanager.dto.timeline.details.SendAnalogMessageDetailsInt;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.model.SendResponse;
 import it.pagopa.pn.workflowmanager.config.PnWorkflowManagerConfigs;
 import it.pagopa.pn.workflowmanager.dto.address.PhysicalAddressInt;
@@ -22,6 +23,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -85,12 +87,12 @@ class PaperChannelUtilsTest {
 
         when(timelineUtils.buildSendAnalogNotificationTimelineElement(
                 physicalAddress, REC_INDEX, notification, analogDtoInfo,
-                replacedF24AttachmentUrls, categorizedAttachmentsResult, serviceLevelInt, PREPARE_REQUEST_ID, AnalogDeliveryTypeInt.RS))
+                replacedF24AttachmentUrls, categorizedAttachmentsResult, serviceLevelInt, AnalogDeliveryTypeInt.RS))
                 .thenReturn(timelineElement);
 
         String result = paperChannelUtils.addSendAnalogNotificationToTimeline(
                 notification, physicalAddress, REC_INDEX, analogDtoInfo,
-                replacedF24AttachmentUrls, categorizedAttachmentsResult, PREPARE_REQUEST_ID, serviceLevelInt, AnalogDeliveryTypeInt.RS);
+                replacedF24AttachmentUrls, categorizedAttachmentsResult, serviceLevelInt, AnalogDeliveryTypeInt.RS);
 
         assertEquals(EVENT_ID, result);
         verify(timelineService).addTimelineElement(timelineElement, notification);
@@ -200,6 +202,36 @@ class PaperChannelUtilsTest {
         verify(campaignService).getCampaignByCampaignIdAndSenderId(campaignId, paId);
         verify(workflowUtils).scheduleTimeoutForCurrentChannel(iun, recIndex, campaign, ChannelType.ANALOG);
         verifyNoMoreInteractions(campaignService, workflowUtils);
+    }
+
+    @Test
+    void getSendAnalogRequestIdFromPrepareRequestId_shouldReturnSendRequestId() {
+        String sendRequestId = "SEND_REQUEST_001";
+
+        TimelineElementInternal sendAnalogMessageTimelineElement = TimelineElementInternal.builder()
+                .elementId(sendRequestId)
+                .details(SendAnalogMessageDetailsInt.builder().prepareRequestId(PREPARE_REQUEST_ID).build())
+                .build();
+
+        when(timelineService.getTimeline(IUN, false))
+                .thenReturn(Set.of(sendAnalogMessageTimelineElement));
+
+        String result = paperChannelUtils.getSendAnalogRequestIdFromPrepareRequestId(IUN, PREPARE_REQUEST_ID);
+
+        assertEquals(sendRequestId, result);
+        verify(timelineService).getTimeline(IUN, false);
+    }
+
+    @Test
+    void getSendAnalogRequestIdFromPrepareRequestId_shouldThrowExceptionWhenNotFound() {
+        when(timelineService.getTimeline(IUN, false))
+                .thenReturn(Set.of());
+
+        assertThrows(PnInternalException.class, () ->
+                paperChannelUtils.getSendAnalogRequestIdFromPrepareRequestId(IUN, PREPARE_REQUEST_ID)
+        );
+
+        verify(timelineService).getTimeline(IUN, false);
     }
 
 }

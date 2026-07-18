@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import static it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt.*;
@@ -34,9 +35,9 @@ public class RecipientDeliveryAnalyzer {
     public RecipientDeliveryInfo getDeliveryInfo(List<TimelineElementInternal> timelineElements,
                                                  Campaign campaign,
                                                  int recIndex, RecipientTypeInt recipientType) {
-        TimelineElementInternal reachedTimelineElement = timelineUtils.findFirstReachedTimelineElement(timelineElements, recIndex).orElse(null);
-        if (reachedTimelineElement != null) {
-            return new RecipientDeliveryInfo(RecipientDeliveryStatus.REACHED, reachedTimelineElement.getElementId());
+        Optional<String> reachedElementId = timelineUtils.findFirstReachedElementId(timelineElements, recIndex);
+        if (reachedElementId.isPresent()) {
+            return new RecipientDeliveryInfo(RecipientDeliveryStatus.REACHED, reachedElementId.get());
         } else if (isRecipientUndeliverable(timelineElements, recIndex, campaign, recipientType)) {
             return new RecipientDeliveryInfo(RecipientDeliveryStatus.UNDELIVERABLE);
         } else {

@@ -11,6 +11,7 @@ import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.ResultFilterInt;
 import it.pagopa.pn.workflowmanager.dto.ext.paperchannel.AnalogDtoInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.AnalogDeliveryTypeInt;
+import it.pagopa.pn.workflowmanager.dto.timeline.details.SendAnalogMessageDetailsInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.ServiceLevelInt;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.model.SendResponse;
 import it.pagopa.pn.workflowmanager.service.CampaignService;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCodes.ERROR_CODE_TIMELINESERVICE_TIMELINE_ELEMENT_NOT_PRESENT;
 
@@ -48,12 +50,11 @@ public class PaperChannelUtils {
             AnalogDtoInt analogDtoInfo,
             List<String> replacedF24AttachmentUrls,
             CategorizedAttachmentsResultInt categorizedAttachmentsResult,
-            String prepareRequestId,
             ServiceLevelInt serviceLevelInt,
             AnalogDeliveryTypeInt analogDeliveryType
     ) {
         TimelineElementInternal timelineElementInternal = timelineUtils.buildSendAnalogNotificationTimelineElement(
-                physicalAddress, recIndex, notification, analogDtoInfo, replacedF24AttachmentUrls, categorizedAttachmentsResult,serviceLevelInt, prepareRequestId, analogDeliveryType);
+                physicalAddress, recIndex, notification, analogDtoInfo, replacedF24AttachmentUrls, categorizedAttachmentsResult,serviceLevelInt, analogDeliveryType);
         addTimelineElement(timelineElementInternal,
                 notification
         );
@@ -74,7 +75,7 @@ public class PaperChannelUtils {
         return AnalogDtoInt.builder()
                 .sentAttemptMade(FIRST_ATTEMPT)
                 .sendResponse(sendResponse)
-                .relatedRequestId(null)
+                .relatedRequestId(null) // Per l'invio di una notifica bonaria si presuppone che ci sia un solo invio
                 .productType(productType)
                 .prepareRequestId(prepareRequestId)
                 .build();
@@ -103,5 +104,15 @@ public class PaperChannelUtils {
     public void scheduleTimeoutForAnalogChannel(NotificationInt notification, int recIndex) {
         Campaign campaign = campaignService.getCampaignByCampaignIdAndSenderId(notification.getCampaignId(), notification.getSender().getPaId());
         workflowUtils.scheduleTimeoutForCurrentChannel(notification.getIun(), recIndex, campaign, ChannelType.ANALOG);
+    }
+
+    public String getSendAnalogRequestIdFromPrepareRequestId(String iun, String prepareRequestId) {
+        Set<TimelineElementInternal> timeline = timelineService.getTimeline(iun, false);
+        return timeline.stream()
+                .filter(timelineElement -> timelineElement.getDetails() instanceof SendAnalogMessageDetailsInt)
+                .filter(timelineElement -> ((SendAnalogMessageDetailsInt) timelineElement.getDetails()).getPrepareRequestId().equals(prepareRequestId))
+                .map(TimelineElementInternal::getElementId)
+                .findFirst()
+                .orElseThrow(() -> new PnInternalException("SendRequestId is not present for iun=" + iun + " prepareRequestId=" + prepareRequestId, ERROR_CODE_TIMELINESERVICE_TIMELINE_ELEMENT_NOT_PRESENT));
     }
 }

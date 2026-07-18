@@ -3,6 +3,7 @@ package it.pagopa.pn.workflowmanager.middleware.queue.consumer.handler;
 import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.commons.exceptions.PnRuntimeException;
 import it.pagopa.pn.commons.utils.LogUtils;
+import it.pagopa.pn.workflowmanager.action.utils.PaperChannelUtils;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.model.*;
 import it.pagopa.pn.workflowmanager.action.analogworkflow.AnalogWorkflowPaperChannelResponseHandler;
 import it.pagopa.pn.workflowmanager.action.utils.TimelineUtils;
@@ -37,6 +38,7 @@ public class PaperChannelHandler {
     private final TimelineUtils timelineUtils;
     private final ChannelEventProcessor channelEventProcessor;
     private final AnalogEventNormalizer analogEventNormalizer;
+    private final PaperChannelUtils paperChannelUtils;
 
     /**
      * Handle notification response from external channel. Positive response means notification is delivered correctly, so the workflow can be completed successfully.
@@ -67,7 +69,7 @@ public class PaperChannelHandler {
             PrepareEventInt analogSentResponseInt = mapExternalToInternal(iun, event);
 
             log.debug("Received PaperChannel prepare paper message event for requestId={} - status={} details={} receiverAddress={}",
-                    analogSentResponseInt.getRequestId(), analogSentResponseInt.getStatusCode(), analogSentResponseInt.getStatusDetail(), (analogSentResponseInt.getReceiverAddress()==null?"": LogUtils.maskGeneric(analogSentResponseInt.getReceiverAddress().getAddress())));
+                    analogSentResponseInt.getPrepareRequestId(), analogSentResponseInt.getStatusCode(), analogSentResponseInt.getStatusDetail(), (analogSentResponseInt.getReceiverAddress()==null?"": LogUtils.maskGeneric(analogSentResponseInt.getReceiverAddress().getAddress())));
 
             analogWorkflowPaperChannelResponseHandler.paperChannelPrepareResponseHandler(analogSentResponseInt);
 
@@ -94,7 +96,7 @@ public class PaperChannelHandler {
                 .statusCode(Optional.ofNullable(event.getStatusCode()).map(StatusCodeEnum::getValue).orElse(null))
                 .statusDetail(event.getStatusDetail())
                 .replacedF24AttachmentUrls(event.getReplacedF24AttachmentUrls())
-                .requestId(event.getRequestId())
+                .prepareRequestId(event.getRequestId())
                 .statusDateTime(event.getStatusDateTime())
                 .failureDetailCode(Optional.ofNullable(event.getFailureDetailCode()).map(FailureDetailCodeEnum::getValue).orElse(null))
                 .productType(event.getProductType());
@@ -177,9 +179,11 @@ public class PaperChannelHandler {
     }
 
     private SendEventInt mapExternalToInternal(SendEvent event) {
+        String iun = timelineUtils.getIunFromTimelineId(event.getRequestId());
         return SendEventInt.builder()
-                .iun(timelineUtils.getIunFromTimelineId(event.getRequestId()))
-                .requestId(event.getRequestId())
+                .iun(iun)
+                .prepareRequestId(event.getRequestId())
+                .sendRequestId(paperChannelUtils.getSendAnalogRequestIdFromPrepareRequestId(iun, event.getRequestId()))
                 .statusCode(Optional.ofNullable(event.getStatusCode()).map(StatusCodeEnum::getValue).orElse(null))
                 .statusDateTime(event.getStatusDateTime())
                 .statusDetail(event.getStatusDetail())
@@ -188,7 +192,7 @@ public class PaperChannelHandler {
                                                                      .map(this::mapAttachmentDetailsToInternal)
                                                                      .toList())
                 .discoveredAddress(mapAnalogAddressToInternal(event.getDiscoveredAddress()))
-                .deliveryFailureCause(Optional.ofNullable(event.getDeliveryFailureCause()).map(Object::toString).orElse(null))
+                .deliveryFailureCause(event.getDeliveryFailureCause())
                 .registeredLetterCode(event.getRegisteredLetterCode())
                 .build();
     }

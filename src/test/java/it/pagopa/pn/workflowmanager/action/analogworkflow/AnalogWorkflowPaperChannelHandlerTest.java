@@ -169,7 +169,7 @@ class AnalogWorkflowPaperChannelHandlerTest {
 
         return PrepareEventInt.builder()
                 .iun(TEST_IUN)
-                .requestId(TEST_REQUEST_ID)
+                .prepareRequestId(TEST_REQUEST_ID)
                 .statusCode(statusCode)
                 .statusDetail("Status detail")
                 .statusDateTime(Instant.now())
