@@ -1,0 +1,671 @@
+package it.pagopa.pn.workflowmanager.action.utils;
+
+import it.pagopa.pn.commons.exceptions.PnInternalException;
+import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
+import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
+import it.pagopa.pn.workflowmanager.dto.address.PhysicalAddressInt;
+import it.pagopa.pn.workflowmanager.dto.event.NotificationPaidInt;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.DesiredFeedbackType;
+import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
+import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
+import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.CategorizedAttachmentsResultInt;
+import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.ResponseStatusInt;
+import it.pagopa.pn.workflowmanager.dto.ext.paperchannel.AnalogDtoInt;
+import it.pagopa.pn.workflowmanager.dto.timeline.EventId;
+import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
+import it.pagopa.pn.workflowmanager.dto.timeline.TimelineEventId;
+import it.pagopa.pn.workflowmanager.dto.timeline.TimelineEventIdBuilder;
+import it.pagopa.pn.workflowmanager.dto.timeline.details.*;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.model.SendResponse;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.model.NotificationHistoryResponse;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.model.NotificationStatus;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.model.SendingReceipt;
+import it.pagopa.pn.workflowmanager.middleware.queue.consumer.event.SendEventInt;
+import it.pagopa.pn.workflowmanager.service.TimelineService;
+import jakarta.validation.constraints.NotNull;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
+
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Stream;
+
+import static it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCodes.ERROR_CODE_TIMELINESERVICE_TIMELINE_ELEMENT_NOT_PRESENT;
+
+@Component
+@Slf4j
+@RequiredArgsConstructor
+public class TimelineUtils {
+    private final TimelineService timelineService;
+
+    public TimelineElementInternal buildTimeline(NotificationInt notification,
+                                                 TimelineElementCategoryInt category,
+                                                 String elementId,
+                                                 @NotNull TimelineElementDetailsInt details) {
+
+        TimelineElementInternal.TimelineElementInternalBuilder timelineBuilder = TimelineElementInternal.builder();
+
+        return buildTimeline(notification, category, elementId, details, timelineBuilder);
+    }
+
+    private TimelineElementInternal buildTimeline(NotificationInt notification,
+                                                  TimelineElementCategoryInt category,
+                                                  String elementId,
+                                                  TimelineElementDetailsInt details,
+                                                  TimelineElementInternal.TimelineElementInternalBuilder timelineBuilder) {
+        return timelineBuilder
+                .iun(notification.getIun())
+                .category(category)
+                .timestamp(Instant.now())
+                .elementId(elementId)
+                .details(details)
+                .paId(notification.getSender().getPaId())
+                .notificationSentAt(notification.getSentAt())
+                .campaignId(notification.getCampaignId())
+                .build();
+    }
+
+    public TimelineElementInternal buildSendDigitalMessageSkipTimelineElement(Integer recIndex, NotificationInt notification,
+                                                                              String eventId,
+                                                                              DigitalChannelsInt digitalAddressChannel,
+                                                                              DigitalAddressSourceInt digitalAddressSource){
+        log.debug("buildSendDigitalMessageSkipTimelineElement - IUN={} and id={}", notification.getIun(), recIndex);
+
+        SendDigitalMessageSkipDetailsInt details = SendDigitalMessageSkipDetailsInt.builder()
+                .recIndex(recIndex)
+                .channel(digitalAddressChannel)
+                .digitalAddressSource(digitalAddressSource)
+                .build();
+
+        return buildTimeline(notification, TimelineElementCategoryInt.SEND_DIGITAL_MESSAGE_SKIP, eventId, details);
+    }
+
+    public TimelineElementInternal buildWorkflowEndedUndeliverableTimelineElement(Integer recIndex, NotificationInt notification,
+                                                                              String eventId) {
+        log.debug("buildWorkflowEndedUndeliverableTimelineElement - IUN={} and id={}", notification.getIun(), recIndex);
+
+        WorkflowEndedUndeliverableDetailsInt details = WorkflowEndedUndeliverableDetailsInt.builder()
+                .recIndex(recIndex)
+                .build();
+
+        return buildTimeline(notification, TimelineElementCategoryInt.WORKFLOW_ENDED_UNDELIVERABLE, eventId, details);
+    }
+
+    public static String getWorkflowEndedUndeliverableTimelineElementId(Integer recIndex, String iun) {
+        return TimelineEventId.WORKFLOW_ENDED_UNDELIVERABLE.buildEventId(EventId.builder()
+                .iun(iun)
+                .recIndex(recIndex)
+                .build()
+        );
+    }
+
+    public TimelineElementInternal buildPrepareAnalogDeliveryTimelineElement(Integer recIndex,
+                                                                             NotificationInt notification,
+                                                                             String eventId,
+                                                                             ServiceLevelInt serviceLevel,
+                                                                             Integer sentAttemptMade,
+                                                                             String relatedRequestId,
+                                                                             PhysicalAddressInt physicalAddressInt) {
+        log.debug("buildPrepareAnalogDeliveryTimelineElement - IUN={} and id={}", notification.getIun(), recIndex);
+
+        PrepareAnalogDeliveryDetailsInt details = PrepareAnalogDeliveryDetailsInt.builder()
+                .recIndex(recIndex)
+                .physicalAddress(physicalAddressInt)
+                .deliveryType(AnalogDeliveryTypeInt.RS)
+                .serviceLevel(serviceLevel)
+                .sentAttemptMade(sentAttemptMade)
+                .relatedRequestId(relatedRequestId)
+                .foreignState(physicalAddressInt.getForeignState())
+                .build();
+        return buildTimeline(notification, TimelineElementCategoryInt.PREPARE_ANALOG_DELIVERY, eventId, details);
+    }
+
+    public TimelineElementInternal buildSendAnalogNotificationTimelineElement(PhysicalAddressInt address,
+                                                                              Integer recIndex,
+                                                                              NotificationInt notification,
+                                                                              AnalogDtoInt analogDtoInfo,
+                                                                              List<String> replacedF24AttachmentUrls,
+                                                                              CategorizedAttachmentsResultInt categorizedAttachmentsResult,
+                                                                              ServiceLevelInt serviceLevelInt,
+                                                                              AnalogDeliveryTypeInt analogDeliveryType) {
+        SendResponse sendResponse = analogDtoInfo.getSendResponse();
+        log.debug("buildSendAnalogNotificationTimelineElement - IUN={} and id={} analogCost={} relatedRequestId={} replacedF24AttachmentUrls={}", notification.getIun(), recIndex, sendResponse.getAmount(), analogDtoInfo.getRelatedRequestId(), replacedF24AttachmentUrls);
+        String sendElementId = buildSendAnalogTimelineEventId(recIndex, notification, analogDtoInfo.getSentAttemptMade());
+
+        SendAnalogMessageDetailsInt details = SendAnalogMessageDetailsInt.builder()
+                .recIndex(recIndex)
+                .physicalAddress(address)
+                .serviceLevel(serviceLevelInt)
+                .sentAttemptMade(analogDtoInfo.getSentAttemptMade())
+                .relatedRequestId(analogDtoInfo.getRelatedRequestId())
+                .analogCost(sendResponse.getAmount())
+                .productType(analogDtoInfo.getProductType())
+                .numberOfPages(sendResponse.getNumberOfPages())
+                .envelopeWeight(sendResponse.getEnvelopeWeight())
+                .f24Attachments(replacedF24AttachmentUrls)
+                .categorizedAttachmentsResult(categorizedAttachmentsResult)
+                .prepareRequestId(analogDtoInfo.getPrepareRequestId())
+                .vat(notification.getVat())
+                .deliveryType(analogDeliveryType)
+                .build();
+
+        TimelineElementInternal.TimelineElementInternalBuilder timelineBuilder = TimelineElementInternal.builder();
+
+        return buildTimeline(notification, TimelineElementCategoryInt.SEND_ANALOG_MESSAGE, sendElementId, details, timelineBuilder);
+    }
+
+    public TimelineElementInternal buildSendAnalogProgressNotificationTimelineElement(
+            NotificationInt notification,
+            Integer recIndex,
+            SendEventInt sendEventInt,
+            SendAnalogMessageDetailsInt analogSendMessageDetails
+    ) {
+        log.debug("buildSendAnalogProgressNotificationTimelineElement - IUN={} and id={} ", notification.getIun(), recIndex);
+
+        Integer progressIndex = timelineService.retrieveAndIncrementCounterForTimelineEvent(sendEventInt.getSendRequestId()).intValue();
+        int sentAttemptMade = analogSendMessageDetails.getSentAttemptMade();
+        AnalogDeliveryTypeInt deliveryType = analogSendMessageDetails.getDeliveryType();
+        String eventId = buildSendAnalogProgressTimelineEventId(recIndex, notification, progressIndex, deliveryType, sentAttemptMade);
+
+        AnalogDeliveryDetailsInt deliveryDetail = AnalogDeliveryDetailsInt.builder()
+                .code(sendEventInt.getStatusDetail())
+                .eventTimestamp(sendEventInt.getStatusDateTime())
+                .failureCause(sendEventInt.getDeliveryFailureCause())
+                .build();
+
+        SendAnalogMessageProgressDetailsInt details = SendAnalogMessageProgressDetailsInt.builder()
+                .recIndex(recIndex)
+                .serviceLevel(analogSendMessageDetails.getServiceLevel())
+                .attachments(sendEventInt.getAttachments())
+                .sendRequestId(sendEventInt.getSendRequestId())
+                .deliveryDetail(deliveryDetail)
+                .registeredLetterCode(sendEventInt.getRegisteredLetterCode())
+                .notificationDate(sendEventInt.getStatusDateTime())
+                .deliveryType(deliveryType)
+                .sentAttemptMade(sentAttemptMade)
+                .build();
+
+        TimelineElementInternal.TimelineElementInternalBuilder timelineBuilder = TimelineElementInternal.builder();
+
+        return buildTimeline(notification, TimelineElementCategoryInt.SEND_ANALOG_MESSAGE_PROGRESS, eventId, details, timelineBuilder);
+    }
+
+    public static String buildSendAnalogProgressTimelineEventId(Integer recIndex, NotificationInt notification, Integer progressIndex,
+                                                                AnalogDeliveryTypeInt deliveryType,Integer sentAttemptMade) {
+        return TimelineEventId.SEND_ANALOG_MESSAGE_PROGRESS.buildEventId(
+                EventId.builder()
+                        .iun(notification.getIun())
+                        .recIndex(recIndex)
+                        .deliveryType(deliveryType.name())
+                        .sentAttemptMade(sentAttemptMade)
+                        .progressIndex(progressIndex)
+                        .build()
+        );
+    }
+
+    public TimelineElementInternal buildSendAnalogFeedbackNotificationTimelineElement(
+            NotificationInt notification,
+            Integer recIndex,
+            SendEventInt sendEventInt,
+            SendAnalogMessageDetailsInt analogSendMessageDetails,
+            ResponseStatusInt responseStatus
+    ) {
+        log.debug("buildSendAnalogFeedbackNotificationTimelineElement - IUN={} and id={} ", notification.getIun(), recIndex);
+
+        AnalogDeliveryTypeInt deliveryType = analogSendMessageDetails.getDeliveryType();
+        int sentAttemptMade = analogSendMessageDetails.getSentAttemptMade();
+        String eventId = buildSendAnalogFeedbackTimelineEventId(recIndex, notification, deliveryType, sentAttemptMade);
+
+        AnalogDeliveryDetailsInt deliveryDetail = AnalogDeliveryDetailsInt.builder()
+                .code(sendEventInt.getStatusDetail())
+                .eventTimestamp(sendEventInt.getStatusDateTime())
+                .failureCause(sendEventInt.getDeliveryFailureCause())
+                .build();
+
+        SendAnalogMessageFeedbackDetailsInt details = SendAnalogMessageFeedbackDetailsInt.builder()
+                .recIndex(recIndex)
+                .serviceLevel(analogSendMessageDetails.getServiceLevel())
+                .physicalAddress(analogSendMessageDetails.getPhysicalAddress())
+                .newAddress(sendEventInt.getDiscoveredAddress())
+                .attachments(sendEventInt.getAttachments())
+                .sendRequestId(sendEventInt.getSendRequestId())
+                .sentAttemptMade(sentAttemptMade)
+                .responseStatus(responseStatus)
+                .deliveryDetail(deliveryDetail)
+                .registeredLetterCode(sendEventInt.getRegisteredLetterCode())
+                .notificationDate(sendEventInt.getStatusDateTime())
+                .deliveryType(deliveryType)
+                .build();
+
+        TimelineElementInternal.TimelineElementInternalBuilder timelineBuilder = TimelineElementInternal.builder();
+
+        return buildTimeline(notification, TimelineElementCategoryInt.SEND_ANALOG_MESSAGE_FEEDBACK, eventId, details, timelineBuilder);
+    }
+
+    public static String buildSendAnalogFeedbackTimelineEventId(Integer recIndex, NotificationInt notification,AnalogDeliveryTypeInt deliveryType,Integer sentAttemptMade) {
+        return TimelineEventId.SEND_ANALOG_MESSAGE_FEEDBACK.buildEventId(
+                EventId.builder()
+                        .iun(notification.getIun())
+                        .recIndex(recIndex)
+                        .deliveryType(deliveryType.name())
+                        .sentAttemptMade(sentAttemptMade)
+                        .build()
+        );
+    }
+
+    public static String buildSendAnalogTimelineEventId(Integer recIndex, NotificationInt notification, int sentAttemptMade) {
+        return TimelineEventId.SEND_ANALOG_MESSAGE.buildEventId(
+                EventId.builder()
+                        .iun(notification.getIun())
+                        .recIndex(recIndex)
+                        .deliveryType(AnalogDeliveryTypeInt.RS.name())
+                        .sentAttemptMade(sentAttemptMade)
+                        .build()
+        );
+    }
+
+    public TimelineElementInternal buildWorkflowEndedUnreachedTimelineElement(Integer recIndex, NotificationInt notification,
+                                                                            String eventId) {
+        log.debug("buildWorkflowEndedUnreachedTimelineElement - IUN={} and id={}", notification.getIun(), recIndex);
+
+        WorkflowEndedUnreachedDetailsInt details = WorkflowEndedUnreachedDetailsInt.builder()
+                .recIndex(recIndex)
+                .build();
+
+
+        return buildTimeline(notification, TimelineElementCategoryInt.WORKFLOW_ENDED_UNREACHED, eventId, details);
+    }
+
+    public static String getWorkflowEndedUnreachedTimelineElementId(Integer recIndex, String iun) {
+        return TimelineEventId.WORKFLOW_ENDED_UNREACHED.buildEventId(EventId.builder()
+                .iun(iun)
+                .recIndex(recIndex)
+                .build()
+        );
+    }
+
+    public TimelineElementInternal buildWorkflowEndedReachedTimelineElement(Integer recIndex, NotificationInt notification,
+                                                                           String eventId, String sourceTimelineId) {
+        log.debug("buildWorkflowEndedReachedTimelineElement - IUN={} and id={}", notification.getIun(), recIndex);
+
+        WorkflowEndedReachedDetailsInt details = WorkflowEndedReachedDetailsInt.builder()
+                .recIndex(recIndex)
+                .sourceElementId(sourceTimelineId)
+                .build();
+
+
+        return buildTimeline(notification, TimelineElementCategoryInt.WORKFLOW_ENDED_REACHED, eventId, details);
+    }
+
+    public static String getWorkflowEndedReachedTimelineElementId(Integer recIndex, String iun) {
+        return TimelineEventId.WORKFLOW_ENDED_REACHED.buildEventId(EventId.builder()
+                .iun(iun)
+                .recIndex(recIndex)
+                .build()
+        );
+    }
+
+    public TimelineElementInternal buildWorkflowDoneUnreachedTimelineElement(Integer recIndex, NotificationInt notification,
+                                                                             String eventId, String sourceTimelineId, DesiredFeedbackType completionFeedback) {
+        log.debug("buildWorkflowDoneUnreachedTimelineElement - IUN={} and id={}", notification.getIun(), recIndex);
+
+        WorkflowDoneUnreachedDetailsInt details = WorkflowDoneUnreachedDetailsInt.builder()
+                .recIndex(recIndex)
+                .sourceElementId(sourceTimelineId)
+                .completionFeedback(completionFeedback.name())
+                .build();
+
+
+        return buildTimeline(notification, TimelineElementCategoryInt.WORKFLOW_DONE_UNREACHED, eventId, details);
+    }
+
+    public static String getWorkflowDoneUnreachedTimelineElementId(Integer recIndex, String iun) {
+        return TimelineEventId.WORKFLOW_DONE_UNREACHED.buildEventId(EventId.builder()
+                .iun(iun)
+                .recIndex(recIndex)
+                .build()
+        );
+    }
+
+    public TimelineElementInternal buildWorkflowDoneReachedTimelineElement(Integer recIndex, NotificationInt notification,
+                                                                            String eventId, String sourceTimelineId, DesiredFeedbackType completionFeedback) {
+        log.debug("buildWorkflowDoneReachedTimelineElement - IUN={} and id={}", notification.getIun(), recIndex);
+
+        WorkflowDoneReachedDetailsInt details = WorkflowDoneReachedDetailsInt.builder()
+                .recIndex(recIndex)
+                .sourceElementId(sourceTimelineId)
+                .completionFeedback(completionFeedback.name())
+                .build();
+
+
+        return buildTimeline(notification, TimelineElementCategoryInt.WORKFLOW_DONE_REACHED, eventId, details);
+    }
+
+    public TimelineElementInternal buildInformalNotificationViewedTimelineElement(
+            NotificationInt notification,
+            Integer recIndex,
+            String eventId,
+            Instant eventTimestamp,
+            String sourceChannel,
+            String sourceChannelDetails
+    ) {
+        log.debug("buildInformalNotificationViewedTimelineElement - IUN={} and id={}", notification.getIun(), recIndex);
+
+        InformalNotificationViewedDetailsInt details = InformalNotificationViewedDetailsInt.builder()
+                .recIndex(recIndex)
+                .eventTimestamp(eventTimestamp)
+                .sourceChannel(sourceChannel)
+                .sourceChannelDetails(sourceChannelDetails)
+                .build();
+
+        return buildTimeline(notification, TimelineElementCategoryInt.INFORMAL_NOTIFICATION_VIEWED, eventId, details);
+    }
+
+    public static String getWorkflowDoneReachedTimelineElementId(Integer recIndex, String iun) {
+        return TimelineEventId.WORKFLOW_DONE_REACHED.buildEventId(EventId.builder()
+                .iun(iun)
+                .recIndex(recIndex)
+                .build()
+        );
+    }
+
+    public static String getInformalNotificationViewedTimelineElementId(Integer recIndex, String iun, String channel) {
+        return TimelineEventId.INFORMAL_NOTIFICATION_VIEWED.buildEventId(EventId.builder()
+                .iun(iun)
+                .recIndex(recIndex)
+                .channel(channel)
+                .build()
+        );
+    }
+
+    public TimelineElementInternal buildSendDigitalMessageTimelineElement(
+            NotificationInt notification,
+            String elementId,
+            int recIndex,
+            InformalDigitalAddressInt digitalAddress,
+            DigitalChannelsInt digitalAddressChannel,
+            DigitalAddressSourceInt digitalAddressSource
+    ){
+        log.debug("buildSendDigitalMessageTimelineElement - IUN={} and id={} and channel={}", notification.getIun(), recIndex, digitalAddressChannel);
+
+        SendDigitalMessageDetailsInt detailsInt = SendDigitalMessageDetailsInt.builder()
+                .recIndex(recIndex)
+                .digitalAddress(digitalAddress)
+                .channel(digitalAddressChannel)
+                .digitalAddressSource(digitalAddressSource)
+                .build();
+
+        return buildTimeline(notification, TimelineElementCategoryInt.SEND_DIGITAL_MESSAGE, elementId, detailsInt);
+    }
+
+    public TimelineElementInternal buildDeliveredTimelineElement(
+            NotificationInt notification,
+            int recIndex,
+            ChannelType channel,
+            String sourceElementId,
+            Instant notificationDate
+    ){
+        log.debug("buildDeliveredTimelineElement - IUN={} and id={} and channel={}", notification.getIun(), recIndex, channel);
+        String elementId = TimelineEventId.DELIVERED.buildEventId(
+                EventId.builder()
+                        .iun(notification.getIun())
+                        .recIndex(recIndex)
+                        .channel(channel.name())
+                        .build()
+        );
+
+        DeliveredDetailsInt detailsInt = DeliveredDetailsInt.builder()
+                .recIndex(recIndex)
+                .channel(channel.name())
+                .sourceElementId(sourceElementId)
+                .notificationDate(notificationDate)
+                .build();
+
+        return buildTimeline(notification, TimelineElementCategoryInt.DELIVERED, elementId, detailsInt);
+    }
+
+
+    public Optional<String> findFirstReachedElementId(List<TimelineElementInternal> timelineElements, int recIndex) {
+        Optional<TimelineElementInternal> firstReachedElement = timelineElements.stream()
+                .filter(element -> isRecipientRelated(element, recIndex))
+                .filter(element -> element.getDetails() instanceof RecipientReachedTimelineElement)
+                .sorted()
+                .findFirst();
+
+        if(firstReachedElement.isPresent()) {
+            log.debug("Found first reached timeline element for recIndex {}: {}", recIndex, firstReachedElement.get().getElementId());
+            TimelineElementInternal element = firstReachedElement.get();
+            if(element.getDetails() instanceof DeliveredDetailsInt deliveredDetailsInt) {
+                log.debug("Reached timeline element is of type DeliveredDetailsInt, returning sourceElementId: {}", deliveredDetailsInt.getSourceElementId());
+                return Optional.of(deliveredDetailsInt.getSourceElementId());
+            }
+            return Optional.of(element.getElementId());
+        } else {
+            log.debug("No reached timeline element found for recIndex {}", recIndex);
+            return Optional.empty();
+        }
+    }
+
+    private boolean isRecipientRelated(TimelineElementInternal element, int recIndex) {
+        return Optional.ofNullable(element.getDetails())
+                .filter(RecipientRelatedTimelineElementDetails.class::isInstance)
+                .map(RecipientRelatedTimelineElementDetails.class::cast)
+                .map(details -> details.getRecIndex() == recIndex)
+                .orElse(false);
+    }
+
+    public Stream<TimelineElementInternal> getTimelineElementInternals(String iun) {
+        Set<TimelineElementInternal> timeline = timelineService.getTimeline(iun, false);
+        return timeline.stream();
+    }
+
+    public boolean checkTimelineCategories(List<TimelineElementInternal> timelineElements,
+                                           int recIndex, TimelineElementCategoryInt... categories) {
+        return hasAnyTimelineCategory(timelineElements, recIndex, categories);
+    }
+
+    private boolean hasAnyTimelineCategory(List<TimelineElementInternal> timelineElements, int recIndex,
+                                           TimelineElementCategoryInt... categories) {
+        return Arrays.stream(categories)
+                .anyMatch(category -> isTimelineElementPresent(timelineElements, recIndex, category));
+    }
+
+    private boolean isTimelineElementPresent(List<TimelineElementInternal> timelineElements, int recIndex,
+                                             TimelineElementCategoryInt category) {
+        return timelineElements.stream()
+                .anyMatch(element -> category.equals(element.getCategory()) && isRecipientRelated(element, recIndex));
+    }
+
+    public TimelineElementInternal buildCoverpageCreationTimelineElement(Integer recIndex, String fileKey, NotificationInt notification) {
+        log.debug("buildCoverpageCreationTimelineElement - IUN={} and id={}", notification.getIun(), recIndex);
+        String eventId = buildCoverpageCreationTimelineEventId(notification.getIun(), recIndex);
+
+        CoverpageCreationRequestDetailsInt details = CoverpageCreationRequestDetailsInt.builder()
+                .recIndex(recIndex)
+                .fileKey(fileKey)
+                .build();
+        return buildTimeline(notification, TimelineElementCategoryInt.COVERPAGE_CREATION_REQUEST, eventId, details);
+    }
+
+    public String retrieveCoverpageFileKey(String iun, int recIndex) {
+        String timelineId = buildCoverpageCreationTimelineEventId(iun, recIndex);
+
+        log.debug("retrieveCoverpageFileKey - iun={} recIndex={} timelineId={}", iun, recIndex, timelineId);
+
+        TimelineElementInternal timelineElement = timelineService.getTimelineElement(iun, timelineId)
+                .orElseThrow(() -> buildTimelineElementNotPresentException(iun, recIndex, timelineId));
+
+        if (!(timelineElement.getDetails() instanceof CoverpageCreationRequestDetailsInt details)
+                || details.getFileKey() == null
+                || details.getFileKey().isBlank()) {
+            String msg = String.format(
+                    "Timeline element %s for iun=%s recIndex=%d does not contain a valid coverpage fileKey",
+                    timelineId,
+                    iun,
+                    recIndex
+            );
+            log.error(msg);
+            throw new PnInternalException(msg, ERROR_CODE_TIMELINESERVICE_TIMELINE_ELEMENT_NOT_PRESENT);
+        }
+
+        return details.getFileKey();
+    }
+
+    public static String buildCoverpageCreationTimelineEventId(String iun, int recIndex) {
+        return TimelineEventId.COVERPAGE_CREATION_REQUEST.buildEventId(
+                EventId.builder()
+                        .iun(iun)
+                        .recIndex(recIndex)
+                        .build()
+        );
+    }
+
+    private PnInternalException buildTimelineElementNotPresentException(String iun, int recIndex, String timelineId) {
+        String msg = String.format(
+                "Timeline element %s not found for iun=%s recIndex=%d",
+                timelineId,
+                iun,
+                recIndex
+        );
+        log.error(msg);
+        return new PnInternalException(msg, ERROR_CODE_TIMELINESERVICE_TIMELINE_ELEMENT_NOT_PRESENT);
+    }
+
+    public void handleTransitionToReachedStatusIfNecessary(NotificationInt notificationInt, int recIndex, String sourceTimelineId) {
+        String iun = notificationInt.getIun();
+        int numOfRecipients = notificationInt.getRecipients().size();
+        Instant sentAt = notificationInt.getSentAt();
+        NotificationHistoryResponse history = timelineService.getTimelineAndStatusHistory(iun, numOfRecipients, sentAt);
+        NotificationStatus currentStatus = history.getNotificationStatus();
+        if(currentStatus == NotificationStatus.COMPLETED_UNREACHED || currentStatus == NotificationStatus.UNDELIVERABLE) {
+            log.info("Notification {} is in COMPLETED_UNREACHED status, saving element with category WORKFLOW_ENDED_REACHED for recIndex {}", iun, recIndex);
+            TimelineElementInternal completedReachedTimelineElement = buildWorkflowEndedReachedTimelineElement(
+                    recIndex,
+                    notificationInt,
+                    getWorkflowEndedReachedTimelineElementId(recIndex, iun),
+                    sourceTimelineId
+            );
+            timelineService.addTimelineElement(completedReachedTimelineElement, notificationInt);
+        }
+    }
+
+    public TimelineElementInternal buildSendDigitalMessageProgress(
+            NotificationInt notification,
+            int recIndex,
+            DigitalChannelsInt channel,
+            String requestId,
+            DigitalDeliveryDetailsInt deliveryDetail,
+            InformalDigitalAddressInt digitalAddress,
+            DigitalAddressSourceInt digitalAddressSource,
+            Instant eventTimestamp
+    ) {
+        log.debug("buildSendDigitalMessageProgress - IUN={} and id={} and channel={}", notification.getIun(), recIndex, channel);
+        int progressIndex = timelineService.retrieveAndIncrementCounterForTimelineEvent(requestId).intValue();
+
+        String elementId = TimelineEventId.SEND_DIGITAL_MESSAGE_PROGRESS.buildEventId(
+                EventId.builder()
+                        .iun(notification.getIun())
+                        .recIndex(recIndex)
+                        .channel(channel.name())
+                        .progressIndex(progressIndex)
+                        .build()
+        );
+
+        SendDigitalMessageProgressDetailsInt detailsInt = SendDigitalMessageProgressDetailsInt.builder()
+                .recIndex(recIndex)
+                .requestId(requestId)
+                .deliveryDetail(deliveryDetail)
+                .digitalAddress(digitalAddress)
+                .digitalAddressSource(digitalAddressSource)
+                .channel(channel)
+                .eventTimestamp(eventTimestamp)
+                .build();
+
+        return buildTimeline(notification, TimelineElementCategoryInt.SEND_DIGITAL_MESSAGE_PROGRESS, elementId, detailsInt);
+    }
+
+    public TimelineElementInternal buildSendDigitalMessageFeedback(
+            NotificationInt notification,
+            int recIndex,
+            DigitalChannelsInt channel,
+            String requestId,
+            DigitalDeliveryDetailsInt deliveryDetail,
+            InformalDigitalAddressInt digitalAddress,
+            DigitalAddressSourceInt digitalAddressSource,
+            ResponseStatusInt responseStatus,
+            List<SendingReceipt> sendingReceipts,
+            Instant eventTimestamp
+    ) {
+        log.debug("buildSendDigitalMessageFeedback - IUN={} and id={} and channel={}", notification.getIun(), recIndex, channel);
+        String elementId = TimelineEventId.SEND_DIGITAL_MESSAGE_FEEDBACK.buildEventId(
+                EventId.builder()
+                        .iun(notification.getIun())
+                        .recIndex(recIndex)
+                        .channel(channel.name())
+                        .build()
+        );
+
+        SendDigitalMessageFeedbackDetailsInt detailsInt = SendDigitalMessageFeedbackDetailsInt.builder()
+                .recIndex(recIndex)
+                .requestId(requestId)
+                .deliveryDetail(deliveryDetail)
+                .digitalAddress(digitalAddress)
+                .digitalAddressSource(digitalAddressSource)
+                .responseStatus(responseStatus)
+                .channel(channel)
+                .notificationDate(eventTimestamp)
+                .sendingReceipts(sendingReceipts)
+                .build();
+
+        return buildTimeline(notification, TimelineElementCategoryInt.SEND_DIGITAL_MESSAGE_FEEDBACK, elementId, detailsInt);
+    }
+
+    public String getIunFromTimelineId(String timelineId) {
+        //<timelineId = CATEGORY_VALUE>;IUN_<IUN_VALUE>;RECINDEX_<RECINDEX_VALUE>...
+        return timelineId.split("\\" + TimelineEventIdBuilder.DELIMITER)[1].replace("IUN_", "");
+    }
+
+    public SendRelatedTimelineElement checkAndRetrieveSourceSendRequestDetails(String iun, String requestId) {
+        Optional<TimelineElementInternal> optRequestElement = timelineService.getTimelineElement(iun, requestId);
+        if(optRequestElement.isEmpty()) {
+            throw new PnInternalException(String.format("Request with requestId=%s not found in timeline for iun=%s", requestId, iun), ERROR_CODE_TIMELINESERVICE_TIMELINE_ELEMENT_NOT_PRESENT);
+        }
+
+        TimelineElementInternal requestElement = optRequestElement.get();
+        if(!(requestElement.getDetails() instanceof SendRelatedTimelineElement)) {
+            throw new PnInternalException(String.format("Timeline element with requestId=%s for iun=%s is not a send related timeline element", requestId, iun), ERROR_CODE_TIMELINESERVICE_TIMELINE_ELEMENT_NOT_PRESENT);
+        }
+
+        return (SendRelatedTimelineElement) requestElement.getDetails();
+    }
+
+    public TimelineElementInternal buildPaymentTimelineElement(NotificationInt notification, NotificationPaidInt payment,
+                                                                   NotificationRecipientInt recipient) {
+        log.debug("buildPaymentTimelineElement - IUN={} and id={}", notification.getIun(), payment.getRecIndex());
+
+        String elementId = TimelineEventId.NOTIFICATION_PAID.buildEventId(
+                EventId.builder()
+                        .iun(payment.getIun())
+                        .noticeCode(payment.getNoticeCode())
+                        .creditorTaxId(payment.getCreditorTaxId())
+                        .build()
+        );
+        NotificationPaidDetailsInt detailsInt = NotificationPaidDetailsInt.builder()
+                .recIndex(payment.getRecIndex())
+                .recipientType(recipient.getRecipientType().getValue())
+                .amount(payment.getAmount())
+                .creditorTaxId(payment.getCreditorTaxId())
+                .noticeCode(payment.getNoticeCode())
+                .paymentSourceChannel(payment.getPaymentSourceChannel())
+                .uncertainPaymentDate(false)
+                .eventTimestamp(payment.getEventTimestamp())
+                .build();
+
+        return buildTimeline(notification, TimelineElementCategoryInt.PAYMENT, elementId, detailsInt);
+    }
+}

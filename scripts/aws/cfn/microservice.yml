@@ -98,7 +98,11 @@ Parameters:
     Default: 1
     Type: Number
     Description: activate when N datapoint on M (task)
-  
+
+  ApplicationLoadBalancerDomain:
+    Type: String
+    Description: 'Base URL of the load balancer where the service is going to be reachable'
+
   AutoscalingDataPointM:
     Default: 1
     Type: Number
@@ -248,6 +252,45 @@ Parameters:
     Type: String
     Description: 'pn-workflow-manager Io event queue age alarm ARN'
 
+  SafeStorageToWorkflowManagerQueueName:
+    Type: String
+    Description: 'Safestorage to Workflow manager queue name'
+
+  SafeStorageToWorkflowManagerQueueURL:
+    Type: String
+    Description: 'Safestorage to Workflow manager queue URL'
+
+  SafeStorageToWorkflowManagerQueueARN:
+    Type: String
+    Description: 'Safestorage to Workflow manager queue ARN'
+
+  SafeStorageToWorkflowManagerQueueAgeAlarmARN:
+    Type: String
+    Description: 'pn-safestore_to_workflowmanager event queue age alarm ARN'
+
+  SafeStorageToWorkflowManagerQueueAlarmARN:
+    Type: String
+    Description: 'pn-safestore_to_workflowmanager event queue alarm ARN'
+
+  WorkflowManagerInputsQueueName:
+    Type: String
+    Description: 'Queue to pull for informal notification events'
+
+  WorkflowManagerInputsQueueURL:
+    Type: String
+    Description: 'URL of the workflow manager inputs queue'
+
+  WorkflowManagerInputsQueueARN:
+    Type: String
+    Description: 'ARN of the workflow manager inputs queue'
+
+  WorkflowManagerInputsQueueAlarmARN:
+    Type: String
+    Description: 'pn-workflow-manager inputs queue alarm ARN'
+
+  WorkflowManagerInputsQueueAgeAlarmARN:
+    Type: String
+    Description: 'pn-workflow-manager inputs queue age alarm ARN'
 
   ActionQueueDetailType:
     Type: CommaDelimitedList
@@ -275,6 +318,17 @@ Parameters:
   WorkflowManagerCxId:
     Type: String
     Description: 'Client ID for workflow manager, used to route events from event bus to workflow manager queue'
+
+  SandboxSafeStorageBaseUrl:
+    Type: String
+    Description: "Url to the SafeStorage microservice"
+
+  ExternalChannelBaseUrl:
+    Type: String
+    Description: 'External channel base url'
+
+Conditions:
+  UseExternalChannelMock: !Equals [ !Ref ExternalChannelBaseUrl, "Mock" ]
 
 Resources:
   WorkflowManagerMicroservice:
@@ -309,6 +363,20 @@ Resources:
         ContainerEnvEntry6: !Sub 'PN_WORKFLOWMANAGER_TOPICS_ANALOGQUEUE=${WorkflowManagerAnalogEventQueueName}'
         ContainerEnvEntry7: !Sub 'PN_WORKFLOWMANAGER_TOPICS_IOQUEUE=${WorkflowManagerIoEventQueueName}'
         ContainerEnvEntry8: !Sub 'PN_WORKFLOWMANAGER_CXID=${WorkflowManagerCxId}'
+        ContainerEnvEntry9: !Sub 'PN_WORKFLOWMANAGER_DELIVERYBASEURL=http://${ApplicationLoadBalancerDomain}:8080'
+        ContainerEnvEntry10: !Sub 'PN_WORKFLOWMANAGER_TIMELINECLIENTBASEURL=http://${ApplicationLoadBalancerDomain}:8080'
+        ContainerEnvEntry11: !Sub 'PN_WORKFLOWMANAGER_ACTIONMANAGERBASEURL=http://${ApplicationLoadBalancerDomain}:8080'
+        ContainerEnvEntry12: !Sub 'PN_WORKFLOWMANAGER_IOCONNECTORBASEURL=http://${ApplicationLoadBalancerDomain}:8080'
+        ContainerEnvEntry13: !Sub 'PN_WORKFLOWMANAGER_TEMPLATEENGINEBASEURL=http://${ApplicationLoadBalancerDomain}:8080'
+        ContainerEnvEntry14: !Sub 'PN_WORKFLOWMANAGER_PAPERMESSAGESCLIENTBASEURL=http://${ApplicationLoadBalancerDomain}:8080'
+        ContainerEnvEntry15:
+          Fn::If:
+            - UseExternalChannelMock
+            - !Sub 'PN_WORKFLOWMANAGER_EXTERNALCHANNELSBASEURL=http://${ApplicationLoadBalancerDomain}:8080'
+            - !Sub 'PN_WORKFLOWMANAGER_EXTERNALCHANNELSBASEURL=${ExternalChannelBaseUrl}'
+        ContainerEnvEntry16: !Sub 'PN_WORKFLOWMANAGER_SAFESTORAGEBASEURL=${SandboxSafeStorageBaseUrl}'
+        ContainerEnvEntry17: !Sub 'PN_WORKFLOWMANAGER_TOPICS_SAFESTORAGEEVENTS=${SafeStorageToWorkflowManagerQueueName}'
+        ContainerEnvEntry18: !Sub 'PN_WORKFLOWMANAGER_TOPICS_INFORMALQUEUE=${WorkflowManagerInputsQueueName}'
         ApplicativeEnvFileChecksum: !Ref ApplicativeEnvFileChecksum
         JavaToolOptions: '-Dreactor.netty.ioWorkerCount=50'
         MappedPaths: '/workflow-manager-not-available'
@@ -341,12 +409,18 @@ Resources:
             - !Ref WorkflowManagerDigitalEventQueueAgeAlarmARN
             - !Ref WorkflowManagerIoEventQueueAlarmARN
             - !Ref WorkflowManagerIoEventQueueAgeAlarmARN
+            - !Ref SafeStorageToWorkflowManagerQueueAlarmARN
+            - !Ref SafeStorageToWorkflowManagerQueueAgeAlarmARN
+            - !Ref WorkflowManagerInputsQueueAlarmARN
+            - !Ref WorkflowManagerInputsQueueAgeAlarmARN
         QueueArns: !Join
           - ','
           - - !Ref WorkflowManagerActionQueueARN
             - !Ref WorkflowManagerAnalogEventQueueARN
             - !Ref WorkflowManagerDigitalEventQueueARN
             - !Ref WorkflowManagerIoEventQueueARN
+            - !Ref SafeStorageToWorkflowManagerQueueARN
+            - !Ref WorkflowManagerInputsQueueARN
         LogGroupsNames: !Join
           - ','
           - - !Sub '/aws/ecs/${ProjectName}-workflow-manager'
@@ -373,6 +447,14 @@ Resources:
               - !Ref WorkflowManagerAnalogEventQueueARN
               - !Ref WorkflowManagerDigitalEventQueueARN
               - !Ref WorkflowManagerIoEventQueueARN
+              - !Ref SafeStorageToWorkflowManagerQueueARN
+              - !Ref WorkflowManagerInputsQueueARN
+          - Effect: Allow
+            Action:
+              - 'ssm:GetParameter'
+              - 'ssm:GetParameters'
+            Resource:
+              - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/MVPCampaigns'
 
   EventBusEnqueueRole:
     Type: AWS::IAM::Role
@@ -400,6 +482,8 @@ Resources:
                   - !Ref WorkflowManagerAnalogEventQueueARN
                   - !Ref WorkflowManagerDigitalEventQueueARN
                   - !Ref WorkflowManagerIoEventQueueARN
+                  - !Ref SafeStorageToWorkflowManagerQueueARN
+                  - !Ref WorkflowManagerInputsQueueARN
 
   PnCoreEventBusToWorkflowManagerActionQueueRule:
     Type: AWS::Events::Rule
@@ -552,7 +636,7 @@ Resources:
       EventPattern:
         detail-type: [ "IoConnectorOutcomeEvent" ]
         detail:
-          clientId: [ !Ref WorkflowManagerCxId ]
+          xPagopaIoConCxId: [ !Ref WorkflowManagerCxId ]
       Targets:
         - Arn: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:PnCoreEventBusMatchedEventLogger
           Id: !Sub ${ProjectName}-Logger-IoToWorkflowManagerQueue
@@ -647,6 +731,17 @@ Resources:
           MetricStat:
             Metric:
               Dimensions:
+                - Name: QueueName
+                  Value: !Ref "WorkflowManagerInputsQueueName"
+              Namespace: "AWS/SQS"
+              MetricName: "ApproximateNumberOfMessagesVisible"
+            Period: !Ref AutoscalingCheckPeriod
+            Stat: Average
+          ReturnData: False
+        - Id: m6
+          MetricStat:
+            Metric:
+              Dimensions:
                 - Name: TargetGroup
                   Value: !GetAtt WorkflowManagerMicroservice.Outputs.TargetGroupName
                 - Name: LoadBalancer
@@ -657,7 +752,7 @@ Resources:
             Stat: Average
           ReturnData: False
         - Id: code
-          Expression: !Sub "IF(m5==0, 101, (100*(m1+m2+m3+m4)) / (${ConsumedQueueMessagePerMinute} * m5) )"
+          Expression: !Sub "IF(m6==0, 101, (100*(m1+m2+m3+m4+m5)) / (${ConsumedQueueMessagePerMinute} * m6) )"
           Label: !Sub "${ProjectName}-workflow-manager-queue-custom-metric"
           ReturnData: False
         - Id: e1
@@ -669,3 +764,96 @@ Resources:
         - !GetAtt WorkflowManagerMicroservice.Outputs.ScaleUpPolicy
       OKActions:
         - !GetAtt WorkflowManagerMicroservice.Outputs.ScaleDownPolicy
+
+  PnCoreEventBusToWorkflowManagerSafeStorageQueue:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: Route SafeStorage Events to pn-safestore_to_workflowmanager
+      RoleArn: !GetAtt "EventBusEnqueueRole.Arn"
+      EventBusName: !Sub '${ProjectName}-CoreEventBus'
+      EventPattern:
+        detail-type: [ "SafeStorageOutcomeEvent" ]
+        detail:
+          documentType: [ 'PN_COMMUNICATIONS_COVERPAGE' ]
+      Targets:
+        - Arn: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:PnCoreEventBusMatchedEventLogger
+          Id: !Sub ${ProjectName}-Logger-SafeStorageToWorkflowManager
+          InputTransformer:
+            InputPathsMap:
+              "timestamp": "$.time"
+            InputTemplate: |
+              {
+                  "timestamp": <timestamp>,
+                  "ruleArn": <aws.events.rule-arn>,
+                  "ruleName": <aws.events.rule-name>,
+                  "ingestionTime": <aws.events.event.ingestion-time>,
+                  "originalEvent": <aws.events.event.json>
+              }
+        - Id: !Sub '${ProjectName}-CoreEventBus-SafeStorageToWorkflowManager'
+          Arn: !Ref SafeStorageToWorkflowManagerQueueARN
+          InputPath: $.detail
+          DeadLetterConfig:
+            Arn: !Sub arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:pn-CoreEventBus-DLQ
+
+  EventBridgeSafeStorageToWorkflowManagerQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues:
+        - !Ref SafeStorageToWorkflowManagerQueueURL
+      PolicyDocument:
+        Statement:
+          - Sid: AllowEventBridgeToSendMessage
+            Effect: Allow
+            Principal:
+              Service: events.amazonaws.com
+            Action: sqs:SendMessage
+            Resource: !Ref SafeStorageToWorkflowManagerQueueARN
+            Condition:
+              ArnEquals:
+                aws:SourceArn: !GetAtt PnCoreEventBusToWorkflowManagerSafeStorageQueue.Arn
+
+  PnCoreEventBusToWorkflowManagerInputsQueueRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: Route Action events to workflow manager action queue
+      RoleArn: !GetAtt "EventBusEnqueueRole.Arn"
+      EventBusName: !Sub '${ProjectName}-CoreEventBus'
+      EventPattern:
+        detail-type: ["InformalNotificationViewedEvent"]
+      Targets:
+        - Arn: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:PnCoreEventBusMatchedEventLogger
+          Id: !Sub ${ProjectName}-Logger-WorkflowManagerInputsQueue
+          InputTransformer:
+            InputPathsMap:
+              "timestamp": "$.time"
+            InputTemplate: |
+              {
+                  "timestamp": <timestamp>,
+                  "ruleArn": <aws.events.rule-arn>,
+                  "ruleName": <aws.events.rule-name>,
+                  "ingestionTime": <aws.events.event.ingestion-time>,
+                  "originalEvent": <aws.events.event.json>
+              }
+        - Id: !Sub '${ProjectName}-CoreEventBus-NotificationEventToWorkflowManagerInputsQueue'
+          Arn: !Ref WorkflowManagerInputsQueueARN
+          InputPath: $.detail
+          DeadLetterConfig:
+            Arn: !Sub arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:pn-CoreEventBus-DLQ
+
+  EventBridgeToWorkflowManagerInputsQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues:
+        - !Ref WorkflowManagerInputsQueueURL
+      PolicyDocument:
+        Statement:
+          - Sid: AllowEventBridgeToSendMessage
+            Effect: Allow
+            Principal:
+              Service: events.amazonaws.com
+            Action: sqs:SendMessage
+            Resource: !Ref WorkflowManagerInputsQueueARN
+            Condition:
+              ArnEquals:
+                aws:SourceArn: !GetAtt PnCoreEventBusToWorkflowManagerInputsQueueRule.Arn
+

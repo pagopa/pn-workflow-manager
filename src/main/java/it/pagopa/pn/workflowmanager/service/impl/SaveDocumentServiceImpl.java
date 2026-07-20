@@ -1,0 +1,73 @@
+package it.pagopa.pn.workflowmanager.service.impl;
+
+import it.pagopa.pn.commons.exceptions.PnInternalException;
+import it.pagopa.pn.workflowmanager.action.utils.FileUtils;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
+import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
+import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
+import it.pagopa.pn.workflowmanager.dto.safestorage.DocumentType;
+import it.pagopa.pn.workflowmanager.dto.safestorage.FileCreationWithContentRequest;
+import it.pagopa.pn.workflowmanager.service.SafeStorageService;
+import it.pagopa.pn.workflowmanager.service.SaveDocumentService;
+import it.pagopa.pn.workflowmanager.service.TemplateGeneratorService;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Map;
+
+import static it.pagopa.pn.workflowmanager.action.utils.FileUtils.*;
+import static it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCodes.ERROR_CODE_WORKFLOWMANAGER_SAVELEGALFACTSFAILED;
+
+
+@Slf4j
+@Service
+@AllArgsConstructor
+public class SaveDocumentServiceImpl implements SaveDocumentService {
+
+    public static final String SAVE_DOCUMENT_EXCEPTION_MESSAGE = "Generating %s document for IUN=%s and recipientId=%d";
+    public static final String DOCUMENTS_MEDIATYPE_STRING = "application/pdf";
+    public static final String PN_COMMUNICATIONS_COVERPAGE = "PN_COMMUNICATIONS_COVERPAGE";
+    public static final String SAVED = "SAVED";
+
+    private final TemplateGeneratorService templateGeneratorService;
+
+    private final SafeStorageService safeStorageService;
+
+    public String saveDocument(byte[] content, Map<String, List<String>> tags) {
+        FileCreationWithContentRequest fileCreationRequest = new FileCreationWithContentRequest();
+        fileCreationRequest.setContentType(DOCUMENTS_MEDIATYPE_STRING);
+        fileCreationRequest.setDocumentType(PN_COMMUNICATIONS_COVERPAGE);
+        fileCreationRequest.setStatus(SAVED);
+        fileCreationRequest.setContent(content);
+        fileCreationRequest.setTags(tags);
+        
+        return FileUtils.getKeyWithStoragePrefix(
+                safeStorageService.createAndUploadContent(fileCreationRequest).getKey()
+        );
+    }
+
+    public String saveCoverpage(
+            NotificationInt notification,
+            NotificationRecipientInt recipient,
+            Campaign campaign,
+            String timelineElementId,
+            int recIndex
+    ) {
+        try {
+            log.debug("Start saveCoverpage - iun={}", notification.getIun());
+            byte[] document = templateGeneratorService.generateCoverpageTemplate(notification, recipient, campaign);
+            Map<String, List<String>> tags = Map.of(
+                    IUN_TAG, List.of(notification.getIun()),
+                    RECIPIENT_INDEX_TAG, List.of(String.valueOf(recIndex)),
+                    DOCUMENT_TYPE_TAG, List.of(DocumentType.COVERPAGE.name()),
+                    TIMELINE_ELEMENT_ID_TAG, List.of(timelineElementId)
+            );
+            return saveDocument(document, tags);
+        } catch (Exception exc) {
+            String msg = String.format(SAVE_DOCUMENT_EXCEPTION_MESSAGE, "COVERPAGE", notification.getIun(), recIndex);
+            throw new PnInternalException(msg, ERROR_CODE_WORKFLOWMANAGER_SAVELEGALFACTSFAILED, exc);
+        }
+    }
+}

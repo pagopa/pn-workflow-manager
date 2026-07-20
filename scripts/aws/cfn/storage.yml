@@ -95,6 +95,30 @@ Resources:
         MaxReceiveCount: 10
         DelaySeconds: 1
 
+  SafeStorageToWorkflowManagerQueue:
+    Type: AWS::CloudFormation::Stack
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/sqs-queue.yaml"
+      Parameters:
+        QueueName: !Sub '${ProjectName}-safestore_to_workflowmanager'
+        AlarmSNSTopicName: !Ref AlarmSNSTopicName
+        DelaySeconds: 1
+        VisibilityTimeout: 60
+        MaxReceiveCount: 10
+
+  WorkflowManagerInputsQueue:
+    Type: AWS::CloudFormation::Stack
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/sqs-queue.yaml"
+      Parameters:
+        QueueName: !Sub '${ProjectName}-workflow_manager_inputs'
+        AlarmSNSTopicName: !Ref AlarmSNSTopicName
+        DelaySeconds: 10
+
 Outputs:
   # Queues
   WorkflowManagerActionQueueName:
@@ -112,6 +136,22 @@ Outputs:
   WorkflowManagerActionQueueAgeAlarmARN:
     Value: !GetAtt WorkflowManagerActionQueue.Outputs.SqsAgeAlarmArn
     Description: pn-workflow-manager action queue age alarm ARN
+
+  SafeStorageToWorkflowManagerQueueName:
+    Value: !GetAtt SafeStorageToWorkflowManagerQueue.Outputs.QueueName
+    Description: SafeStore2WorkflowManager queue name
+  SafeStorageToWorkflowManagerQueueURL:
+    Value: !GetAtt SafeStorageToWorkflowManagerQueue.Outputs.QueueURL
+    Description: SafeStore2WorkflowManager queue URL
+  SafeStorageToWorkflowManagerQueueARN:
+    Value: !GetAtt SafeStorageToWorkflowManagerQueue.Outputs.QueueARN
+    Description: SafeStore2WorkflowManager queue ARN
+  SafeStorageToWorkflowManagerQueueAlarmARN:
+    Value: !GetAtt SafeStorageToWorkflowManagerQueue.Outputs.SqsDLQAlarmArn
+    Description: SafeStore2WorkflowManager queue dlq alarm ARN
+  SafeStorageToWorkflowManagerQueueAgeAlarmARN:
+    Value: !GetAtt SafeStorageToWorkflowManagerQueue.Outputs.SqsAgeAlarmArn
+    Description: SafeStore2WorkflowManager queue age alarm ARN
 
   WorkflowManagerAnalogEventQueueName:
     Value: !GetAtt WorkflowManagerAnalogEventQueue.Outputs.QueueName
@@ -160,6 +200,22 @@ Outputs:
   WorkflowManagerIoEventQueueAgeAlarmARN:
     Value: !GetAtt WorkflowManagerIoEventQueue.Outputs.SqsAgeAlarmArn
     Description: workflow-manager io-event queue age alarm ARN
+
+  WorkflowManagerInputsQueueName:
+    Value: !GetAtt WorkflowManagerInputsQueue.Outputs.QueueName
+    Description: workflow-manager analog-event queue name
+  WorkflowManagerInputsQueueURL:
+    Value: !GetAtt WorkflowManagerInputsQueue.Outputs.QueueURL
+    Description: workflow-manager analog-event queue URL
+  WorkflowManagerInputsQueueARN:
+    Value: !GetAtt WorkflowManagerInputsQueue.Outputs.QueueARN
+    Description: workflow-manager analog-event queue ARN
+  WorkflowManagerInputsQueueAlarmARN:
+    Value: !GetAtt WorkflowManagerInputsQueue.Outputs.SqsDLQAlarmArn
+    Description: workflow-manager analog-event queue dlq alarm ARN
+  WorkflowManagerInputsQueueAgeAlarmARN:
+    Value: !GetAtt WorkflowManagerInputsQueue.Outputs.SqsAgeAlarmArn
+    Description: workflow-manager analog-event queue age alarm ARN
 
   # Log groups
   EcsWorkflowLogGroup:
