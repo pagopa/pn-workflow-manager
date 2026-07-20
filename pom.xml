@@ -151,7 +151,7 @@
 							<goal>generate</goal>
 						</goals>
 						<configuration>
-							<inputSpec>https://raw.githubusercontent.com/pagopa/pn-delivery/d52c8a66e8dc1d3868d38ff6b84fa94006ed815e/docs/openapi/api-private.yaml</inputSpec>
+							<inputSpec>https://raw.githubusercontent.com/pagopa/pn-delivery/e576a37b9ed96f07bb24d175dd62a060139cb7a9/docs/openapi/api-private.yaml</inputSpec>
 							<templateDirectory>${project.build.directory}/dependency-resources/scripts/openapi/templates/7.4.0/client</templateDirectory>
 							<skipValidateSpec>true</skipValidateSpec>
 							<generatorName>java</generatorName>
