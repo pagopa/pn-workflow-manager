@@ -106,6 +106,7 @@ Resources:
         AlarmSNSTopicName: !Ref AlarmSNSTopicName
         DelaySeconds: 1
         VisibilityTimeout: 60
+        MaxReceiveCount: 10
 
   WorkflowManagerInputsQueue:
     Type: AWS::CloudFormation::Stack
@@ -116,8 +117,7 @@ Resources:
       Parameters:
         QueueName: !Sub '${ProjectName}-workflow_manager_inputs'
         AlarmSNSTopicName: !Ref AlarmSNSTopicName
-        VisibilityTimeout: 60
-        DelaySeconds: 1
+        DelaySeconds: 10
 
 Outputs:
   # Queues
