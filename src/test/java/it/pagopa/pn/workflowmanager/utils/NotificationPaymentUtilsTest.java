@@ -14,21 +14,24 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class NotificationPaymentUtilsTest {
     private final String targetNoticeCode = "NOTICE-12345";
+    private final String creditorTaxId = "77777777777";
     private final String iun = "IUN-TEST-ABC";
     private final int recIndex = 0;
 
     @Test
-    void getAmountFromNotificationPagoPaPaymentSuccess() {
+    void getPagoPaPaymentFromNoticeCodeSuccess() {
         NotificationPaymentInfoInt payment1 = NotificationPaymentInfoInt.builder()
                 .pagoPA(PagoPaInt.builder()
                         .noticeCode("OTHER-CODE")
                         .amount(1000)
+                        .creditorTaxId(creditorTaxId)
                         .build())
                 .build();
 
         NotificationPaymentInfoInt payment2 = NotificationPaymentInfoInt.builder()
                 .pagoPA(PagoPaInt.builder()
                         .noticeCode(targetNoticeCode)
+                        .creditorTaxId(creditorTaxId)
                         .amount(25000) // 250,00 €
                         .build())
                 .build();
@@ -43,18 +46,20 @@ class NotificationPaymentUtilsTest {
                 .build();
 
         // Act
-        int actualAmount = NotificationPaymentUtils.getAmountFromNotificationPagoPaPayment(
+        PagoPaInt pagoPaInt = NotificationPaymentUtils.getPagoPaPaymentFromNoticeCode(
                 notification,
                 recIndex,
                 targetNoticeCode
         );
 
         // Assert
-        assertEquals(25000, actualAmount);
+        assertEquals(25000, pagoPaInt.getAmount());
+        assertEquals(creditorTaxId, pagoPaInt.getCreditorTaxId());
+        assertEquals(targetNoticeCode, pagoPaInt.getNoticeCode());
     }
 
     @Test
-    void getAmountFromNotificationPagoPaPaymentWithNullPagoPaDetails() {
+    void getPagoPaPaymentFromNoticeCodeWithNullPagoPaDetails() {
         // Arrange - Un pagamento ha il blocco pagoPA a null, l'altro è valido
         NotificationPaymentInfoInt paymentNullPagoPa = NotificationPaymentInfoInt.builder()
                 .pagoPA(null)
@@ -63,6 +68,7 @@ class NotificationPaymentUtilsTest {
         NotificationPaymentInfoInt paymentValid = NotificationPaymentInfoInt.builder()
                 .pagoPA(PagoPaInt.builder()
                         .noticeCode(targetNoticeCode)
+                        .creditorTaxId(creditorTaxId)
                         .amount(5000)
                         .build())
                 .build();
@@ -77,18 +83,20 @@ class NotificationPaymentUtilsTest {
                 .build();
 
         // Act
-        int actualAmount = NotificationPaymentUtils.getAmountFromNotificationPagoPaPayment(
+        PagoPaInt pagoPaInt = NotificationPaymentUtils.getPagoPaPaymentFromNoticeCode(
                 notification,
                 recIndex,
                 targetNoticeCode
         );
 
         // Assert
-        assertEquals(5000, actualAmount);
+        assertEquals(5000, pagoPaInt.getAmount());
+        assertEquals(creditorTaxId, pagoPaInt.getCreditorTaxId());
+        assertEquals(targetNoticeCode, pagoPaInt.getNoticeCode());
     }
 
     @Test
-    void getAmountFromNotificationPagoPaPaymentNotFoundThrowsException() {
+    void getPagoPaPaymentFromNoticeCodeNotFoundThrowsException() {
         // Arrange - Lista dei pagamenti vuota per il destinatario
         NotificationRecipientInt recipient = NotificationRecipientInt.builder()
                 .payments(Collections.emptyList())
@@ -100,7 +108,7 @@ class NotificationPaymentUtilsTest {
                 .build();
 
         // Act & Assert
-        assertThrows(PnInternalException.class, () -> NotificationPaymentUtils.getAmountFromNotificationPagoPaPayment(
+        assertThrows(PnInternalException.class, () -> NotificationPaymentUtils.getPagoPaPaymentFromNoticeCode(
                 notification,
                 recIndex,
                 "NON-EXISTENT-CODE"
