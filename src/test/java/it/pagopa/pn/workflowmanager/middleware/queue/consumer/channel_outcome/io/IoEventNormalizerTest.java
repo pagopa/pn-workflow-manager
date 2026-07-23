@@ -1,5 +1,6 @@
 package it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.io;
 
+import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.commons.log.PnAuditLogEventType;
 import it.pagopa.pn.workflowmanager.action.utils.TimelineUtils;
 import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
@@ -7,6 +8,7 @@ import it.pagopa.pn.workflowmanager.dto.event.NotificationPaidInt;
 import it.pagopa.pn.workflowmanager.dto.event.NotificationViewedInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationSenderInt;
+import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.PagoPaInt;
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.ResponseStatusInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.DigitalChannelsInt;
@@ -179,8 +181,13 @@ class IoEventNormalizerTest {
                 .build();
 
         int expectedAmount = 15000;
-        paymentUtilsMockedStatic.when(() -> NotificationPaymentUtils.getAmountFromNotificationPagoPaPayment(notification, recIndex, noticeCode))
-                .thenReturn(expectedAmount);
+        PagoPaInt expectedPagoPa = PagoPaInt.builder()
+                .noticeCode(noticeCode)
+                .creditorTaxId(paTaxId)
+                .amount(expectedAmount)
+                .build();
+        paymentUtilsMockedStatic.when(() -> NotificationPaymentUtils.getPagoPaPaymentFromNoticeCode(notification, recIndex, noticeCode))
+                .thenReturn(expectedPagoPa);
 
         when(timelineUtils.buildSendDigitalMessageProgress(any(), anyInt(), any(), any(), any(), any(), any(), any()))
                 .thenReturn(mockTimelineElement);
@@ -203,6 +210,22 @@ class IoEventNormalizerTest {
         assertEquals(now, paidTrigger.getEventTimestamp());
         assertEquals(ChannelType.IO.name(), paidTrigger.getPaymentSourceChannel());
         assertEquals(expectedAmount, paidTrigger.getAmount());
+    }
+
+    @Test
+    void shouldFailWhenEventIsPaidButMissingNoticeCode() {
+        // Arrange
+        IoOutcomeEvent ioEvent = IoOutcomeEvent.builder()
+                .eventType(IoOutcomeEventType.PAID)
+                .eventTimestamp(now)
+                .requestId(requestId)
+                .build();
+
+        // Act
+        assertThrows(PnInternalException.class, () -> ioEventNormalizer.normalize(ioEvent, notification, sendDigitalMessageDetails));
+
+        // Assert
+        verify(timelineUtils, never()).buildSendDigitalMessageProgress(any(), anyInt(), any(), any(), any(), any(), any(), any());
     }
 
     @Test
