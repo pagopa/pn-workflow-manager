@@ -1,11 +1,14 @@
 package it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.io;
 
+import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.commons.log.PnAuditLogEvent;
 import it.pagopa.pn.commons.log.PnAuditLogEventType;
 import it.pagopa.pn.workflowmanager.action.utils.TimelineUtils;
 import it.pagopa.pn.workflowmanager.dto.event.NotificationPaidInt;
 import it.pagopa.pn.workflowmanager.dto.event.NotificationViewedInt;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
+import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.PagoPaInt;
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.ResponseStatusInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.DigitalChannelsInt;
@@ -14,19 +17,21 @@ import it.pagopa.pn.workflowmanager.dto.timeline.details.SendDigitalMessageDetai
 import it.pagopa.pn.workflowmanager.dto.timeline.details.SendRelatedTimelineElement;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.ChannelOutcomeCategory;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.ChannelOutcomeClassification;
-import it.pagopa.pn.workflowmanager.middleware.queue.consumer.event.IoOutcomeEvent;
-import it.pagopa.pn.workflowmanager.middleware.queue.consumer.event.IoOutcomeEventType;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.ChannelOutcomeNormalizer;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.NormalizedChannelOutcome;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.trigger.ChannelEventTrigger;
-import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
+import it.pagopa.pn.workflowmanager.middleware.queue.consumer.event.IoOutcomeEvent;
+import it.pagopa.pn.workflowmanager.middleware.queue.consumer.event.IoOutcomeEventType;
 import it.pagopa.pn.workflowmanager.service.AuditLogService;
 import it.pagopa.pn.workflowmanager.utils.NotificationPaymentUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import java.util.HashSet;
 import java.util.Set;
+
+import static it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCodes.ERROR_CODE_WORKFLOWMANAGER_INVALID_EVENT_RECEIVED;
 
 @Component
 @RequiredArgsConstructor
@@ -62,14 +67,24 @@ public class IoEventNormalizer implements ChannelOutcomeNormalizer<IoOutcomeEven
                         .build()
             );
         } else if(ioEvent.getEventType() == IoOutcomeEventType.PAID) {
+            if(!StringUtils.hasText(ioEvent.getNoticeCode())) {
+                String errorMessage = String.format(
+                        "Received IO event of type PAID without noticeCode for notification %s and recipient index %d for requestId %s",
+                        notification.getIun(),
+                        recIndex,
+                        ioEvent.getRequestId()
+                );
+                throw new PnInternalException(errorMessage, ERROR_CODE_WORKFLOWMANAGER_INVALID_EVENT_RECEIVED);
+            }
+            PagoPaInt pagoPaInt = NotificationPaymentUtils.getPagoPaPaymentFromNoticeCode(notification, recIndex, ioEvent.getNoticeCode());
             triggers.add(
                     NotificationPaidInt.builder()
                             .iun(notification.getIun())
                             .noticeCode(ioEvent.getNoticeCode())
-                            .creditorTaxId(notification.getSender().getPaTaxId())
+                            .creditorTaxId(pagoPaInt.getCreditorTaxId())
                             .eventTimestamp(ioEvent.getEventTimestamp())
                             .paymentSourceChannel(ChannelType.IO.name())
-                            .amount(NotificationPaymentUtils.getAmountFromNotificationPagoPaPayment(notification, recIndex, ioEvent.getNoticeCode()))
+                            .amount(pagoPaInt.getAmount())
                             .build()
             );
         }
