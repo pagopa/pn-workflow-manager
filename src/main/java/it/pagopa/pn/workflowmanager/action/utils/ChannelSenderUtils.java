@@ -28,12 +28,13 @@ public class ChannelSenderUtils {
     private final TimelineUtils timelineUtils;
     private final AttachmentUtils attachmentUtils;
 
-    public static String buildSendDigitalMessageEventId(String iun, int recIndex, @Nonnull ChannelType channel) {
+    public static String buildSendDigitalMessageEventId(String iun, int recIndex, @Nonnull ChannelType channel, Integer sentAttemptMade) {
         return TimelineEventId.SEND_DIGITAL_MESSAGE.buildEventId(
                 EventId.builder()
                         .iun(iun)
                         .recIndex(recIndex)
                         .channel(channel.name())
+                        .sentAttemptMade(sentAttemptMade)
                         .build()
         );
     }

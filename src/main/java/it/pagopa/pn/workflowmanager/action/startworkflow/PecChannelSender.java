@@ -20,6 +20,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+import static it.pagopa.pn.workflowmanager.action.utils.PnConstants.FIRST_ATTEMPT;
 import static it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCodes.ERROR_CODE_WORKFLOWMANAGER_SEND_ON_CHANNEL_ERROR;
 
 @Component
@@ -42,7 +43,7 @@ public class PecChannelSender implements ChannelSender {
     public void send(NotificationInt notification, Campaign campaign, int recIndex, int currentStep) {
         NotificationRecipientInt recipient = notification.getRecipients().get(recIndex);
 
-        String timelineId = ChannelSenderUtils.buildSendDigitalMessageEventId(notification.getIun(), recIndex, getChannelType());
+        String timelineId = ChannelSenderUtils.buildSendDigitalMessageEventId(notification.getIun(), recIndex, getChannelType(), FIRST_ATTEMPT);
         PnAuditLogEvent auditLogEvent = buildAuditLogEvent(notification.getIun(), recIndex, timelineId);
 
         try {

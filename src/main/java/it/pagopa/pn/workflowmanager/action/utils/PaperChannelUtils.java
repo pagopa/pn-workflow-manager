@@ -24,14 +24,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import static it.pagopa.pn.workflowmanager.action.utils.PnConstants.FIRST_ATTEMPT;
 import static it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCodes.ERROR_CODE_TIMELINESERVICE_TIMELINE_ELEMENT_NOT_PRESENT;
 
 @Service
 @Slf4j
 @AllArgsConstructor
 public class PaperChannelUtils {
-    private static final Integer FIRST_ATTEMPT = 0;
-
     private final PnWorkflowManagerConfigs pnWorkflowManagerConfigs;
     private final TimelineUtils timelineUtils;
     private final TimelineService timelineService;

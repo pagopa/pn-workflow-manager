@@ -24,14 +24,13 @@ import java.util.List;
 import static it.pagopa.pn.workflowmanager.action.utils.NotificationUtils.getRecipientFromIndex;
 import static it.pagopa.pn.workflowmanager.action.utils.PaperChannelUtils.buildAnalogDto;
 import static it.pagopa.pn.workflowmanager.action.utils.PaperChannelUtils.getAttachments;
+import static it.pagopa.pn.workflowmanager.action.utils.PnConstants.FIRST_ATTEMPT;
 import static it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCodes.ERROR_CODE_WORKFLOWMANAGER_SEND_ON_CHANNEL_ERROR;
 
 @Service
 @Slf4j
 @AllArgsConstructor
 public class PaperChannelServiceImpl implements PaperChannelService {
-    private static final Integer FIRST_ATTEMPT = 0;
-
     private final PaperMessagesClient paperMessagesClient;
     private final AuditLogService auditLogService;
     private final PaperChannelUtils paperChannelUtils;

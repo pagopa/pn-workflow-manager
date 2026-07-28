@@ -19,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import static it.pagopa.pn.workflowmanager.action.utils.PnConstants.FIRST_ATTEMPT;
 import static it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCodes.ERROR_CODE_WORKFLOWMANAGER_SEND_ON_CHANNEL_ERROR;
 
 
@@ -41,7 +42,7 @@ public class IoChannelSender implements ChannelSender {
     public void send(NotificationInt notification, Campaign campaign, int recIndex, int currentStep) {
         log.info("Sending message for notification {} to recipient {}", notification.getIun(), recIndex);
         NotificationRecipientInt recipient = notification.getRecipients().get(recIndex);
-        String requestId = ChannelSenderUtils.buildSendDigitalMessageEventId(notification.getIun(), recIndex, getChannelType());
+        String requestId = ChannelSenderUtils.buildSendDigitalMessageEventId(notification.getIun(), recIndex, getChannelType(), FIRST_ATTEMPT);
         PnAuditLogEvent auditLogEvent = buildAuditLogEvent(notification.getIun(), recIndex, requestId);
         try {
             String markdown = templateGeneratorService.generateIoMessageTemplate(notification, recipient, campaign);

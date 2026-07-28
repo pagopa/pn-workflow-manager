@@ -66,7 +66,7 @@ class EmailChannelSenderTest {
         int recIndex = 0;
         int currentStep = 0;
 
-        String expectedRequestId = ChannelSenderUtils.buildSendDigitalMessageEventId(IUN, recIndex, ChannelType.EMAIL);
+        String expectedRequestId = ChannelSenderUtils.buildSendDigitalMessageEventId(IUN, recIndex, ChannelType.EMAIL,0);
         PnAuditLogEvent auditLogEvent = mock(PnAuditLogEvent.class);
 
         when(templateGeneratorService.generateEmailBodyTemplate(notification, recipient, campaign))
@@ -114,7 +114,7 @@ class EmailChannelSenderTest {
         int recIndex = 0;
         int currentStep = 0;
 
-        String expectedRequestId = ChannelSenderUtils.buildSendDigitalMessageEventId(IUN, recIndex, ChannelType.EMAIL);
+        String expectedRequestId = ChannelSenderUtils.buildSendDigitalMessageEventId(IUN, recIndex, ChannelType.EMAIL,0);
         PnAuditLogEvent auditLogEvent = mock(PnAuditLogEvent.class);
 
 
