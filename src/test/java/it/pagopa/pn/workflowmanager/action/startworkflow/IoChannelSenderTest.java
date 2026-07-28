@@ -65,7 +65,7 @@ class IoChannelSenderTest {
         when(notification.getRecipients()).thenReturn(List.of(recipient0));
         when(recipient0.getTaxId()).thenReturn("TAXID_1");
 
-        String expectedRequestId = ChannelSenderUtils.buildSendDigitalMessageEventId(iun,0, ChannelType.IO);
+        String expectedRequestId = ChannelSenderUtils.buildSendDigitalMessageEventId(iun,0, ChannelType.IO,0);
         PnAuditLogEvent auditLogEvent = mock(PnAuditLogEvent.class);
         when(auditLogEvent.log()).thenReturn(auditLogEvent);
         when(auditLogService.buildAuditLogEvent(iun, 0, PnAuditLogEventType.AUD_COM_SEND_IO, expectedAuditLogMessage, iun, 0, expectedRequestId))
@@ -124,7 +124,7 @@ class IoChannelSenderTest {
         when(notification.getIun()).thenReturn(iun);
         when(notification.getRecipients()).thenReturn(List.of(recipient0));
 
-        String expectedRequestId = ChannelSenderUtils.buildSendDigitalMessageEventId(iun,0, ChannelType.IO);
+        String expectedRequestId = ChannelSenderUtils.buildSendDigitalMessageEventId(iun,0, ChannelType.IO,0);
         PnAuditLogEvent auditLogEvent = mock(PnAuditLogEvent.class);
         when(auditLogService.buildAuditLogEvent(iun, 0, PnAuditLogEventType.AUD_COM_SEND_IO, expectedAuditLogMessage, iun, 0, expectedRequestId))
                 .thenReturn(auditLogEvent);

@@ -14,6 +14,7 @@ public enum TimelineEventId {
                     .withIun(eventId.getIun())
                     .withRecIndex(eventId.getRecIndex())
                     .withChannel(eventId.getChannel())
+                    .withSentAttemptMade(eventId.getSentAttemptMade())
                     .build();
         }
     },

@@ -12,12 +12,13 @@ class TimelineEventIdBuilderTest {
 
     @Test
     void buildSEND_DIGITAL_MESSAGETest() {
-        String timeLineEventIdExpected = "SEND_DIGITAL_MESSAGE.IUN_KWKU-JHXN-HJXM-202304-U-A.RECINDEX_0.CHANNEL_IO";
+        String timeLineEventIdExpected = "SEND_DIGITAL_MESSAGE.IUN_KWKU-JHXN-HJXM-202304-U-A.RECINDEX_0.ATTEMPT_0.CHANNEL_IO";
         String timeLineEventIdActual = new TimelineEventIdBuilder()
                 .withCategory(TimelineEventId.SEND_DIGITAL_MESSAGE.getValue())
                 .withIun(IUN)
                 .withRecIndex(0)
                 .withChannel(IO.getValue())
+                .withSentAttemptMade(0)
                 .build();
         assertThat(timeLineEventIdActual).isEqualTo(timeLineEventIdExpected);
         String timeLineEventIdActualFromBuildEvent = TimelineEventId.SEND_DIGITAL_MESSAGE.buildEventId(EventId
@@ -25,6 +26,7 @@ class TimelineEventIdBuilderTest {
                 .iun(IUN)
                 .recIndex(0)
                 .channel(IO.getValue())
+                .sentAttemptMade(0)
                 .build());
         assertThat(timeLineEventIdActualFromBuildEvent).isEqualTo(timeLineEventIdExpected);
     }
