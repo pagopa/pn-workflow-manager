@@ -43,7 +43,7 @@ public class PecChannelSender implements ChannelSender {
     public void send(NotificationInt notification, Campaign campaign, int recIndex, int currentStep) {
         NotificationRecipientInt recipient = notification.getRecipients().get(recIndex);
 
-        String timelineId = ChannelSenderUtils.buildSendDigitalMessageEventId(notification.getIun(), recIndex, getChannelType(),FIRST_ATTEMPT);
+        String timelineId = ChannelSenderUtils.buildSendDigitalMessageEventId(notification.getIun(), recIndex, getChannelType(), FIRST_ATTEMPT);
         PnAuditLogEvent auditLogEvent = buildAuditLogEvent(notification.getIun(), recIndex, timelineId);
 
         try {

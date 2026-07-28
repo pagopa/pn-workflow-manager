@@ -28,7 +28,7 @@ public class ChannelSenderUtils {
     private final TimelineUtils timelineUtils;
     private final AttachmentUtils attachmentUtils;
 
-    public static String buildSendDigitalMessageEventId(String iun, int recIndex, @Nonnull ChannelType channel,Integer sentAttemptMade) {
+    public static String buildSendDigitalMessageEventId(String iun, int recIndex, @Nonnull ChannelType channel, Integer sentAttemptMade) {
         return TimelineEventId.SEND_DIGITAL_MESSAGE.buildEventId(
                 EventId.builder()
                         .iun(iun)

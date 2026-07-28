@@ -42,7 +42,7 @@ public class IoChannelSender implements ChannelSender {
     public void send(NotificationInt notification, Campaign campaign, int recIndex, int currentStep) {
         log.info("Sending message for notification {} to recipient {}", notification.getIun(), recIndex);
         NotificationRecipientInt recipient = notification.getRecipients().get(recIndex);
-        String requestId = ChannelSenderUtils.buildSendDigitalMessageEventId(notification.getIun(), recIndex, getChannelType(),FIRST_ATTEMPT);
+        String requestId = ChannelSenderUtils.buildSendDigitalMessageEventId(notification.getIun(), recIndex, getChannelType(), FIRST_ATTEMPT);
         PnAuditLogEvent auditLogEvent = buildAuditLogEvent(notification.getIun(), recIndex, requestId);
         try {
             String markdown = templateGeneratorService.generateIoMessageTemplate(notification, recipient, campaign);
