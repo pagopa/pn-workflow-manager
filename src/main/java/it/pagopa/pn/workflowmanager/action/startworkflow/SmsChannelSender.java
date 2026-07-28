@@ -20,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 
+import static it.pagopa.pn.workflowmanager.action.utils.PnConstants.FIRST_ATTEMPT;
 import static it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCodes.ERROR_CODE_WORKFLOWMANAGER_SEND_ON_CHANNEL_ERROR;
 
 @Component
@@ -63,7 +64,7 @@ public class SmsChannelSender implements ChannelSender {
     private void handlePhoneNumberPresent(NotificationInt notification, Campaign campaign, int recIndex, String phoneNumber) {
         log.info("Recipient phone number is present - iun={} recIndex={}", notification.getIun(), recIndex);
 
-        String requestId = ChannelSenderUtils.buildSendDigitalMessageEventId(notification.getIun(), recIndex, getChannelType());
+        String requestId = ChannelSenderUtils.buildSendDigitalMessageEventId(notification.getIun(), recIndex, getChannelType(),FIRST_ATTEMPT);
         PnAuditLogEvent auditLogEvent = buildAuditLogEvent(notification.getIun(), recIndex, requestId);
 
         try {

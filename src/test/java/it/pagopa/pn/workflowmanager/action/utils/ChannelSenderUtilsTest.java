@@ -55,7 +55,7 @@ class ChannelSenderUtilsTest {
 
     @Test
     void shouldBuildSendDigitalMessageEventIdFromInputValues() {
-        String result = ChannelSenderUtils.buildSendDigitalMessageEventId(IUN, REC_INDEX, ChannelType.EMAIL);
+        String result = ChannelSenderUtils.buildSendDigitalMessageEventId(IUN, REC_INDEX, ChannelType.EMAIL,0);
 
         assertEquals("SEND_DIGITAL_MESSAGE.IUN_IUN_TEST_123.RECINDEX_0.CHANNEL_EMAIL", result);
     }

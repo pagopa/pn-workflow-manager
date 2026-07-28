@@ -104,7 +104,7 @@ class PecChannelSenderTest {
         NotificationRecipientInt recipient = notification.getRecipients().getFirst();
         PnAuditLogEvent auditLogEvent = mock(PnAuditLogEvent.class);
 
-        String expectedRequestId = ChannelSenderUtils.buildSendDigitalMessageEventId(IUN, recIndex, ChannelType.PEC);
+        String expectedRequestId = ChannelSenderUtils.buildSendDigitalMessageEventId(IUN, recIndex, ChannelType.PEC,0);
         when(auditLogService.buildAuditLogEvent(eq(IUN), eq(recIndex), eq(PnAuditLogEventType.AUD_COM_SEND_PEC),
                 anyString(), eq(IUN), eq(recIndex), eq(expectedRequestId)))
                 .thenReturn(auditLogEvent);
@@ -158,7 +158,7 @@ class PecChannelSenderTest {
         NotificationRecipientInt recipient = notification.getRecipients().getFirst();
         PnAuditLogEvent auditLogEvent = mock(PnAuditLogEvent.class);
 
-        String expectedRequestId = ChannelSenderUtils.buildSendDigitalMessageEventId(IUN, recIndex, ChannelType.PEC);
+        String expectedRequestId = ChannelSenderUtils.buildSendDigitalMessageEventId(IUN, recIndex, ChannelType.PEC,0);
         when(auditLogService.buildAuditLogEvent(eq(IUN), eq(recIndex), eq(PnAuditLogEventType.AUD_COM_SEND_PEC),
                 anyString(), eq(IUN), eq(recIndex), eq(expectedRequestId)))
                 .thenReturn(auditLogEvent);

@@ -22,6 +22,7 @@ import org.springframework.util.ObjectUtils;
 
 import java.util.List;
 
+import static it.pagopa.pn.workflowmanager.action.utils.PnConstants.FIRST_ATTEMPT;
 import static it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCodes.ERROR_CODE_WORKFLOWMANAGER_SEND_ON_CHANNEL_ERROR;
 
 @Component
@@ -71,7 +72,7 @@ public class EmailChannelSender implements ChannelSender {
                                     ChannelType channel,
                                     NotificationRecipientInt recipient) {
         log.info("Recipient email is present - iun={} recIndex={}", notification.getIun(), recIndex);
-        String requestId = ChannelSenderUtils.buildSendDigitalMessageEventId(notification.getIun(), recIndex, channel);
+        String requestId = ChannelSenderUtils.buildSendDigitalMessageEventId(notification.getIun(), recIndex, channel,FIRST_ATTEMPT);
         PnAuditLogEvent auditLogEvent = buildAuditLogEvent(notification.getIun(), recIndex, requestId);
 
         try {

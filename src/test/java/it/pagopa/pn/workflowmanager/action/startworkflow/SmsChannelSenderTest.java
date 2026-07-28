@@ -66,7 +66,7 @@ class SmsChannelSenderTest {
         int recIndex = 0;
         int currentStep = 0;
 
-        String expectedRequestId = ChannelSenderUtils.buildSendDigitalMessageEventId(IUN, recIndex, ChannelType.SMS);
+        String expectedRequestId = ChannelSenderUtils.buildSendDigitalMessageEventId(IUN, recIndex, ChannelType.SMS,0);
         PnAuditLogEvent auditLogEvent = mock(PnAuditLogEvent.class);
 
         when(templateGeneratorService.generateSmsTemplate(notification, recipient)).thenReturn(SMS_CONTENT);
@@ -136,7 +136,7 @@ class SmsChannelSenderTest {
         int recIndex = 0;
         int currentStep = 0;
 
-        String expectedRequestId = ChannelSenderUtils.buildSendDigitalMessageEventId(IUN, recIndex, ChannelType.SMS);
+        String expectedRequestId = ChannelSenderUtils.buildSendDigitalMessageEventId(IUN, recIndex, ChannelType.SMS,0);
         PnAuditLogEvent auditLogEvent = mock(PnAuditLogEvent.class);
 
         when(templateGeneratorService.generateSmsTemplate(notification, recipient)).thenReturn(SMS_CONTENT);
