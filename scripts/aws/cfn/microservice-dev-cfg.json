@@ -10,6 +10,7 @@
     "MountEfs": "false",
     "PnCronAnalyzer": "-",
     "ActionQueueDetailType": "POST_ACCEPTED_PROCESSING_COMPLETED,START_WORKFLOW,TIMEOUT_WORKFLOW,END_WORKFLOW,WORKFLOW_DONE,DOCUMENT_CREATION_RESPONSE",
-    "WorkflowManagerCxId": "pn-workflow-manager"
+    "WorkflowManagerCxId": "pn-workflow-manager",
+    "StreamNotificationTtl": "7889400"
   }
 }

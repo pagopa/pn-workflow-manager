@@ -1,0 +1,183 @@
+openapi: 3.0.3
+info:
+  termsOfService: https://selfcare.notifichedigitali.it/termini-di-servizio
+  title: 'Piattaforma Notifiche: API B2B monitoraggio campagne'
+  x-summary: 'API B2B monitoraggio campagne'
+  version: '2.3.0'
+  x-api-id: pn-workflow-manager-api-internal-b2b-campaign # NO EXTERNAL
+  contact:
+    name: 'SEND: supporto enti'
+    url: https://pagopa.atlassian.net/servicedesk/customer/portal/5
+  description: >- 
+    I mittenti possono monitorare l'andamento delle campagne inviate tramite le API di monitoraggio campagne.
+servers:
+  - url: https://api.notifichedigitali.it
+    description: Ambiente di produzione
+  - url: https://api.uat.notifichedigitali.it
+    description: Ambiente di collaudo
+tags:
+  - name: HealthCheck
+    description: >-
+      Invocazioni per sapere lo stato del micro-servizio # il servizio è ancora in fase di sviluppo
+  - name: Streams
+    description: >-
+      Gestione degli stream di eventi che PN mette a disposizione
+  - name: Events
+    description: Metodi per la lettura degli eventi dagli stream
+
+paths:
+  /workflow-private/informal/{campaignId}/statistics:
+    get:
+      summary: Recupera le statistiche di una campagna
+      description: Restituisce i contatori aggregati
+        (inviati, ricevuti, completati, visti e pagati)
+        associati a una specifica campagna tramite il suo id
+      operationId: getCampaignStatistics
+      tags:
+        - CampaignStatistics
+      parameters:
+        - name: campaignId
+          in: path
+          required: true
+          description: Campaign ID
+          schema:
+            type: string
+            example: CAMP-12345-2026
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CampaignStatisticsResponse'
+        '404':
+          description: Campaign not found
+          content:
+            application/json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
+components:
+  schemas:
+    CampaignStatisticsResponse:
+      type: object
+      required:
+        - campaignId
+        - counters
+        - lastCompletedTimestamp
+      properties:
+        campaignId:
+          type: string
+          description: Campaign ID
+          example: CAMP-12345-2026
+        counters:
+          type: object
+          description: Active counters
+          required:
+            - sent
+            - received
+            - undeliverable
+            - workflowDone
+            - viewed
+            - payed
+            - totalReached
+          properties:
+            sent:
+              type: object
+              description: Sent/submitted messages statistics
+              required:
+                - total
+                - refused
+                - digital
+                - analog
+              properties:
+                total:
+                  type: integer
+                  description: REQUEST_ACCEPTED amount
+                  example: 150500
+                refused:
+                  type: integer
+                  description: REQUEST_REFUSED amount
+                  example: 45
+                digital:
+                  type: object
+                  description: Digital channel stats (SEND_DIGITAL_MESSAGE).
+                  required:
+                    - IO
+                    - EMAIL
+                    - PEC
+                    - SMS
+                  properties:
+                    IO:
+                      type: integer
+                      example: 85000
+                    EMAIL:
+                      type: integer
+                      example: 40000
+                    PEC:
+                      type: integer
+                      example: 10000
+                    SMS:
+                      type: integer
+                      example: 15000
+                analog:
+                  type: object
+                  description: Analog channel stats (SEND_ANALOG_MESSAGE).
+                  required:
+                    - RS
+                  properties:
+                    RS:
+                      type: integer
+                      description: Raccomandata Semplice
+                      example: 500
+            received:
+              type: object
+              description: Received communications (REACHED_*).
+              required:
+                - IO
+                - EMAIL
+                - PEC
+                - RS
+              properties:
+                IO:
+                  type: integer
+                  example: 72000
+                EMAIL:
+                  type: integer
+                  example: 31000
+                PEC:
+                  type: integer
+                  example: 9800
+                RS:
+                  type: integer
+                  example: 410
+            workflowDone:
+              type: integer
+              description: COMPLETATI (WORKFLOW_DONE).
+              example: 113210
+            totalReached:
+              type: integer
+              description: Destinatari raggiunti (REACHED).
+              example: 113210
+            viewed:
+              type: integer
+              description: Comunicazioni visualizzate da portale
+              example: 1000
+            payed:
+              type: integer
+              description: Comunicazioni pagate (non significativo in prima fase)
+              example: 1000
+            undeliverable:
+              type: integer
+              description: Comunicazioni non consegnabili (non significativo in prima fase)
+              example: 1000
+        lastCompletedTimestamp:
+          type: string
+          format: date-time
+          description: last updated timestamp (ISO 8601)
+          example: '2026-06-08T19:13:00Z'
