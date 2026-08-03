@@ -327,9 +327,6 @@ Parameters:
     Type: String
     Description: 'External channel base url'
 
-Conditions:
-  UseExternalChannelMock: !Equals [ !Ref ExternalChannelBaseUrl, "Mock" ]
-
   CampaignStatisticsTableName:
     Type: String
     Description: Name of dynamodb table containing campaign's statistics
@@ -346,6 +343,9 @@ Conditions:
     Type: String
     Description: ARN of dynamodb table containing campaign's events deduplication
 
+  PnTimelinesTableName:
+    Type: String
+    Description: Name of PN timelines table used by CDC filtering
 
   CampaignEventsCollectorLambdaName:
     Type: String
@@ -410,6 +410,9 @@ Conditions:
     AllowedValues:
       - true
       - false
+
+Conditions:
+  UseExternalChannelMock: !Equals [ !Ref ExternalChannelBaseUrl, "Mock" ]
 
 Resources:
   WorkflowManagerMicroservice:
@@ -949,8 +952,6 @@ Resources:
             Condition:
               ArnEquals:
                 aws:SourceArn: !GetAtt PnCoreEventBusToWorkflowManagerInputsQueueRule.Arn
-
-
 
   #########################################################
   ###          CampaignEventsCollectorLambda            ###
