@@ -338,6 +338,15 @@ Conditions:
     Type: String
     Description: ARN of dynamodb table containing campaign's statistics
 
+  CampaignEventsDeduplicationTableName:
+    Type: String
+    Description: Name of dynamodb table containing campaign's events deduplication
+
+  CampaignEventsDeduplicationTableArn:
+    Type: String
+    Description: ARN of dynamodb table containing campaign's events deduplication
+
+
   CampaignEventsCollectorLambdaName:
     Type: String
     Description: Name of the lambda that manages and updates statistics
@@ -389,6 +398,18 @@ Conditions:
     Default: 20
     Description: Batching window size for lambda triggering
 
+  CampaignEventsDeduplicationTtlDays:
+    Type: Number
+    Default: 7
+    Description: Retention window, in days, for campaign events deduplication locks
+
+  DeduplicationManagementEnabled:
+    Type: String
+    Default: true
+    Description: Enable management of campaign events deduplication
+    AllowedValues:
+      - true
+      - false
 
 Resources:
   WorkflowManagerMicroservice:
@@ -949,7 +970,10 @@ Resources:
       Environment:
         Variables:
           REGION: !Sub ${AWS::Region}
-          TABLE_NAME: !Sub '${CampaignStatisticsTableName}'
+          CAMPAIGN_STATISTICS_TABLE: !Sub '${CampaignStatisticsTableName}'
+          CAMPAIGN_EVENTS_DEDUPLICATION_TABLE: !Sub '${CampaignEventsDeduplicationTableName}'
+          CAMPAIGN_EVENTS_DEDUPLICATION_TTL_DAYS: !Sub '${CampaignEventsDeduplicationTtlDays}'
+          DEDUPLICATION_MANAGEMENT_ENABLED: !Sub '${DeduplicationManagementEnabled}'
       TracingConfig:
         Mode: Active
       Layers:
@@ -999,7 +1023,9 @@ Resources:
               - dynamodb:UpdateItem
               - dynamodb:GetItem
               - dynamodb:Query
-            Resource: !Ref CampaignStatisticsTableArn
+            Resource:
+              - !Ref CampaignStatisticsTableArn
+              - !Ref CampaignEventsDeduplicationTableArn
           - Action: kms:Decrypt
             Effect: Allow
             Resource: !Ref CdcKinesisSourceStreamKeyArn
