@@ -2,61 +2,59 @@ package it.pagopa.pn.workflowmanager.middleware.dao.dynamo.mapper;
 
 import it.pagopa.pn.workflowmanager.generated.openapi.server.v1.dto.*;
 import it.pagopa.pn.workflowmanager.middleware.dao.dynamo.entity.CampaignStatisticsEntity;
+import org.springframework.stereotype.Component;
 
-import java.time.Instant;
-
+@Component
 public class EntityToDtoCampaignStatisticsMapper {
 
-    public static CampaignStatisticsResponse entityToDto(CampaignStatisticsEntity entity ) {
-        CampaignStatisticsResponse campaignStatisticsResponse = new CampaignStatisticsResponse();
-        CampaignStatisticsResponseCounters counters = new CampaignStatisticsResponseCounters();
-        CampaignStatisticsResponseCountersSent countersSent = getCampaignStatisticsResponseCountersSent(entity);
-        CampaignStatisticsResponseCountersReceived countersReceived = getCampaignStatisticsResponseCountersReceived(entity);
-        counters.setSent(countersSent);
-        counters.setReceived(countersReceived);
+    public static CampaignStatisticsResponse entityToDto(CampaignStatisticsEntity entity) {
+        if (entity == null) {
+            return null;
+        }
 
-        counters.setWorkflowDone(entity.getWorkflowDone());
-        counters.setTotalReached(entity.getTotalReached());
-        counters.setViewed(entity.getViewed());
-        counters.setPayed(entity.getPayed());
-        counters.setUndeliverable(entity.getTotalUndeliverable());
-
-        campaignStatisticsResponse.setCampaignId(entity.getCampaignId());
-        campaignStatisticsResponse.setCounters(counters);
-
-        campaignStatisticsResponse.setLastCompletedTimestamp(
-                entity.getLastCompletedTimestamp() != null
-                        ? Instant.parse(entity.getLastCompletedTimestamp())
-                        : null
-        );
-
-        return campaignStatisticsResponse;
+        return new CampaignStatisticsResponse()
+                .campaignId(entity.getCampaignId())
+                .stats(new CampaignStats()
+                        .totalCount(checkValue(entity.getTotalAccepted()))
+                        .totalRefusedCount(checkValue(entity.getTotalRefused()))
+                        .sentOnChannelCount(checkValue(entity.getTotalSent()))
+                        .deliveredCount(checkValue(entity.getTotalDelivered()))
+                        .undeliverableCount(checkValue(entity.getTotalUndeliverable()))
+                        .workflowDoneCount(checkValue(entity.getWorkflowDone()))
+                        .viewedCount(checkValue(entity.getViewedIO()) + checkValue(entity.getViewedSEND()))
+                        .paidCount(checkValue(entity.getPaid()))
+                        .sentOnChannel(mapSentOnChannel(entity))
+                        .delivered(mapDelivered(entity))
+                        .viewed(mapViewed(entity)))
+                .lastCompletedTimestamp(entity.getLastCompletedTimestamp());
     }
 
-    private static CampaignStatisticsResponseCountersReceived getCampaignStatisticsResponseCountersReceived(CampaignStatisticsEntity entity) {
-        CampaignStatisticsResponseCountersReceived countersReceived = new CampaignStatisticsResponseCountersReceived();
-        countersReceived.setEMAIL(entity.getReceivedEMAIL());
-        countersReceived.setIO(entity.getReceivedIO());
-        countersReceived.setPEC(entity.getReceivedPEC());
-        countersReceived.setRS(entity.getReceivedRS());
-        return countersReceived;
+    private static CampaignStatsSentOnChannel mapSentOnChannel(CampaignStatisticsEntity entity) {
+        return new CampaignStatsSentOnChannel()
+                .digital(new CampaignStatsSentOnChannelDigital()
+                        .IO(checkValue(entity.getDigitalSentIO()))
+                        .EMAIL(checkValue(entity.getDigitalSentEMAIL()))
+                        .PEC(checkValue(entity.getDigitalSentPEC()))
+                        .SMS(checkValue(entity.getDigitalSentSMS())))
+                .analog(new CampaignStatsSentOnChannelAnalog()
+                        .RS(checkValue(entity.getAnalogSentRS())));
     }
 
-    private static CampaignStatisticsResponseCountersSent getCampaignStatisticsResponseCountersSent(CampaignStatisticsEntity entity) {
-        CampaignStatisticsResponseCountersSent countersSent = new CampaignStatisticsResponseCountersSent();
-        CampaignStatisticsResponseCountersSentAnalog countersSentAnalog = new CampaignStatisticsResponseCountersSentAnalog();
-        CampaignStatisticsResponseCountersSentDigital countersSentDigital = new CampaignStatisticsResponseCountersSentDigital();
-        countersSentDigital.setEMAIL(entity.getDigitalSentEMAIL());
-        countersSentDigital.setIO(entity.getDigitalSentIO());
-        countersSentDigital.setPEC(entity.getDigitalSentPEC());
-        countersSentDigital.setSMS(entity.getDigitalSentSMS());
-        countersSentAnalog.setRS(entity.getAnalogSentRS());
-
-        countersSent.setTotal(entity.getTotalSent());
-        countersSent.setAnalog(countersSentAnalog);
-        countersSent.setRefused(entity.getTotalRefused());
-        countersSent.setDigital(countersSentDigital);
-        return countersSent;
+    private static CampaignStatsDelivered mapDelivered(CampaignStatisticsEntity entity) {
+        return new CampaignStatsDelivered()
+                .IO(checkValue(entity.getReceivedIO()))
+                .EMAIL(checkValue(entity.getReceivedEMAIL()))
+                .PEC(checkValue(entity.getReceivedPEC()))
+                .RS(checkValue(entity.getReceivedRS()));
     }
 
+    private static CampaignStatsViewed mapViewed(CampaignStatisticsEntity entity) {
+        return new CampaignStatsViewed()
+                .IO(checkValue(entity.getViewedIO()))
+                .SEND(checkValue(entity.getViewedSEND()));
+    }
+
+    private static int checkValue(Integer value) {
+        return value != null ? value : 0;
+    }
 }
