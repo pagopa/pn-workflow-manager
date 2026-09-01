@@ -182,6 +182,7 @@ components:
             - IO
             - EMAIL
             - PEC
+            - SMS
             - RS
           properties:
             IO:
@@ -193,6 +194,9 @@ components:
             PEC:
               type: integer
               example: 9800
+            SMS:
+              type: integer
+              example: 12000
             RS:
               type: integer
               example: 410

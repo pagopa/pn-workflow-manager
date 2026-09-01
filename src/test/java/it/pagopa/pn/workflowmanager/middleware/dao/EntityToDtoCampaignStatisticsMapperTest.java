@@ -33,6 +33,7 @@ class EntityToDtoCampaignStatisticsMapperTest {
         entity.setReceivedIO(72000);
         entity.setReceivedEMAIL(31000);
         entity.setReceivedPEC(9800);
+        entity.setReceivedSMS(10);
         entity.setReceivedRS(410);
 
         entity.setViewedIO(600);
@@ -77,6 +78,7 @@ class EntityToDtoCampaignStatisticsMapperTest {
         assertThat(dto.getStats().getDelivered().getEMAIL()).isEqualTo(31000);
         assertThat(dto.getStats().getDelivered().getPEC()).isEqualTo(9800);
         assertThat(dto.getStats().getDelivered().getRS()).isEqualTo(410);
+        assertThat(dto.getStats().getDelivered().getSMS()).isEqualTo(10);
 
         // Dettaglio viewed
         assertThat(dto.getStats().getViewed()).isNotNull();
@@ -89,7 +91,7 @@ class EntityToDtoCampaignStatisticsMapperTest {
         // Given
         CampaignStatisticsEntity entity = new CampaignStatisticsEntity();
         entity.setCampaignId("CAMP-NULL-TEST");
-        entity.setViewedIO(null);
+        entity.setViewedIO(0);
         entity.setViewedSEND(150);
 
         // When
@@ -99,7 +101,7 @@ class EntityToDtoCampaignStatisticsMapperTest {
         assertThat(dto).isNotNull();
         assertThat(dto.getStats()).isNotNull();
         assertThat(dto.getStats().getViewedCount()).isEqualTo(150);
-        assertThat(dto.getStats().getViewed().getIO()).isNull();
+        assertThat(dto.getStats().getViewed().getIO()).isEqualTo(0);
         assertThat(dto.getStats().getViewed().getSEND()).isEqualTo(150);
     }
 }

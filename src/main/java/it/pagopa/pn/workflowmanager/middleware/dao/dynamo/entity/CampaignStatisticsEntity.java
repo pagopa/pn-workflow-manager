@@ -90,6 +90,9 @@ public class CampaignStatisticsEntity {
     @Getter(onMethod=@__({@DynamoDbAttribute(COL_RECEIVED_RS)}))
     private Integer receivedRS;
 
+    @Getter(onMethod=@__({@DynamoDbAttribute(COL_RECEIVED_RS)}))
+    private Integer receivedSMS;
+
     @Getter(onMethod=@__({@DynamoDbAttribute(COL_VIEWED_IO)}))
     private Integer viewedIO;
 
