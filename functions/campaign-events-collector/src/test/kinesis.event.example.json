@@ -2,66 +2,37 @@
   "Records": [
     {
       "kinesis": {
+        "sequenceNumber": "49651151769547260642845689623061309776858789665900068930",
         "data": {
-          "awsRegion": "eu-central-1",
-          "eventID": "2c19ee21-4cb5-4fcf-aadb-7aac6555b46f",
           "eventName": "INSERT",
-          "userIdentity": null,
-          "recordFormat": "application/json",
-          "tableName": "pn-Timelines",
           "dynamodb": {
             "NewImage": {
-                "businessTimestamp": {
-                    "S": "2025-01-31T16:15:34Z"
-                },
-                "category": {
-                    "S": "ANALOG_SUCCESS_WORKFLOW"
-                },
-                "details": {
-                    "M": {
-                        "nextSourceAttemptsMade": {
-                            "N": 0
-                        },
-                        "recIndex": {
-                            "N": 0
-                        }
-                    }
-                },
-                "iun": {
-                    "S": "JLPV-MWRV-VEWT-202501-W-1"
-                },
-                "legalFactId": {
-                    "L": [
-                    ]
-                },
-                "notificationSentAt": {
-                    "S": "2025-01-31T15:57:33.945285668Z"
-                },
-                "paId": {
-                    "S": "5b994d4a-0fa8-47ac-9c7b-354f1d44a1ce"
-                },
-                "statusInfo": {
-                    "M": {
-                        "actual": {
-                            "S": "DELIVERED"
-                        },
-                        "statusChanged": {
-                            "BOOL": true
-                        },
-                        "statusChangeTimestamp": {
-                            "S": "2025-01-31T16:15:39.762656057Z"
-                        }
-                    }
-                },
-                "timelineElementId": {
-                    "S": "ANALOG_SUCCESS_WORKFLOW.IUN_JLPV-MWRV-VEWT-202501-W-1.RECINDEX_0"
-                },
-                "timestamp": {
-                    "S": "2025-01-31T16:15:39.713731463Z"
+              "iun": { "S": "XHRX-MYNM-YVHA-202609-D-A" },
+              "timelineElementId": { "S": "REQUEST_ACCEPTED.IUN_XHRX-MYNM-YVHA-202609-D-A" },
+              "businessTimestamp": { "S": "2026-09-03T08:45:42.450368271Z" },
+              "campaignId": { "S": "FattOrd" },
+              "category": { "S": "REQUEST_ACCEPTED" },
+              "communicationType": { "S": "INFORMAL" },
+              "details": {
+                "M": {
+                  "nextSourceAttemptsMade": { "N": 0 },
+                  "notificationRequestId": { "S": "WEhSWC1NWU5NLVlWSEEtMjAyNjA5LUQtQQ==" },
+                  "paProtocolNumber": { "S": "20260903104511" }
                 }
+              },
+              "legalFactId": { "L": [] },
+              "notificationSentAt": { "S": "2026-09-03T08:45:12.198565379Z" },
+              "paId": { "S": "5b994d4a-0fa8-47ac-9c7b-354f1d44a1ce" },
+              "statusInfo": {
+                "M": {
+                  "actual": { "S": "ACCEPTED" },
+                  "statusChanged": { "BOOL": true },
+                  "statusChangeTimestamp": { "S": "2026-09-03T08:45:42.504231297Z" }
+                }
+              },
+              "timestamp": { "S": "2026-09-03T08:45:42.450368271Z" }
             }
-          },
-          "eventSource": "aws:dynamodb"
+          }
         }
       },
       "eventSource": "aws:kinesis",
