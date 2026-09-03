@@ -1,199 +1,166 @@
 const { unmarshall } = require("@aws-sdk/util-dynamodb");
 const config = require("config");
-const { extractCampaignId } = require("./lib/campaignUtils");
-const {
-    acquireDeduplicationLock,
-    removeDeduplicationLocks,
-    updateCounters
-} = require("./lib/dbOperations");
-
-// Inizializzazione del client DynamoDB fuori dall'handler per riuso delle connessioni nelle successive esecuzioni
-const STATS_TABLE = process.env.CAMPAIGN_STATISTICS_TABLE || "pn-CampaignStatistics";
-const DEDUP_TABLE = process.env.CAMPAIGN_EVENTS_DEDUPLICATION_TABLE || "pn-CampaignEventsDeduplication";
-const DEDUP_TTL_DAYS = Number(process.env.CAMPAIGN_EVENTS_DEDUPLICATION_TTL_DAYS || 7);
-const DEDUPLICATION_MANAGEMENT_ENABLED = !["false", "0", "off"].includes(
-    String(process.env.DEDUPLICATION_MANAGEMENT_ENABLED).trim().toLowerCase()
-);
 const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
-
-const client = new DynamoDBClient({ region: process.env.REGION });
-
-
-
-const DIGITAL_CHANNELS = ["IO", "EMAIL", "PEC", "SMS"];
-const ANALOG_CHANNELS = ["RS"]; 
-const ALL_CHANNELS = [...DIGITAL_CHANNELS, ...ANALOG_CHANNELS];
+const { updateCounters } = require("./lib/dbOperations");
+const { acquireDeduplicationLock, removeDeduplicationLocks } = require("./lib/deduplication");
+const { applyCategoryMetric } = require("./lib/timelineMetrics");
+const { extractKinesisData } = require("./lib/kinesis");
+const STATS_TABLE = config.get("CAMPAIGN_STATISTICS_TABLE");
+const DEDUP_TABLE = config.get("CAMPAIGN_EVENTS_DEDUPLICATION_TABLE");
+const DEDUP_TTL_DAYS = Number(config.get("CAMPAIGN_EVENTS_DEDUPLICATION_TTL_DAYS"));
 const CONDITIONAL_CHECK_FAILED = "ConditionalCheckFailedException";
 const TIMEOUT_GUARD_TRIGGERED = "TimeoutGuardTriggered";
+const TIMEOUT_TOLERANCE_IN_MILLIS = config.get("RUN_TOLLERANCE_IN_MILLIS");
+const DEDUPLICATION_MANAGEMENT_ENABLED = !["false", "0", "off"].includes(
+    String(config.get("DEDUPLICATION_MANAGEMENT_ENABLED")).trim().toLowerCase()
+);
+const client = new DynamoDBClient({ region: config.get("REGION") });
 
-const MetricCategories = { 
-    "REQUEST_ACCEPTED": "totalSent",
-    "REQUEST_REFUSED": "totalRefused",
-    "WORKFLOW_ENDED_UNDELIVERABLE": "totalUndeliverable",
-    "WORKFLOW_DONE": "workflowDone",
-    "WORKFLOW_ENDED_REACHED": "totalReached",
-    "WORKFLOW_ENDED_UNREACHED": "totalUnreached",
-    "PAYMENT": "payed",
-    "NOTIFICATION_VIEWED": "viewed",
-    "SEND_DIGITAL_MESSAGE": (channel) => `digitalSent_${channel}`,
-    "SEND_COURTESY_MESSAGE": (channel) => `digitalSent_received_${channel}`,
-    "SEND_ANALOG_MESSAGE": "analogSent_RS",
-    "REACHED": (channel) => `digitalSent_${channel}`,
-};  
-
-const TOLLERANCE_IN_MILLIS = config.get("RUN_TOLLERANCE_IN_MILLIS");
-
+/**
+ * Verifica se la Lambda si sta avvicinando al tempo massimo di esecuzione consentito
+ */
 const isTimeToLeave = (context) =>
-    typeof context?.getRemainingTimeInMillis === "function"
-        ? context.getRemainingTimeInMillis() < TOLLERANCE_IN_MILLIS
-        : false;
+    typeof context?.getRemainingTimeInMillis === "function" &&
+    context.getRemainingTimeInMillis() < TIMEOUT_TOLERANCE_IN_MILLIS;
+
+/**
+ * Inizializza la struttura dati in memoria per accumulare i contatori di una campagna
+ */
+const createAggregate = (timestamp) => ({
+    counters: {},
+    timelineElementIds: [],
+    sequenceNumbers: [],
+    lastTimestamp: timestamp
+});
+
+/**
+ * Assicura che esista un contenitore di aggregazione per la campagna specificata
+ */
+const ensureAggregate = (aggregates, campaignId, timestamp) => {
+    if (!aggregates[campaignId]) {
+        aggregates[campaignId] = createAggregate(timestamp);
+    }
+    return aggregates[campaignId];
+};
+
+/**
+ * Estrae gli ID/sequenceNumbers per la lista di campagne fallite o andate in timeout
+ */
+const buildFailures = (campaignIds, aggregates, fieldName) =>
+    campaignIds.flatMap((campaignId) => aggregates[campaignId]?.[fieldName] || []);
 
 exports.handleEvent = async (event, context) => {
-    console.log(`Processing batch of ${event.Records.length} records from Kinesis stream.`);
-
-    const isTimedOut = () => isTimeToLeave(context);
-    
-    // Mappa per aggregare gli incrementi cumulativi per campagna all'interno del batch
+    const decodedRecords = extractKinesisData(event);
     const campaignAggregates = {};
+    const recordFailures = [];
+    const lockedFailedTimelineElementIds = [];
+    const isTimedOut = () => isTimeToLeave(context);
+
     const dedupTtlSeconds = Math.floor(Date.now() / 1000) + (DEDUP_TTL_DAYS * 24 * 60 * 60);
 
-    for (const cdcEvent of event.Records) {
+    console.log(`Batch size: ${decodedRecords.length} cdc`);
+
+    if (decodedRecords.length === 0) {
+        console.log("No events to process");
+        return { batchItemFailures: [] };
+    }
+
+    for (let i = 0; i < decodedRecords.length; i++) {
+        const record = decodedRecords[i];
         if (isTimedOut()) {
             console.warn("Stopping record processing because Lambda is close to timeout.");
+            recordFailures.push(...decodedRecords.slice(i).map(r => r.kinesisSeqNumber));
             break;
         }
 
         try {
-            // Decodifica del payload Kinesis (Base64) — il DynamoDB CDC event è dentro kinesis.data
-            const kinesisEvent = JSON.parse(Buffer.from(cdcEvent.kinesis.data, 'base64').toString('utf-8'));
-
-            // Verifichiamo che l'evento sia di tipo INSERT sulla tabella pn-Timelines
-            // il controllo è superfluo visto che la lambda è triggerata da un flusso Kinesis dedicato
-            //  agli eventi di timeline, lo mettiamo per robustezza
-            if (kinesisEvent.eventName !== "INSERT" || !kinesisEvent.dynamodb?.NewImage) {
+            // Considera solo gli eventi di tipo INSERT contenenti i dati della timeline
+            if (record.eventName !== "INSERT" || !record.dynamodb?.NewImage) {
                 continue;
             }
 
-            const newImage = kinesisEvent.dynamodb.NewImage;
+            const parsedData = unmarshall(record.dynamodb.NewImage);
+            let campaignId = parsedData.campaignId;
+            let timelineElementId = parsedData.timelineElementId;
+            let category = parsedData.category;
 
-            const parsedData = unmarshall(newImage);
             console.log("Parsed timeline event:", {
-                timelineElementId: parsedData.timelineElementId,
-                category: parsedData.category,
+                timelineElementId,
+                category,
                 communicationType: parsedData.communicationType
             });
 
-            // Estrazione attributi core. Nota: un'ottimizzazione  prevede il campaignId inserito 
-            // direttamente nel contesto dell'evento di timeline per evitare lookup
-            const communicationType = parsedData.communicationType;
-            // altro check di robustezza per il dominio delle comunicazioni bonarie
-            if (communicationType !== "INFORMAL") {
-                continue;
-            }
-
-            // Risoluzione dinamica del campaignId. 
-            // Se non presente nell'evento di timeline, si assume una fallback o estrazione da logica applicativa correlata.
-            const campaignId = parsedData.campaignId || await extractCampaignId(parsedData);
+            // Valida la presenza dei campi obbligatori
             if (!campaignId) {
-                console.warn(`Missing campaignId for record: ${cdcEvent.eventID}. Skipping.`);
+                console.warn(`Missing campaignId for record: ${record.kinesisSeqNumber}. Skipping.`);
                 continue;
             }
 
-            const category = parsedData.category;
-            const timelineElementId = parsedData.timelineElementId;
+            if (!timelineElementId) {
+                console.warn(`Missing timelineElementId for record: ${record.kinesisSeqNumber}. Skipping.`);
+                continue;
+            }
 
+            // Gestione del lock di deduplicazione su DynamoDB
             if (DEDUPLICATION_MANAGEMENT_ENABLED) {
                 try {
                     await acquireDeduplicationLock(client, DEDUP_TABLE, timelineElementId, dedupTtlSeconds);
                 } catch (dedupErr) {
+                    // Se il record esiste già, l'evento è un duplicato e viene ignorato in sicurezza
                     if (dedupErr?.name === CONDITIONAL_CHECK_FAILED) {
                         console.log(`Duplicate event detected for timelineElementId: ${timelineElementId}. Skipping.`);
                         continue;
                     }
 
-                    dedupErr.isFatal = true;
-                    throw dedupErr;
+                    // Se fallisce per un errore di rete o DB, segnala il record come fallito per riprovare
+                    console.error(
+                        `Deduplication lock error for campaignId=${campaignId}, timelineElementId=${timelineElementId}, category=${category}:`,
+                        dedupErr
+                    );
+                    recordFailures.push(record.kinesisSeqNumber);
+                    continue;
                 }
             }
 
-            // Inizializzazione della struttura di aggregazione per la campagna corrente
-            if (!campaignAggregates[campaignId]) {
-                campaignAggregates[campaignId] = {
-                    counters: {},
-                    timelineElementIds: [],
-                    lastTimestamp: parsedData.timestamp
-                };
+            // Prepara o recupera l'aggregato in memoria per questa campagna
+            const aggregate = ensureAggregate(campaignAggregates, campaignId, parsedData.timestamp);
+
+            // Mantiene aggiornato l'ultimo timestamp utile di aggiornamento della campagna
+            if (parsedData.timestamp > aggregate.lastTimestamp) {
+                aggregate.lastTimestamp = parsedData.timestamp;
             }
 
-            // Aggiornamento dell'ultimo timestamp utile per tracciare la freschezza del dato
-            if (parsedData.timestamp > campaignAggregates[campaignId].lastTimestamp) {
-                campaignAggregates[campaignId].lastTimestamp = parsedData.timestamp;
+            // Applica la logica delle metriche
+            if (!applyCategoryMetric(aggregate.counters, category, parsedData)) {
+                console.warn(`Category metric skipped/invalid for sequenceNumber=${record.kinesisSeqNumber}. Marked as failure.`);
+                recordFailures.push(record.kinesisSeqNumber);
+
+                if (timelineElementId && DEDUPLICATION_MANAGEMENT_ENABLED) {
+                    lockedFailedTimelineElementIds.push(timelineElementId);
+                }
+                continue;
             }
 
-            //  categorie metriche globali
-            let channel
-            switch (category) {
-                case "REQUEST_ACCEPTED": campaignAggregates[campaignId].counters[MetricCategories["REQUEST_ACCEPTED"]] = (campaignAggregates[campaignId].counters[MetricCategories["REQUEST_ACCEPTED"]] || 0) + 1; break;
-                case "REQUEST_REFUSED": campaignAggregates[campaignId].counters[MetricCategories["REQUEST_REFUSED"]] = (campaignAggregates[campaignId].counters[MetricCategories["REQUEST_REFUSED"]] || 0) + 1; break;
-                case "WORKFLOW_ENDED_UNDELIVERABLE": campaignAggregates[campaignId].counters[MetricCategories["WORKFLOW_ENDED_UNDELIVERABLE"]] = (campaignAggregates[campaignId].counters[MetricCategories["WORKFLOW_ENDED_UNDELIVERABLE"]] || 0) + 1; break;
-                case "WORKFLOW_DONE":
-                    campaignAggregates[campaignId].counters[MetricCategories["WORKFLOW_DONE"]] =
-                            (campaignAggregates[campaignId].counters[MetricCategories["WORKFLOW_DONE"]] || 0) + 1;
-
-                 // TODO
-                 // Aggiungere logica per distinguere lo stato di partenza per decrementare i contatori totalUndeliverable, totalReached, unreached, ecc. in base al flusso di stato precedente se necessario.
-                break;
-                case "WORKFLOW_ENDED_REACHED": campaignAggregates[campaignId].counters[MetricCategories["WORKFLOW_ENDED_REACHED"]] = (campaignAggregates[campaignId].counters[MetricCategories["WORKFLOW_ENDED_REACHED"]] || 0) + 1; break;
-                case "WORKFLOW_ENDED_UNREACHED": campaignAggregates[campaignId].counters[MetricCategories["WORKFLOW_ENDED_UNREACHED"]] = (campaignAggregates[campaignId].counters[MetricCategories["WORKFLOW_ENDED_UNREACHED"]] || 0) + 1; break;
-                case "NOTIFICATION_VIEWED": campaignAggregates[campaignId].counters[MetricCategories["NOTIFICATION_VIEWED"]] = (campaignAggregates[campaignId].counters[MetricCategories["NOTIFICATION_VIEWED"]] || 0) + 1; break;
-                case "SEND_DIGITAL_MESSAGE":
-                case "SEND_COURTESY_MESSAGE":
-                    channel = parsedData.details?.channel; // IO, PEC, EMAIL, SMS, ANALOG
-                    if (DIGITAL_CHANNELS.includes(channel))
-                        campaignAggregates[campaignId].counters[MetricCategories[category](channel)] = (campaignAggregates[campaignId].counters[MetricCategories[category](channel)] || 0) + 1;
-                    else {
-                        console.warn(`Unexpected channel for ${category}: ${channel}`);
-                        continue;
-                    }
-                break;
-                case "SEND_ANALOG_MESSAGE":
-                    campaignAggregates[campaignId].counters[MetricCategories["SEND_ANALOG_MESSAGE"]] = (campaignAggregates[campaignId].counters[MetricCategories["SEND_ANALOG_MESSAGE"]] || 0) + 1;
-                break;
-                case "REACHED":
-                    const tokens = timelineElementId.split("_");
-                    if (tokens.length < 3) {
-                        console.warn(`Unexpected timelineElementId format: ${timelineElementId} for record: ${cdcEvent.eventID}. Unable to extract channel. Skipping channel-specific metrics.`);
-                        break;
-                    }
-                     // Il  formato del REACHED deve essere consistente con REACHED_<IUN>_<channel>
-                    channel = tokens[2];
-                    if (ALL_CHANNELS.includes(channel)) {
-                        campaignAggregates[campaignId].counters[MetricCategories["REACHED"](channel)] =
-                            (campaignAggregates[campaignId].counters[MetricCategories["REACHED"](channel)] || 0) + 1;
-                    }
-                    break;
-                case "PAYMENT":
-                    campaignAggregates[campaignId].counters[MetricCategories["PAYMENT"]] = (campaignAggregates[campaignId].counters[MetricCategories["PAYMENT"]] || 0) + 1;
-                break;
-                default:
-                    console.log(`Unhandled category: ${category} for campaign: ${campaignId}`);
-
-            }
-
-            campaignAggregates[campaignId].timelineElementIds.push(timelineElementId);
+            // Traccia gli id e i sequence numbers elaborati con successo
+            aggregate.timelineElementIds.push(timelineElementId);
+            aggregate.sequenceNumbers.push(record.kinesisSeqNumber);
         } catch (err) {
-            if (err?.isFatal) {
-                throw err;
+            console.error(
+                `Parsing error on record: sequenceNumber=${record.kinesisSeqNumber}. Error:`,
+                err
+            );
+            recordFailures.push(record.kinesisSeqNumber);
+            if (typeof timelineElementId !== "undefined" && DEDUPLICATION_MANAGEMENT_ENABLED) {
+                lockedFailedTimelineElementIds.push(timelineElementId);
             }
-            console.error(`Parsing error on record: ${JSON.stringify(cdcEvent)}. Error:`, err);
-            // In caso di errore irreversibile sul singolo record, l'esecuzione prosegue per non bloccare l'intero batch
         }
     }
 
-    // Esecuzione delle scritture atomiche cumulative su DynamoDB.
-    const campaignIds = Object.keys(campaignAggregates);
-    const failedCampaigns = [];
+    const campaignIds = Object.keys(campaignAggregates).filter(
+        (campaignId) => campaignAggregates[campaignId].timelineElementIds.length > 0
+    );    const failedCampaigns = [];
     const timedOutCampaignIds = [];
+
     for (let index = 0; index < campaignIds.length; index++) {
         const campaignId = campaignIds[index];
 
@@ -204,6 +171,7 @@ exports.handleEvent = async (event, context) => {
         }
 
         try {
+            // Esegue la query di UPDATE condizionale/incrementale sulla tabella delle statistiche
             await updateCounters(client, STATS_TABLE, campaignId, campaignAggregates[campaignId], isTimedOut);
         } catch (error) {
             if (error?.name === TIMEOUT_GUARD_TRIGGERED) {
@@ -216,29 +184,32 @@ exports.handleEvent = async (event, context) => {
         }
     }
 
-    if (timedOutCampaignIds.length > 0) {
-        if (DEDUPLICATION_MANAGEMENT_ENABLED) {
-            for (const campaignId of timedOutCampaignIds) {
-                const timelineElementIds = campaignAggregates[campaignId]?.timelineElementIds || [];
-                await removeDeduplicationLocks(client, DEDUP_TABLE, timelineElementIds);
-            }
-        }
+    // Raccoglie tutti i timelineElementId dei record che non sono stati scritti a DB
+    const failedTimelineElementIds = [
+        ...lockedFailedTimelineElementIds,
+        ...buildFailures(timedOutCampaignIds, campaignAggregates, "timelineElementIds"),
+        ...buildFailures(failedCampaigns.map(({ campaignId }) => campaignId), campaignAggregates, "timelineElementIds")
+    ];
 
-        const timeoutError = new Error("Stopping campaign-events-collector because Lambda is close to timeout.");
-        timeoutError.name = TIMEOUT_GUARD_TRIGGERED;
-        throw timeoutError;
+    // Rimuove i lock di deduplicazione per gli eventi falliti, consentendone il riprocessamento al retry Kinesis
+    if (DEDUPLICATION_MANAGEMENT_ENABLED && failedTimelineElementIds.length > 0) {
+        await removeDeduplicationLocks(client, DEDUP_TABLE, failedTimelineElementIds);
     }
 
-    if (failedCampaigns.length > 0) {
-        if (DEDUPLICATION_MANAGEMENT_ENABLED) {
-            for (const { campaignId } of failedCampaigns) {
-                const timelineElementIds = campaignAggregates[campaignId]?.timelineElementIds || [];
-                await removeDeduplicationLocks(client, DEDUP_TABLE, timelineElementIds);
-            }
-        }
+    // Costruisce la risposta strutturata per Kinesis indicando solo gli elementi falliti
+    const batchItemFailures = [
+        ...recordFailures,
+        ...buildFailures(timedOutCampaignIds, campaignAggregates, "sequenceNumbers"),
+        ...buildFailures(failedCampaigns.map(({ campaignId }) => campaignId), campaignAggregates, "sequenceNumbers")
+    ].map((sequenceNumber) => ({ itemIdentifier: sequenceNumber }));
 
-        throw failedCampaigns[0].reason;
+    if (batchItemFailures.length > 0) {
+        console.warn(
+            `Batch completed with partial failures. Failed items=${batchItemFailures.length}. ` +
+            `Failed campaigns=${JSON.stringify(failedCampaigns.map((f) => f.campaignId))}. ` +
+            `Timed out campaigns=${JSON.stringify(timedOutCampaignIds)}.`
+        );
     }
 
-    return { status: "SUCCESS", processedCampaigns: campaignIds.length };
+    return { batchItemFailures };
 };
