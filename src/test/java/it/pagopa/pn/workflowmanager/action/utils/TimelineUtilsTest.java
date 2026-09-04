@@ -1,14 +1,12 @@
 package it.pagopa.pn.workflowmanager.action.utils;
 
 import it.pagopa.pn.commons.exceptions.PnInternalException;
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.model.SendResponse;
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.model.NotificationHistoryResponse;
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.model.NotificationStatus;
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.model.SendingReceipt;
 import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
 import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.address.PhysicalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.event.NotificationPaidInt;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.DesiredFeedbackType;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationSenderInt;
@@ -21,8 +19,10 @@ import it.pagopa.pn.workflowmanager.dto.timeline.EventId;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineEventId;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.*;
-import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
-import it.pagopa.pn.workflowmanager.dto.ext.campaign.DesiredFeedbackType;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.model.SendResponse;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.model.NotificationHistoryResponse;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.model.NotificationStatus;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.model.SendingReceipt;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.event.SendEventInt;
 import it.pagopa.pn.workflowmanager.service.TimelineService;
 import org.junit.jupiter.api.Assertions;
@@ -172,7 +172,7 @@ class TimelineUtilsTest {
 
         // Act
         TimelineElementInternal actual = timelineUtils.buildSendDigitalMessageSkipTimelineElement(
-                TEST_REC_INDEX, notification, TEST_EVENT_ID, DigitalChannelsInt.EMAIL,DigitalAddressSourceInt.SPECIAL);
+                TEST_REC_INDEX, notification, TEST_EVENT_ID, DigitalChannelsInt.EMAIL);
 
         // Assert
         Assertions.assertAll(

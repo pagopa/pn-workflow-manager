@@ -85,14 +85,12 @@ public class ChannelSenderUtils {
     public void saveSendDigitalMessageSkipElement(int recIndex,
                                                   NotificationInt notification,
                                                   String eventId,
-                                                  DigitalChannelsInt digitalAddressChannel,
-                                                  DigitalAddressSourceInt digitalAddressSource){
+                                                  DigitalChannelsInt digitalAddressChannel){
         timelineService.addTimelineElement(
                 timelineUtils.buildSendDigitalMessageSkipTimelineElement(recIndex,
                         notification,
                         eventId,
-                        digitalAddressChannel,
-                        digitalAddressSource
+                        digitalAddressChannel
                 ),
                 notification
         );
