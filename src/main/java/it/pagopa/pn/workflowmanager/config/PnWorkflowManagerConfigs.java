@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.validation.annotation.Validated;
 
+import java.time.Instant;
 import java.util.List;
 
 @Configuration
@@ -34,6 +35,7 @@ public class PnWorkflowManagerConfigs {
     private String externalChannelsBaseUrl;
 
     private Integer ioPollingMaxMins;
+    private Instant searchDigitalDomicileStartDate;
 
     @Data
     public static class Topics {
