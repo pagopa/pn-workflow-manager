@@ -377,6 +377,7 @@ Resources:
         ContainerEnvEntry16: !Sub 'PN_WORKFLOWMANAGER_SAFESTORAGEBASEURL=${SandboxSafeStorageBaseUrl}'
         ContainerEnvEntry17: !Sub 'PN_WORKFLOWMANAGER_TOPICS_SAFESTORAGEEVENTS=${SafeStorageToWorkflowManagerQueueName}'
         ContainerEnvEntry18: !Sub 'PN_WORKFLOWMANAGER_TOPICS_INFORMALQUEUE=${WorkflowManagerInputsQueueName}'
+        ContainerEnvEntryXX: !Sub "PN_WORKFLOWMANAGER_SEARCHDIGITALDOMICILESTARTDATE={{resolve:ssm:/config/workflow/search-digital-domicile-start-date}}"
         ApplicativeEnvFileChecksum: !Ref ApplicativeEnvFileChecksum
         JavaToolOptions: '-Dreactor.netty.ioWorkerCount=50'
         MappedPaths: '/workflow-manager-not-available'
