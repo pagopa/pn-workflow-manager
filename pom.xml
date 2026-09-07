@@ -376,6 +376,45 @@
 							<apiPackage>it.pagopa.pn.workflowmanager.generated.openapi.msclient.ioconnector.api</apiPackage>
 						</configuration>
 					</execution>
+
+					<!-- OPEN API CLIENT PN-NATIONAL-REGISTRIES -->
+					<execution>
+						<id>generate-client-pn-national-registries</id>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<phase>generate-resources</phase>
+						<configuration>
+							<inputSpec>
+								https://raw.githubusercontent.com/pagopa/pn-national-registries/f5d7f44a10df484a3d075eaf7ddeb85e049a4f33/docs/openapi/PNT2Y-OpenAPI3_PN-NationalRegistries.yaml
+							</inputSpec>
+							<templateDirectory>${project.build.directory}/dependency-resources/scripts/openapi/templates/7.4.0/client</templateDirectory>
+							<generatorName>java</generatorName>
+							<library>resttemplate</library>
+							<generateApiDocumentation>false</generateApiDocumentation>
+							<generateApiTests>false</generateApiTests>
+							<generateModelTests>false</generateModelTests>
+							<additionalProperties>removeEnumValuePrefix=false</additionalProperties>
+							<typeMappings>
+								<typeMapping>OffsetDateTime=java.time.Instant</typeMapping>
+							</typeMappings>
+							<configOptions>
+								<useOneOfInterfaces>true</useOneOfInterfaces>
+								<useJakartaEe>true</useJakartaEe>
+								<swaggerAnnotations>false</swaggerAnnotations>
+								<openApiNullable>false</openApiNullable>
+								<dateLibrary>java8</dateLibrary>
+								<delegatePattern>true</delegatePattern>
+								<annotationLibrary>none</annotationLibrary>
+								<documentationProvider>source</documentationProvider>
+								<openApiNullable>false</openApiNullable>
+								<skipDefaultInterface>false</skipDefaultInterface>
+								<useTags>true</useTags>
+							</configOptions>
+							<modelPackage>it.pagopa.pn.workflowmanager.generated.openapi.msclient.nationalregistries.model</modelPackage>
+							<apiPackage>it.pagopa.pn.workflowmanager.generated.openapi.msclient.nationalregistries.api</apiPackage>
+						</configuration>
+					</execution>
 					<!-- OPEN API CLIENT PN-EXTERNAL-CHANNELS -->
 					<execution>
 						<id>generate-client-pn-external-channels</id>
