@@ -2,7 +2,6 @@ const {
     BatchWriteItemCommand,
     PutItemCommand
 } = require("@aws-sdk/client-dynamodb");
-
 const DEDUP_PARTITION_KEY = "timelineElementId";
 const MAX_BATCH_DELETE_ITEMS = 25;
 
@@ -36,7 +35,7 @@ exports.acquireDeduplicationLock = async (dynamoDb, dedupTable, timelineElementI
  * @param {string[]} timelineElementIds - Lista lock da rimuovere
  */
 exports.removeDeduplicationLocks = async (dynamoDb, dedupTable, timelineElementIds) => {
-    if (!timelineElementIds.length) {
+    if (!timelineElementIds || !timelineElementIds.length) {
         return;
     }
 
@@ -47,13 +46,27 @@ exports.removeDeduplicationLocks = async (dynamoDb, dedupTable, timelineElementI
                 [dedupTable]: chunk.map((timelineElementId) => ({
                     DeleteRequest: {
                         Key: {
-                            [DEDUP_PARTITION_KEY]: { S: timelineElementId }
+                            [DEDUP_PARTITION_KEY]: {S: timelineElementId}
                         }
                     }
                 }))
             }
         });
-
-        await dynamoDb.send(command);
+        try {
+            const response = await dynamoDb.send(command);
+            if (response.UnprocessedItems && response.UnprocessedItems[dedupTable]?.length > 0) {
+                const unprocessedCount = response.UnprocessedItems[dedupTable].length;
+                console.warn(`[DEDUP_LOCKS] Warning: ${unprocessedCount} items were not processed by BatchWriteItem.`, {
+                    unprocessed: response.UnprocessedItems[dedupTable]
+                });
+            }
+        } catch (error) {
+            console.error(`[DEDUP_LOCKS] Error during batch delete of locks in table ${dedupTable}:`, {
+                errorName: error.name,
+                errorMessage: error.message,
+                chunk: chunk
+            });
+            throw error;
+        }
     }
 };

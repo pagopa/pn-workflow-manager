@@ -125,7 +125,7 @@ describe("timelineMetrics", () => {
         const counters = {};
         const ok = metrics.applyCategoryMetric(counters, "SEND_ANALOG_MESSAGE", {
             statusInfo: { statusChanged: true, actual: "PROCESSING" },
-            details: { channel: "RS" }
+            details: { deliveryType: "RS" }
         });
 
         expect(ok).to.be.true;
@@ -137,7 +137,7 @@ describe("timelineMetrics", () => {
         const counters = {};
         const ok = metrics.applyCategoryMetric(counters, "SEND_ANALOG_MESSAGE", {
             statusInfo: { statusChanged: false, actual: "PROCESSING" },
-            details: { channel: "RS" }
+            details: { deliveryType: "RS" }
         });
 
         expect(ok).to.be.true;

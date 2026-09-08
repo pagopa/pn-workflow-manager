@@ -9,7 +9,9 @@ describe("deduplication", () => {
     let deduplication;
 
     beforeEach(() => {
-        sendStub = sinon.stub().resolves();
+        sendStub = sinon.stub().resolves({
+            UnprocessedItems: {}
+        });
         batchWriteItemCommandStub = sinon.stub().callsFake((params) => params);
         putItemCommandStub = sinon.stub().callsFake((params) => params);
 

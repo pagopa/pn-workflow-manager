@@ -30,6 +30,7 @@ function hasStatusChanged(parsedData) {
  */
 function applyCategoryMetric(counters, category, parsedData) {
     let channel;
+    let deliveryType;
     switch (category) {
         case "REQUEST_ACCEPTED":
             counters.totalAccepted = (counters.totalAccepted || 0) + 1;
@@ -83,14 +84,14 @@ function applyCategoryMetric(counters, category, parsedData) {
             break;
 
         case "SEND_ANALOG_MESSAGE":
-            channel = parsedData.details?.channel;
-            if (ANALOG_CHANNELS.includes(channel)) {
-                counters[`analogSent${channel}`] = (counters[`analogSent${channel}`] || 0) + 1;
+            deliveryType = parsedData.details?.deliveryType;
+            if (ANALOG_CHANNELS.includes(deliveryType)) {
+                counters[`analogSent${deliveryType}`] = (counters[`analogSent${deliveryType}`] || 0) + 1;
                 if (isStatusChangedTo(parsedData, "PROCESSING")) {
                     counters.totalSent = (counters.totalSent || 0) + 1;
                 }
             } else {
-                console.warn(`Unexpected channel for ${category}: ${channel}`);
+                console.warn(`Unexpected deliveryType for ${category}: ${deliveryType}`);
                 return false;
             }
             break;

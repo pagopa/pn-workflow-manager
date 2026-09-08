@@ -72,18 +72,12 @@ exports.handleEvent = async (event, context) => {
             recordFailures.push(...decodedRecords.slice(i).map(r => r.kinesisSeqNumber));
             break;
         }
+        const parsedData = unmarshall(record.dynamodb.NewImage);
+        let timelineElementId = parsedData.timelineElementId;
+        let campaignId = parsedData.campaignId;
+        let category = parsedData.category;
 
         try {
-            // Considera solo gli eventi di tipo INSERT contenenti i dati della timeline
-            if (record.eventName !== "INSERT" || !record.dynamodb?.NewImage) {
-                continue;
-            }
-
-            const parsedData = unmarshall(record.dynamodb.NewImage);
-            let campaignId = parsedData.campaignId;
-            let timelineElementId = parsedData.timelineElementId;
-            let category = parsedData.category;
-
             console.log("Parsed timeline event:", {
                 timelineElementId,
                 category,
