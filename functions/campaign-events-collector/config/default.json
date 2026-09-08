@@ -4,5 +4,9 @@
   "CAMPAIGN_STATISTICS_TABLE": "pn-CampaignStatistics",
   "CAMPAIGN_EVENTS_DEDUPLICATION_TABLE": "pn-CampaignEventsDeduplication",
   "CAMPAIGN_EVENTS_DEDUPLICATION_TTL_DAYS": 7,
-  "REGION": "eu-south-1"
+  "REGION": "eu-south-1",
+  "DIGITAL_CHANNELS": ["IO", "EMAIL", "PEC", "SMS"],
+  "ANALOG_CHANNELS": ["RS"],
+  "PLATFORM_CHANNELS": ["IO", "SEND"],
+  "DELIVERED_CHANNELS": ["IO", "EMAIL", "PEC", "SMS", "RS"]
 }

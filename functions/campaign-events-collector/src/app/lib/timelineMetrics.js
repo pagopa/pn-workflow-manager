@@ -1,7 +1,8 @@
-const DIGITAL_CHANNELS = ["IO", "EMAIL", "PEC", "SMS"];
-const ANALOG_CHANNELS = ["RS"];
-const PLATFORM_CHANNELS = ["IO", "SEND"];
-const DELIVERED_CHANNELS = ["IO", "EMAIL", "PEC", "SMS", "RS"];
+const { parseEnvJson } = require("./jsonUtils");
+const DIGITAL_CHANNELS = parseEnvJson("DIGITAL_CHANNELS", ["IO", "EMAIL", "PEC", "SMS"]);
+const ANALOG_CHANNELS = parseEnvJson("ANALOG_CHANNELS", ["RS"]);
+const PLATFORM_CHANNELS = parseEnvJson("PLATFORM_CHANNELS", ["IO", "SEND"]);
+const DELIVERED_CHANNELS = parseEnvJson("DELIVERED_CHANNELS", ["IO", "EMAIL", "PEC", "SMS", "RS"]);
 
 /**
  * Verifica se l'evento ha comportato un cambio di stato verso lo stato atteso,
