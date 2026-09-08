@@ -37,12 +37,12 @@ class FeatureFlagUtilsTest {
     }
 
     @Test
-    void isDigitalDomicileSearchEnabled_whenSentAtEqualsStartDate_shouldReturnFalse() {
+    void isDigitalDomicileSearchEnabled_whenSentAtEqualsStartDate_shouldReturnTrue() {
         Instant startDate = Instant.parse("2024-01-01T00:00:00Z");
 
         when(configs.getSearchDigitalDomicileStartDate()).thenReturn(startDate);
 
-        assertFalse(featureFlagUtils.isDigitalDomicileSearchEnabled(startDate));
+        assertTrue(featureFlagUtils.isDigitalDomicileSearchEnabled(startDate));
     }
 
     @Test

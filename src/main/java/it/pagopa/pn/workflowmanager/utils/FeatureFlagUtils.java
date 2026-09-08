@@ -15,6 +15,6 @@ public class FeatureFlagUtils {
     private final PnWorkflowManagerConfigs configs;
 
     public boolean isDigitalDomicileSearchEnabled(Instant sentAt) {
-        return configs.getSearchDigitalDomicileStartDate().isBefore(sentAt);
+        return !configs.getSearchDigitalDomicileStartDate().isAfter(sentAt);
     }
 }
