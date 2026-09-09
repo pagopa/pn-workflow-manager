@@ -1,12 +1,12 @@
 package it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.userattributes;
 
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.userattributes.api.ConsentsApi;
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.userattributes.api.CourtesyApi;
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.userattributes.api.LegalApi;
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.userattributes.model.Consent;
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.userattributes.model.CourtesyDigitalAddress;
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.userattributes.model.CxTypeAuthFleet;
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.userattributes.model.LegalDigitalAddress;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.userattributes.addressbook.api.CourtesyApi;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.userattributes.addressbook.api.LegalApi;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.userattributes.addressbook.model.CourtesyDigitalAddress;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.userattributes.addressbook.model.LegalDigitalAddress;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.userattributes.consents.api.ConsentsApi;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.userattributes.consents.model.Consent;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.userattributes.consents.model.CxTypeAuthFleet;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

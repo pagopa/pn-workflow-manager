@@ -1,5 +1,6 @@
 package it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.userattributes;
 
+
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.userattributes.addressbook.model.CourtesyDigitalAddress;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.userattributes.addressbook.model.LegalDigitalAddress;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.userattributes.consents.model.Consent;
