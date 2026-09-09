@@ -204,6 +204,46 @@ public enum TimelineEventId {
                     .withRecIndex(eventId.getRecIndex())
                     .build();
         }
+    },
+
+    GET_ADDRESS("GET_ADDRESS") {
+        @Override
+        public String buildEventId(EventId eventId) {
+            return new TimelineEventIdBuilder()
+                    .withCategory(this.getValue())
+                    .withIun(eventId.getIun())
+                    .withRecIndex(eventId.getRecIndex())
+                    .withChannel(eventId.getChannel())
+                    .withSource(eventId.getSource())
+                    .withSentAttemptMade(eventId.getSentAttemptMade())
+                    .build();
+        }
+    },
+
+    SEND_COURTESY_MESSAGE("SEND_COURTESY_MESSAGE") {
+        @Override
+        public String buildEventId(EventId eventId) {
+            return new TimelineEventIdBuilder()
+                    .withCategory(this.getValue())
+                    .withIun(eventId.getIun())
+                    .withRecIndex(eventId.getRecIndex())
+                    .withCourtesyAddressType(eventId.getCourtesyAddressType())
+                    .build();
+        }
+    },
+
+    PUBLIC_REGISTRY_CALL("PUBLIC_REGISTRY_CALL") {
+        @Override
+        public String buildEventId(EventId eventId) {
+            return new TimelineEventIdBuilder()
+                    .withCategory(this.getValue())
+                    .withIun(eventId.getIun())
+                    .withRecIndex(eventId.getRecIndex())
+                    .withDeliveryMode(eventId.getDeliveryMode())
+                    .withContactPhase(eventId.getContactPhase())
+                    .withSentAttemptMade(eventId.getSentAttemptMade())
+                    .build();
+        }
     };
 
 

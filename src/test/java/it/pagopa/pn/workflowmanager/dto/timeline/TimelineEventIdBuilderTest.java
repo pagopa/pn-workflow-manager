@@ -1,5 +1,8 @@
 package it.pagopa.pn.workflowmanager.dto.timeline;
 
+import it.pagopa.pn.workflowmanager.dto.address.CourtesyDigitalAddressInt;
+import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
+import it.pagopa.pn.workflowmanager.dto.timeline.details.ContactPhaseInt;
 import org.junit.jupiter.api.Test;
 
 import static it.pagopa.pn.workflowmanager.dto.timeline.details.AnalogDeliveryTypeInt.RS;
@@ -338,6 +341,71 @@ class TimelineEventIdBuilderTest {
                 .iun(IUN)
                 .recIndex(0)
                 .channel(IO.getValue())
+                .build());
+        assertThat(timeLineEventIdActualFromBuildEvent).isEqualTo(timeLineEventIdExpected);
+    }
+
+    @Test
+    void buildGET_ADDRESSTest() {
+        String timeLineEventIdExpected = "GET_ADDRESS.IUN_KWKU-JHXN-HJXM-202304-U-A.RECINDEX_0.SOURCE_PLATFORM.ATTEMPT_0.CHANNEL_IO";
+        String timeLineEventIdActual = new TimelineEventIdBuilder()
+                .withCategory(TimelineEventId.GET_ADDRESS.getValue())
+                .withIun(IUN)
+                .withRecIndex(0)
+                .withChannel(IO.getValue())
+                .withSource(DigitalAddressSourceInt.PLATFORM)
+                .withSentAttemptMade(0)
+                .build();
+        assertThat(timeLineEventIdActual).isEqualTo(timeLineEventIdExpected);
+        String timeLineEventIdActualFromBuildEvent = TimelineEventId.GET_ADDRESS.buildEventId(EventId
+                .builder()
+                .iun(IUN)
+                .recIndex(0)
+                .channel(IO.getValue())
+                .source(DigitalAddressSourceInt.PLATFORM)
+                .sentAttemptMade(0)
+                .build());
+        assertThat(timeLineEventIdActualFromBuildEvent).isEqualTo(timeLineEventIdExpected);
+    }
+
+    @Test
+    void buildSEND_COURTESY_MESSAGETest() {
+        String timeLineEventIdExpected = "SEND_COURTESY_MESSAGE.IUN_KWKU-JHXN-HJXM-202304-U-A.RECINDEX_0.COURTESYADDRESSTYPE_EMAIL";
+        String timeLineEventIdActual = new TimelineEventIdBuilder()
+                .withCategory(TimelineEventId.SEND_COURTESY_MESSAGE.getValue())
+                .withIun(IUN)
+                .withRecIndex(0)
+                .withCourtesyAddressType(CourtesyDigitalAddressInt.COURTESY_DIGITAL_ADDRESS_TYPE_INT.EMAIL)
+                .build();
+        assertThat(timeLineEventIdActual).isEqualTo(timeLineEventIdExpected);
+        String timeLineEventIdActualFromBuildEvent = TimelineEventId.SEND_COURTESY_MESSAGE.buildEventId(EventId
+                .builder()
+                .iun(IUN)
+                .recIndex(0)
+                .courtesyAddressType(CourtesyDigitalAddressInt.COURTESY_DIGITAL_ADDRESS_TYPE_INT.EMAIL)
+                .build());
+        assertThat(timeLineEventIdActualFromBuildEvent).isEqualTo(timeLineEventIdExpected);
+    }
+
+    @Test
+    void buildPUBLIC_REGISTRY_CALLTest() {
+        String timeLineEventIdExpected = "PUBLIC_REGISTRY_CALL.IUN_KWKU-JHXN-HJXM-202304-U-A.RECINDEX_0.DELIVERYMODE_DIGITAL.CONTACTPHASE_CHOOSE_DELIVERY.ATTEMPT_0";
+        String timeLineEventIdActual = new TimelineEventIdBuilder()
+                .withCategory(TimelineEventId.PUBLIC_REGISTRY_CALL.getValue())
+                .withIun(IUN)
+                .withRecIndex(0)
+                .withDeliveryMode(DeliveryModeInt.DIGITAL)
+                .withContactPhase(ContactPhaseInt.CHOOSE_DELIVERY)
+                .withSentAttemptMade(0)
+                .build();
+        assertThat(timeLineEventIdActual).isEqualTo(timeLineEventIdExpected);
+        String timeLineEventIdActualFromBuildEvent = TimelineEventId.PUBLIC_REGISTRY_CALL.buildEventId(EventId
+                .builder()
+                .iun(IUN)
+                .recIndex(0)
+                .deliveryMode(DeliveryModeInt.DIGITAL)
+                .contactPhase(ContactPhaseInt.CHOOSE_DELIVERY)
+                .sentAttemptMade(0)
                 .build());
         assertThat(timeLineEventIdActualFromBuildEvent).isEqualTo(timeLineEventIdExpected);
     }

@@ -1,5 +1,8 @@
 package it.pagopa.pn.workflowmanager.dto.timeline;
 
+import it.pagopa.pn.workflowmanager.dto.address.CourtesyDigitalAddressInt;
+import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
+import it.pagopa.pn.workflowmanager.dto.timeline.details.ContactPhaseInt;
 import jakarta.validation.constraints.NotNull;
 import javax.annotation.Nullable;
 
@@ -30,6 +33,13 @@ public class TimelineEventIdBuilder {
 
     private String paymentCode = "";
 
+    private String source = "";
+
+    private String deliveryMode = "";
+
+    private String contactPhase = "";
+
+    private String courtesyAddressType = "";
 
     public TimelineEventIdBuilder withIun(@Nullable String iun) {
         if(iun != null)
@@ -80,11 +90,38 @@ public class TimelineEventIdBuilder {
         return this;
     }
 
+    public TimelineEventIdBuilder withSource(@Nullable DigitalAddressSourceInt source) {
+        if(source != null)
+            this.source = DELIMITER.concat("SOURCE_").concat(source.getValue());
+        return this;
+    }
+
+    public TimelineEventIdBuilder withDeliveryMode(@Nullable DeliveryModeInt deliveryMode) {
+        if(deliveryMode != null)
+            this.deliveryMode = DELIMITER.concat("DELIVERYMODE_").concat(deliveryMode.getValue());
+        return this;
+    }
+
+    public TimelineEventIdBuilder withContactPhase(@Nullable ContactPhaseInt contactPhase) {
+        if(contactPhase != null)
+            this.contactPhase = DELIMITER.concat("CONTACTPHASE_").concat(contactPhase.getValue());
+        return this;
+    }
+
+    public TimelineEventIdBuilder withCourtesyAddressType(@Nullable CourtesyDigitalAddressInt.COURTESY_DIGITAL_ADDRESS_TYPE_INT courtesyAddressType) {
+        if(courtesyAddressType != null)
+            this.courtesyAddressType = DELIMITER.concat("COURTESYADDRESSTYPE_").concat(courtesyAddressType.getValue());
+        return this;
+    }
 
     public String build() {
         return category +
                 iun +
                 recIndex +
+                courtesyAddressType +
+                source +
+                deliveryMode +
+                contactPhase +
                 sentAttemptMade +
                 progressIndex +
                 channel +
