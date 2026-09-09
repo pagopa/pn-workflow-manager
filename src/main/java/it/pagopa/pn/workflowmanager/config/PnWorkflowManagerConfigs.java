@@ -1,7 +1,10 @@
 package it.pagopa.pn.workflowmanager.config;
 
 import it.pagopa.pn.commons.conf.SharedAutoConfiguration;
+import it.pagopa.pn.workflowmanager.dto.ChannelSourceRule;
 import it.pagopa.pn.workflowmanager.dto.address.PhysicalAddressInt;
+import it.pagopa.pn.workflowmanager.dto.consent.ConsentDto;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
 import jakarta.annotation.PostConstruct;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -10,7 +13,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.validation.annotation.Validated;
 
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 
 @Configuration
 @ConfigurationProperties( prefix = "pn.workflow-manager")
@@ -35,6 +40,8 @@ public class PnWorkflowManagerConfigs {
     private String userAttributesBaseUrl;
  
     private Integer ioPollingMaxMins;
+    private Map<ChannelType, List<ChannelSourceRule>> addressSearchMap = new EnumMap<>(ChannelType.class);
+    List<ConsentDto> consentsForPlatformSearch;
 
     @Data
     public static class Topics {

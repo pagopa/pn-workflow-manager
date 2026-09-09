@@ -1,9 +1,9 @@
 package it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.userattributes;
 
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.userattributes.model.Consent;
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.userattributes.model.CourtesyDigitalAddress;
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.userattributes.model.CxTypeAuthFleet;
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.userattributes.model.LegalDigitalAddress;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.userattributes.addressbook.model.CourtesyDigitalAddress;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.userattributes.addressbook.model.LegalDigitalAddress;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.userattributes.consents.model.Consent;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.userattributes.consents.model.CxTypeAuthFleet;
 
 import java.util.List;
 
