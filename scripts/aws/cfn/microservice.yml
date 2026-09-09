@@ -411,6 +411,23 @@ Parameters:
       - true
       - false
 
+  DigitalChannels:
+    Type: String
+    Default: '["IO","EMAIL","PEC","SMS"]'
+    Description: Digital channels used by the lambda CampaignEventsCollector
+  AnalogChannels:
+    Type: String
+    Default: '["RS"]'
+    Description: Analog channels used by the lambda CampaignEventsCollector
+  PlatformChannels:
+    Type: String
+    Default: '["IO","SEND"]'
+    Description: Platform channels used by the lambda CampaignEventsCollector
+  DeliveredChannels:
+    Type: String
+    Default: '["IO","EMAIL","PEC","SMS","RS"]'
+    Description: Delivered channels used by the lambda CampaignEventsCollector
+
 Conditions:
   UseExternalChannelMock: !Equals [ !Ref ExternalChannelBaseUrl, "Mock" ]
 
@@ -975,6 +992,10 @@ Resources:
           CAMPAIGN_EVENTS_DEDUPLICATION_TABLE: !Sub '${CampaignEventsDeduplicationTableName}'
           CAMPAIGN_EVENTS_DEDUPLICATION_TTL_DAYS: !Sub '${CampaignEventsDeduplicationTtlDays}'
           DEDUPLICATION_MANAGEMENT_ENABLED: !Sub '${DeduplicationManagementEnabled}'
+          DIGITAL_CHANNELS: !Ref DigitalChannels
+          ANALOG_CHANNELS: !Ref AnalogChannels
+          PLATFORM_CHANNELS: !Ref PlatformChannels
+          DELIVERED_CHANNELS: !Ref DeliveredChannels
       TracingConfig:
         Mode: Active
       Layers:

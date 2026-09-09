@@ -12,6 +12,10 @@
     "ActionQueueDetailType": "POST_ACCEPTED_PROCESSING_COMPLETED,START_WORKFLOW,TIMEOUT_WORKFLOW,END_WORKFLOW,WORKFLOW_DONE,DOCUMENT_CREATION_RESPONSE",
     "WorkflowManagerCxId": "pn-workflow-manager",
     "CampaignEventsDeduplicationTtlDays": "7",
-    "DeduplicationManagementEnabled": "true"
+    "DeduplicationManagementEnabled": "true",
+    "DigitalChannels": "[\"IO\",\"EMAIL\",\"PEC\",\"SMS\"]",
+    "AnalogChannels": "[\"RS\"]",
+    "PlatformChannels": "[\"IO\",\"SEND\"]",
+    "DeliveredChannels": "[\"IO\",\"EMAIL\",\"PEC\",\"SMS\",\"RS\"]"
   }
 }
