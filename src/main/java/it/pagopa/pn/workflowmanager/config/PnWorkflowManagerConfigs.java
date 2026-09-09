@@ -45,6 +45,8 @@ public class PnWorkflowManagerConfigs {
     private Map<ChannelType, List<ChannelSourceRule>> addressSearchMap = new EnumMap<>(ChannelType.class);
     List<ConsentDto> consentsForPlatformSearch;
 
+    private Map<ChannelType, List<ChannelAddressSourceRule>> addressSearchMap = new EnumMap<>(ChannelType.class);
+
     @Data
     public static class Topics {
         private String actionQueue;
