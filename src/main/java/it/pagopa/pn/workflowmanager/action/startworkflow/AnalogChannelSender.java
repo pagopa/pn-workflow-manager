@@ -3,10 +3,11 @@ package it.pagopa.pn.workflowmanager.action.startworkflow;
 import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.workflowmanager.action.utils.ChannelSenderUtils;
 import it.pagopa.pn.workflowmanager.action.utils.TimelineUtils;
-import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
-import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
+import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
+import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
+import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
 import it.pagopa.pn.workflowmanager.service.SaveDocumentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,8 +29,8 @@ public class AnalogChannelSender implements ChannelSender {
     }
 
     @Override
-    public void send(NotificationInt notification, Campaign campaign, int recIndex, int currentStep) {
-        log.info("AnalogChannelSender send - iun={} recIndex={} currentStep={}", notification.getIun(), recIndex, currentStep);
+    public void send(NotificationInt notification, Campaign campaign, int recIndex, DigitalAddressSourceInt addressSource) {
+        log.info("AnalogChannelSender send - iun={} recIndex={}", notification.getIun(), recIndex);
         NotificationRecipientInt recipient = getRecipientFromIndex(notification, recIndex);
         try {
             String timelineEventId = TimelineUtils.buildCoverpageCreationTimelineEventId(notification.getIun(), recIndex);

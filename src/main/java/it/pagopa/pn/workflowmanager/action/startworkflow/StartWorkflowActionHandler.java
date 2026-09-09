@@ -1,8 +1,8 @@
 package it.pagopa.pn.workflowmanager.action.startworkflow;
 
 import it.pagopa.pn.workflowmanager.dto.action.details.StartWorkflowDetails;
-import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
+import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.service.CampaignService;
 import it.pagopa.pn.workflowmanager.service.NotificationService;
 import lombok.AllArgsConstructor;
@@ -33,7 +33,7 @@ public class StartWorkflowActionHandler {
 
         log.info("Sending notification via channel {} for iun {} recipient {} campaignId {}",
                 startWorkflowDetails.getChannel(), iun, recIndex, campaign.getCampaignId());
-        channelSender.send(notificationInt, campaign, recIndex, startWorkflowDetails.getStepIdx());
+        channelSender.send(notificationInt, campaign, recIndex, startWorkflowDetails.getAddressSource());
 
         log.info("Workflow started successfully for iun {} recipient {}", iun, recIndex);
     }

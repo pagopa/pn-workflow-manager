@@ -5,7 +5,9 @@ import it.pagopa.pn.commons.log.PnAuditLogEvent;
 import it.pagopa.pn.commons.log.PnAuditLogEventType;
 import it.pagopa.pn.workflowmanager.action.utils.ChannelSenderUtils;
 import it.pagopa.pn.workflowmanager.action.utils.WorkflowUtils;
+import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
 import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
+import it.pagopa.pn.workflowmanager.dto.address.LegalDigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
@@ -14,6 +16,7 @@ import it.pagopa.pn.workflowmanager.dto.timeline.details.DigitalChannelsInt;
 import it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.externalchannel.PnExternalChannelsClient;
 import it.pagopa.pn.workflowmanager.service.AuditLogService;
 import it.pagopa.pn.workflowmanager.service.TemplateGeneratorService;
+import it.pagopa.pn.workflowmanager.utils.AddressSearchUtils;
 import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -32,6 +35,7 @@ public class PecChannelSender implements ChannelSender {
     private final PnExternalChannelsClient pnExternalChannelsClient;
     private final ChannelSenderUtils channelSenderUtils;
     private final WorkflowUtils workflowUtils;
+    private final AddressSearchUtils addressSearchUtils;
     private final AuditLogService auditLogService;
 
     @Override
@@ -40,13 +44,18 @@ public class PecChannelSender implements ChannelSender {
     }
 
     @Override
-    public void send(NotificationInt notification, Campaign campaign, int recIndex, int currentStep) {
+    public void send(NotificationInt notification, Campaign campaign, int recIndex, DigitalAddressSourceInt addressSource) {
+        log.info("Sending pec for notification {} to recipient {} addressSource={}", notification.getIun(), recIndex, addressSource);
         NotificationRecipientInt recipient = notification.getRecipients().get(recIndex);
 
         String timelineId = ChannelSenderUtils.buildSendDigitalMessageEventId(notification.getIun(), recIndex, getChannelType(), FIRST_ATTEMPT);
         PnAuditLogEvent auditLogEvent = buildAuditLogEvent(notification.getIun(), recIndex, timelineId);
 
         try {
+            InformalDigitalAddressInt digitalAddress = addressSearchUtils.getDigitalAddress(notification, recIndex,
+                    DigitalChannelsInt.PEC,addressSource, timelineId);
+            if (digitalAddress == null) return;
+
             String messageText = templateGeneratorService.generatePecBodyTemplate(notification, recipient, campaign);
             String subject = templateGeneratorService.generatePecSubjectTemplate(notification, recipient);
 
@@ -58,7 +67,10 @@ public class PecChannelSender implements ChannelSender {
                     subject,
                     notification,
                     recipient,
-                    recipient.getDigitalDomicile(),
+                    LegalDigitalAddressInt.builder()
+                            .address(digitalAddress.getAddress())
+                            .type(LegalDigitalAddressInt.LEGAL_DIGITAL_ADDRESS_TYPE.PEC)
+                            .build(),
                     attachmentUrls
             );
 
@@ -66,9 +78,9 @@ public class PecChannelSender implements ChannelSender {
                     notification,
                     timelineId,
                     recIndex,
-                    ChannelSenderUtils.buildDigitalAddress(recipient.getDigitalDomicile().getAddress(), InformalDigitalAddressInt.INFORMAL_DIGITAL_ADDRESS_TYPE.PEC),
+                    ChannelSenderUtils.buildDigitalAddress(digitalAddress.getAddress(), InformalDigitalAddressInt.INFORMAL_DIGITAL_ADDRESS_TYPE.PEC),
                     DigitalChannelsInt.PEC,
-                    null
+                    addressSource
             );
 
             workflowUtils.scheduleTimeoutForCurrentChannel(notification.getIun(), recIndex, campaign, getChannelType());

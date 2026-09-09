@@ -5,6 +5,7 @@ import it.pagopa.pn.commons.log.PnAuditLogEvent;
 import it.pagopa.pn.commons.log.PnAuditLogEventType;
 import it.pagopa.pn.workflowmanager.action.utils.ChannelSenderUtils;
 import it.pagopa.pn.workflowmanager.action.utils.WorkflowUtils;
+import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
 import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.client.IoMessageRequest;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
@@ -74,7 +75,7 @@ class IoChannelSenderTest {
 
         when(templateGeneratorService.generateIoMessageTemplate(notification, recipient0, campaign)).thenReturn("markdown-content");
 
-        ioChannelSender.send(notification, campaign,0,0);
+        ioChannelSender.send(notification, campaign,0, DigitalAddressSourceInt.SPECIAL);
 
         ArgumentCaptor<IoMessageRequest> requestCaptor = ArgumentCaptor.forClass(IoMessageRequest.class);
         verify(ioConnectorClient).sendMessage(requestCaptor.capture());
@@ -92,7 +93,7 @@ class IoChannelSenderTest {
                 eq(0),
                 any(InformalDigitalAddressInt.class),
                 eq(DigitalChannelsInt.IO),
-                isNull()
+                eq(DigitalAddressSourceInt.SPECIAL)
         );
         verify(workflowUtils).scheduleTimeoutForCurrentChannel(iun, 0, campaign, ChannelType.IO);
         verify(auditLogService).buildAuditLogEvent(iun, 0, PnAuditLogEventType.AUD_COM_SEND_IO, "Sending message for notification {} to recipient {} with requestId {}", iun, 0, expectedRequestId);
@@ -109,7 +110,7 @@ class IoChannelSenderTest {
         when(notification.getIun()).thenReturn("IUN_789");
         when(notification.getRecipients()).thenReturn(List.of(recipient));
 
-        assertThrows(IndexOutOfBoundsException.class, () -> ioChannelSender.send(notification, campaign,3,0));
+        assertThrows(IndexOutOfBoundsException.class, () -> ioChannelSender.send(notification, campaign,3, DigitalAddressSourceInt.SPECIAL));
 
         verifyNoInteractions(templateGeneratorService, ioConnectorClient, channelSenderUtils, workflowUtils, auditLogService);
     }
@@ -134,7 +135,7 @@ class IoChannelSenderTest {
 
         doThrow(new RuntimeException("IO Connector failure")).when(ioConnectorClient).sendMessage(any(IoMessageRequest.class));
 
-        assertThrows(PnInternalException.class, () -> ioChannelSender.send(notification, campaign,0,0));
+        assertThrows(PnInternalException.class, () -> ioChannelSender.send(notification, campaign,0, DigitalAddressSourceInt.SPECIAL));
 
         verify(auditLogService).buildAuditLogEvent(eq(iun), eq(0), eq(PnAuditLogEventType.AUD_COM_SEND_IO), anyString(), eq(iun), eq(0), anyString());
         verify(auditLogEvent).generateFailure(eq("Error sending message"), any(RuntimeException.class));

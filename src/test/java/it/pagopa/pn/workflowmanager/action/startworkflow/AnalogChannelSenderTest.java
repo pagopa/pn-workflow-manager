@@ -25,7 +25,6 @@ class AnalogChannelSenderTest {
 
     private static final String IUN = "TEST-IUN-001";
     private static final int REC_INDEX = 0;
-    private static final int CURRENT_STEP = 0;
     private static final String FILE_KEY = "coverpage-file-key-123";
 
     @Mock
@@ -54,7 +53,7 @@ class AnalogChannelSenderTest {
                 .thenReturn(FILE_KEY);
 
         // When
-        analogChannelSender.send(notification, campaign, REC_INDEX, CURRENT_STEP);
+        analogChannelSender.send(notification, campaign, REC_INDEX, null);
 
         // Then
         verify(saveDocumentService).saveCoverpage(
@@ -76,7 +75,7 @@ class AnalogChannelSenderTest {
 
         // When & Then
         assertThrows(PnInternalException.class, () ->
-                analogChannelSender.send(notification, campaign, REC_INDEX, CURRENT_STEP)
+                analogChannelSender.send(notification, campaign, REC_INDEX, null)
         );
 
         verify(saveDocumentService).saveCoverpage(

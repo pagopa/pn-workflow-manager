@@ -16,6 +16,7 @@ import it.pagopa.pn.workflowmanager.dto.timeline.details.DigitalChannelsInt;
 import it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.externalchannel.PnExternalChannelsClient;
 import it.pagopa.pn.workflowmanager.service.AuditLogService;
 import it.pagopa.pn.workflowmanager.service.TemplateGeneratorService;
+import it.pagopa.pn.workflowmanager.utils.AddressSearchUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -49,6 +50,9 @@ class EmailChannelSenderTest {
     @Mock
     private WorkflowUtils workflowUtils;
 
+    @Mock
+    private AddressSearchUtils addressSearchUtils;
+
     @InjectMocks
     private EmailChannelSender emailChannelSender;
 
@@ -64,11 +68,13 @@ class EmailChannelSenderTest {
         NotificationRecipientInt recipient = notification.getRecipients().getFirst();
         Campaign campaign = buildCampaign(true);
         int recIndex = 0;
-        int currentStep = 0;
 
         String expectedRequestId = ChannelSenderUtils.buildSendDigitalMessageEventId(IUN, recIndex, ChannelType.EMAIL,0);
         PnAuditLogEvent auditLogEvent = mock(PnAuditLogEvent.class);
 
+        when(addressSearchUtils.getDigitalAddress(notification, recIndex, DigitalChannelsInt.EMAIL,
+                DigitalAddressSourceInt.SPECIAL, expectedRequestId))
+                .thenReturn(buildDigitalAddress());
         when(templateGeneratorService.generateEmailBodyTemplate(notification, recipient, campaign))
                 .thenReturn(HTML_CONTENT);
         when(templateGeneratorService.generateEmailSubjectTemplate(notification, recipient))
@@ -83,7 +89,7 @@ class EmailChannelSenderTest {
                 .thenReturn(List.of("safestorage://doc1", "safestorage://doc2"));
 
         // When
-        emailChannelSender.send(notification, campaign, recIndex, currentStep);
+        emailChannelSender.send(notification, campaign, recIndex, DigitalAddressSourceInt.SPECIAL);
 
         // Then
         verify(pnExternalChannelsClient).sendNotificationEMAIL(
@@ -97,12 +103,32 @@ class EmailChannelSenderTest {
         );
         verify(channelSenderUtils).saveSendDigitalMessageElement(
                 eq(notification), eq(expectedRequestId), eq(recIndex),
-                any(InformalDigitalAddressInt.class),
+                argThat(addr -> EMAIL_ADDRESS.equals(addr.getAddress())),
                 eq(DigitalChannelsInt.EMAIL),
                 eq(DigitalAddressSourceInt.SPECIAL)
         );
         verify(workflowUtils).scheduleTimeoutForCurrentChannel(IUN, recIndex, campaign, ChannelType.EMAIL);
         verify(auditLogEvent).generateSuccess("Email sent successfully");
+    }
+
+    @Test
+    void shouldSkipSendWhenAddressSourceIsNone() {
+        // Given
+        NotificationInt notification = buildNotification(EMAIL_ADDRESS);
+        Campaign campaign = buildCampaign(true);
+        int recIndex = 0;
+
+        String expectedRequestId = ChannelSenderUtils.buildSendDigitalMessageEventId(IUN, recIndex, ChannelType.EMAIL,0);
+        when(addressSearchUtils.getDigitalAddress(notification, recIndex, DigitalChannelsInt.EMAIL,
+                DigitalAddressSourceInt.NONE, expectedRequestId))
+                .thenReturn(null);
+
+        // When
+        emailChannelSender.send(notification, campaign, recIndex, DigitalAddressSourceInt.NONE);
+
+        // Then
+        verifyNoInteractions(pnExternalChannelsClient, templateGeneratorService, workflowUtils);
+        verify(channelSenderUtils, never()).saveSendDigitalMessageElement(any(), any(), anyInt(), any(), any(), any());
     }
 
     @Test
@@ -112,12 +138,13 @@ class EmailChannelSenderTest {
         NotificationRecipientInt recipient = notification.getRecipients().getFirst();
         Campaign campaign = buildCampaign(false);
         int recIndex = 0;
-        int currentStep = 0;
 
         String expectedRequestId = ChannelSenderUtils.buildSendDigitalMessageEventId(IUN, recIndex, ChannelType.EMAIL,0);
         PnAuditLogEvent auditLogEvent = mock(PnAuditLogEvent.class);
 
-
+        when(addressSearchUtils.getDigitalAddress(notification, recIndex, DigitalChannelsInt.EMAIL,
+                DigitalAddressSourceInt.SPECIAL, expectedRequestId))
+                .thenReturn(buildDigitalAddress());
         when(templateGeneratorService.generateEmailBodyTemplate(notification, recipient, campaign))
                 .thenReturn(HTML_CONTENT);
         when(templateGeneratorService.generateEmailSubjectTemplate(notification, recipient))
@@ -129,7 +156,7 @@ class EmailChannelSenderTest {
         when(auditLogEvent.log()).thenReturn(auditLogEvent);
 
         // When
-        emailChannelSender.send(notification, campaign, recIndex, currentStep);
+        emailChannelSender.send(notification, campaign, recIndex, DigitalAddressSourceInt.SPECIAL);
 
         // Then
         verify(pnExternalChannelsClient).sendNotificationEMAIL(
@@ -151,13 +178,12 @@ class EmailChannelSenderTest {
         NotificationInt notification = buildNotification(null);
         Campaign campaign = buildSimpleCampaign();
         int recIndex = 0;
-        int currentStep = 0;
 
         String expectedSkipRequestId = ChannelSenderUtils.buildSendDigitalMessageSkipTimelineElementId(
                 recIndex, IUN, ChannelType.EMAIL);
 
         // When
-        emailChannelSender.send(notification, campaign, recIndex, currentStep);
+        emailChannelSender.send(notification, campaign, recIndex, DigitalAddressSourceInt.SPECIAL);
 
         // Then
         verify(channelSenderUtils).saveSendDigitalMessageSkipElement(
@@ -174,7 +200,14 @@ class EmailChannelSenderTest {
                 eq(campaign),
                 eq(RecipientTypeInt.PF)
         );
-        verifyNoInteractions(pnExternalChannelsClient, templateGeneratorService, auditLogService);
+        verifyNoInteractions(pnExternalChannelsClient, templateGeneratorService, auditLogService, addressSearchUtils);
+    }
+
+    private InformalDigitalAddressInt buildDigitalAddress() {
+        return InformalDigitalAddressInt.builder()
+                .address(EMAIL_ADDRESS)
+                .type(InformalDigitalAddressInt.INFORMAL_DIGITAL_ADDRESS_TYPE.EMAIL)
+                .build();
     }
 
     // Helper methods
