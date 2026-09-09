@@ -5,14 +5,15 @@ import it.pagopa.pn.commons.log.PnAuditLogEvent;
 import it.pagopa.pn.commons.log.PnAuditLogEventType;
 import it.pagopa.pn.workflowmanager.action.utils.ChannelSenderUtils;
 import it.pagopa.pn.workflowmanager.action.utils.WorkflowUtils;
+import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
 import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.client.IoMessageRequest;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.DigitalChannelsInt;
 import it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.ioconnector.IoConnectorClient;
-import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
-import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
 import it.pagopa.pn.workflowmanager.service.AuditLogService;
 import it.pagopa.pn.workflowmanager.service.TemplateGeneratorService;
 import lombok.RequiredArgsConstructor;
@@ -39,8 +40,8 @@ public class IoChannelSender implements ChannelSender {
     }
 
     @Override
-    public void send(NotificationInt notification, Campaign campaign, int recIndex, int currentStep) {
-        log.info("Sending message for notification {} to recipient {}", notification.getIun(), recIndex);
+    public void send(NotificationInt notification, Campaign campaign, int recIndex, DigitalAddressSourceInt addressSource) {
+        log.info("Sending message for notification {} to recipient {} addressSource={}", notification.getIun(), recIndex, addressSource);
         NotificationRecipientInt recipient = notification.getRecipients().get(recIndex);
         String requestId = ChannelSenderUtils.buildSendDigitalMessageEventId(notification.getIun(), recIndex, getChannelType(), FIRST_ATTEMPT);
         PnAuditLogEvent auditLogEvent = buildAuditLogEvent(notification.getIun(), recIndex, requestId);
@@ -63,7 +64,7 @@ public class IoChannelSender implements ChannelSender {
                     recIndex,
                     ChannelSenderUtils.buildDigitalAddress(recipient.getTaxId(), InformalDigitalAddressInt.INFORMAL_DIGITAL_ADDRESS_TYPE.APPIO),
                     DigitalChannelsInt.IO,
-                    null
+                    addressSource
             );
 
             workflowUtils.scheduleTimeoutForCurrentChannel(notification.getIun(), recIndex, campaign, getChannelType());

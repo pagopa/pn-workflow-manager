@@ -15,6 +15,7 @@ import it.pagopa.pn.workflowmanager.dto.timeline.details.DigitalChannelsInt;
 import it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.externalchannel.PnExternalChannelsClient;
 import it.pagopa.pn.workflowmanager.service.AuditLogService;
 import it.pagopa.pn.workflowmanager.service.TemplateGeneratorService;
+import it.pagopa.pn.workflowmanager.utils.AddressSearchUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -33,6 +34,7 @@ public class EmailChannelSender implements ChannelSender {
     private final AuditLogService auditLogService;
     private final PnExternalChannelsClient pnExternalChannelsClient;
     private final TemplateGeneratorService templateGeneratorService;
+    private final AddressSearchUtils addressSearchUtils;
     private final ChannelSenderUtils channelSenderUtils;
     private final WorkflowUtils workflowUtils;
 
@@ -42,16 +44,15 @@ public class EmailChannelSender implements ChannelSender {
     }
 
     @Override
-    public void send(NotificationInt notification, Campaign campaign, int recIndex, int currentStep) {
-        log.info("Sending email notification - iun={} recIndex={} currentStep={} channel={}",
-                notification.getIun(), recIndex, currentStep, getChannelType());
-
+    public void send(NotificationInt notification, Campaign campaign, int recIndex, DigitalAddressSourceInt addressSource) {
+        log.info("Sending email notification - iun={} recIndex={} addressSource={} channel={}",
+                notification.getIun(), recIndex, addressSource, getChannelType());
         NotificationRecipientInt recipient = notification.getRecipients().get(recIndex);
         boolean emailMissing = ObjectUtils.isEmpty(recipient.getEmail());
         if (emailMissing) {
             handleMissingEmail(notification, campaign, recIndex, getChannelType(), recipient);
         } else {
-            handleEmailPresent(notification, campaign, recIndex, getChannelType(), recipient);
+            handleEmailPresent(notification, campaign, recIndex, getChannelType(), recipient,addressSource);
         }
     }
 
@@ -70,24 +71,29 @@ public class EmailChannelSender implements ChannelSender {
 
     private void handleEmailPresent(NotificationInt notification, Campaign campaign, int recIndex,
                                     ChannelType channel,
-                                    NotificationRecipientInt recipient) {
+                                    NotificationRecipientInt recipient,
+                                    DigitalAddressSourceInt addressSource) {
         log.info("Recipient email is present - iun={} recIndex={}", notification.getIun(), recIndex);
         String requestId = ChannelSenderUtils.buildSendDigitalMessageEventId(notification.getIun(), recIndex, channel, FIRST_ATTEMPT);
         PnAuditLogEvent auditLogEvent = buildAuditLogEvent(notification.getIun(), recIndex, requestId);
 
         try {
+            InformalDigitalAddressInt digitalAddress = addressSearchUtils.getDigitalAddress(notification, recIndex,
+                    DigitalChannelsInt.EMAIL,addressSource, requestId);
+            if (digitalAddress == null) return;
+
             String subject = templateGeneratorService.generateEmailSubjectTemplate(notification, recipient);
             String htmlBody = templateGeneratorService.generateEmailBodyTemplate(notification, recipient, campaign);
             List<String> attachmentUrls = channelSenderUtils.resolveAttachmentsForChannel(notification, recIndex, campaign, channel);
             InformalDigitalAddressInt emailAddress = ChannelSenderUtils.buildDigitalAddress(
-                    recipient.getEmail(), InformalDigitalAddressInt.INFORMAL_DIGITAL_ADDRESS_TYPE.EMAIL
+                    digitalAddress.getAddress(), InformalDigitalAddressInt.INFORMAL_DIGITAL_ADDRESS_TYPE.EMAIL
             );
             log.info("Sending email for notification {} to recipient {} with requestId {}",
                     notification.getIun(), recIndex, requestId);
             pnExternalChannelsClient.sendNotificationEMAIL(requestId, htmlBody, subject, notification, recipient, emailAddress, attachmentUrls);
             channelSenderUtils.saveSendDigitalMessageElement(
                     notification, requestId, recIndex, emailAddress,
-                    DigitalChannelsInt.EMAIL, DigitalAddressSourceInt.SPECIAL
+                    DigitalChannelsInt.EMAIL, addressSource
             );
             workflowUtils.scheduleTimeoutForCurrentChannel(notification.getIun(), recIndex, campaign, channel);
             auditLogEvent.generateSuccess("Email sent successfully").log();

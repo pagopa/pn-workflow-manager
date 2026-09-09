@@ -204,16 +204,22 @@ public enum TimelineEventId {
                     .withRecIndex(eventId.getRecIndex())
                     .build();
         }
+    },
+    GET_ADDRESS("GET_ADDRESS"){
+        @Override
+        public String buildEventId(EventId eventId){
+            return new TimelineEventIdBuilder()
+                    .withIun(eventId.getIun())
+                    .withRecIndex(eventId.getRecIndex())
+                    .withCategory(this.getValue())
+                    .build();
+        }
     };
 
 
 
     public String buildEventId(EventId eventId) {
         throw new UnsupportedOperationException("Must be implemented for each action type event ID");
-    }
-
-    public String buildEventId(String eventId) {
-        throw new UnsupportedOperationException("Must be implemented for each action type");
     }
 
     private final String value;

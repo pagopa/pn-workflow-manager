@@ -16,6 +16,7 @@ import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
 import it.pagopa.pn.workflowmanager.service.AuditLogService;
 import it.pagopa.pn.workflowmanager.service.TemplateGeneratorService;
+import it.pagopa.pn.workflowmanager.utils.AddressSearchUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -49,6 +50,9 @@ class SmsChannelSenderTest {
     @Mock
     private PnExternalChannelsClient pnExternalChannelsClient;
 
+    @Mock
+    private AddressSearchUtils addressSearchUtils;
+
     @InjectMocks
     private SmsChannelSender smsChannelSender;
 
@@ -64,11 +68,13 @@ class SmsChannelSenderTest {
         NotificationRecipientInt recipient = notification.getRecipients().getFirst();
         Campaign campaign = mock(Campaign.class);
         int recIndex = 0;
-        int currentStep = 0;
 
         String expectedRequestId = ChannelSenderUtils.buildSendDigitalMessageEventId(IUN, recIndex, ChannelType.SMS,0);
         PnAuditLogEvent auditLogEvent = mock(PnAuditLogEvent.class);
 
+        when(addressSearchUtils.getDigitalAddress(notification, recIndex, DigitalChannelsInt.SMS,
+                DigitalAddressSourceInt.SPECIAL, expectedRequestId))
+                .thenReturn(buildDigitalAddress());
         when(templateGeneratorService.generateSmsTemplate(notification, recipient)).thenReturn(SMS_CONTENT);
         when(auditLogService.buildAuditLogEvent(eq(IUN), eq(recIndex), eq(PnAuditLogEventType.AUD_COM_SEND_SMS),
                 anyString(), eq(IUN), eq(recIndex), eq(expectedRequestId)))
@@ -77,7 +83,7 @@ class SmsChannelSenderTest {
         when(auditLogEvent.log()).thenReturn(auditLogEvent);
 
         // When
-        smsChannelSender.send(notification, campaign, recIndex, currentStep);
+        smsChannelSender.send(notification, campaign, recIndex, DigitalAddressSourceInt.SPECIAL);
 
         // Then
         verify(pnExternalChannelsClient).sendNotificationSMS(
@@ -87,7 +93,7 @@ class SmsChannelSenderTest {
         );
         verify(channelSenderUtils).saveSendDigitalMessageElement(
                 eq(notification), eq(expectedRequestId), eq(recIndex),
-                any(InformalDigitalAddressInt.class),
+                argThat(addr -> PHONE_NUMBER.equals(addr.getAddress())),
                 eq(DigitalChannelsInt.SMS),
                 eq(DigitalAddressSourceInt.SPECIAL)
         );
@@ -96,18 +102,37 @@ class SmsChannelSenderTest {
     }
 
     @Test
+    void shouldSkipSendWhenAddressSourceIsNone() {
+        // Given
+        NotificationInt notification = buildNotification(PHONE_NUMBER);
+        Campaign campaign = mock(Campaign.class);
+        int recIndex = 0;
+
+        String expectedRequestId = ChannelSenderUtils.buildSendDigitalMessageEventId(IUN, recIndex, ChannelType.SMS,0);
+        when(addressSearchUtils.getDigitalAddress(notification, recIndex, DigitalChannelsInt.SMS,
+                DigitalAddressSourceInt.NONE, expectedRequestId))
+                .thenReturn(null);
+
+        // When
+        smsChannelSender.send(notification, campaign, recIndex, DigitalAddressSourceInt.NONE);
+
+        // Then
+        verifyNoInteractions(pnExternalChannelsClient, templateGeneratorService, workflowUtils);
+        verify(channelSenderUtils, never()).saveSendDigitalMessageElement(any(), any(), anyInt(), any(), any(), any());
+    }
+
+    @Test
     void shouldSkipAndAdvanceWorkflowWhenPhoneNumberMissing() {
         // Given
         NotificationInt notification = buildNotification(null);
         Campaign campaign = mock(Campaign.class);
         int recIndex = 0;
-        int currentStep = 0;
 
         String expectedSkipRequestId = ChannelSenderUtils.buildSendDigitalMessageSkipTimelineElementId(
                 recIndex, IUN, ChannelType.SMS);
 
         // When
-        smsChannelSender.send(notification, campaign, recIndex, currentStep);
+        smsChannelSender.send(notification, campaign, recIndex, DigitalAddressSourceInt.SPECIAL);
 
         // Then
         verify(channelSenderUtils).saveSendDigitalMessageSkipElement(
@@ -124,7 +149,7 @@ class SmsChannelSenderTest {
                 eq(campaign),
                 eq(RecipientTypeInt.PF)
         );
-        verifyNoInteractions(pnExternalChannelsClient, templateGeneratorService, auditLogService);
+        verifyNoInteractions(pnExternalChannelsClient, templateGeneratorService, auditLogService, addressSearchUtils);
     }
 
     @Test
@@ -134,11 +159,13 @@ class SmsChannelSenderTest {
         NotificationRecipientInt recipient = notification.getRecipients().getFirst();
         Campaign campaign = mock(Campaign.class);
         int recIndex = 0;
-        int currentStep = 0;
 
         String expectedRequestId = ChannelSenderUtils.buildSendDigitalMessageEventId(IUN, recIndex, ChannelType.SMS,0);
         PnAuditLogEvent auditLogEvent = mock(PnAuditLogEvent.class);
 
+        when(addressSearchUtils.getDigitalAddress(notification, recIndex, DigitalChannelsInt.SMS,
+                DigitalAddressSourceInt.SPECIAL, expectedRequestId))
+                .thenReturn(buildDigitalAddress());
         when(templateGeneratorService.generateSmsTemplate(notification, recipient)).thenReturn(SMS_CONTENT);
         when(auditLogService.buildAuditLogEvent(eq(IUN), eq(recIndex), eq(PnAuditLogEventType.AUD_COM_SEND_SMS),
                 anyString(), eq(IUN), eq(recIndex), eq(expectedRequestId)))
@@ -150,11 +177,18 @@ class SmsChannelSenderTest {
 
         // When / Then
         assertThrows(PnInternalException.class,
-                () -> smsChannelSender.send(notification, campaign, recIndex, currentStep));
+                () -> smsChannelSender.send(notification, campaign, recIndex, DigitalAddressSourceInt.SPECIAL));
 
         verify(auditLogEvent).generateFailure(eq("Error sending SMS notification"), any(RuntimeException.class));
         verify(channelSenderUtils, never()).saveSendDigitalMessageElement(any(), any(), anyInt(), any(), any(), any());
         verify(workflowUtils, never()).scheduleTimeoutForCurrentChannel(any(), anyInt(), any(), any());
+    }
+
+    private InformalDigitalAddressInt buildDigitalAddress() {
+        return InformalDigitalAddressInt.builder()
+                .address(PHONE_NUMBER)
+                .type(InformalDigitalAddressInt.INFORMAL_DIGITAL_ADDRESS_TYPE.SMS)
+                .build();
     }
 
     // Helper methods
