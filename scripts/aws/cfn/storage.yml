@@ -119,6 +119,26 @@ Resources:
         AlarmSNSTopicName: !Ref AlarmSNSTopicName
         DelaySeconds: 10
 
+  CampaignsTable:
+    Type: AWS::DynamoDB::Table
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Properties:
+      TableName: !Sub '${ProjectName}-Campaigns'
+      AttributeDefinitions:
+        - AttributeName: "senderId"
+          AttributeType: "S"
+        - AttributeName: "campaignId"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "senderId"
+          KeyType: "HASH"
+        - AttributeName: "campaignId"
+          KeyType: "RANGE"
+      BillingMode: "PAY_PER_REQUEST"
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+
 Outputs:
   # Queues
   WorkflowManagerActionQueueName:
@@ -216,6 +236,13 @@ Outputs:
   WorkflowManagerInputsQueueAgeAlarmARN:
     Value: !GetAtt WorkflowManagerInputsQueue.Outputs.SqsAgeAlarmArn
     Description: workflow-manager analog-event queue age alarm ARN
+
+  CampaignsTableName:
+    Value: !Ref CampaignsTable
+    Description: DynamoDB Campaigns table name
+  CampaignsTableArn:
+    Value: !GetAtt CampaignsTable.Arn
+    Description: DynamoDB Campaigns table ARN
 
   # Log groups
   EcsWorkflowLogGroup:
