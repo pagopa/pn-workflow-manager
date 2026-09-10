@@ -4,36 +4,32 @@ import it.pagopa.pn.workflowmanager.action.searchaddress.dto.SourceSearchOutcome
 import it.pagopa.pn.workflowmanager.action.searchaddress.strategy.AddressSearchStrategy;
 import it.pagopa.pn.workflowmanager.action.searchaddress.strategy.AsyncAddressSearchStrategy;
 import it.pagopa.pn.workflowmanager.action.searchaddress.strategy.SyncAddressSearchStrategy;
-import it.pagopa.pn.workflowmanager.dto.action.common.ActionType;
 import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
-import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
-import it.pagopa.pn.workflowmanager.service.SchedulerService;
+import it.pagopa.pn.workflowmanager.dto.timeline.details.GetAddressInfoDetailsInt;
 import lombok.RequiredArgsConstructor;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
 @RequiredArgsConstructor
 public class AddressSearchProgressor {
     private final AddressSearchUtils utils;
-    private final SchedulerService schedulerService;
-
+    private final AddressSearchRegistry registry;
 
     public void run(AddressSearchContext ctx, List<DigitalAddressSourceInt> sources, int fromIndex) {
         for (int i = fromIndex; i < sources.size(); i++) {
             DigitalAddressSourceInt source = sources.get(i);
 
             Optional<GetAddressInfoDetailsInt> existing = utils.findPreviousSearchOutcome(
-                    ctx.iun(),
+                    ctx.notification().getIun(),
                     ctx.recipientIndex(),
                     source,
                     ctx.channel(),
                     ctx.attempt()
             );
             if (existing.isPresent()) {
-                if (existing.get().isAvailable()) {
-                    scheduleAction(ctx, source);
+                if (existing.get().getIsAvailable()) {
+                    utils.scheduleSendChannelMessageAction(ctx, source);
                     // Se sono qui è un ritentativo di ricerca, dunque provo solo a schedulare l'azione di invio, senza ripetere la ricerca per altre source.
                     return;
                 }
@@ -47,7 +43,7 @@ public class AddressSearchProgressor {
                     SourceSearchOutcome outcome = sync.search(ctx);
                     utils.storeSearchOutcome(ctx, outcome);
                     if (outcome.found()) {
-                        scheduleAction(ctx, source);
+                        utils.scheduleSendChannelMessageAction(ctx, source);
                         return;
                     }
                     // non trovato: continua il for
@@ -60,8 +56,7 @@ public class AddressSearchProgressor {
         }
 
         // piano esaurito, nessun indirizzo trovato su nessuna fonte
-        scheduleAction(ctx, DigitalAddressSourceInt.NONE);
+        utils.scheduleSendChannelMessageAction(ctx, DigitalAddressSourceInt.NONE);
     }
-
 
 }

@@ -4,7 +4,7 @@ import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
 import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
 
 public record SourceSearchOutcome(
-        DigitalAddressSourceInt source,
+      DigitalAddressSourceInt source,
       boolean found,
       InformalDigitalAddressInt address,
       boolean tosAccepted

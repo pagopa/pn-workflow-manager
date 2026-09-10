@@ -6,6 +6,10 @@ import it.pagopa.pn.workflowmanager.dto.action.common.ActionType;
 import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
 import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
+import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
+import it.pagopa.pn.workflowmanager.dto.timeline.EventId;
+import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
+import it.pagopa.pn.workflowmanager.dto.timeline.TimelineEventId;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.GetAddressInfoDetailsInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.SendChannelMessageDetails;
 import it.pagopa.pn.workflowmanager.service.SchedulerService;
@@ -28,20 +32,32 @@ public class AddressSearchUtils {
             ChannelType channelType,
             int sendAttempt
     ) {
-        // Cerca su timeline usando iun e timelineElementId (da costruire).
-        return Optional.empty();
+        String timelineElementId = TimelineEventId.GET_ADDRESS.buildEventId(
+                EventId.builder()
+                        .iun(iun)
+                        .recIndex(recIndex)
+                        .source(source)
+                        .sentAttemptMade(sendAttempt)
+                        .channel(channelType.name())
+                        .build()
+        );
+
+        Optional<TimelineElementInternal> timelineElement = timelineService.getTimelineElement(iun, timelineElementId);
+
+        return timelineElement.map(timelineElementInternal -> (GetAddressInfoDetailsInt) timelineElementInternal.getDetails());
     }
 
     public void storeSearchOutcome(
             AddressSearchContext ctx,
             SourceSearchOutcome outcome
     ) {
-        // Store the search outcome in the timeline or database
+        TimelineElementInternal timelineElement = timelineUtils.buildAvailabilitySourceTimelineElement(ctx.recipientIndex(), ctx.notification(), outcome.source(), outcome.found(), ctx.attempt());
+        timelineService.addTimelineElement(timelineElement, ctx.notification());
     }
 
     public void scheduleSendChannelMessageAction(AddressSearchContext ctx, DigitalAddressSourceInt source) {
         schedulerService.scheduleEvent(
-                ctx.iun(),
+                ctx.notification().getIun(),
                 ctx.recipientIndex(),
                 Instant.now(),
                 ActionType.SEND_CHANNEL_MESSAGE,

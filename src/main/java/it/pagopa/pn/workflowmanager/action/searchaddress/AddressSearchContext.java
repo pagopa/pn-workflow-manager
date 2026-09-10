@@ -5,5 +5,5 @@ import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationIn
 
 import java.time.Instant;
 
-public record AddressSearchContext(ChannelType channel, Instant sentAt, NotificationInt notification, String iun, Integer recipientIndex) {
+public record AddressSearchContext(ChannelType channel, Instant sentAt, NotificationInt notification, Integer recipientIndex, int attempt) {
 }

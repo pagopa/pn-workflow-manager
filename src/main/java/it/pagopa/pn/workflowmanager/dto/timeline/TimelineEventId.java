@@ -244,9 +244,21 @@ public enum TimelineEventId {
                     .withSentAttemptMade(eventId.getSentAttemptMade())
                     .build();
         }
+    },
+
+    NATIONAL_REGISTRY_CALL("NATIONAL_REGISTRY_CALL") {
+        @Override
+        public String buildEventId(EventId eventId) {
+            return new TimelineEventIdBuilder()
+                    .withCategory(this.getValue())
+                    .withIun(eventId.getIun())
+                    .withRecIndex(eventId.getRecIndex())
+                    .withDeliveryMode(eventId.getDeliveryMode())
+                    .withContactPhase(eventId.getContactPhase())
+                    .withSentAttemptMade(eventId.getSentAttemptMade())
+                    .build();
+        }
     };
-
-
 
     public String buildEventId(EventId eventId) {
         throw new UnsupportedOperationException("Must be implemented for each action type event ID");
