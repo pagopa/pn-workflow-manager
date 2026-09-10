@@ -1,20 +1,17 @@
 const {
-    BatchWriteItemCommand,
-    PutItemCommand,
     UpdateItemCommand
 } = require("@aws-sdk/client-dynamodb");
-
-const DEDUP_PARTITION_KEY = "timelineElementId";
-const MAX_BATCH_DELETE_ITEMS = 25;
-
 /**
  * Aggiornamento dei contatori su DynamoDB per una singola campagna
  * @param {DynamoDBClient} dynamoDb - Client DynamoDB inizializzato
  * @param {string} statsTable - Nome della tabella di statistiche
  * @param {string} campaignId - ID della campagna
  * @param {Object} aggregate - Oggetto aggregato con counters e lastTimestamp
+ * @param {Object} isTimedOut - Funzione per verificare se il Lambda è vicino al timeout
+ * @throws {Error} - Lancia un errore se l'aggiornamento fallisce o se il Lambda è vicino al timeout
  */
-exports.updateCounters = async (dynamoDb, statsTable, campaignId, aggregate, isTimedOut) => {
+exports.updateCounters = async (dynamoDb, statsTable, campaignId,
+                                aggregate, isTimedOut) => {
     const counterKeys = Object.keys(aggregate.counters);
 
     if (counterKeys.length === 0) return;
@@ -25,11 +22,9 @@ exports.updateCounters = async (dynamoDb, statsTable, campaignId, aggregate, isT
         throw timeoutError;
     }
 
-    // Costruzione dinamica dell'espressione ADD per l'incremento atomico dei contatori modificati
-    let updateExpression = "ADD " + counterKeys.map((key, index) => `#c${index} :val${index}`).join(", ");
-
-    // Aggiungiamo l'aggiornamento fisso per il timestamp dell'ultima elaborazione
-    updateExpression += " SET #lastTs = :lastTs";
+    const setExpression = "SET #lastTs = :lastTs";
+    const addExpression = "ADD " + counterKeys.map((key, index) => `#c${index} :val${index}`).join(", ");
+    const updateExpression = `${setExpression} ${addExpression}`;
 
     const expressionAttributeNames = {
         "#lastTs": "lastCompletedTimestamp"
@@ -62,20 +57,12 @@ exports.updateCounters = async (dynamoDb, statsTable, campaignId, aggregate, isT
     }
 };
 
-/**
- * Prova ad acquisire il lock di deduplica per un evento timeline.
- * La scrittura condizionale evita doppie elaborazioni su retry Kinesis.
- *
- * @param {DynamoDBClient} dynamoDb - Client DynamoDB inizializzato
- * @param {string} dedupTable - Nome tabella deduplica
- * @param {string} timelineElementId - Identificativo univoco evento timeline
- * @param {number} expiresAt - Epoch seconds per TTL
- */
 exports.acquireDeduplicationLock = async (dynamoDb, dedupTable, timelineElementId, expiresAt) => {
+    const { PutItemCommand } = require("@aws-sdk/client-dynamodb");
     const command = new PutItemCommand({
         TableName: dedupTable,
         Item: {
-            [DEDUP_PARTITION_KEY]: { S: timelineElementId },
+            timelineElementId: { S: timelineElementId },
             ttl: { N: expiresAt.toString() }
         },
         ConditionExpression: "attribute_not_exists(timelineElementId)"
@@ -84,27 +71,19 @@ exports.acquireDeduplicationLock = async (dynamoDb, dedupTable, timelineElementI
     await dynamoDb.send(command);
 };
 
-/**
- * Rimuove i lock di deduplica per consentire il retry di eventi non persistiti su statistiche.
- *
- * @param {DynamoDBClient} dynamoDb - Client DynamoDB inizializzato
- * @param {string} dedupTable - Nome tabella deduplica
- * @param {string[]} timelineElementIds - Lista lock da rimuovere
- */
 exports.removeDeduplicationLocks = async (dynamoDb, dedupTable, timelineElementIds) => {
+    const { BatchWriteItemCommand } = require("@aws-sdk/client-dynamodb");
     if (!timelineElementIds.length) {
         return;
     }
 
-    for (let index = 0; index < timelineElementIds.length; index += MAX_BATCH_DELETE_ITEMS) {
-        const chunk = timelineElementIds.slice(index, index + MAX_BATCH_DELETE_ITEMS);
+    for (let index = 0; index < timelineElementIds.length; index += 25) {
+        const chunk = timelineElementIds.slice(index, index + 25);
         const command = new BatchWriteItemCommand({
             RequestItems: {
                 [dedupTable]: chunk.map((timelineElementId) => ({
                     DeleteRequest: {
-                        Key: {
-                            [DEDUP_PARTITION_KEY]: { S: timelineElementId }
-                        }
+                        Key: { timelineElementId: { S: timelineElementId } }
                     }
                 }))
             }

@@ -12,8 +12,13 @@ function decodePayload(b64Str) {
   try {
     parsedJson = JSON.parse(payloadBuf.toString("utf8"));
   } catch (err) {
-    const uncompressedBuf = myGunzip(payloadBuf);
-    parsedJson = JSON.parse(uncompressedBuf.toString("utf8"));
+    try {
+      const uncompressedBuf = myGunzip(payloadBuf);
+      parsedJson = JSON.parse(uncompressedBuf.toString("utf8"));
+    } catch (decodeErr) {
+      decodeErr.cause = err;
+      throw decodeErr;
+    }
   }
 
   return parsedJson;
@@ -26,5 +31,5 @@ exports.extractKinesisData = function (kinesisEvent) {
       kinesisSeqNumber: rec.kinesis.sequenceNumber,
       ...decodedPayload,
     };
-  }).filter((item) => !item.dynamodb?.NewImage?.communicationType);
+  }).filter((item) => !!item.dynamodb?.NewImage?.communicationType?.S);
 };
