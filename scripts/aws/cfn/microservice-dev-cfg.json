@@ -13,6 +13,7 @@
     "WorkflowManagerCxId": "pn-workflow-manager",
     "CampaignEventsDeduplicationTtlDays": "7",
     "DeduplicationManagementEnabled": "true",
+    "PnTimelinesTableName": "pn-Timelines",
     "CampaignMonitoringDigitalChannels": "[\"IO\",\"EMAIL\",\"PEC\",\"SMS\"]",
     "CampaignMonitoringAnalogChannels": "[\"RS\"]",
     "CampaignMonitoringViewChannels": "[\"IO\",\"SEND\"]",
