@@ -41,6 +41,8 @@ public class TimelineEventIdBuilder {
 
     private String courtesyAddressType = "";
 
+    private String correlationId = "";
+
     public TimelineEventIdBuilder withIun(@Nullable String iun) {
         if(iun != null)
             this.iun = DELIMITER.concat("IUN_").concat(iun);
@@ -114,6 +116,12 @@ public class TimelineEventIdBuilder {
         return this;
     }
 
+    public TimelineEventIdBuilder withCorrelationId(@Nullable String correlationId) {
+        if(correlationId != null)
+            this.correlationId = DELIMITER.concat("CORRELATIONID_").concat(correlationId);
+        return this;
+    }
+
     public String build() {
         return category +
                 iun +
@@ -126,7 +134,8 @@ public class TimelineEventIdBuilder {
                 progressIndex +
                 channel +
                 deliveryType +
-                paymentCode;
+                paymentCode +
+                correlationId;
     }
 
 }

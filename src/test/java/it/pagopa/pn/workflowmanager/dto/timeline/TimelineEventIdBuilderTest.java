@@ -410,5 +410,23 @@ class TimelineEventIdBuilderTest {
         assertThat(timeLineEventIdActualFromBuildEvent).isEqualTo(timeLineEventIdExpected);
     }
 
+    @Test
+    void buildPUBLIC_REGISTRY_RESPONSETest() {
+        //vecchia versione public_registry_response_corr12345
+        String timeLineEventIdExpected = "PUBLIC_REGISTRY_RESPONSE.CORRELATIONID_corr12345";
+        String timeLineEventIdActual = new TimelineEventIdBuilder()
+                .withCategory(TimelineEventId.PUBLIC_REGISTRY_RESPONSE.getValue())
+                .withCorrelationId("corr12345")
+                .build();
+
+        assertThat(timeLineEventIdActual).isEqualTo(timeLineEventIdExpected);
+
+        String timeLineEventIdActualFromBuildEvent = TimelineEventId.PUBLIC_REGISTRY_RESPONSE.buildEventId("corr12345");
+
+
+        assertThat(timeLineEventIdActualFromBuildEvent).isEqualTo(timeLineEventIdExpected);
+
+    }
+
 
 }

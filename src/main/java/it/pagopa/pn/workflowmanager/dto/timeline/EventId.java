@@ -22,6 +22,7 @@ public class EventId {
     private CourtesyDigitalAddressInt.COURTESY_DIGITAL_ADDRESS_TYPE_INT courtesyAddressType;
     private String creditorTaxId;
     private String noticeCode;
+    private String correlationId;
     private ContactPhaseInt contactPhase;
     private DeliveryModeInt deliveryMode;
 }

@@ -244,9 +244,17 @@ public enum TimelineEventId {
                     .withSentAttemptMade(eventId.getSentAttemptMade())
                     .build();
         }
+    },
+
+    PUBLIC_REGISTRY_RESPONSE("PUBLIC_REGISTRY_RESPONSE") {
+        @Override
+        public String buildEventId(String eventId) {
+            return new TimelineEventIdBuilder()
+                    .withCategory(this.getValue())
+                    .withCorrelationId(eventId)
+                    .build();
+        }
     };
-
-
 
     public String buildEventId(EventId eventId) {
         throw new UnsupportedOperationException("Must be implemented for each action type event ID");
