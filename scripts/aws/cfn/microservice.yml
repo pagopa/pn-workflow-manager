@@ -411,19 +411,19 @@ Parameters:
       - true
       - false
 
-  DigitalChannels:
+  CampaignMonitoringDigitalChannels:
     Type: String
     Default: '["IO","EMAIL","PEC","SMS"]'
     Description: Digital channels used by the lambda CampaignEventsCollector
-  AnalogChannels:
+  CampaignMonitoringAnalogChannels:
     Type: String
     Default: '["RS"]'
     Description: Analog channels used by the lambda CampaignEventsCollector
-  PlatformChannels:
+  CampaignMonitoringViewChannels:
     Type: String
     Default: '["IO","SEND"]'
-    Description: Platform channels used by the lambda CampaignEventsCollector
-  DeliveredChannels:
+    Description: View channels used by the lambda CampaignEventsCollector
+  CampaignMonitoringDeliveredChannels:
     Type: String
     Default: '["IO","EMAIL","PEC","SMS","RS"]'
     Description: Delivered channels used by the lambda CampaignEventsCollector
@@ -992,10 +992,10 @@ Resources:
           CAMPAIGN_EVENTS_DEDUPLICATION_TABLE: !Sub '${CampaignEventsDeduplicationTableName}'
           CAMPAIGN_EVENTS_DEDUPLICATION_TTL_DAYS: !Sub '${CampaignEventsDeduplicationTtlDays}'
           DEDUPLICATION_MANAGEMENT_ENABLED: !Sub '${DeduplicationManagementEnabled}'
-          DIGITAL_CHANNELS: !Ref DigitalChannels
-          ANALOG_CHANNELS: !Ref AnalogChannels
-          PLATFORM_CHANNELS: !Ref PlatformChannels
-          DELIVERED_CHANNELS: !Ref DeliveredChannels
+          CAMPAIGN_MONITORING_DIGITAL_CHANNELS: !Ref CampaignMonitoringDigitalChannels
+          CAMPAIGN_MONITORING_ANALOG_CHANNELS: !Ref CampaignMonitoringAnalogChannels
+          CAMPAIGN_MONITORING_VIEW_CHANNELS: !Ref CampaignMonitoringViewChannels
+          CAMPAIGN_MONITORING_DELIVERED_CHANNELS: !Ref CampaignMonitoringDeliveredChannels
       TracingConfig:
         Mode: Active
       Layers:

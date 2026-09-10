@@ -1,8 +1,8 @@
 const { parseEnvJson } = require("./jsonUtils");
-const DIGITAL_CHANNELS = parseEnvJson("DIGITAL_CHANNELS", ["IO", "EMAIL", "PEC", "SMS"]);
-const ANALOG_CHANNELS = parseEnvJson("ANALOG_CHANNELS", ["RS"]);
-const PLATFORM_CHANNELS = parseEnvJson("PLATFORM_CHANNELS", ["IO", "SEND"]);
-const DELIVERED_CHANNELS = parseEnvJson("DELIVERED_CHANNELS", ["IO", "EMAIL", "PEC", "SMS", "RS"]);
+const DIGITAL_CHANNELS = parseEnvJson("CAMPAIGN_MONITORING_DIGITAL_CHANNELS", ["IO", "EMAIL", "PEC", "SMS"]);
+const ANALOG_CHANNELS = parseEnvJson("CAMPAIGN_MONITORING_ANALOG_CHANNELS", ["RS"]);
+const VIEW_CHANNELS = parseEnvJson("CAMPAIGN_MONITORING_VIEW_CHANNELS", ["IO", "SEND"]);
+const DELIVERED_CHANNELS = parseEnvJson("CAMPAIGN_MONITORING_DELIVERED_CHANNELS", ["IO", "EMAIL", "PEC", "SMS", "RS"]);
 
 /**
  * Verifica se l'evento ha comportato un cambio di stato verso lo stato atteso,
@@ -62,7 +62,7 @@ function applyCategoryMetric(counters, category, parsedData) {
 
         case "INFORMAL_NOTIFICATION_VIEWED": {
             const platform = parsedData.details?.channel;
-            if (PLATFORM_CHANNELS.includes(platform)) {
+            if (VIEW_CHANNELS.includes(platform)) {
                 counters[`viewed${platform}`] = (counters[`viewed${platform}`] || 0) + 1;
             } else {
                 console.warn(`Unexpected platform for ${category}: ${platform}`);
@@ -122,5 +122,5 @@ module.exports = {
     DIGITAL_CHANNELS,
     ANALOG_CHANNELS,
     DELIVERED_CHANNELS,
-    PLATFORM_CHANNELS
+    VIEW_CHANNELS
 };

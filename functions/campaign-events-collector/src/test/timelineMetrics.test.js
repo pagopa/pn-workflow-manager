@@ -25,7 +25,7 @@ describe("timelineMetrics", () => {
 
         expect(metrics.DIGITAL_CHANNELS).to.deep.equal(["IO", "EMAIL", "PEC", "SMS"]);
         expect(metrics.ANALOG_CHANNELS).to.deep.equal(["RS"]);
-        expect(metrics.PLATFORM_CHANNELS).to.deep.equal(["IO", "SEND"]);
+        expect(metrics.VIEW_CHANNELS).to.deep.equal(["IO", "SEND"]);
         expect(metrics.DELIVERED_CHANNELS).to.deep.equal(["IO", "EMAIL", "PEC", "SMS", "RS"]);
     });
 

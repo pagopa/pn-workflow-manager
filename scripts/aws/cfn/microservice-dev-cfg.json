@@ -13,9 +13,9 @@
     "WorkflowManagerCxId": "pn-workflow-manager",
     "CampaignEventsDeduplicationTtlDays": "7",
     "DeduplicationManagementEnabled": "true",
-    "DigitalChannels": "[\"IO\",\"EMAIL\",\"PEC\",\"SMS\"]",
-    "AnalogChannels": "[\"RS\"]",
-    "PlatformChannels": "[\"IO\",\"SEND\"]",
-    "DeliveredChannels": "[\"IO\",\"EMAIL\",\"PEC\",\"SMS\",\"RS\"]"
+    "CampaignMonitoringDigitalChannels": "[\"IO\",\"EMAIL\",\"PEC\",\"SMS\"]",
+    "CampaignMonitoringAnalogChannels": "[\"RS\"]",
+    "CampaignMonitoringViewChannels": "[\"IO\",\"SEND\"]",
+    "CampaignMonitoringDeliveredChannels": "[\"IO\",\"EMAIL\",\"PEC\",\"SMS\",\"RS\"]"
   }
 }
