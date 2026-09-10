@@ -1054,7 +1054,7 @@ Resources:
       MaximumBatchingWindowInSeconds: !Sub ${CampaignEventsCollectorLambdaMaximumBatchingWindowInSeconds}
       MaximumRetryAttempts: !Ref MaximumRetryAttemptsValue
       MaximumRecordAgeInSeconds: !Ref CampaignEventsCollectorMaximumRecordAge
-      StartingPosition: TRIM_HORIZON
+      StartingPosition: LATEST
       DestinationConfig:
         OnFailure:
           Destination: !Sub arn:aws:s3:::${ESMKinesisFailureBucketName}
