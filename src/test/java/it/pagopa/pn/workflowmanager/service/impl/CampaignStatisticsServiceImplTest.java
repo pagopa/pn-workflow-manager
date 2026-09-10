@@ -1,6 +1,6 @@
 package it.pagopa.pn.workflowmanager.service.impl;
 
-import it.pagopa.pn.workflowmanager.exceptions.PnCampaignStatisticsNotFoundException;
+import it.pagopa.pn.workflowmanager.exceptions.PnCampaignNotFoundException;
 import it.pagopa.pn.workflowmanager.middleware.dao.dynamo.CampaignStatisticsEntityDao;
 import it.pagopa.pn.workflowmanager.middleware.dao.dynamo.entity.CampaignStatisticsEntity;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,7 +37,7 @@ class CampaignStatisticsServiceImplTest {
         String uuid = uuidd.toString();
         CampaignStatisticsEntity entity = new CampaignStatisticsEntity();
         entity.setCampaignId(uuid);
-        entity.setLastCompletedTimestamp("2026-01-21T14:46:43.158602555Z");
+        entity.setLastCompletedTimestamp(Instant.now());
 
         when(dao.get(uuid)).thenReturn(Mono.just(entity));
 
@@ -46,7 +46,7 @@ class CampaignStatisticsServiceImplTest {
 
         //THEN
         assertNotNull(res);
-        assertEquals(Instant.parse("2026-01-21T14:46:43.158602555Z"), res.getLastCompletedTimestamp());
+        assertEquals(entity.getLastCompletedTimestamp(), res.getLastCompletedTimestamp());
         Mockito.verify(dao).get(uuid);
     }
 
@@ -57,7 +57,7 @@ class CampaignStatisticsServiceImplTest {
         when(dao.get(campaignId)).thenReturn(Mono.empty());
 
         // WHEN - THEN
-        assertThrows(PnCampaignStatisticsNotFoundException.class,
+        assertThrows(PnCampaignNotFoundException.class,
                 () -> service.getCampaignStatistics(campaignId).block(d));
 
         Mockito.verify(dao).get(campaignId);

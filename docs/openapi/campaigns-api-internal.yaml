@@ -29,9 +29,10 @@ paths:
   /workflow-private/informal/{campaignId}/statistics:
     get:
       summary: Recupera le statistiche di una campagna
-      description: Restituisce i contatori aggregati
-        (inviati, ricevuti, completati, visti e pagati)
-        associati a una specifica campagna tramite il suo id
+      description: >
+        Restituisce i contatori aggregati (accettate, inviate su canale,
+        consegnate, visualizzate, pagate, ecc.) associati a una specifica
+        campagna tramite il suo id
       operationId: getCampaignStatistics
       tags:
         - CampaignStatistics
@@ -68,116 +69,149 @@ components:
       type: object
       required:
         - campaignId
-        - counters
+        - stats
         - lastCompletedTimestamp
       properties:
         campaignId:
           type: string
           description: Campaign ID
           example: CAMP-12345-2026
-        counters:
+        stats:
+          $ref: '#/components/schemas/CampaignStats'
+        lastCompletedTimestamp:
+          type: string
+          format: date-time
+          description: Ultimo aggiornamento (ISO 8601)
+          example: '2026-06-08T19:13:00Z'
+
+    CampaignStats:
+      type: object
+      description: Contatori aggregati della campagna
+      required:
+        - totalCount
+        - totalRefusedCount
+        - sentOnChannelCount
+        - deliveredCount
+        - undeliverableCount
+        - workflowDoneCount
+        - viewedCount
+        - paidCount
+        - sentOnChannel
+        - delivered
+        - viewed
+      properties:
+        totalCount:
+          type: integer
+          description: >
+            Numero di comunicazioni accettate (REQUEST_ACCEPTED). Non
+            rappresenta il totale di tutte le comunicazioni della campagna,
+            ma solo quelle accettate.
+          example: 150500
+        totalRefusedCount:
+          type: integer
+          description: Comunicazioni rifiutate (REQUEST_REFUSED)
+          example: 45
+        sentOnChannelCount:
+          type: integer
+          description: >
+            Numero di comunicazioni con almeno un invio, digitale o
+            analogico (SEND_DIGITAL_MESSAGE / SEND_ANALOG_MESSAGE)
+          example: 145500
+        deliveredCount:
+          type: integer
+          description: Numero di comunicazioni che hanno raggiunto il cittadino (REACHED)
+          example: 113210
+        undeliverableCount:
+          type: integer
+          description: Comunicazioni non consegnabili
+          example: 1000
+        workflowDoneCount:
+          type: integer
+          description: Comunicazioni che hanno completato il workflow (WORKFLOW_DONE)
+          example: 113210
+        viewedCount:
+          type: integer
+          description: Numero di comunicazioni visualizzate (IO + SEND)
+          example: 1000
+        paidCount:
+          type: integer
+          description: Comunicazioni pagate
+          example: 1000
+        sentOnChannel:
           type: object
-          description: Active counters
+          description: Dettaglio invii per canale
           required:
-            - sent
-            - received
-            - undeliverable
-            - workflowDone
-            - viewed
-            - payed
-            - totalReached
+            - digital
+            - analog
           properties:
-            sent:
+            digital:
               type: object
-              description: Sent/submitted messages statistics
-              required:
-                - total
-                - refused
-                - digital
-                - analog
-              properties:
-                total:
-                  type: integer
-                  description: REQUEST_ACCEPTED amount
-                  example: 150500
-                refused:
-                  type: integer
-                  description: REQUEST_REFUSED amount
-                  example: 45
-                digital:
-                  type: object
-                  description: Digital channel stats (SEND_DIGITAL_MESSAGE).
-                  required:
-                    - IO
-                    - EMAIL
-                    - PEC
-                    - SMS
-                  properties:
-                    IO:
-                      type: integer
-                      example: 85000
-                    EMAIL:
-                      type: integer
-                      example: 40000
-                    PEC:
-                      type: integer
-                      example: 10000
-                    SMS:
-                      type: integer
-                      example: 15000
-                analog:
-                  type: object
-                  description: Analog channel stats (SEND_ANALOG_MESSAGE).
-                  required:
-                    - RS
-                  properties:
-                    RS:
-                      type: integer
-                      description: Raccomandata Semplice
-                      example: 500
-            received:
-              type: object
-              description: Received communications (REACHED_*).
+              description: Invii su canale digitale
               required:
                 - IO
                 - EMAIL
                 - PEC
-                - RS
+                - SMS
               properties:
                 IO:
                   type: integer
-                  example: 72000
+                  example: 85000
                 EMAIL:
                   type: integer
-                  example: 31000
+                  example: 40000
                 PEC:
                   type: integer
-                  example: 9800
+                  example: 10000
+                SMS:
+                  type: integer
+                  example: 15000
+            analog:
+              type: object
+              description: Invii su canale analogico
+              required:
+                - RS
+              properties:
                 RS:
                   type: integer
-                  example: 410
-            workflowDone:
+                  description: Raccomandata Semplice
+                  example: 500
+        delivered:
+          type: object
+          description: Dettaglio comunicazioni consegnate al destinatario, per canale
+          required:
+            - IO
+            - EMAIL
+            - PEC
+            - SMS
+            - RS
+          properties:
+            IO:
               type: integer
-              description: COMPLETATI (WORKFLOW_DONE).
-              example: 113210
-            totalReached:
+              example: 72000
+            EMAIL:
               type: integer
-              description: Destinatari raggiunti (REACHED).
-              example: 113210
-            viewed:
+              example: 31000
+            PEC:
               type: integer
-              description: Comunicazioni visualizzate da portale
-              example: 1000
-            payed:
+              example: 9800
+            SMS:
               type: integer
-              description: Comunicazioni pagate (non significativo in prima fase)
-              example: 1000
-            undeliverable:
+              example: 12000
+            RS:
               type: integer
-              description: Comunicazioni non consegnabili (non significativo in prima fase)
-              example: 1000
-        lastCompletedTimestamp:
-          type: string
-          format: date-time
-          description: last updated timestamp (ISO 8601)
-          example: '2026-06-08T19:13:00Z'
+              example: 410
+        viewed:
+          type: object
+          description: Dettaglio comunicazioni visualizzate, per canale di lettura
+          required:
+            - IO
+            - SEND
+          properties:
+            IO:
+              type: integer
+              description: Comunicazioni lette da IO
+              example: 600
+            SEND:
+              type: integer
+              description: Comunicazioni lette da SEND
+              example: 400

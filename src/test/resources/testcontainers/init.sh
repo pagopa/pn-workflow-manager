@@ -157,6 +157,13 @@ aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
     --event-bus-name pn-CoreEventBus \
     --event-pattern '{"detail-type":["InformalNotificationViewedEvent"]}'
 
+aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
+    ssm put-parameter \
+    --name "MVPCampaigns" \
+    --type String \
+    --overwrite \
+    --value '[{"campaignId":"FattOrd","senderId":"5b994d4a-0fa8-47ac-9c7b-354f1d44a1ce","title":"Fatturazione Ordinaria","descriptionScope":" In questa campagna, l’ente comunica l’emissione di una fattura ai suoi clienti. La comunicazione contiene gli allegati ed il pagamento.","startDate":"2026-07-10T10:00:00Z","endDate":"2026-08-10T18:00:00Z","status":"IN_PROGRESS","senderContact":"info@comune.esempio.it","serviceId":"01KP5QYVRZDDEMHCN3TV1QY1H6","serviceName":"Servizi idrici","sensitiveContent":false,"stopOnViewed":true,"taxonomyCode":"010201P","workflow":[{"channel":"IO","recipientType":["PF"],"timeout":"PT8M","desiredFeedback":["READ","PAID"],"includeAttachment":true},{"channel":"EMAIL","recipientType":["PF"],"timeout":"PT4M","desiredFeedback":["RECEIVED"],"includeAttachment":true},{"channel":"PEC","recipientType":["PG"],"timeout":"PT6M","includeAttachment":true,"desiredFeedback":["RECEIVED"]}]}]'
+
 echo "Adding target to InformalNotificationViewedEvent rule..."
 aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
     events put-targets \

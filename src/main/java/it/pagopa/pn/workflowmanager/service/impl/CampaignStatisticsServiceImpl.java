@@ -1,16 +1,12 @@
 package it.pagopa.pn.workflowmanager.service.impl;
 
-import it.pagopa.pn.commons.log.PnAuditLogBuilder;
-import it.pagopa.pn.commons.log.PnAuditLogEvent;
-import it.pagopa.pn.commons.log.PnAuditLogEventType;
-import it.pagopa.pn.workflowmanager.exceptions.PnCampaignStatisticsNotFoundException;
+import it.pagopa.pn.workflowmanager.exceptions.PnCampaignNotFoundException;
 import it.pagopa.pn.workflowmanager.generated.openapi.server.v1.dto.CampaignStatisticsResponse;
 import it.pagopa.pn.workflowmanager.middleware.dao.dynamo.CampaignStatisticsEntityDao;
 import it.pagopa.pn.workflowmanager.middleware.dao.dynamo.mapper.EntityToDtoCampaignStatisticsMapper;
 import it.pagopa.pn.workflowmanager.service.CampaignStatisticsService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.helpers.MessageFormatter;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -27,7 +23,7 @@ public class CampaignStatisticsServiceImpl implements CampaignStatisticsService 
         log.debug(MessageFormatter.arrayFormat("getCampaignStatistics campaignId={}", new Object[]{campaignId}).getMessage());
 
         return campaignStatisticsEntityDao.get(campaignId)
-                .switchIfEmpty(Mono.error(new PnCampaignStatisticsNotFoundException("Campaign with id: " + campaignId + " not found ")))
+                .switchIfEmpty(Mono.error(new PnCampaignNotFoundException("Campaign with id: " + campaignId + " not found ")))
                 .map(EntityToDtoCampaignStatisticsMapper::entityToDto)
                 .doOnSuccess(entity ->
                         log.info(MessageFormatter.arrayFormat("getCampaignStatistics campaignId={} result={}", new Object[]{campaignId, entity}).getMessage())
