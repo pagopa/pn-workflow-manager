@@ -1,8 +1,7 @@
-package it.pagopa.pn.workflowmanager.config.springbootcfg;
+package it.pagopa.pn.workflowmanager.action.searchaddress;
 
 import it.pagopa.pn.workflowmanager.config.PnWorkflowManagerConfigs;
 import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
-import it.pagopa.pn.workflowmanager.dto.addresssearch.ChannelAddressSourceRule;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
 import jakarta.annotation.PostConstruct;
 import lombok.AllArgsConstructor;
@@ -22,7 +21,7 @@ public class ChannelAddressSourceConfigResolver {
     public void validateRules(){
         Arrays.stream(ChannelType.values()).forEach(
                 channel -> {
-                    List<ChannelAddressSourceRule> rules = Optional.of(cfg.getAddressSearchMap()).map(map -> map.get(channel)).orElse(Collections.emptyList());
+                    List<ChannelSourceRule> rules = Optional.of(cfg.getAddressSearchMap()).map(map -> map.get(channel)).orElse(Collections.emptyList());
 
                     Set<Instant> validFromValues = new HashSet<>();
                     rules.forEach(rule -> {
@@ -45,7 +44,7 @@ public class ChannelAddressSourceConfigResolver {
                 .orElseGet(List::of)
                 .stream()
                 .filter(rule -> rule.validFrom().isBefore(sentAt))
-                .max(Comparator.comparing(ChannelAddressSourceRule::validFrom))
-                .map(ChannelAddressSourceRule::sources);
+                .max(Comparator.comparing(ChannelSourceRule::validFrom))
+                .map(ChannelSourceRule::sources);
     }
 }

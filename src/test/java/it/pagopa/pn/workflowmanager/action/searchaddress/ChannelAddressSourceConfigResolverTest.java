@@ -1,8 +1,7 @@
-package it.pagopa.pn.workflowmanager.config.springbootcfg;
+package it.pagopa.pn.workflowmanager.action.searchaddress;
 
 import it.pagopa.pn.workflowmanager.config.PnWorkflowManagerConfigs;
 import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
-import it.pagopa.pn.workflowmanager.dto.addresssearch.ChannelAddressSourceRule;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
 import org.junit.jupiter.api.Test;
 
@@ -36,8 +35,8 @@ class ChannelAddressSourceConfigResolverTest {
         Instant validFrom = Instant.parse("2024-01-01T00:00:00Z");
         PnWorkflowManagerConfigs configs = buildConfigs(Map.of(
                 ChannelType.PEC, List.of(
-                        new ChannelAddressSourceRule(validFrom, List.of(DigitalAddressSourceInt.PLATFORM)),
-                        new ChannelAddressSourceRule(validFrom, List.of(DigitalAddressSourceInt.SPECIAL))
+                        new ChannelSourceRule(validFrom, List.of(DigitalAddressSourceInt.PLATFORM)),
+                        new ChannelSourceRule(validFrom, List.of(DigitalAddressSourceInt.SPECIAL))
                 )
         ));
         ChannelAddressSourceConfigResolver resolver = new ChannelAddressSourceConfigResolver(configs);
@@ -91,13 +90,13 @@ class ChannelAddressSourceConfigResolverTest {
         assertThat(sources).isEmpty();
     }
 
-    private static PnWorkflowManagerConfigs buildConfigs(Map<ChannelType, List<ChannelAddressSourceRule>> rulesByChannel) {
+    private static PnWorkflowManagerConfigs buildConfigs(Map<ChannelType, List<ChannelSourceRule>> rulesByChannel) {
         PnWorkflowManagerConfigs configs = new PnWorkflowManagerConfigs();
         configs.setAddressSearchMap(new EnumMap<>(rulesByChannel));
         return configs;
     }
 
-    private static ChannelAddressSourceRule rule(String validFrom, List<DigitalAddressSourceInt> sources) {
-        return new ChannelAddressSourceRule(Instant.parse(validFrom), sources);
+    private static ChannelSourceRule rule(String validFrom, List<DigitalAddressSourceInt> sources) {
+        return new ChannelSourceRule(Instant.parse(validFrom), sources);
     }
 }
