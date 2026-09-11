@@ -27,28 +27,33 @@ public class SpecialAddressSearchStrategy implements SyncAddressSearchStrategy {
 
     @Override
     public SourceSearchOutcome search(AddressSearchContext context) {
-        //TODO aggiungere logs
+        log.info("Starting SPECIAL address search - iun={} recipientIndex={} channel={}",
+                context.notification().getIun(), context.recipientIndex(), context.channel());
         String address;
         InformalDigitalAddressInt informalAddress;
         switch (context.channel()) {
             case ChannelType.PEC:
                 address = context.notification().getRecipients().get(context.recipientIndex()).getDigitalDomicile().getAddress();
                 informalAddress = buildInformalAddress(InformalDigitalAddressInt.INFORMAL_DIGITAL_ADDRESS_TYPE.PEC, address);
+                log.info("SPECIAL address found - channel={} type={}", context.channel(), informalAddress.getType());
                 return SourceSearchOutcome.found(DigitalAddressSourceInt.SPECIAL, informalAddress);
 
             case ChannelType.SMS:
                 address = context.notification().getRecipients().get(context.recipientIndex()).getPhoneNumber();
 
                 informalAddress = buildInformalAddress(InformalDigitalAddressInt.INFORMAL_DIGITAL_ADDRESS_TYPE.SMS, address);
+                log.info("SPECIAL address found - channel={} type={}", context.channel(), informalAddress.getType());
                 return SourceSearchOutcome.found(DigitalAddressSourceInt.SPECIAL, informalAddress);
 
             case ChannelType.EMAIL:
                 address = context.notification().getRecipients().get(context.recipientIndex()).getEmail();
 
                 informalAddress = buildInformalAddress(InformalDigitalAddressInt.INFORMAL_DIGITAL_ADDRESS_TYPE.EMAIL, address);
+                log.info("SPECIAL address found - channel={} type={}", context.channel(), informalAddress.getType());
                 return SourceSearchOutcome.found(DigitalAddressSourceInt.SPECIAL, informalAddress);
 
             default:
+                log.debug("SPECIAL address not found - unsupported channel={}", context.channel());
                 return SourceSearchOutcome.notFound(DigitalAddressSourceInt.SPECIAL);
         }
     }

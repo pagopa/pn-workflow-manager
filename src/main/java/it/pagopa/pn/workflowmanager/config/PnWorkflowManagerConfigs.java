@@ -3,7 +3,6 @@ package it.pagopa.pn.workflowmanager.config;
 import it.pagopa.pn.commons.conf.SharedAutoConfiguration;
 import it.pagopa.pn.workflowmanager.action.searchaddress.ChannelSourceRule;
 import it.pagopa.pn.workflowmanager.dto.address.PhysicalAddressInt;
-import it.pagopa.pn.workflowmanager.dto.addresssearch.ChannelAddressSourceRule;
 import it.pagopa.pn.workflowmanager.dto.consent.ConsentDto;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
 import jakarta.annotation.PostConstruct;

@@ -38,28 +38,30 @@ public class PlatformPecAddressSearchStrategy implements SyncAddressSearchStrate
 
     @Override
     public SourceSearchOutcome search(AddressSearchContext context) {
-        //TODO aggiungere logs
-
         String recipientId = context.notification().getRecipients().get(context.recipientIndex()).getInternalId();
         String senderId = context.notification().getSender().getPaId();
         String cxId = context.notification().getRecipients().get(context.recipientIndex()).getRecipientType().getValue();
+
+        log.info("Starting PLATFORM PEC address search - iun={} recipientIndex={} senderId={} recipientId={}",
+                context.notification().getIun(), context.recipientIndex(), senderId, recipientId);
+
+        if (consentsKo(recipientId, cxId)) {
+            log.info("TOS not accepted for PLATFORM PEC search - senderId={} recipientId={}", senderId, recipientId);
+            return SourceSearchOutcome.tosNotAccepted(DigitalAddressSourceInt.PLATFORM);
+        }
+
+        return getPlatformAddresses(recipientId, senderId);
+    }
+
+    private boolean consentsKo(String recipientId, String cxId) {
         List<Consent> contents = userAttributesClient.getConsents(recipientId, CxTypeAuthFleet.fromValue(cxId));
 
         boolean emptyConsents = CollectionUtils.isEmpty(contents);
-        boolean consentsKo =
-                emptyConsents ||
-                contents.stream().noneMatch(consent -> configs.getConsentsForPlatformSearch().stream().anyMatch(configConsent ->
-                        configConsent.getType().equals(consent.getConsentType().getValue()) &&
-                                configConsent.getVersion().equals(consent.getConsentVersion())
-                ));
-
-
-        if(consentsKo) {
-            return SourceSearchOutcome.tosNotAccepted(DigitalAddressSourceInt.PLATFORM);
-        };
-
-        return getPlatformAddresses(recipientId, senderId);
-
+        return emptyConsents ||
+                        contents.stream().noneMatch(consent -> configs.getConsentsForPlatformSearch().stream().anyMatch(configConsent ->
+                                configConsent.getType().equals(consent.getConsentType().getValue()) &&
+                                        configConsent.getVersion().equals(consent.getConsentVersion())
+                        ));
     }
 
     public SourceSearchOutcome getPlatformAddresses(String recipientId, String senderId) {
@@ -82,6 +84,7 @@ public class PlatformPecAddressSearchStrategy implements SyncAddressSearchStrate
                 log.debug("For senderId={} address type={} is available", senderId, address.getType());
 
                 if (InformalDigitalAddressInt.INFORMAL_DIGITAL_ADDRESS_TYPE.PEC.equals(address.getType()) || InformalDigitalAddressInt.INFORMAL_DIGITAL_ADDRESS_TYPE.SERCQ.equals(address.getType())) {
+                    log.info("PLATFORM PEC address found - senderId={} recipientId={} type={}", senderId, recipientId, address.getType());
                     return SourceSearchOutcome.found(DigitalAddressSourceInt.PLATFORM, address);
                 }
             }

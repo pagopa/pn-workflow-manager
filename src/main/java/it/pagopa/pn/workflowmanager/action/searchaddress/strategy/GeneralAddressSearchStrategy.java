@@ -2,12 +2,10 @@ package it.pagopa.pn.workflowmanager.action.searchaddress.strategy;
 
 import it.pagopa.pn.workflowmanager.action.searchaddress.AddressSearchContext;
 import it.pagopa.pn.workflowmanager.action.searchaddress.dto.SourceChannelKey;
-import it.pagopa.pn.workflowmanager.action.searchaddress.dto.SourceSearchOutcome;
 import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
 import it.pagopa.pn.workflowmanager.dto.timeline.DeliveryModeInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.ContactPhaseInt;
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.nationalregistries.model.AddressOK;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.nationalregistries.model.AddressRequestBody;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.nationalregistries.model.AddressRequestBodyFilter;
 import it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.nationalregistries.PnNationalRegistriesClient;
@@ -36,10 +34,12 @@ public class GeneralAddressSearchStrategy implements AsyncAddressSearchStrategy 
 
     @Override
     public void triggerSearch(AddressSearchContext context) {
-        //TODO aggiungere logs
-
         String recipientId = context.notification().getRecipients().get(context.recipientIndex()).getInternalId();
         AddressRequestBody addressRequestBody = createAddressRequestBody(context);
+        String correlationId = addressRequestBody.getFilter() != null ? addressRequestBody.getFilter().getCorrelationId() : null;
+
+        log.info("Starting GENERAL address async search - iun={} recipientIndex={} recipientId={} correlationId={}",
+                context.notification().getIun(), context.recipientIndex(), recipientId, correlationId);
 
         nationalRegistriesClient.getAddresses(recipientId, addressRequestBody);
 
@@ -48,11 +48,11 @@ public class GeneralAddressSearchStrategy implements AsyncAddressSearchStrategy 
                 context.recipientIndex(),
                 ContactPhaseInt.SEND_ATTEMPT,
                 0,
-                addressRequestBody.getFilter().getCorrelationId(),
+                correlationId,
                 DeliveryModeInt.DIGITAL,
                 null);
 
-        log.debug("End sendRequestForGetAddress correlationId={} - iun={} id={}", addressRequestBody.getFilter().getCorrelationId(), context.notification().getIun(), context.recipientIndex());
+        log.debug("End sendRequestForGetAddress correlationId={} - iun={} id={}", correlationId, context.notification().getIun(), context.recipientIndex());
     }
 
     private AddressRequestBody createAddressRequestBody(AddressSearchContext context) {
