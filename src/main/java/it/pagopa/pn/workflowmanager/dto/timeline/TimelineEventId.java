@@ -232,6 +232,18 @@ public enum TimelineEventId {
         }
     },
 
+    COURTESY_CHANNEL_FAILED("COURTESY_CHANNEL_FAILED") {
+        @Override
+        public String buildEventId(EventId eventId) {
+            return new TimelineEventIdBuilder()
+                    .withCategory(this.getValue())
+                    .withIun(eventId.getIun())
+                    .withRecIndex(eventId.getRecIndex())
+                    .withCourtesyAddressType(eventId.getCourtesyAddressType())
+                    .build();
+        }
+    },
+
     PUBLIC_REGISTRY_CALL("PUBLIC_REGISTRY_CALL") {
         @Override
         public String buildEventId(EventId eventId) {

@@ -388,6 +388,25 @@ class TimelineEventIdBuilderTest {
     }
 
     @Test
+    void buildCOURTESY_CHANNEL_FAILEDTest() {
+        String timeLineEventIdExpected = "COURTESY_CHANNEL_FAILED.IUN_KWKU-JHXN-HJXM-202304-U-A.RECINDEX_0.COURTESYADDRESSTYPE_EMAIL";
+        String timeLineEventIdActual = new TimelineEventIdBuilder()
+                .withCategory(TimelineEventId.COURTESY_CHANNEL_FAILED.getValue())
+                .withIun(IUN)
+                .withRecIndex(0)
+                .withCourtesyAddressType(CourtesyDigitalAddressInt.COURTESY_DIGITAL_ADDRESS_TYPE_INT.EMAIL)
+                .build();
+        assertThat(timeLineEventIdActual).isEqualTo(timeLineEventIdExpected);
+        String timeLineEventIdActualFromBuildEvent = TimelineEventId.COURTESY_CHANNEL_FAILED.buildEventId(EventId
+                .builder()
+                .iun(IUN)
+                .recIndex(0)
+                .courtesyAddressType(CourtesyDigitalAddressInt.COURTESY_DIGITAL_ADDRESS_TYPE_INT.EMAIL)
+                .build());
+        assertThat(timeLineEventIdActualFromBuildEvent).isEqualTo(timeLineEventIdExpected);
+    }
+
+    @Test
     void buildPUBLIC_REGISTRY_CALLTest() {
         String timeLineEventIdExpected = "PUBLIC_REGISTRY_CALL.IUN_KWKU-JHXN-HJXM-202304-U-A.RECINDEX_0.DELIVERYMODE_DIGITAL.CONTACTPHASE_CHOOSE_DELIVERY.ATTEMPT_0";
         String timeLineEventIdActual = new TimelineEventIdBuilder()
