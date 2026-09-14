@@ -167,6 +167,61 @@ class TemplateGeneratorServiceImplTest {
         verify(templateEngineClient).smsTemplate(Mockito.eq(expectedLanguage), Mockito.any());
     }
 
+    @ParameterizedTest
+    @MethodSource("provideAdditionalLanguageArguments")
+    void shouldGenerateCourtesyEmailBodyTemplate(
+            List<String> additionalLanguages,
+            LanguageEnum expectedLanguage
+    ) {
+        NotificationInt notificationInt = buildNotification();
+        NotificationRecipientInt notificationRecipientInt = buildNotificationRecipient(additionalLanguages);
+        Campaign campaign = buildCampaign();
+        String expectedMessageTemplate = "template-content";
+
+        when(templateEngineClient.courtesyEmailBodyTemplate(Mockito.eq(expectedLanguage), Mockito.any())).thenReturn(expectedMessageTemplate);
+
+        String result = templateGeneratorService.generateCourtesyEmailBodyTemplate(notificationInt, notificationRecipientInt, campaign);
+
+        assertEquals(expectedMessageTemplate, result);
+        verify(templateEngineClient).courtesyEmailBodyTemplate(Mockito.eq(expectedLanguage), Mockito.any());
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideAdditionalLanguageArguments")
+    void shouldGenerateCourtesyEmailSubjectTemplate(
+            List<String> additionalLanguages,
+            LanguageEnum expectedLanguage
+    ) {
+        NotificationInt notificationInt = buildNotification();
+        NotificationRecipientInt notificationRecipientInt = buildNotificationRecipient(additionalLanguages);
+        String expectedMessageTemplate = "template-content";
+
+        when(templateEngineClient.courtesyEmailSubjectTemplate(Mockito.eq(expectedLanguage), Mockito.any())).thenReturn(expectedMessageTemplate);
+
+        String result = templateGeneratorService.generateCourtesyEmailSubjectTemplate(notificationInt, notificationRecipientInt);
+
+        assertEquals(expectedMessageTemplate, result);
+        verify(templateEngineClient).courtesyEmailSubjectTemplate(Mockito.eq(expectedLanguage), Mockito.any());
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideAdditionalLanguageArguments")
+    void shouldGenerateCourtesySmsTemplate(
+            List<String> additionalLanguages,
+            LanguageEnum expectedLanguage
+    ) {
+        NotificationInt notificationInt = buildNotification();
+        NotificationRecipientInt notificationRecipientInt = buildNotificationRecipient(additionalLanguages);
+        String expectedMessageTemplate = "template-content";
+
+        when(templateEngineClient.courtesySmsTemplate(Mockito.eq(expectedLanguage), Mockito.any())).thenReturn(expectedMessageTemplate);
+
+        String result = templateGeneratorService.generateCourtesySmsTemplate(notificationInt, notificationRecipientInt);
+
+        assertEquals(expectedMessageTemplate, result);
+        verify(templateEngineClient).courtesySmsTemplate(Mockito.eq(expectedLanguage), Mockito.any());
+    }
+
     private NotificationInt buildNotification() {
         return NotificationInt.builder()
                 .iun("iun")

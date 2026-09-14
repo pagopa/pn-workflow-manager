@@ -73,6 +73,27 @@ public class TemplateGeneratorServiceImpl implements TemplateGeneratorService {
         return templateEngineClient.smsTemplate(language, informalSmsCommunication);
     }
 
+    @Override
+    public String generateCourtesyEmailBodyTemplate(NotificationInt notificationInt, NotificationRecipientInt notificationRecipientInt, Campaign campaign) {
+        LanguageEnum language = getLanguage(notificationRecipientInt.getAdditionalLanguages());
+        InformalCommunication informalCommunication = mapToInformalCommunication(notificationInt, notificationRecipientInt, campaign);
+        return templateEngineClient.courtesyEmailBodyTemplate(language, informalCommunication);
+    }
+
+    @Override
+    public String generateCourtesyEmailSubjectTemplate(NotificationInt notificationInt, NotificationRecipientInt notificationRecipientInt) {
+        LanguageEnum language = getLanguage(notificationRecipientInt.getAdditionalLanguages());
+        InformalEmailCommunicationSubject informalEmailCommunicationSubject = mapToInformalEmailCommunicationSubject(notificationInt, notificationRecipientInt);
+        return templateEngineClient.courtesyEmailSubjectTemplate(language, informalEmailCommunicationSubject);
+    }
+
+    @Override
+    public String generateCourtesySmsTemplate(NotificationInt notificationInt, NotificationRecipientInt notificationRecipientInt) {
+        LanguageEnum language = getLanguage(notificationRecipientInt.getAdditionalLanguages());
+        InformalSmsCommunication informalSmsCommunication = mapToInformalSmsCommunication(notificationInt, notificationRecipientInt);
+        return templateEngineClient.courtesySmsTemplate(language, informalSmsCommunication);
+    }
+
     private LanguageEnum getLanguage(List<String> additionalLanguages) {
         return CollectionUtils.isEmpty(additionalLanguages)
                 ? LanguageEnum.IT : LanguageEnum.fromValue(additionalLanguages.getFirst());
