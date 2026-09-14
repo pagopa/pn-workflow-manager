@@ -1,5 +1,6 @@
 package it.pagopa.pn.workflowmanager.action.searchaddress;
 
+import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
