@@ -11,6 +11,7 @@ import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
+import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.ExternalChannelEventType;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.DigitalChannelsInt;
 import it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.externalchannel.PnExternalChannelsClient;
 import it.pagopa.pn.workflowmanager.service.AuditLogService;
@@ -84,7 +85,16 @@ public class EmailChannelSender implements ChannelSender {
             );
             log.info("Sending email for notification {} to recipient {} with requestId {}",
                     notification.getIun(), recIndex, requestId);
-            pnExternalChannelsClient.sendNotificationEMAIL(requestId, htmlBody, subject, notification, recipient, emailAddress, attachmentUrls);
+            pnExternalChannelsClient.sendNotificationEMAIL(
+                    requestId,
+                    htmlBody,
+                    subject,
+                    notification,
+                    recipient,
+                    emailAddress,
+                    attachmentUrls,
+                    ExternalChannelEventType.INFORMAL
+            );
             channelSenderUtils.saveSendDigitalMessageElement(
                     notification, requestId, recIndex, emailAddress,
                     DigitalChannelsInt.EMAIL, DigitalAddressSourceInt.SPECIAL

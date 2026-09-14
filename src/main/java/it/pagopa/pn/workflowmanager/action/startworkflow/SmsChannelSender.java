@@ -9,6 +9,7 @@ import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
 import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
+import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.ExternalChannelEventType;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.DigitalChannelsInt;
 import it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.externalchannel.PnExternalChannelsClient;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
@@ -72,7 +73,7 @@ public class SmsChannelSender implements ChannelSender {
             InformalDigitalAddressInt smsAddress = ChannelSenderUtils.buildDigitalAddress(phoneNumber, InformalDigitalAddressInt.INFORMAL_DIGITAL_ADDRESS_TYPE.SMS);
 
             log.info("Sending SMS for notification {} to recipient {} with requestId {}", notification.getIun(), recIndex, requestId);
-            pnExternalChannelsClient.sendNotificationSMS(requestId, subject, phoneNumber);
+            pnExternalChannelsClient.sendNotificationSMS(requestId, subject, phoneNumber, ExternalChannelEventType.INFORMAL);
 
             channelSenderUtils.saveSendDigitalMessageElement(notification, requestId, recIndex, smsAddress, DigitalChannelsInt.SMS, DigitalAddressSourceInt.SPECIAL);
             workflowUtils.scheduleTimeoutForCurrentChannel(notification.getIun(), recIndex, campaign, getChannelType());
