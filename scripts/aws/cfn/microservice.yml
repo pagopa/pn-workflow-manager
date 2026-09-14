@@ -455,6 +455,7 @@ Resources:
               - 'ssm:GetParameters'
             Resource:
               - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/MVPCampaigns'
+              - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/config/workflow/search-digital-domicile'
 
   EventBusEnqueueRole:
     Type: AWS::IAM::Role
