@@ -35,12 +35,13 @@ class AddressSearchOrchestratorTest {
     @Test
     void handleSchedulesSpecialWhenNoSourcesAreConfigured() {
         AddressSearchContext context = buildContext();
+        List<DigitalAddressSourceInt> sources = List.of(DigitalAddressSourceInt.SPECIAL);
         when(configResolver.resolveSources(ChannelType.PEC, context.sentAt())).thenReturn(Optional.empty());
 
         orchestrator.handle(context);
 
-        verify(searchUtils).scheduleSendChannelMessageAction(context, DigitalAddressSourceInt.SPECIAL);
-        verifyNoInteractions(progressor);
+        verify(progressor).run(context, sources, 0);
+        verifyNoInteractions(searchUtils);
     }
 
     @Test

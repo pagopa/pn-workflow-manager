@@ -63,21 +63,21 @@ class ChannelAddressSourceConfigResolverTest {
     @Test
     void validateRulesThrowsWhenChannelHasUnsupportedSource() {
         SearchDigitalDomicileParameterConsumer parameterConsumer = mockConsumer(
-                config("2024-01-01T00:00:00Z", List.of(DigitalAddressSourceInt.GENERAL), List.of(), List.of())
+                config("2024-01-01T00:00:00Z", List.of(), List.of(), List.of(DigitalAddressSourceInt.GENERAL))
         );
         ChannelAddressSourceConfigResolver resolver = new ChannelAddressSourceConfigResolver(parameterConsumer, supportedStrategies());
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, resolver::validateRules);
 
         assertThat(exception.getMessage())
-                .isEqualTo("Channel PEC has unsupported source GENERAL for validFrom 2024-01-01T00:00:00Z");
+                .isEqualTo("Channel EMAIL has unsupported source GENERAL for validFrom 2024-01-01T00:00:00Z");
     }
 
     @Test
     void validateRulesDoesNotThrowWhenRulesAreValid() {
         SearchDigitalDomicileParameterConsumer parameterConsumer = mockConsumer(
                 config("2024-01-01T00:00:00Z", List.of(DigitalAddressSourceInt.PLATFORM), List.of(), List.of()),
-                config("2024-02-01T00:00:00Z", List.of(DigitalAddressSourceInt.SPECIAL), List.of(DigitalAddressSourceInt.GENERAL), List.of())
+                config("2024-02-01T00:00:00Z", List.of(DigitalAddressSourceInt.GENERAL), List.of(), List.of(DigitalAddressSourceInt.SPECIAL))
         );
         ChannelAddressSourceConfigResolver resolver = new ChannelAddressSourceConfigResolver(parameterConsumer, supportedStrategies());
 
