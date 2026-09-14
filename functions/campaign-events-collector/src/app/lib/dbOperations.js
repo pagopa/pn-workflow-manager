@@ -56,39 +56,3 @@ exports.updateCounters = async (dynamoDb, statsTable, campaignId,
         throw dbError;
     }
 };
-
-exports.acquireDeduplicationLock = async (dynamoDb, dedupTable, timelineElementId, expiresAt) => {
-    const { PutItemCommand } = require("@aws-sdk/client-dynamodb");
-    const command = new PutItemCommand({
-        TableName: dedupTable,
-        Item: {
-            timelineElementId: { S: timelineElementId },
-            ttl: { N: expiresAt.toString() }
-        },
-        ConditionExpression: "attribute_not_exists(timelineElementId)"
-    });
-
-    await dynamoDb.send(command);
-};
-
-exports.removeDeduplicationLocks = async (dynamoDb, dedupTable, timelineElementIds) => {
-    const { BatchWriteItemCommand } = require("@aws-sdk/client-dynamodb");
-    if (!timelineElementIds.length) {
-        return;
-    }
-
-    for (let index = 0; index < timelineElementIds.length; index += 25) {
-        const chunk = timelineElementIds.slice(index, index + 25);
-        const command = new BatchWriteItemCommand({
-            RequestItems: {
-                [dedupTable]: chunk.map((timelineElementId) => ({
-                    DeleteRequest: {
-                        Key: { timelineElementId: { S: timelineElementId } }
-                    }
-                }))
-            }
-        });
-
-        await dynamoDb.send(command);
-    }
-};

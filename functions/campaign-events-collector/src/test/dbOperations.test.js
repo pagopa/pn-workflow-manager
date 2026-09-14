@@ -79,37 +79,4 @@ describe("dbOperations", () => {
         expect(thrownError.message).to.equal("dynamo failure");
         expect(sendErrorStub.calledOnce).to.be.true;
     });
-
-    it("acquires deduplication lock with conditional put", async () => {
-        await dbOperations.acquireDeduplicationLock({ send: sendStub }, "dedup-table", "timeline-1", 1893456000);
-
-        expect(putItemCommandStub.calledOnce).to.be.true;
-        const params = putItemCommandStub.firstCall.args[0];
-        expect(params).to.deep.equal({
-            TableName: "dedup-table",
-            Item: {
-                timelineElementId: { S: "timeline-1" },
-                ttl: { N: "1893456000" }
-            },
-            ConditionExpression: "attribute_not_exists(timelineElementId)"
-        });
-    });
-
-    it("skips deduplication lock removal when no ids are provided", async () => {
-        await dbOperations.removeDeduplicationLocks({ send: sendStub }, "dedup-table", []);
-
-        expect(batchWriteItemCommandStub.called).to.be.false;
-        expect(sendStub.called).to.be.false;
-    });
-
-    it("removes deduplication locks in DynamoDB batch chunks", async () => {
-        const timelineElementIds = Array.from({ length: 26 }, (_, index) => `timeline-${index + 1}`);
-
-        await dbOperations.removeDeduplicationLocks({ send: sendStub }, "dedup-table", timelineElementIds);
-
-        expect(batchWriteItemCommandStub.callCount).to.equal(2);
-        expect(sendStub.callCount).to.equal(2);
-        expect(batchWriteItemCommandStub.firstCall.args[0].RequestItems["dedup-table"]).to.have.lengthOf(25);
-        expect(batchWriteItemCommandStub.secondCall.args[0].RequestItems["dedup-table"]).to.have.lengthOf(1);
-    });
 });
