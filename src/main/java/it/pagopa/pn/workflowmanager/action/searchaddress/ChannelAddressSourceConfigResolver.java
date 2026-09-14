@@ -1,50 +1,71 @@
 package it.pagopa.pn.workflowmanager.action.searchaddress;
 
-import it.pagopa.pn.workflowmanager.config.PnWorkflowManagerConfigs;
-import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
 import jakarta.annotation.PostConstruct;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
 
 import java.time.Instant;
-import java.util.*;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 @Component
 @AllArgsConstructor
 public class ChannelAddressSourceConfigResolver {
 
-    private final PnWorkflowManagerConfigs cfg;
+    private final SearchDigitalDomicileParameterConsumer parameterConsumer;
 
     @PostConstruct
-    public void validateRules(){
-        Arrays.stream(ChannelType.values()).forEach(
-                channel -> {
-                    List<ChannelSourceRule> rules = Optional.of(cfg.getAddressSearchMap()).map(map -> map.get(channel)).orElse(Collections.emptyList());
+    public void validateRules() {
+        List<SearchDigitalDomicileConfig> configs = parameterConsumer.getSearchDigitalDomicileConfigs();
+        Set<Instant> validFromValues = new HashSet<>();
 
-                    Set<Instant> validFromValues = new HashSet<>();
-                    rules.forEach(rule -> {
-                        if (CollectionUtils.isEmpty(rule.sources())) {
-                            throw new IllegalArgumentException("Channel " + channel + " has a rule with empty or null sources for validFrom " + rule.validFrom());
-                        }
+        configs.forEach(config -> {
+            if (config.getValidFrom() == null) {
+                throw new IllegalArgumentException("Search digital domicile configuration has null validFrom");
+            }
+            if (!validFromValues.add(config.getValidFrom())) {
+                throw new IllegalArgumentException("Multiple search digital domicile configurations have the same validFrom " + config.getValidFrom());
+            }
 
-                        if (!validFromValues.add(rule.validFrom())) {
-                            throw new IllegalArgumentException("Channel " + channel + " has multiple rules with the same validFrom " + rule.validFrom());
-                        }
-                    });
-                }
-
-        );
-
+            validateChannelSources(config.getValidFrom(), ChannelType.PEC, config.getPec());
+            validateChannelSources(config.getValidFrom(), ChannelType.SMS, config.getSms());
+            validateChannelSources(config.getValidFrom(), ChannelType.EMAIL, config.getEmail());
+        });
     }
 
     public Optional<List<DigitalAddressSourceInt>> resolveSources(ChannelType channel, Instant sentAt) {
-        return Optional.ofNullable(cfg.getAddressSearchMap().get(channel))
-                .orElseGet(List::of)
+        return parameterConsumer.getSearchDigitalDomicileConfigs()
                 .stream()
-                .filter(rule -> rule.validFrom().isBefore(sentAt))
-                .max(Comparator.comparing(ChannelSourceRule::validFrom))
-                .map(ChannelSourceRule::sources);
+                .filter(config -> config.getValidFrom().isBefore(sentAt))
+                .max(Comparator.comparing(SearchDigitalDomicileConfig::getValidFrom))
+                .map(config -> getSourcesByChannel(config, channel));
+    }
+
+    private void validateChannelSources(Instant validFrom, ChannelType channel, List<DigitalAddressSourceInt> sources) {
+        if (sources == null) {
+            throw new IllegalArgumentException("Search digital domicile configuration has null " + channel.name().toLowerCase() + " sources for validFrom " + validFrom);
+        }
+        Set<DigitalAddressSourceInt> uniqueSources = new HashSet<>();
+        sources.forEach(source -> {
+            if (source == null) {
+                throw new IllegalArgumentException("Search digital domicile configuration has null " + channel.name().toLowerCase() + " source for validFrom " + validFrom);
+            }
+            if (!uniqueSources.add(source)) {
+                throw new IllegalArgumentException("Channel " + channel + " has duplicated source " + source + " for validFrom " + validFrom);
+            }
+        });
+    }
+
+    private List<DigitalAddressSourceInt> getSourcesByChannel(SearchDigitalDomicileConfig config, ChannelType channel) {
+        return switch (channel) {
+            case PEC -> config.getPec();
+            case SMS -> config.getSms();
+            case EMAIL -> config.getEmail();
+            default -> List.of();
+        };
     }
 }
