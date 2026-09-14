@@ -352,7 +352,8 @@ public class TimelineUtils {
             String eventId,
             Instant eventTimestamp,
             String sourceChannel,
-            String sourceChannelDetails
+            String sourceChannelDetails,
+            boolean isFirstViewForRecipient
     ) {
         log.debug("buildInformalNotificationViewedTimelineElement - IUN={} and id={}", notification.getIun(), recIndex);
 
@@ -361,6 +362,7 @@ public class TimelineUtils {
                 .eventTimestamp(eventTimestamp)
                 .sourceChannel(sourceChannel)
                 .sourceChannelDetails(sourceChannelDetails)
+                .firstView(isFirstViewForRecipient)
                 .build();
 
         return buildTimeline(notification, TimelineElementCategoryInt.INFORMAL_NOTIFICATION_VIEWED, eventId, details);
