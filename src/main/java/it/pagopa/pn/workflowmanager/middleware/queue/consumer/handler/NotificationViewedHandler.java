@@ -4,10 +4,12 @@ import it.pagopa.pn.commons.log.PnAuditLogEventType;
 import it.pagopa.pn.workflowmanager.action.utils.TimelineUtils;
 import it.pagopa.pn.workflowmanager.action.utils.WorkflowUtils;
 import it.pagopa.pn.workflowmanager.dto.event.NotificationViewedInt;
-import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
-import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.DesiredFeedbackType;
+import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
+import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
+import it.pagopa.pn.workflowmanager.dto.timeline.details.InformalNotificationViewedDetailsInt;
+import it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt;
 import it.pagopa.pn.workflowmanager.service.AuditLogService;
 import it.pagopa.pn.workflowmanager.service.CampaignService;
 import it.pagopa.pn.workflowmanager.service.NotificationService;
@@ -16,8 +18,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 import static it.pagopa.pn.workflowmanager.action.utils.TimelineUtils.getInformalNotificationViewedTimelineElementId;
 
@@ -45,15 +47,24 @@ public class NotificationViewedHandler {
                 notificationViewed.getSourceChannel()
         );
 
-        Optional<TimelineElementInternal> viewedTimelineElement = timelineService.getTimelineElement(
-                iun,
-                viewedTimelineElementId
-        );
+        List<InformalNotificationViewedDetailsInt> existingRecipientViews =
+                timelineService.getTimelineStrongly(iun, false).stream()
+                        .filter(el -> el.getCategory() == TimelineElementCategoryInt.INFORMAL_NOTIFICATION_VIEWED)
+                        .map(TimelineElementInternal::getDetails)
+                        .map(InformalNotificationViewedDetailsInt.class::cast)
+                        .filter(d -> d.getRecIndex() == recIndex)
+                        .toList();
 
-        if (viewedTimelineElement.isPresent()) {
-            log.info("INFORMAL_NOTIFICATION_VIEWED already present, skipping flow - iun={} recIndex={}", iun, recIndex);
+        boolean alreadyViewedOnSameChannel = existingRecipientViews.stream()
+                .anyMatch(d -> Objects.equals(d.getSourceChannel(), notificationViewed.getSourceChannel()));
+
+        if (alreadyViewedOnSameChannel) {
+            log.info("INFORMAL_NOTIFICATION_VIEWED already present for channel={}, skipping flow - iun={} recIndex={}",
+                    notificationViewed.getSourceChannel(), iun, recIndex);
             return;
         }
+
+        boolean isFirstViewForRecipient = existingRecipientViews.isEmpty();
 
         buildViewedAuditLogEvent(iun, recIndex);
 
@@ -63,7 +74,7 @@ public class NotificationViewedHandler {
                 notification.getSender().getPaId()
         );
 
-        addInformalNotificationViewedTimelineElement(notificationViewed, notification, recIndex, viewedTimelineElementId);
+        addInformalNotificationViewedTimelineElement(notificationViewed, notification, recIndex, viewedTimelineElementId,isFirstViewForRecipient);
 
         timelineUtils.handleTransitionToReachedStatusIfNecessary(notification, recIndex, viewedTimelineElementId);
 
@@ -75,14 +86,16 @@ public class NotificationViewedHandler {
     private void addInformalNotificationViewedTimelineElement(NotificationViewedInt notificationViewed,
                                                               NotificationInt notification,
                                                               Integer recIndex,
-                                                              String viewedTimelineElementId) {
+                                                              String viewedTimelineElementId,
+                                                              boolean isFirstViewForRecipient) {
         TimelineElementInternal timelineElement = timelineUtils.buildInformalNotificationViewedTimelineElement(
                 notification,
                 recIndex,
                 viewedTimelineElementId,
                 notificationViewed.getViewedDate(),
                 notificationViewed.getSourceChannel(),
-                notificationViewed.getSourceChannelDetails()
+                notificationViewed.getSourceChannelDetails(),
+                isFirstViewForRecipient
         );
         timelineService.addTimelineElement(timelineElement, notification);
     }

@@ -39,11 +39,12 @@ class InformalWorkflowDetailsIntTest {
                 .sourceChannel("APPIO")
                 .sourceChannelDetails("push")
                 .eventTimestamp(eventTimestamp)
+                .firstView(false)
                 .build();
 
         Assertions.assertEquals(
-                String.format("recIndex=%d sourceChannel=%s sourceChannelDetails=%s eventTimestamp=%s",
-                        3, "APPIO", "push", eventTimestamp),
+                String.format("recIndex=%d sourceChannel=%s sourceChannelDetails=%s eventTimestamp=%s firstView=%b",
+                        3, "APPIO", "push", eventTimestamp, false),
                 details.toLog()
         );
     }
