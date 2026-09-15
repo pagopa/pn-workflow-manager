@@ -2,22 +2,13 @@ package it.pagopa.pn.workflowmanager.handler.actionspool;
 
 import it.pagopa.pn.workflowmanager.dto.action.common.Action;
 import it.pagopa.pn.workflowmanager.dto.action.common.ActionType;
-import it.pagopa.pn.workflowmanager.dto.action.details.NotHandledDetails;
-import it.pagopa.pn.workflowmanager.dto.action.details.StartWorkflowDetails;
-import it.pagopa.pn.workflowmanager.dto.action.details.TimeoutWorkflowDetails;
-import it.pagopa.pn.workflowmanager.dto.action.details.WorkflowDoneDetails;
+import it.pagopa.pn.workflowmanager.dto.action.details.*;
+import it.pagopa.pn.workflowmanager.dto.address.CourtesyDigitalAddressInt;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ActionTypeTest {
-
-    @Test
-    void testBuildActionId() {
-        Action action = Action.builder().iun("IUN-ABC").build();
-        String actionId = ActionType.POST_ACCEPTED_PROCESSING_COMPLETED.buildActionId(action);
-        assertEquals("IUN-ABC_post_accepted_processing", actionId);
-    }
 
     @Test
     void testPostAcceptedProcessingCompletedBuildActionId() {
@@ -80,12 +71,49 @@ class ActionTypeTest {
     }
 
     @Test
+    void testDocumentCreationResponseBuildActionId() {
+        DocumentCreationResponseActionDetails details = DocumentCreationResponseActionDetails.builder()
+                .build();
+
+        Action action = Action.builder()
+                .iun("IUN-321")
+                .recipientIndex(0)
+                .details(details)
+                .timelineId("timeline-123")
+                .build();
+
+        String actionId = ActionType.DOCUMENT_CREATION_RESPONSE.buildActionId(action);
+        assertEquals("safe_storage_response_timelineId=timeline-123", actionId);
+    }
+
+    @Test
+    void testSendCourtesyMessageActionBuildActionId() {
+        SendCourtesyMessageActionDetails details = SendCourtesyMessageActionDetails.builder()
+                .channel(CourtesyDigitalAddressInt.COURTESY_DIGITAL_ADDRESS_TYPE_INT.EMAIL)
+                .retryIndex(0)
+                .deliveryMode(null)
+                .plannedChannels(null)
+                .build();
+
+        Action action = Action.builder()
+                .iun("IUN-555")
+                .recipientIndex(1)
+                .details(details)
+                .build();
+
+        String actionId = ActionType.SEND_COURTESY_MESSAGE_ACTION.buildActionId(action);
+        assertEquals("IUN-555_send_courtesy_message_recIndex_1_channel_EMAIL_retry_0", actionId);
+    }
+
+    @Test
     void testGetDetailsJavaClass() {
         assertEquals(NotHandledDetails.class, ActionType.POST_ACCEPTED_PROCESSING_COMPLETED.getDetailsJavaClass());
         assertEquals(NotHandledDetails.class, ActionType.END_WORKFLOW.getDetailsJavaClass());
         assertEquals(WorkflowDoneDetails.class, ActionType.WORKFLOW_DONE.getDetailsJavaClass());
         assertEquals(StartWorkflowDetails.class, ActionType.START_WORKFLOW.getDetailsJavaClass());
         assertEquals(TimeoutWorkflowDetails.class, ActionType.TIMEOUT_WORKFLOW.getDetailsJavaClass());
+        assertEquals(DocumentCreationResponseActionDetails.class, ActionType.DOCUMENT_CREATION_RESPONSE.getDetailsJavaClass());
+        assertEquals(SendCourtesyMessageActionDetails.class, ActionType.SEND_COURTESY_MESSAGE_ACTION.getDetailsJavaClass());
     }
 }
 
