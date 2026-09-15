@@ -1,7 +1,7 @@
 package it.pagopa.pn.workflowmanager.dto.timeline.details;
 
 import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
-import it.pagopa.pn.workflowmanager.dto.address.LegalDigitalAddressInt;
+import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
@@ -15,12 +15,12 @@ import java.time.Instant;
 @SuperBuilder(toBuilder = true)
 @EqualsAndHashCode(callSuper = true)
 @ToString
-public class GetAddressInfoDetailsInt extends CategoryTypeTimelineElementDetailsInt implements DigitalAddressSourceRelatedTimelineElement, DigitalAddressRelatedTimelineElement {
+public class GetAddressInfoDetailsInt extends CategoryTypeTimelineElementDetailsInt implements DigitalAddressSourceRelatedTimelineElement, InformalDigitalAddressRelatedTimelineElement {
     private int recIndex;
     private DigitalAddressSourceInt digitalAddressSource;
     private Boolean isAvailable;
     private Instant attemptDate;
-    private LegalDigitalAddressInt digitalAddress;
+    private InformalDigitalAddressInt digitalAddress;
     private Boolean isTosAccepted;
     private DigitalChannelsInt channel;
 

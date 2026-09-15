@@ -669,7 +669,7 @@ public class TimelineUtils {
     }
 
     public TimelineElementInternal buildAvailabilitySourceTimelineElement(Integer recIndex, NotificationInt notification, DigitalAddressSourceInt source, boolean isAvailable,
-                                                                          Integer sentAttemptMade, LegalDigitalAddressInt digitalAddress) {
+                                                                          Integer sentAttemptMade, InformalDigitalAddressInt digitalAddress) {
         log.debug("buildAvailabilitySourceTimelineElement - IUN={} and id={}", notification.getIun(), recIndex);
 
         String elementId = TimelineEventId.GET_ADDRESS.buildEventId(
@@ -724,7 +724,7 @@ public class TimelineUtils {
         return buildTimeline(notification, TimelineElementCategoryInt.PUBLIC_REGISTRY_RESPONSE, eventId, details);
     }
 
-    public void addAvailabilitySourceToTimeline(Integer recIndex, NotificationInt notification, DigitalAddressSourceInt addressSource, boolean isAvailable, LegalDigitalAddressInt digitalAddress) {
+    public void addAvailabilitySourceToTimeline(Integer recIndex, NotificationInt notification, DigitalAddressSourceInt addressSource, boolean isAvailable, InformalDigitalAddressInt digitalAddress) {
         TimelineElementInternal element = buildAvailabilitySourceTimelineElement(recIndex, notification, addressSource, isAvailable, ZERO_SENT_ATTEMPT_NUMBER, digitalAddress);
         timelineService.addTimelineElement(element, notification);
     }

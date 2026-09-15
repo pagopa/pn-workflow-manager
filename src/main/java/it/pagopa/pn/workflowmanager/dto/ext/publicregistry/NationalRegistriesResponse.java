@@ -1,6 +1,6 @@
 package it.pagopa.pn.workflowmanager.dto.ext.publicregistry;
 
-import it.pagopa.pn.workflowmanager.dto.address.LegalDigitalAddressInt;
+import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.address.PhysicalAddressInt;
 import lombok.*;
 
@@ -15,6 +15,6 @@ public class NationalRegistriesResponse {
     private String registry;
     private String error;
     private Integer errorStatus;
-    private LegalDigitalAddressInt digitalAddress;
+    private InformalDigitalAddressInt digitalAddress;
     private PhysicalAddressInt physicalAddress;
 }
