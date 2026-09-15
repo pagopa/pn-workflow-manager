@@ -45,6 +45,9 @@ public class PnWorkflowManagerConfigs {
     private Map<ChannelType, List<ChannelSourceRule>> addressSearchMap = new EnumMap<>(ChannelType.class);
     List<ConsentDto> consentsForPlatformSearch;
 
+    private Boolean smsCourtesyEnabled;
+
+
     @Data
     public static class Topics {
         private String actionQueue;
