@@ -450,6 +450,82 @@
 							<apiPackage>it.pagopa.pn.workflowmanager.generated.openapi.msclient.safestorage.api</apiPackage>
 						</configuration>
 					 </execution>
+
+					<!-- OPEN API CLIENT PN-USER-ATTRIBUTES ADDRESS BOOK-->
+					<execution>
+						<id>generate-client-pn-user-attributes-address-book</id>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<phase>generate-resources</phase>
+						<configuration>
+							<inputSpec>
+								https://raw.githubusercontent.com/pagopa/pn-user-attributes/826435189c6c09c754a8db0057c0cb49bf04d629/docs/openapi/pn-address-book-api-internal.yaml
+							</inputSpec>
+							<templateDirectory>${project.build.directory}/dependency-resources/scripts/openapi/templates/7.4.0/client</templateDirectory>
+							<generatorName>java</generatorName>
+							<library>resttemplate</library>
+							<generateApiDocumentation>false</generateApiDocumentation>
+							<generateApiTests>false</generateApiTests>
+							<generateModelTests>false</generateModelTests>
+							<additionalProperties>removeEnumValuePrefix=false</additionalProperties>
+							<typeMappings>
+								<typeMapping>OffsetDateTime=java.time.Instant</typeMapping>
+							</typeMappings>
+							<configOptions>
+								<useOneOfInterfaces>true</useOneOfInterfaces>
+								<useJakartaEe>true</useJakartaEe>
+								<swaggerAnnotations>false</swaggerAnnotations>
+								<dateLibrary>java8</dateLibrary>
+								<delegatePattern>true</delegatePattern>
+								<annotationLibrary>none</annotationLibrary>
+								<documentationProvider>source</documentationProvider>
+								<openApiNullable>false</openApiNullable>
+								<skipDefaultInterface>false</skipDefaultInterface>
+								<useTags>true</useTags>
+							</configOptions>
+							<modelPackage>it.pagopa.pn.workflowmanager.generated.openapi.msclient.userattributes.addressbook.model</modelPackage>
+							<apiPackage>it.pagopa.pn.workflowmanager.generated.openapi.msclient.userattributes.addressbook.api</apiPackage>
+						</configuration>
+					</execution>
+
+					<!-- OPEN API CLIENT PN-USER-ATTRIBUTES USER CONSENTS -->
+					<execution>
+						<id>generate-client-pn-user-attributes-user-consents</id>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<phase>generate-resources</phase>
+						<configuration>
+							<inputSpec>
+								https://raw.githubusercontent.com/pagopa/pn-user-attributes/826435189c6c09c754a8db0057c0cb49bf04d629/docs/openapi/pn-user-consents-api-internal.yaml
+							</inputSpec>
+							<templateDirectory>${project.build.directory}/dependency-resources/scripts/openapi/templates/7.4.0/client</templateDirectory>
+							<generatorName>java</generatorName>
+							<library>resttemplate</library>
+							<generateApiDocumentation>false</generateApiDocumentation>
+							<generateApiTests>false</generateApiTests>
+							<generateModelTests>false</generateModelTests>
+							<additionalProperties>removeEnumValuePrefix=false</additionalProperties>
+							<typeMappings>
+								<typeMapping>OffsetDateTime=java.time.Instant</typeMapping>
+							</typeMappings>
+							<configOptions>
+								<useOneOfInterfaces>true</useOneOfInterfaces>
+								<useJakartaEe>true</useJakartaEe>
+								<swaggerAnnotations>false</swaggerAnnotations>
+								<dateLibrary>java8</dateLibrary>
+								<delegatePattern>true</delegatePattern>
+								<annotationLibrary>none</annotationLibrary>
+								<documentationProvider>source</documentationProvider>
+								<openApiNullable>false</openApiNullable>
+								<skipDefaultInterface>false</skipDefaultInterface>
+								<useTags>true</useTags>
+							</configOptions>
+							<modelPackage>it.pagopa.pn.workflowmanager.generated.openapi.msclient.userattributes.consents.model</modelPackage>
+							<apiPackage>it.pagopa.pn.workflowmanager.generated.openapi.msclient.userattributes.consents.api</apiPackage>
+						</configuration>
+					</execution>
          </executions>
 			</plugin>
 

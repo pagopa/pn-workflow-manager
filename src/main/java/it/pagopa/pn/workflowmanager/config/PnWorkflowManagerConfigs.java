@@ -32,7 +32,8 @@ public class PnWorkflowManagerConfigs {
     private String safeStorageBaseUrl;
     private String paperMessagesClientBaseUrl;
     private String externalChannelsBaseUrl;
-
+    private String userAttributesBaseUrl;
+ 
     private Integer ioPollingMaxMins;
 
     @Data
