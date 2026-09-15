@@ -18,6 +18,7 @@ class PnWorkflowManagerConfigsTest {
                 .withProperty("pn.workflow-manager.timeline-client-base-url", "http://localhost:8093")
                 .withProperty("pn.workflow-manager.delivery-base-url", "http://localhost:8090")
                 .withProperty("pn.workflow-manager.action-manager-base-url", "http://localhost:8092")
+                .withProperty("pn.workflow-manager.national-registries-base-url", "http://localhost:8097")
                 .withProperty("pn.workflow-manager.user-attributes-base-url", "http://localhost:8085")
                 .withProperty("pn.workflow-manager.topics.digital-queue", "pn-workflow-manager-digital-event-queue")
                 .withProperty("pn.workflow-manager.topics.analog-queue", "pn-workflow-manager-analog-event-queue")
@@ -31,6 +32,8 @@ class PnWorkflowManagerConfigsTest {
                 .orElseThrow(() -> new IllegalStateException("Failed to bind PnWorkflowManagerConfigs"));
 
         assertNotNull(pnNotificationCostServiceConfigs);
+
+        Assertions.assertEquals("http://localhost:8097", pnNotificationCostServiceConfigs.getNationalRegistriesBaseUrl());
         Assertions.assertEquals("http://localhost:8085", pnNotificationCostServiceConfigs.getUserAttributesBaseUrl());
 
         PnWorkflowManagerConfigs.Topics topics =
