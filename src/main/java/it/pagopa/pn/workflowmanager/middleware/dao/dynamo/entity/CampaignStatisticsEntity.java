@@ -1,0 +1,107 @@
+package it.pagopa.pn.workflowmanager.middleware.dao.dynamo.entity;
+
+import lombok.*;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbAttribute;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
+
+import java.time.Instant;
+
+/**
+ * Entity class for CampaignStatistics table in DynamoDB
+ */
+@DynamoDbBean
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Data
+public class CampaignStatisticsEntity {
+
+    public static final String COL_PK = "campaignId";
+    private static final String COL_TOTAL_SENT = "totalSent";
+    private static final String COL_TOTAL_ACCEPTED = "totalAccepted";
+    private static final String COL_TOTAL_REFUSED = "totalRefused";
+    private static final String COL_TOTAL_UNDELIVERABLE = "totalUndeliverable";
+    private static final String COL_TOTAL_DELIVERED = "totalDelivered";
+    private static final String COL_WORKFLOW_DONE = "workflowDone";
+
+    private static final String COL_DIGITAL_SENT_IO = "digitalSentIO";
+    private static final String COL_DIGITAL_SENT_EMAIL = "digitalSentEMAIL";
+    private static final String COL_DIGITAL_SENT_PEC = "digitalSentPEC";
+    private static final String COL_DIGITAL_SENT_SMS = "digitalSentSMS";
+    private static final String COL_ANALOG_SENT_RS = "analogSentRS";
+
+    private static final String COL_RECEIVED_IO = "receivedIO";
+    private static final String COL_RECEIVED_EMAIL = "receivedEMAIL";
+    private static final String COL_RECEIVED_SMS = "receivedSMS";
+    private static final String COL_RECEIVED_PEC = "receivedPEC";
+    private static final String COL_RECEIVED_RS = "receivedRS";
+
+    private static final String COL_VIEWED_IO = "viewedIO";
+    private static final String COL_VIEWED_SEND = "viewedSEND";
+    private static final String COL_PAID = "paid";
+    private static final String COL_LAST_COMPLETED_TIMESTAMP = "lastCompletedTimestamp";
+
+    @Getter(onMethod=@__({@DynamoDbPartitionKey, @DynamoDbAttribute(COL_PK)}))
+    private String campaignId;
+
+    @Getter(onMethod=@__({@DynamoDbAttribute(COL_TOTAL_SENT)}))
+    private Integer totalSent;
+
+    @Getter(onMethod=@__({@DynamoDbAttribute(COL_TOTAL_ACCEPTED)}))
+    private Integer totalAccepted;
+
+    @Getter(onMethod=@__({@DynamoDbAttribute(COL_TOTAL_REFUSED)}))
+    private Integer totalRefused;
+
+    @Getter(onMethod=@__({@DynamoDbAttribute(COL_TOTAL_UNDELIVERABLE)}))
+    private Integer totalUndeliverable;
+
+    @Getter(onMethod=@__({@DynamoDbAttribute(COL_TOTAL_DELIVERED)}))
+    private Integer totalDelivered;
+
+    @Getter(onMethod=@__({@DynamoDbAttribute(COL_WORKFLOW_DONE)}))
+    private Integer workflowDone;
+
+    @Getter(onMethod=@__({@DynamoDbAttribute(COL_DIGITAL_SENT_IO)}))
+    private Integer digitalSentIO;
+
+    @Getter(onMethod=@__({@DynamoDbAttribute(COL_DIGITAL_SENT_EMAIL)}))
+    private Integer digitalSentEMAIL;
+
+    @Getter(onMethod=@__({@DynamoDbAttribute(COL_DIGITAL_SENT_PEC)}))
+    private Integer digitalSentPEC;
+
+    @Getter(onMethod=@__({@DynamoDbAttribute(COL_DIGITAL_SENT_SMS)}))
+    private Integer digitalSentSMS;
+
+    @Getter(onMethod=@__({@DynamoDbAttribute(COL_ANALOG_SENT_RS)}))
+    private Integer analogSentRS;
+
+    @Getter(onMethod=@__({@DynamoDbAttribute(COL_RECEIVED_IO)}))
+    private Integer receivedIO;
+
+    @Getter(onMethod=@__({@DynamoDbAttribute(COL_RECEIVED_EMAIL)}))
+    private Integer receivedEMAIL;
+
+    @Getter(onMethod=@__({@DynamoDbAttribute(COL_RECEIVED_PEC)}))
+    private Integer receivedPEC;
+
+    @Getter(onMethod=@__({@DynamoDbAttribute(COL_RECEIVED_RS)}))
+    private Integer receivedRS;
+
+    @Getter(onMethod=@__({@DynamoDbAttribute(COL_RECEIVED_SMS)}))
+    private Integer receivedSMS;
+
+    @Getter(onMethod=@__({@DynamoDbAttribute(COL_VIEWED_IO)}))
+    private Integer viewedIO;
+
+    @Getter(onMethod=@__({@DynamoDbAttribute(COL_VIEWED_SEND)}))
+    private Integer viewedSEND;
+
+    @Getter(onMethod=@__({@DynamoDbAttribute(COL_PAID)}))
+    private Integer paid;
+
+    @Getter(onMethod=@__({@DynamoDbAttribute(COL_LAST_COMPLETED_TIMESTAMP)}))
+    private Instant lastCompletedTimestamp;
+}
