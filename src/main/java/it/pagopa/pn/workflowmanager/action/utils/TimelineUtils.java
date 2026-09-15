@@ -3,6 +3,7 @@ package it.pagopa.pn.workflowmanager.action.utils;
 import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
 import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
+import it.pagopa.pn.workflowmanager.dto.address.LegalDigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.address.PhysicalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.event.NotificationPaidInt;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
@@ -12,6 +13,7 @@ import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRe
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.CategorizedAttachmentsResultInt;
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.ResponseStatusInt;
 import it.pagopa.pn.workflowmanager.dto.ext.paperchannel.AnalogDtoInt;
+import it.pagopa.pn.workflowmanager.dto.ext.publicregistry.NationalRegistriesResponse;
 import it.pagopa.pn.workflowmanager.dto.timeline.*;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.*;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.model.SendResponse;
@@ -39,6 +41,8 @@ import static it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCo
 @RequiredArgsConstructor
 public class TimelineUtils {
     private final TimelineService timelineService;
+
+    public static final int ZERO_SENT_ATTEMPT_NUMBER = 0;
 
     public TimelineElementInternal buildTimeline(NotificationInt notification,
                                                  TimelineElementCategoryInt category,
@@ -665,7 +669,7 @@ public class TimelineUtils {
     }
 
     public TimelineElementInternal buildAvailabilitySourceTimelineElement(Integer recIndex, NotificationInt notification, DigitalAddressSourceInt source, boolean isAvailable,
-                                                                          int sentAttemptMade) {
+                                                                          Integer sentAttemptMade, LegalDigitalAddressInt digitalAddress) {
         log.debug("buildAvailabilitySourceTimelineElement - IUN={} and id={}", notification.getIun(), recIndex);
 
         String elementId = TimelineEventId.GET_ADDRESS.buildEventId(
@@ -682,6 +686,7 @@ public class TimelineUtils {
                 .digitalAddressSource(source)
                 .isAvailable(isAvailable)
                 .attemptDate(Instant.now())
+                .digitalAddress(digitalAddress)
                 .build();
 
         return buildTimeline(notification, TimelineElementCategoryInt.GET_ADDRESS, elementId, details);
@@ -702,5 +707,25 @@ public class TimelineUtils {
                 .build();
 
         return buildTimeline(notification, TimelineElementCategoryInt.PUBLIC_REGISTRY_CALL, eventId, details);
+    }
+
+    public TimelineElementInternal buildPublicRegistryResponseCallTimelineElement(NotificationInt notification, Integer recIndex, NationalRegistriesResponse response) {
+        log.debug("buildPublicRegistryResponseCallTimelineElement - iun={} and id={}", notification.getIun(), recIndex);
+
+        String eventId = TimelineEventId.PUBLIC_REGISTRY_RESPONSE.buildEventId(response.getCorrelationId());
+
+        PublicRegistryResponseDetailsInt details = PublicRegistryResponseDetailsInt.builder()
+                .recIndex(recIndex)
+                .digitalAddress(response.getDigitalAddress())
+                .physicalAddress(response.getPhysicalAddress())
+                .requestTimelineId(response.getCorrelationId())
+                .build();
+
+        return buildTimeline(notification, TimelineElementCategoryInt.PUBLIC_REGISTRY_RESPONSE, eventId, details);
+    }
+
+    public void addAvailabilitySourceToTimeline(Integer recIndex, NotificationInt notification, DigitalAddressSourceInt addressSource, boolean isAvailable, LegalDigitalAddressInt digitalAddress) {
+        TimelineElementInternal element = buildAvailabilitySourceTimelineElement(recIndex, notification, addressSource, isAvailable, ZERO_SENT_ATTEMPT_NUMBER, digitalAddress);
+        timelineService.addTimelineElement(element, notification);
     }
 }
