@@ -206,6 +206,7 @@ components:
           required:
             - IO
             - SEND
+            - firstViewedCount
           properties:
             IO:
               type: integer
@@ -215,3 +216,7 @@ components:
               type: integer
               description: Comunicazioni lette da SEND
               example: 400
+            firstViewedCount:
+              type: integer
+              description: Indica la somma totale delle prime visualizzazioni
+              example: 100
