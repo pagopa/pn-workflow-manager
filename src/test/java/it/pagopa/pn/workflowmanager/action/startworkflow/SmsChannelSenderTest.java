@@ -114,8 +114,7 @@ class SmsChannelSenderTest {
                 eq(recIndex),
                 eq(notification),
                 eq(expectedSkipRequestId),
-                eq(DigitalChannelsInt.SMS),
-                eq(DigitalAddressSourceInt.SPECIAL)
+                eq(DigitalChannelsInt.SMS)
         );
         verify(workflowUtils).advanceWorkflow(
                 eq(IUN),
