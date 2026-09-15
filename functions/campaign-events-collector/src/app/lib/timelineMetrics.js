@@ -61,11 +61,14 @@ function applyCategoryMetric(counters, category, parsedData) {
             break;
 
         case "INFORMAL_NOTIFICATION_VIEWED": {
-            const platform = parsedData.details?.channel;
-            if (VIEW_CHANNELS.includes(platform)) {
-                counters[`viewed${platform}`] = (counters[`viewed${platform}`] || 0) + 1;
+            const channel = parsedData.details?.sourceChannel;
+            if (VIEW_CHANNELS.includes(channel)) {
+                counters[`viewed${channel}`] = (counters[`viewed${channel}`] || 0) + 1;
+                if (parsedData.details?.firstView === true) {
+                    counters.firstView = (counters.firstView || 0) + 1;
+                }
             } else {
-                console.warn(`Unexpected platform for ${category}: ${platform}`);
+                console.warn(`Unexpected channel for ${category}: ${channel}`);
                 return false;
             }
             break;
