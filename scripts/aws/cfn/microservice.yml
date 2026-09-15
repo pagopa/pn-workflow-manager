@@ -327,6 +327,26 @@ Parameters:
     Type: String
     Description: 'External channel base url'
 
+  NationalRegistries2WorkflowManagerQueueName:
+    Type: String
+    Description: workflow-manager national-registries queue name
+
+  NationalRegistries2WorkflowManagerQueueURL:
+    Type: String
+    Description: workflow-manager national-registries queue URL
+
+  NationalRegistries2WorkflowManagerQueueARN:
+    Type: String
+    Description: workflow-manager national-registries queue ARN
+
+  NationalRegistries2WorkflowManagerQueueAlarmARN:
+    Type: String
+    Description: workflow-manager national-registries queue dlq alarm ARN
+
+  NationalRegistries2WorkflowManagerQueueAgeAlarmARN:
+    Type: String
+    Description: workflow-manager national-registries queue age alarm ARN
+
 Conditions:
   UseExternalChannelMock: !Equals [ !Ref ExternalChannelBaseUrl, "Mock" ]
 
@@ -377,6 +397,7 @@ Resources:
         ContainerEnvEntry16: !Sub 'PN_WORKFLOWMANAGER_SAFESTORAGEBASEURL=${SandboxSafeStorageBaseUrl}'
         ContainerEnvEntry17: !Sub 'PN_WORKFLOWMANAGER_TOPICS_SAFESTORAGEEVENTS=${SafeStorageToWorkflowManagerQueueName}'
         ContainerEnvEntry18: !Sub 'PN_WORKFLOWMANAGER_TOPICS_INFORMALQUEUE=${WorkflowManagerInputsQueueName}'
+        ContainerEnvEntry19: !Sub 'PN_WORKFLOWMANAGER_TOPICS_NATIONALREGISTRIESTOWORKFLOWMANAGER=${NationalRegistries2WorkflowManagerQueueName}'
         ApplicativeEnvFileChecksum: !Ref ApplicativeEnvFileChecksum
         JavaToolOptions: '-Dreactor.netty.ioWorkerCount=50'
         MappedPaths: '/workflow-manager-not-available'
@@ -413,6 +434,8 @@ Resources:
             - !Ref SafeStorageToWorkflowManagerQueueAgeAlarmARN
             - !Ref WorkflowManagerInputsQueueAlarmARN
             - !Ref WorkflowManagerInputsQueueAgeAlarmARN
+            - !Ref NationalRegistries2WorkflowManagerQueueAlarmARN
+            - !Ref NationalRegistries2WorkflowManagerQueueAgeAlarmARN
         QueueArns: !Join
           - ','
           - - !Ref WorkflowManagerActionQueueARN
@@ -421,6 +444,7 @@ Resources:
             - !Ref WorkflowManagerIoEventQueueARN
             - !Ref SafeStorageToWorkflowManagerQueueARN
             - !Ref WorkflowManagerInputsQueueARN
+            - !Ref NationalRegistries2WorkflowManagerQueueARN
         LogGroupsNames: !Join
           - ','
           - - !Sub '/aws/ecs/${ProjectName}-workflow-manager'
@@ -449,6 +473,7 @@ Resources:
               - !Ref WorkflowManagerIoEventQueueARN
               - !Ref SafeStorageToWorkflowManagerQueueARN
               - !Ref WorkflowManagerInputsQueueARN
+              - !Ref NationalRegistries2WorkflowManagerQueueARN
           - Effect: Allow
             Action:
               - 'ssm:GetParameter'
@@ -484,6 +509,7 @@ Resources:
                   - !Ref WorkflowManagerIoEventQueueARN
                   - !Ref SafeStorageToWorkflowManagerQueueARN
                   - !Ref WorkflowManagerInputsQueueARN
+                  - !Ref NationalRegistries2WorkflowManagerQueueARN
 
   PnCoreEventBusToWorkflowManagerActionQueueRule:
     Type: AWS::Events::Rule
@@ -857,3 +883,51 @@ Resources:
               ArnEquals:
                 aws:SourceArn: !GetAtt PnCoreEventBusToWorkflowManagerInputsQueueRule.Arn
 
+  # Send National Registries Response to pn-workflow-manager
+  # pn-national-registries
+  PnCoreEventBusToNationalRegistries2WorkflowManager:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: Route National Registries Events to pn-workflow-manager
+      RoleArn: !GetAtt "EventBusEnqueueRole.Arn"
+      EventBusName: !Sub "${ProjectName}-CoreEventBus"
+      EventPattern:
+        detail-type: [ "NationalRegistriesOutcomeEvent" ]
+        detail:
+          source: [ !Ref WorkflowManagerCxId ]
+      Targets:
+        - Arn: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:PnCoreEventBusMatchedEventLogger'
+          Id: !Sub ${ProjectName}-Logger-NationalRegistries2WorkflowManager
+          InputTransformer:
+            InputPathsMap:
+              "timestamp": "$.time"
+            InputTemplate: |
+              {
+                  "timestamp": <timestamp>,
+                  "ruleArn": <aws.events.rule-arn>,
+                  "ruleName": <aws.events.rule-name>,
+                  "ingestionTime": <aws.events.event.ingestion-time>,
+                  "originalEvent": <aws.events.event.json>
+              }
+        - Id: !Sub '${ProjectName}-CoreEventBus-NationalRegistries2WorkflowManager'
+          Arn: !Ref NationalRegistries2WorkflowManagerQueueARN
+          InputPath: $.detail.body
+          DeadLetterConfig:
+            Arn: !Sub 'arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:pn-CoreEventBus-DLQ'
+
+  PnCoreEventBusToNationalRegistries2WorkflowManagerPolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues:
+        - !Ref NationalRegistries2WorkflowManagerQueueURL
+      PolicyDocument:
+        Statement:
+          - Sid: AllowEventBridgeToSendMessage
+            Effect: Allow
+            Principal:
+              Service: events.amazonaws.com
+            Action: sqs:SendMessage
+            Resource: !Ref NationalRegistries2WorkflowManagerQueueARN
+            Condition:
+              ArnEquals:
+                aws:SourceArn: !GetAtt PnCoreEventBusToNationalRegistries2WorkflowManager.Arn
