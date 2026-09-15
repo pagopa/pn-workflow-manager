@@ -22,7 +22,7 @@ public class PublicRegistryUtils {
     private final TimelineUtils timelineUtils;
 
     public String generateCorrelationId(String iun, Integer recIndex, ContactPhaseInt contactPhase, int sentAttemptMade, DeliveryModeInt deliveryMode) {
-        return TimelineEventId.NATIONAL_REGISTRY_CALL.buildEventId(
+        return TimelineEventId.PUBLIC_REGISTRY_CALL.buildEventId(
                 EventId.builder()
                         .iun(iun)
                         .recIndex(recIndex)
