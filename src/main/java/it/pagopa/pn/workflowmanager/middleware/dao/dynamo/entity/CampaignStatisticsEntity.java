@@ -33,6 +33,7 @@ public class CampaignStatisticsEntity {
 
     private static final String COL_RECEIVED_IO = "receivedIO";
     private static final String COL_RECEIVED_EMAIL = "receivedEMAIL";
+    private static final String COL_RECEIVED_SMS = "receivedSMS";
     private static final String COL_RECEIVED_PEC = "receivedPEC";
     private static final String COL_RECEIVED_RS = "receivedRS";
 
@@ -89,7 +90,7 @@ public class CampaignStatisticsEntity {
     @Getter(onMethod=@__({@DynamoDbAttribute(COL_RECEIVED_RS)}))
     private Integer receivedRS;
 
-    @Getter(onMethod=@__({@DynamoDbAttribute(COL_RECEIVED_RS)}))
+    @Getter(onMethod=@__({@DynamoDbAttribute(COL_RECEIVED_SMS)}))
     private Integer receivedSMS;
 
     @Getter(onMethod=@__({@DynamoDbAttribute(COL_VIEWED_IO)}))
