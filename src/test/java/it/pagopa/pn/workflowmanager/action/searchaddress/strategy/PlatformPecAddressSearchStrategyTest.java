@@ -95,11 +95,11 @@ class PlatformPecAddressSearchStrategyTest {
     }
 
     private Consent validConsent() {
-        return new Consent().consentType(ConsentType.TOS).consentVersion("v1");
+        return new Consent().consentType(ConsentType.TOS).consentVersion("1");
     }
 
     private ConsentDto validConfigConsent() {
-        return new ConsentDto(ConsentType.TOS.getValue(), "v1");
+        return new ConsentDto(ConsentType.TOS.getValue(), 1);
     }
 }
 
