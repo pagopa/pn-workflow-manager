@@ -3,34 +3,34 @@ package it.pagopa.pn.workflowmanager.middleware.responsehandler;
 import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.workflowmanager.action.searchaddress.AddressSearchContext;
 import it.pagopa.pn.workflowmanager.action.searchaddress.AddressSearchOrchestrator;
-import it.pagopa.pn.workflowmanager.action.searchaddress.AddressSearchUtils;
+import it.pagopa.pn.workflowmanager.action.searchaddress.dto.SourceSearchOutcome;
 import it.pagopa.pn.workflowmanager.action.utils.TimelineUtils;
 import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
 import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.publicregistry.NationalRegistriesResponse;
 import it.pagopa.pn.workflowmanager.dto.timeline.DeliveryModeInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.ContactPhaseInt;
-import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.PublicRegistryCallDetailsInt;
 import it.pagopa.pn.workflowmanager.service.NotificationService;
 import it.pagopa.pn.workflowmanager.utils.PublicRegistryUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class NationalRegistriesResponseHandlerTest {
@@ -39,8 +39,6 @@ class NationalRegistriesResponseHandlerTest {
     private PublicRegistryUtils publicRegistryUtils;
     @Mock
     private NotificationService notificationService;
-    @Mock
-    private AddressSearchUtils searchUtils;
     @Mock
     private AddressSearchOrchestrator addressSearchOrchestrator;
     @Mock
@@ -53,50 +51,19 @@ class NationalRegistriesResponseHandlerTest {
         handler = new NationalRegistriesResponseHandler(
                 publicRegistryUtils,
                 notificationService,
-                searchUtils,
                 addressSearchOrchestrator,
                 timelineUtils
         );
     }
 
-    @Test
-    void handleResponseSchedulesSendChannelMessageWhenDigitalAddressIsPresent() {
-        String correlationId = "timeline-IUN-001";
-        String iun = "IUN-001";
-        NotificationInt notification = NotificationInt.builder()
-                .iun(iun)
-                .sentAt(Instant.parse("2026-09-15T10:00:00Z"))
-                .build();
-        PublicRegistryCallDetailsInt callDetails = PublicRegistryCallDetailsInt.builder()
-                .recIndex(2)
-                .contactPhase(ContactPhaseInt.SEND_ATTEMPT)
-                .deliveryMode(DeliveryModeInt.DIGITAL)
-                .build();
-        NationalRegistriesResponse response = NationalRegistriesResponse.builder()
-                .correlationId(correlationId)
-                .digitalAddress(InformalDigitalAddressInt.builder().build())
-                .build();
-
-        when(timelineUtils.getIunFromTimelineId(correlationId)).thenReturn(iun);
-        when(notificationService.getInformalNotificationByIun(iun)).thenReturn(notification);
-        when(publicRegistryUtils.getPublicRegistryCallDetail(iun, correlationId)).thenReturn(callDetails);
-
-        handler.handleResponse(response);
-
-        verify(publicRegistryUtils).addPublicRegistryResponseToTimeline(notification, 2, response);
-        verify(timelineUtils).addAvailabilitySourceToTimeline(2, notification, DigitalAddressSourceInt.GENERAL, true, response.getDigitalAddress());
-        verify(searchUtils).scheduleSendChannelMessageAction(
-                eq(new AddressSearchContext(ChannelType.PEC, notification.getSentAt(), notification, 2, null)),
-                eq(DigitalAddressSourceInt.GENERAL)
-        );
-        verifyNoInteractions(addressSearchOrchestrator);
-    }
-
-    @Test
-    void handleResponseDelegatesToAddressSearchWhenDigitalAddressIsMissing() {
-        String correlationId = "timeline-IUN-002";
-        String iun = "IUN-002";
-        Instant sentAt = Instant.parse("2026-09-15T10:15:00Z");
+    @ParameterizedTest(name = "handleResponse resumes orchestrator with {1} outcome")
+    @MethodSource("digitalAddressScenarios")
+    void handleResponseResumesOrchestratorWithExpectedOutcome(InformalDigitalAddressInt digitalAddress,
+                                                              String scenarioName,
+                                                              SourceSearchOutcome expectedOutcome) {
+        String correlationId = "timeline-" + scenarioName;
+        String iun = "IUN-" + scenarioName;
+        Instant sentAt = Instant.parse("2026-09-15T10:00:00Z");
         NotificationInt notification = NotificationInt.builder()
                 .iun(iun)
                 .sentAt(sentAt)
@@ -105,9 +72,11 @@ class NationalRegistriesResponseHandlerTest {
                 .recIndex(1)
                 .contactPhase(ContactPhaseInt.SEND_ATTEMPT)
                 .deliveryMode(DeliveryModeInt.DIGITAL)
+                .sentAttemptMade(0)
                 .build();
         NationalRegistriesResponse response = NationalRegistriesResponse.builder()
                 .correlationId(correlationId)
+                .digitalAddress(digitalAddress)
                 .build();
 
         when(timelineUtils.getIunFromTimelineId(correlationId)).thenReturn(iun);
@@ -116,11 +85,24 @@ class NationalRegistriesResponseHandlerTest {
 
         handler.handleResponse(response);
 
-        ArgumentCaptor<AddressSearchContext> contextCaptor = ArgumentCaptor.forClass(AddressSearchContext.class);
-        verify(addressSearchOrchestrator).handle(contextCaptor.capture());
-        assertThat(contextCaptor.getValue())
-                .isEqualTo(new AddressSearchContext(ChannelType.PEC, sentAt, notification, 1, null));
-        verify(searchUtils, never()).scheduleSendChannelMessageAction(org.mockito.Mockito.any(), org.mockito.Mockito.any());
+        verify(publicRegistryUtils).addPublicRegistryResponseToTimeline(notification, 1, response);
+        verify(addressSearchOrchestrator).resume(
+                eq(new AddressSearchContext(ChannelType.PEC, sentAt, notification, 1, 0)),
+                eq(DigitalAddressSourceInt.GENERAL),
+                eq(expectedOutcome)
+        );
+    }
+
+    private static Stream<Arguments> digitalAddressScenarios() {
+        InformalDigitalAddressInt digitalAddress = InformalDigitalAddressInt.builder().build();
+        return Stream.of(
+                Arguments.of(
+                        digitalAddress, "present",
+                        SourceSearchOutcome.found(DigitalAddressSourceInt.GENERAL, digitalAddress)),
+                Arguments.of(
+                        null, "missing",
+                        SourceSearchOutcome.notFound(DigitalAddressSourceInt.GENERAL))
+        );
     }
 
     @Test

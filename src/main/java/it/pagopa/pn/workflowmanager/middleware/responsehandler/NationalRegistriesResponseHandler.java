@@ -4,7 +4,7 @@ import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.commons.log.PnLogger;
 import it.pagopa.pn.workflowmanager.action.searchaddress.AddressSearchContext;
 import it.pagopa.pn.workflowmanager.action.searchaddress.AddressSearchOrchestrator;
-import it.pagopa.pn.workflowmanager.action.searchaddress.AddressSearchUtils;
+import it.pagopa.pn.workflowmanager.action.searchaddress.dto.SourceSearchOutcome;
 import it.pagopa.pn.workflowmanager.action.utils.TimelineUtils;
 import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
@@ -28,7 +28,6 @@ import static it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCo
 public class NationalRegistriesResponseHandler {
     private final PublicRegistryUtils publicRegistryUtils;
     private final NotificationService notificationService;
-    private final AddressSearchUtils searchUtils;
     private final AddressSearchOrchestrator addressSearchOrchestrator;
     private final TimelineUtils timelineUtils;
 
@@ -103,13 +102,16 @@ public class NationalRegistriesResponseHandler {
 
             if (publicRegistryCallDetails.getDeliveryMode() == DeliveryModeInt.DIGITAL) {
                 boolean addressAvailable = response.getDigitalAddress() != null;
-                timelineUtils.addAvailabilitySourceToTimeline(recIndex, notification, DigitalAddressSourceInt.GENERAL, addressAvailable, response.getDigitalAddress());
-                AddressSearchContext ctx = new AddressSearchContext(ChannelType.PEC, notification.getSentAt(), notification, recIndex, null);
+                SourceSearchOutcome outcome;
+                DigitalAddressSourceInt source = DigitalAddressSourceInt.GENERAL;
                 if (addressAvailable) {
-                    searchUtils.scheduleSendChannelMessageAction(ctx, DigitalAddressSourceInt.GENERAL);
+                    outcome = SourceSearchOutcome.found(source, response.getDigitalAddress());
                 } else {
-                    addressSearchOrchestrator.handle(ctx);
+                    outcome = SourceSearchOutcome.notFound(source);
                 }
+                AddressSearchContext ctx = new AddressSearchContext(ChannelType.PEC, notification.getSentAt(), notification, recIndex, publicRegistryCallDetails.getSentAttemptMade());
+
+                addressSearchOrchestrator.resume(ctx, source, outcome);
             } else {
                 handleDeliveryModeError(iun, publicRegistryCallDetails.getDeliveryMode(), recIndex);
             }
