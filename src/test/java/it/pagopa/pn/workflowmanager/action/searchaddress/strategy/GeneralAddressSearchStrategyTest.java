@@ -4,6 +4,7 @@ import it.pagopa.pn.workflowmanager.action.searchaddress.AddressSearchContext;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
+import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.RecipientTypeInt;
 import it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.nationalregistries.PnNationalRegistriesClient;
 import it.pagopa.pn.workflowmanager.utils.PublicRegistryUtils;
 import org.junit.jupiter.api.Test;
@@ -43,7 +44,7 @@ class GeneralAddressSearchStrategyTest {
         ArgumentCaptor<it.pagopa.pn.workflowmanager.generated.openapi.msclient.nationalregistries.model.AddressRequestBody> bodyCaptor =
                 ArgumentCaptor.forClass(it.pagopa.pn.workflowmanager.generated.openapi.msclient.nationalregistries.model.AddressRequestBody.class);
 
-        verify(nationalRegistriesClient).getAddresses(eq("PID"), bodyCaptor.capture());
+        verify(nationalRegistriesClient).getAddresses(eq("PG"), bodyCaptor.capture());
         assertEquals("corr-id", bodyCaptor.getValue().getFilter().getCorrelationId());
         assertEquals("TAXID", bodyCaptor.getValue().getFilter().getTaxId());
 
@@ -62,6 +63,7 @@ class GeneralAddressSearchStrategyTest {
         NotificationRecipientInt recipient = NotificationRecipientInt.builder()
                 .internalId("PID")
                 .taxId("TAXID")
+                .recipientType(RecipientTypeInt.PG)
                 .build();
         NotificationInt notification = NotificationInt.builder()
                 .iun("IUN")

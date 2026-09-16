@@ -2,19 +2,12 @@ package it.pagopa.pn.workflowmanager.action.searchaddress.strategy;
 
 import it.pagopa.pn.workflowmanager.action.searchaddress.AddressSearchContext;
 import it.pagopa.pn.workflowmanager.action.searchaddress.dto.SourceSearchOutcome;
-import it.pagopa.pn.workflowmanager.config.PnWorkflowManagerConfigs;
 import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.address.LegalDigitalAddressInt;
-import it.pagopa.pn.workflowmanager.dto.consent.ConsentDto;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationSenderInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.RecipientTypeInt;
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.userattributes.addressbook.model.LegalChannelType;
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.userattributes.addressbook.model.LegalDigitalAddress;
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.userattributes.consents.model.Consent;
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.userattributes.consents.model.ConsentType;
-import it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.userattributes.PnUserAttributesClient;
 import it.pagopa.pn.workflowmanager.service.AddressBookService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,10 +26,6 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class PlatformPecAddressSearchStrategyTest {
 
-    @Mock
-    private PnUserAttributesClient userAttributesClient;
-    @Mock
-    private PnWorkflowManagerConfigs configs;
     @Mock
     private AddressBookService addressBookService;
     @InjectMocks
@@ -97,12 +86,5 @@ class PlatformPecAddressSearchStrategyTest {
         return new AddressSearchContext(it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType.PEC, Instant.now(), notification, 0, 0);
     }
 
-    private Consent validConsent() {
-        return new Consent().consentType(ConsentType.TOS).consentVersion("1");
-    }
-
-    private ConsentDto validConfigConsent() {
-        return new ConsentDto(ConsentType.TOS.getValue(), 1);
-    }
 }
 

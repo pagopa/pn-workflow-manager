@@ -86,7 +86,9 @@ class AddressSearchUtilsTest {
                 context.notification(),
                 DigitalAddressSourceInt.SPECIAL,
                 true,
-                context.attempt()
+                context.attempt(),
+                null,
+                true
         )).thenReturn(timelineElement);
 
         utils.storeSearchOutcome(context, outcome);
