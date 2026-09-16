@@ -1,6 +1,7 @@
 package it.pagopa.pn.workflowmanager.action.startworkflow;
 
 import it.pagopa.pn.workflowmanager.dto.action.details.StartWorkflowDetails;
+import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
@@ -72,7 +73,7 @@ class StartWorkflowActionHandlerTest {
                 notification,
                 campaign,
                 TEST_REC_INDEX,
-                TEST_STEP_IDX
+                DigitalAddressSourceInt.PLATFORM
         );
     }
 
@@ -81,6 +82,7 @@ class StartWorkflowActionHandlerTest {
         StartWorkflowDetails details = new StartWorkflowDetails();
         details.setChannel(TEST_CHANNEL_DIGITAL);
         details.setStepIdx(TEST_STEP_IDX);
+        details.setAddressSource(DigitalAddressSourceInt.PLATFORM);
         return details;
     }
 
