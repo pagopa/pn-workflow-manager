@@ -7,6 +7,7 @@ import it.pagopa.pn.workflowmanager.action.searchaddress.AddressSearchOrchestrat
 import it.pagopa.pn.workflowmanager.action.searchaddress.AddressSearchUtils;
 import it.pagopa.pn.workflowmanager.action.utils.TimelineUtils;
 import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.publicregistry.NationalRegistriesResponse;
 import it.pagopa.pn.workflowmanager.dto.timeline.DeliveryModeInt;
@@ -31,8 +32,8 @@ public class NationalRegistriesResponseHandler {
     private final AddressSearchOrchestrator addressSearchOrchestrator;
     private final TimelineUtils timelineUtils;
 
-    String CLIENT_NAME = PnLogger.EXTERNAL_SERVICES.PN_NATIONAL_REGISTRIES;
-    String GET_DIGITAL_GENERAL_ADDRESS = "GET DIGITAL GENERAL ADDRESS";
+    private static final String CLIENT_NAME = PnLogger.EXTERNAL_SERVICES.PN_NATIONAL_REGISTRIES;
+    private static final String GET_DIGITAL_GENERAL_ADDRESS = "GET DIGITAL GENERAL ADDRESS";
 
 
     public void handleResponse(NationalRegistriesResponse response) {
@@ -103,7 +104,7 @@ public class NationalRegistriesResponseHandler {
             if (publicRegistryCallDetails.getDeliveryMode() == DeliveryModeInt.DIGITAL) {
                 boolean addressAvailable = response.getDigitalAddress() != null;
                 timelineUtils.addAvailabilitySourceToTimeline(recIndex, notification, DigitalAddressSourceInt.GENERAL, addressAvailable, response.getDigitalAddress());
-                AddressSearchContext ctx = new AddressSearchContext(null, notification.getSentAt(), notification, recIndex, null);
+                AddressSearchContext ctx = new AddressSearchContext(ChannelType.PEC, notification.getSentAt(), notification, recIndex, null);
                 if (addressAvailable) {
                     searchUtils.scheduleSendChannelMessageAction(ctx, DigitalAddressSourceInt.GENERAL);
                 } else {
@@ -113,7 +114,7 @@ public class NationalRegistriesResponseHandler {
                 handleDeliveryModeError(iun, publicRegistryCallDetails.getDeliveryMode(), recIndex);
             }
         } else {
-            handleDeliveryModeError(iun, publicRegistryCallDetails.getDeliveryMode(), recIndex);
+            handleDeliveryModeError(iun, null, recIndex);
         }
     }
 

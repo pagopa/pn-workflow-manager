@@ -1,5 +1,6 @@
 package it.pagopa.pn.workflowmanager.dto.timeline.details;
 
+import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.address.LegalDigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.address.PhysicalAddressInt;
 import it.pagopa.pn.workflowmanager.utils.AuditLogUtils;
@@ -13,9 +14,9 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder(toBuilder = true)
 @EqualsAndHashCode(callSuper = true)
 @ToString
-public class PublicRegistryResponseDetailsInt extends CategoryTypeTimelineElementDetailsInt implements RecipientRelatedTimelineElementDetails, DigitalAddressRelatedTimelineElement {
+public class PublicRegistryResponseDetailsInt extends CategoryTypeTimelineElementDetailsInt implements RecipientRelatedTimelineElementDetails, InformalDigitalAddressRelatedTimelineElement {
     protected int recIndex;
-    protected LegalDigitalAddressInt digitalAddress;
+    protected InformalDigitalAddressInt digitalAddress;
     protected PhysicalAddressInt physicalAddress;
     protected String requestTimelineId;
 
