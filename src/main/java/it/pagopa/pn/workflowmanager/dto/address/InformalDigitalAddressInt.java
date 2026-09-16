@@ -15,7 +15,8 @@ public class InformalDigitalAddressInt extends DigitalAddressInt {
         PEC("PEC"),
         EMAIL("EMAIL"),
         SMS("SMS"),
-        APPIO("APPIO");
+        APPIO("APPIO"),
+        SERCQ("SERCQ");
 
         private final String value;
 

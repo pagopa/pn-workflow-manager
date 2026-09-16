@@ -1,6 +1,7 @@
-package it.pagopa.pn.workflowmanager.action.startworkflow;
+package it.pagopa.pn.workflowmanager.action.sendchannelmessage;
 
-import it.pagopa.pn.workflowmanager.dto.action.details.StartWorkflowDetails;
+import it.pagopa.pn.workflowmanager.action.startworkflow.ChannelSender;
+import it.pagopa.pn.workflowmanager.action.startworkflow.ChannelSenderFactory;
 import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
@@ -8,6 +9,7 @@ import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationIn
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationSenderInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.RecipientTypeInt;
+import it.pagopa.pn.workflowmanager.dto.timeline.details.SendChannelMessageDetails;
 import it.pagopa.pn.workflowmanager.service.CampaignService;
 import it.pagopa.pn.workflowmanager.service.NotificationService;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,7 +24,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class StartWorkflowActionHandlerTest {
+class SendChannelMessageActionHandlerTest {
 
     @Mock
     private ChannelSenderFactory channelSenderFactory;
@@ -36,18 +38,17 @@ class StartWorkflowActionHandlerTest {
     @Mock
     private ChannelSender channelSender;
 
-    private StartWorkflowActionHandler handler;
+    private SendChannelMessageActionHandler handler;
 
     private static final String TEST_IUN = "TEST-IUN-001";
     private static final int TEST_REC_INDEX = 0;
     private static final String TEST_CAMPAIGN_ID = "CAMPAIGN-001";
     private static final String TEST_PA_ID = "PA-001";
-    private static final ChannelType TEST_CHANNEL_DIGITAL = ChannelType.IO;
-    private static final int TEST_STEP_IDX = 0;
+    private static final ChannelType TEST_CHANNEL = ChannelType.IO;
 
     @BeforeEach
     void setup() {
-        handler = new StartWorkflowActionHandler(
+        handler = new SendChannelMessageActionHandler(
                 channelSenderFactory,
                 notificationService,
                 campaignService
@@ -55,20 +56,17 @@ class StartWorkflowActionHandlerTest {
     }
 
     @Test
-    void startWorkflowAction_shouldPassCorrectParametersToChannelSender() {
-        // Arrange
-        StartWorkflowDetails details = createStartWorkflowDetails();
+    void sendChannelMessageAction_shouldPassCorrectParametersToChannelSender() {
+        SendChannelMessageDetails details = createSendChannelMessageDetails();
         NotificationInt notification = createMockNotification();
         Campaign campaign = createMockCampaign();
 
-        when(channelSenderFactory.getChannelSender(TEST_CHANNEL_DIGITAL)).thenReturn(channelSender);
+        when(channelSenderFactory.getChannelSender(TEST_CHANNEL)).thenReturn(channelSender);
         when(notificationService.getInformalNotificationByIun(TEST_IUN)).thenReturn(notification);
         when(campaignService.getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_PA_ID)).thenReturn(campaign);
 
-        // Act
-        handler.startWorkflowAction(TEST_IUN, TEST_REC_INDEX, details);
+        handler.sendChannelMessageAction(TEST_IUN, TEST_REC_INDEX, details);
 
-        // Assert
         verify(channelSender).send(
                 notification,
                 campaign,
@@ -77,13 +75,11 @@ class StartWorkflowActionHandlerTest {
         );
     }
 
-
-    private StartWorkflowDetails createStartWorkflowDetails() {
-        StartWorkflowDetails details = new StartWorkflowDetails();
-        details.setChannel(TEST_CHANNEL_DIGITAL);
-        details.setStepIdx(TEST_STEP_IDX);
-        details.setAddressSource(DigitalAddressSourceInt.PLATFORM);
-        return details;
+    private SendChannelMessageDetails createSendChannelMessageDetails() {
+        return SendChannelMessageDetails.builder()
+                .channel(TEST_CHANNEL)
+                .addressSource(DigitalAddressSourceInt.PLATFORM)
+                .build();
     }
 
     private NotificationInt createMockNotification() {

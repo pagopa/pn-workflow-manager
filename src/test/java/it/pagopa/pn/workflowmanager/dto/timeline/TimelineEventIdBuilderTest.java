@@ -440,7 +440,7 @@ class TimelineEventIdBuilderTest {
 
         assertThat(timeLineEventIdActual).isEqualTo(timeLineEventIdExpected);
 
-        String timeLineEventIdActualFromBuildEvent = TimelineEventId.PUBLIC_REGISTRY_RESPONSE.buildEventId("corr12345");
+        String timeLineEventIdActualFromBuildEvent = TimelineEventId.PUBLIC_REGISTRY_RESPONSE.buildEventId(EventId.builder().correlationId("corr12345").build());
 
 
         assertThat(timeLineEventIdActualFromBuildEvent).isEqualTo(timeLineEventIdExpected);
