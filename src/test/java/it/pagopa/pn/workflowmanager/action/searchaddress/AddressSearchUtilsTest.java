@@ -88,7 +88,8 @@ class AddressSearchUtilsTest {
                 true,
                 context.attempt(),
                 null,
-                true
+                true,
+                ChannelType.PEC.name()
         )).thenReturn(timelineElement);
 
         utils.storeSearchOutcome(context, outcome);
