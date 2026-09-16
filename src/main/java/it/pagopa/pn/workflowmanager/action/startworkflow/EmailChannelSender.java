@@ -61,7 +61,7 @@ public class EmailChannelSender implements ChannelSender {
         String requestId = ChannelSenderUtils.buildSendDigitalMessageSkipTimelineElementId(recIndex, notification.getIun(), channel);
         channelSenderUtils.saveSendDigitalMessageSkipElement(
                 recIndex, notification, requestId,
-                DigitalChannelsInt.EMAIL, DigitalAddressSourceInt.SPECIAL
+                DigitalChannelsInt.EMAIL
         );
         workflowUtils.advanceWorkflow(
                 notification.getIun(), recIndex, channel, campaign, recipient.getRecipientType()
