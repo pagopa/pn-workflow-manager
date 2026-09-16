@@ -5,6 +5,11 @@ import lombok.Getter;
 @Getter
 public enum TimelineElementCategoryInt {
     //Timeline Element for Informal Notification
+    GET_ADDRESS(GetAddressInfoDetailsInt.class, TimelineElementCategoryInt.VERSION_10),
+    PUBLIC_REGISTRY_CALL(PublicRegistryCallDetailsInt.class, TimelineElementCategoryInt.VERSION_10),
+    PUBLIC_REGISTRY_RESPONSE(PublicRegistryResponseDetailsInt.class, TimelineElementCategoryInt.VERSION_10),
+    SEND_COURTESY_MESSAGE(SendCourtesyMessageDetailsInt.class, TimelineElementCategoryInt.VERSION_10),
+    COURTESY_CHANNEL_FAILED(CourtesyChannelFailedDetailsInt.class, TimelineElementCategoryInt.VERSION_10),
     SEND_DIGITAL_MESSAGE(SendDigitalMessageDetailsInt.class,  TimelineElementCategoryInt.VERSION_10),
     SEND_DIGITAL_MESSAGE_SKIP(SendDigitalMessageSkipDetailsInt.class,  TimelineElementCategoryInt.VERSION_10),
     SEND_DIGITAL_MESSAGE_PROGRESS(SendDigitalMessageProgressDetailsInt.class,  TimelineElementCategoryInt.VERSION_10),
@@ -21,8 +26,7 @@ public enum TimelineElementCategoryInt {
     WORKFLOW_DONE_UNREACHED(WorkflowDoneUnreachedDetailsInt.class, TimelineElementCategoryInt.VERSION_10),
     INFORMAL_NOTIFICATION_VIEWED(InformalNotificationViewedDetailsInt.class,  TimelineElementCategoryInt.VERSION_10),
     COVERPAGE_CREATION_REQUEST(CoverpageCreationRequestDetailsInt.class, TimelineElementCategoryInt.VERSION_10),
-    PAYMENT(NotificationPaidDetailsInt.class, TimelineElementCategoryInt.VERSION_10),
-    GET_ADDRESS(GetAddressDetailsInt.class, TimelineElementCategoryInt.VERSION_10);
+    PAYMENT(NotificationPaidDetailsInt.class, TimelineElementCategoryInt.VERSION_10);
 
 
     private final Class<? extends TimelineElementDetailsInt> detailsJavaClass;

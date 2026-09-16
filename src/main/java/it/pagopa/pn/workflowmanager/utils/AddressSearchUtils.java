@@ -63,8 +63,7 @@ public class AddressSearchUtils {
                     recIndex,
                     notification,
                     timelineId,
-                    digitalChannelsInt,
-                    addressSource
+                    digitalChannelsInt
             );
             return null;
         }

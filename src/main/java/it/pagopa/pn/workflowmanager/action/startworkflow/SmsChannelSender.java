@@ -58,7 +58,7 @@ public class SmsChannelSender implements ChannelSender {
 
         String requestId = ChannelSenderUtils.buildSendDigitalMessageSkipTimelineElementId(recIndex, notification.getIun(), getChannelType());
         channelSenderUtils.saveSendDigitalMessageSkipElement(
-                recIndex, notification, requestId, DigitalChannelsInt.SMS, DigitalAddressSourceInt.SPECIAL
+                recIndex, notification, requestId, DigitalChannelsInt.SMS
         );
         workflowUtils.advanceWorkflow(notification.getIun(), recIndex, getChannelType(), campaign, notification.getRecipients().get(recIndex).getRecipientType());
     }

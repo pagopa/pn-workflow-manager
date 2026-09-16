@@ -190,8 +190,7 @@ class EmailChannelSenderTest {
                 eq(recIndex),
                 eq(notification),
                 eq(expectedSkipRequestId),
-                eq(DigitalChannelsInt.EMAIL),
-                eq(DigitalAddressSourceInt.SPECIAL)
+                eq(DigitalChannelsInt.EMAIL)
         );
         verify(workflowUtils).advanceWorkflow(
                 eq(IUN),
