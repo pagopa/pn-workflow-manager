@@ -4,6 +4,7 @@ import it.pagopa.pn.workflowmanager.action.searchaddress.AddressSearchContext;
 import it.pagopa.pn.workflowmanager.action.searchaddress.dto.SourceSearchOutcome;
 import it.pagopa.pn.workflowmanager.config.PnWorkflowManagerConfigs;
 import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
+import it.pagopa.pn.workflowmanager.dto.address.LegalDigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.consent.ConsentDto;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
@@ -14,6 +15,7 @@ import it.pagopa.pn.workflowmanager.generated.openapi.msclient.userattributes.ad
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.userattributes.consents.model.Consent;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.userattributes.consents.model.ConsentType;
 import it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.userattributes.PnUserAttributesClient;
+import it.pagopa.pn.workflowmanager.service.AddressBookService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -22,6 +24,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -34,13 +37,15 @@ class PlatformPecAddressSearchStrategyTest {
     private PnUserAttributesClient userAttributesClient;
     @Mock
     private PnWorkflowManagerConfigs configs;
+    @Mock
+    private AddressBookService addressBookService;
     @InjectMocks
     private PlatformPecAddressSearchStrategy strategy;
 
     @Test
     void shouldReturnTosNotAcceptedWhenConsentIsMissing() {
         AddressSearchContext context = buildContext();
-        when(userAttributesClient.getConsents(any(), any())).thenReturn(List.of());
+        when(addressBookService.areMandatoryConsentsAccepted(any(), any())).thenReturn(false);
 
         SourceSearchOutcome outcome = strategy.search(context);
 
@@ -52,9 +57,7 @@ class PlatformPecAddressSearchStrategyTest {
     @Test
     void shouldReturnNotFoundWhenConsentsOkAndNoPecAddress() {
         AddressSearchContext context = buildContext();
-        when(userAttributesClient.getConsents(any(), any())).thenReturn(List.of(validConsent()));
-        when(configs.getConsentsForPlatformSearch()).thenReturn(List.of(validConfigConsent()));
-        when(userAttributesClient.getLegalAddressBySender(any(), any())).thenReturn(List.of());
+        when(addressBookService.areMandatoryConsentsAccepted(any(), any())).thenReturn(true);
 
         SourceSearchOutcome outcome = strategy.search(context);
 
@@ -66,11 +69,11 @@ class PlatformPecAddressSearchStrategyTest {
     @Test
     void shouldReturnFoundWhenConsentsOkAndPecAddressExists() {
         AddressSearchContext context = buildContext();
-        when(userAttributesClient.getConsents(any(), any())).thenReturn(List.of(validConsent()));
-        when(configs.getConsentsForPlatformSearch()).thenReturn(List.of(validConfigConsent()));
-        when(userAttributesClient.getLegalAddressBySender(any(), any())).thenReturn(List.of(
-                new LegalDigitalAddress().channelType(LegalChannelType.PEC).value("user@pec.it")
+        when(addressBookService.getPlatformAddresses(any(), any())).thenReturn(Optional.of(
+                LegalDigitalAddressInt.builder().type(LegalDigitalAddressInt.LEGAL_DIGITAL_ADDRESS_TYPE.PEC).build()
         ));
+
+        when(addressBookService.areMandatoryConsentsAccepted(any(), any())).thenReturn(true);
 
         SourceSearchOutcome outcome = strategy.search(context);
 
