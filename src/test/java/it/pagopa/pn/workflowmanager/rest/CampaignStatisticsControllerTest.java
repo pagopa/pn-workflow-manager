@@ -52,7 +52,7 @@ class CampaignStatisticsControllerTest {
     void getCampaignStatisticsKoRuntime() {
         String streamId = UUID.randomUUID().toString();
         Mockito.when(service.getCampaignStatistics(Mockito.anyString()))
-                .thenThrow(new NullPointerException());
+                .thenReturn(Mono.error(new NullPointerException()));
 
         webTestClient.get()
                 .uri( ("/workflow-private/informal/{campaignId}/statistics").replace("{campaignId}", streamId) )
