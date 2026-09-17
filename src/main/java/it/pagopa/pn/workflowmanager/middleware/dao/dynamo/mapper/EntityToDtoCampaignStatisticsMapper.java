@@ -2,9 +2,6 @@ package it.pagopa.pn.workflowmanager.middleware.dao.dynamo.mapper;
 
 import it.pagopa.pn.workflowmanager.generated.openapi.server.v1.dto.*;
 import it.pagopa.pn.workflowmanager.middleware.dao.dynamo.entity.CampaignStatisticsEntity;
-import org.springframework.stereotype.Component;
-
-@Component
 public class EntityToDtoCampaignStatisticsMapper {
 
     private EntityToDtoCampaignStatisticsMapper() {
