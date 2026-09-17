@@ -292,11 +292,11 @@ Parameters:
     Type: String
     Description: 'pn-workflow-manager inputs queue age alarm ARN'
 
-  CampaignsDynamoTableName:
+  CampaignsTableName:
     Type: String
-    Description: "Campaigns Dynamo table name"
+    Description: "Campaigns table name"
 
-  CampaignsDynamoTableArn:
+  CampaignsTableArn:
     Type: String
     Description: "ARN of dynamodb table containing campaigns"
 
@@ -385,7 +385,7 @@ Resources:
         ContainerEnvEntry16: !Sub 'PN_WORKFLOWMANAGER_SAFESTORAGEBASEURL=${SandboxSafeStorageBaseUrl}'
         ContainerEnvEntry17: !Sub 'PN_WORKFLOWMANAGER_TOPICS_SAFESTORAGEEVENTS=${SafeStorageToWorkflowManagerQueueName}'
         ContainerEnvEntry18: !Sub 'PN_WORKFLOWMANAGER_TOPICS_INFORMALQUEUE=${WorkflowManagerInputsQueueName}'
-        ContainerEnvEntry19: !Sub 'PN_WORKFLOWMANAGER_CAMPAIGNS_TABLE_NAME=${CampaignsDynamoTableName}'
+        ContainerEnvEntry19: !Sub 'PN_WORKFLOWMANAGER_CAMPAIGNS_TABLE_NAME=${CampaignsTableName}'
         ApplicativeEnvFileChecksum: !Ref ApplicativeEnvFileChecksum
         JavaToolOptions: '-Dreactor.netty.ioWorkerCount=50'
         MappedPaths: '/workflow-manager-not-available'
@@ -460,15 +460,9 @@ Resources:
               - !Ref WorkflowManagerInputsQueueARN
           - Effect: Allow
             Action:
-              - 'ssm:GetParameter'
-              - 'ssm:GetParameters'
-            Resource:
-              - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/MVPCampaigns'
-          - Effect: Allow
-            Action:
               - "dynamodb:Scan"
             Resource:
-              - !Sub ${CampaignsDynamoTableArn}
+              - !Sub ${CampaignsTableArn}
 
   EventBusEnqueueRole:
     Type: AWS::IAM::Role
