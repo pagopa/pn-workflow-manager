@@ -33,7 +33,12 @@ public class SpecialAddressSearchStrategy implements SyncAddressSearchStrategy {
         InformalDigitalAddressInt informalAddress;
         switch (context.channel()) {
             case ChannelType.PEC:
-                address = context.notification().getRecipients().get(context.recipientIndex()).getDigitalDomicile().getAddress();
+                var digitalDomicile = context.notification().getRecipients().get(context.recipientIndex()).getDigitalDomicile();
+                if (digitalDomicile == null || digitalDomicile.getAddress() == null || digitalDomicile.getAddress().isEmpty()) {
+                    return SourceSearchOutcome.notFound(DigitalAddressSourceInt.SPECIAL);
+                }
+                address = digitalDomicile.getAddress();
+
                 informalAddress = buildInformalAddress(InformalDigitalAddressInt.INFORMAL_DIGITAL_ADDRESS_TYPE.PEC, address);
                 log.info("SPECIAL address found - channel={} type={}", context.channel(), informalAddress.getType());
                 return SourceSearchOutcome.found(DigitalAddressSourceInt.SPECIAL, informalAddress);
@@ -41,12 +46,20 @@ public class SpecialAddressSearchStrategy implements SyncAddressSearchStrategy {
             case ChannelType.SMS:
                 address = context.notification().getRecipients().get(context.recipientIndex()).getPhoneNumber();
 
+                if (address == null || address.isEmpty()) {
+                    return SourceSearchOutcome.notFound(DigitalAddressSourceInt.SPECIAL);
+                }
+
                 informalAddress = buildInformalAddress(InformalDigitalAddressInt.INFORMAL_DIGITAL_ADDRESS_TYPE.SMS, address);
                 log.info("SPECIAL address found - channel={} type={}", context.channel(), informalAddress.getType());
                 return SourceSearchOutcome.found(DigitalAddressSourceInt.SPECIAL, informalAddress);
 
             case ChannelType.EMAIL:
                 address = context.notification().getRecipients().get(context.recipientIndex()).getEmail();
+
+                if (address == null || address.isEmpty()) {
+                    return SourceSearchOutcome.notFound(DigitalAddressSourceInt.SPECIAL);
+                }
 
                 informalAddress = buildInformalAddress(InformalDigitalAddressInt.INFORMAL_DIGITAL_ADDRESS_TYPE.EMAIL, address);
                 log.info("SPECIAL address found - channel={} type={}", context.channel(), informalAddress.getType());

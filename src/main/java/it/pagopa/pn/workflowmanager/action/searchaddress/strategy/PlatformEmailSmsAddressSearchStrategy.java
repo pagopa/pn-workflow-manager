@@ -44,7 +44,7 @@ public class PlatformEmailSmsAddressSearchStrategy implements SyncAddressSearchS
         log.info("Starting PLATFORM EMAIL/SMS address search - iun={} recipientIndex={} senderId={} recipientId={} channel={}",
                 context.notification().getIun(), context.recipientIndex(), senderId, recipientId, context.channel());
 
-        if (addressBookService.areMandatoryConsentsAccepted(recipientId, cxId)) {
+        if (!addressBookService.areMandatoryConsentsAccepted(recipientId, cxId)) {
             log.info("TOS not accepted for PLATFORM EMAIL/SMS search - senderId={} recipientId={}", senderId, recipientId);
             return SourceSearchOutcome.tosNotAccepted(DigitalAddressSourceInt.PLATFORM);
         }

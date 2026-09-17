@@ -35,19 +35,20 @@ public class GeneralAddressSearchStrategy implements AsyncAddressSearchStrategy 
     @Override
     public void triggerSearch(AddressSearchContext context) {
         String recipientId = context.notification().getRecipients().get(context.recipientIndex()).getInternalId();
+        String recipientType = context.notification().getRecipients().get(context.recipientIndex()).getRecipientType().getValue();
         AddressRequestBody addressRequestBody = createAddressRequestBody(context);
         String correlationId = addressRequestBody.getFilter() != null ? addressRequestBody.getFilter().getCorrelationId() : null;
 
         log.info("Starting GENERAL address async search - iun={} recipientIndex={} recipientId={} correlationId={}",
                 context.notification().getIun(), context.recipientIndex(), recipientId, correlationId);
 
-        nationalRegistriesClient.getAddresses(recipientId, addressRequestBody);
+        nationalRegistriesClient.getAddresses(recipientType, addressRequestBody);
 
         publicRegistryUtils.addPublicRegistryCallToTimeline(
                 context.notification(),
                 context.recipientIndex(),
                 ContactPhaseInt.SEND_ATTEMPT,
-                0,
+                context.attempt(),
                 correlationId,
                 DeliveryModeInt.DIGITAL,
                 null);
@@ -62,7 +63,7 @@ public class GeneralAddressSearchStrategy implements AsyncAddressSearchStrategy 
                         context.notification().getIun(),
                         context.recipientIndex(),
                         ContactPhaseInt.SEND_ATTEMPT,
-                        0,
+                        context.attempt(),
                         DeliveryModeInt.DIGITAL
                 ))
                 .referenceRequestDate(context.notification().getSentAt())
