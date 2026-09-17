@@ -32,32 +32,23 @@ echo "### GET QUEUE ARNs ###"
 
 ACTION_QUEUE_ARN=$(aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
     sqs get-queue-attributes \
-    --queue-url http://localstack:4566/000000000000/pn-workflow-manager-action-queue \
-    --attribute-names QueueArn \
-    --query 'Attributes.QueueArn' \
-    --output text)
+    --queue-url http://localstack:4566/000000000000/pn-workflow-manager_action \
+    --attribute-names QueueArn --query 'Attributes.QueueArn' --output text)
 
 ANALOG_QUEUE_ARN=$(aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
     sqs get-queue-attributes \
-    --queue-url http://localstack:4566/000000000000/pn-workflow-manager-analog-event-queue \
-    --attribute-names QueueArn \
-    --query 'Attributes.QueueArn' \
-    --output text)
+    --queue-url http://localstack:4566/000000000000/pn-workflow-manager_analog_event \
+    --attribute-names QueueArn --query 'Attributes.QueueArn' --output text)
 
 DIGITAL_QUEUE_ARN=$(aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
     sqs get-queue-attributes \
-    --queue-url http://localstack:4566/000000000000/pn-workflow-manager-digital-event-queue \
-    --attribute-names QueueArn \
-    --query 'Attributes.QueueArn' \
-    --output text)
+    --queue-url http://localstack:4566/000000000000/pn-workflow-manager_digital_event \
+    --attribute-names QueueArn --query 'Attributes.QueueArn' --output text)
 
 IO_QUEUE_ARN=$(aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
     sqs get-queue-attributes \
-    --queue-url http://localstack:4566/000000000000/pn-workflow-manager-io-event-queue \
-    --attribute-names QueueArn \
-    --query 'Attributes.QueueArn' \
-    --output text)
-
+    --queue-url http://localstack:4566/000000000000/pn-workflow-manager_io_event \
+    --attribute-names QueueArn --query 'Attributes.QueueArn' --output text)
 SAFESTORE_QUEUE_ARN=$(aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
     sqs get-queue-attributes \
     --queue-url http://localstack:4566/000000000000/pn-safestore_to_workflowmanager \
@@ -183,5 +174,9 @@ aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
         AttributeName=campaignId,KeyType=HASH \
     --provisioned-throughput \
         ReadCapacityUnits=10,WriteCapacityUnits=5
-
+echo "Add example of CampaignStatistics's item"
+aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
+    dynamodb put-item \
+    --table-name pn-CampaignStatistics \
+    --item '{"campaignId":{"S":"FattOrd"},"totalSent":{"N":"12"},"totalAccepted":{"N":"10"},"totalRefused":{"N":"1"},"totalUndeliverable":{"N":"1"},"totalDelivered":{"N":"9"},"workflowDone":{"N":"7"},"digitalSentIO":{"N":"2"},"digitalSentEMAIL":{"N":"3"},"digitalSentPEC":{"N":"1"},"digitalSentSMS":{"N":"4"},"analogSentRS":{"N":"2"},"receivedIO":{"N":"1"},"receivedEMAIL":{"N":"2"},"receivedPEC":{"N":"1"},"receivedRS":{"N":"3"},"receivedSMS":{"N":"2"},"viewedIO":{"N":"4"},"viewedSEND":{"N":"3"},"firstViewedCount":{"N":"2"},"paid":{"N":"5"},"lastCompletedTimestamp":{"S":"2026-09-15T10:30:00Z"}}'
 echo ".*Initialization terminated.*"
