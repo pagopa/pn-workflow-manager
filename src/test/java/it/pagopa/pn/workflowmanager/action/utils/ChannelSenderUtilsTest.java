@@ -71,7 +71,7 @@ class ChannelSenderUtilsTest {
     void shouldBuildPrepareAnalogDeliveryTimelineElementId() {
         String result = ChannelSenderUtils.buildPrepareAnalogDeliveryTimelineElementId(REC_INDEX, IUN, 0);
 
-        assertEquals("PREPARE_ANALOG_DELIVERY.IUN_IUN_TEST_123.RECINDEX_0.ATTEMPT_0.DELIVERYTYPE_RS", result);
+        assertEquals("PREPARE_ANALOG_MESSAGE.IUN_IUN_TEST_123.RECINDEX_0.ATTEMPT_0.DELIVERYTYPE_RS", result);
     }
 
     @Test
