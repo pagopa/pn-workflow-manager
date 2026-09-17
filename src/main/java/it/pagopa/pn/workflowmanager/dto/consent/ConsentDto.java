@@ -10,5 +10,5 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder( toBuilder = true )
 public class ConsentDto {
     private final String type;
-    private final String version;
+    private final int version;
 }

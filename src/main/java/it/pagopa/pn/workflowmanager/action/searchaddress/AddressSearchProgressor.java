@@ -7,10 +7,12 @@ import it.pagopa.pn.workflowmanager.action.searchaddress.strategy.SyncAddressSea
 import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.GetAddressInfoDetailsInt;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Optional;
 
+@Component
 @RequiredArgsConstructor
 public class AddressSearchProgressor {
     private final AddressSearchUtils utils;

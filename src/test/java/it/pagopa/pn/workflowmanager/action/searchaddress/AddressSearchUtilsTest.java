@@ -86,7 +86,10 @@ class AddressSearchUtilsTest {
                 context.notification(),
                 DigitalAddressSourceInt.SPECIAL,
                 true,
-                context.attempt()
+                context.attempt(),
+                null,
+                true,
+                ChannelType.PEC.name()
         )).thenReturn(timelineElement);
 
         utils.storeSearchOutcome(context, outcome);
