@@ -83,23 +83,50 @@ describe("timelineMetrics", () => {
             expect(counters.totalDelivered).to.equal(1);
         });
 
-        it("handles INFORMAL_NOTIFICATION_VIEWED with valid platform", () => {
-            const counters = {};
-            const ok = metrics.applyCategoryMetric(counters, "INFORMAL_NOTIFICATION_VIEWED", {
-                details: {channel: "IO"}
+        ["IO", "SEND"].forEach((sourceChannel) => {
+            [true, false, undefined, "true"].forEach((firstView) => {
+                it(`handles ${sourceChannel} views with firstView=${firstView}`, () => {
+                    const counters = {[`viewed${sourceChannel}`]: 2, firstView: 3};
+                    const ok = metrics.applyCategoryMetric(
+                        counters, "INFORMAL_NOTIFICATION_VIEWED",
+                        {details: {sourceChannel, firstView}}
+                    );
+
+                    expect(ok).to.be.true;
+                    expect(counters).to.deep.equal({
+                        [`viewed${sourceChannel}`]: 3,
+                        firstView: firstView === true ? 4 : 3
+                    });
+                });
             });
-            expect(ok).to.be.true;
-            expect(counters.viewedIO).to.equal(1);
         });
 
-        it("rejects INFORMAL_NOTIFICATION_VIEWED with invalid platform", () => {
+        it("initializes counters for a first view", () => {
             const counters = {};
-            const ok = metrics.applyCategoryMetric(counters, "INFORMAL_NOTIFICATION_VIEWED", {
-                details: {channel: "INVALID"}
+            const ok = metrics.applyCategoryMetric(
+                counters, "INFORMAL_NOTIFICATION_VIEWED",
+                {details: {sourceChannel: "IO", firstView: true}}
+            );
+
+            expect(ok).to.be.true;
+            expect(counters).to.deep.equal({viewedIO: 1, firstView: 1});
+        });
+
+        [
+            {details: {sourceChannel: "INVALID", firstView: true}},
+            {details: {channel: "IO", firstView: true}},
+            {}
+        ].forEach((parsedData) => {
+            it(`rejects invalid or missing sourceChannel: ${JSON.stringify(parsedData)}`, () => {
+                const counters = {};
+                const ok = metrics.applyCategoryMetric(
+                    counters, "INFORMAL_NOTIFICATION_VIEWED", parsedData
+                );
+
+                expect(ok).to.be.false;
+                expect(counters).to.deep.equal({});
+                expect(consoleWarnStub.calledOnce).to.be.true;
             });
-            expect(ok).to.be.false;
-            expect(counters.viewedINVALID).to.be.undefined;
-            expect(consoleWarnStub.calledOnce).to.be.true;
         });
 
         it("handles SEND_DIGITAL_MESSAGE and totalSent only for PROCESSING", () => {
