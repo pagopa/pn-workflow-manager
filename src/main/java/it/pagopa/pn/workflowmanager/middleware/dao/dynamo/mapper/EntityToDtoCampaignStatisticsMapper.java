@@ -7,6 +7,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class EntityToDtoCampaignStatisticsMapper {
 
+    private EntityToDtoCampaignStatisticsMapper() {
+        //no usage
+    }
+
     public static CampaignStatisticsResponse entityToDto(CampaignStatisticsEntity entity) {
         if (entity == null) {
             return null;
@@ -52,7 +56,8 @@ public class EntityToDtoCampaignStatisticsMapper {
     private static CampaignStatsViewed mapViewed(CampaignStatisticsEntity entity) {
         return new CampaignStatsViewed()
                 .IO(checkValue(entity.getViewedIO()))
-                .SEND(checkValue(entity.getViewedSEND()));
+                .SEND(checkValue(entity.getViewedSEND()))
+                .firstViewedCount(checkValue(entity.getFirstViewedCount()));
     }
 
     private static int checkValue(Integer value) {
