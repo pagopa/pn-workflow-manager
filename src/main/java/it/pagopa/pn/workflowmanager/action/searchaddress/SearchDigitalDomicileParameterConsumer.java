@@ -84,7 +84,4 @@ public class SearchDigitalDomicileParameterConsumer {
         return false;
     }
 
-    public List<SearchDigitalDomicileConfig> getSearchDigitalDomicileConfigs() {
-        return searchDigitalDomicileConfigs;
-    }
 }
