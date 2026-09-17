@@ -31,4 +31,10 @@ public interface TemplateEngineClient {
     byte[] coverpageTemplate(LanguageEnum xLanguage, InformalCommunication informalCommunication);
 
     String smsTemplate(LanguageEnum language, InformalSmsCommunication informalCommunication);
+
+    String courtesySmsTemplate(LanguageEnum language, InformalSmsCommunication informalCommunication);
+
+    String courtesyEmailBodyTemplate(LanguageEnum language, InformalCommunication informalCommunication);
+
+    String courtesyEmailSubjectTemplate(LanguageEnum language, InformalEmailCommunicationSubject informalCommunicationSubject);
 }

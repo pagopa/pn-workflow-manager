@@ -173,6 +173,51 @@ class TemplateEngineClientImplTest {
     }
 
     @Test
+    void emailBodyTemplate_shouldReturnTemplate_whenSubjectTemplateApiRespondsSuccessfully() {
+        // given
+        String expectedTemplate = "Email Subject content";
+        when(templateApi.informalEmailCommunicationBody(language, informalCommunication))
+                .thenReturn(expectedTemplate);
+
+        // when
+        String result = templateEngineClient.emailBodyTemplate(language, informalCommunication);
+
+        // then
+        assertEquals(expectedTemplate, result);
+        verify(templateApi).informalEmailCommunicationBody(language, informalCommunication);
+        verifyNoMoreInteractions(templateApi);
+    }
+
+    @Test
+    void emailBodyTemplate_shouldReturnNull_whenSubjectTemplateApiReturnsNull() {
+        // given
+        when(templateApi.informalEmailCommunicationBody(language, informalCommunication))
+                .thenReturn(null);
+
+        // when
+        String result = templateEngineClient.emailBodyTemplate(language, informalCommunication);
+
+        // then
+        assertNull(result);
+        verify(templateApi).informalEmailCommunicationBody(language, informalCommunication);
+    }
+
+    @Test
+    void emailBodyTemplate_shouldPropagateException_whenSubjectTemplateApiThrows() {
+        // given
+        RuntimeException expectedException = new RuntimeException("external service error");
+        when(templateApi.informalEmailCommunicationBody(language, informalCommunication))
+                .thenThrow(expectedException);
+
+        // when / then
+        RuntimeException thrown = assertThrows(RuntimeException.class,
+                () -> templateEngineClient.emailBodyTemplate(language, informalCommunication));
+        assertEquals("external service error", thrown.getMessage());
+
+        verify(templateApi).informalEmailCommunicationBody(language, informalCommunication);
+    }
+
+    @Test
     void emailSubjectTemplate_shouldReturnTemplate_whenSubjectTemplateApiRespondsSuccessfully() {
         // given
         String expectedTemplate = "Email Subject content";
@@ -305,5 +350,140 @@ class TemplateEngineClientImplTest {
         assertEquals("external service error", thrown.getMessage());
 
         verify(templateApi).informalSmsCommunication(language, informalSmsCommunication);
+    }
+
+    @Test
+    void courtesyEmailBodyTemplate_shouldReturnTemplate_whenSubjectTemplateApiRespondsSuccessfully() {
+        // given
+        String expectedTemplate = "Email Subject content";
+        when(templateApi.courtesyEmailCommunicationBody(language, informalCommunication))
+                .thenReturn(expectedTemplate);
+
+        // when
+        String result = templateEngineClient.courtesyEmailBodyTemplate(language, informalCommunication);
+
+        // then
+        assertEquals(expectedTemplate, result);
+        verify(templateApi).courtesyEmailCommunicationBody(language, informalCommunication);
+        verifyNoMoreInteractions(templateApi);
+    }
+
+    @Test
+    void courtesyEmailBodyTemplate_shouldReturnNull_whenSubjectTemplateApiReturnsNull() {
+        // given
+        when(templateApi.courtesyEmailCommunicationBody(language, informalCommunication))
+                .thenReturn(null);
+
+        // when
+        String result = templateEngineClient.courtesyEmailBodyTemplate(language, informalCommunication);
+
+        // then
+        assertNull(result);
+        verify(templateApi).courtesyEmailCommunicationBody(language, informalCommunication);
+    }
+
+    @Test
+    void courtesyEmailBodyTemplate_shouldPropagateException_whenSubjectTemplateApiThrows() {
+        // given
+        RuntimeException expectedException = new RuntimeException("external service error");
+        when(templateApi.courtesyEmailCommunicationBody(language, informalCommunication))
+                .thenThrow(expectedException);
+
+        // when / then
+        RuntimeException thrown = assertThrows(RuntimeException.class,
+                () -> templateEngineClient.courtesyEmailBodyTemplate(language, informalCommunication));
+        assertEquals("external service error", thrown.getMessage());
+
+        verify(templateApi).courtesyEmailCommunicationBody(language, informalCommunication);
+    }
+
+    @Test
+    void courtesyEmailSubjectTemplate_shouldReturnTemplate_whenSubjectTemplateApiRespondsSuccessfully() {
+        // given
+        String expectedTemplate = "Email Subject content";
+        when(templateApi.courtesyEmailCommunicationSubject(language, informalEmailCommunicationSubject))
+                .thenReturn(expectedTemplate);
+
+        // when
+        String result = templateEngineClient.courtesyEmailSubjectTemplate(language, informalEmailCommunicationSubject);
+
+        // then
+        assertEquals(expectedTemplate, result);
+        verify(templateApi).courtesyEmailCommunicationSubject(language, informalEmailCommunicationSubject);
+        verifyNoMoreInteractions(templateApi);
+    }
+
+    @Test
+    void courtesyEmailSubjectTemplate_shouldReturnNull_whenSubjectTemplateApiReturnsNull() {
+        // given
+        when(templateApi.courtesyEmailCommunicationSubject(language, informalEmailCommunicationSubject))
+                .thenReturn(null);
+
+        // when
+        String result = templateEngineClient.courtesyEmailSubjectTemplate(language, informalEmailCommunicationSubject);
+
+        // then
+        assertNull(result);
+        verify(templateApi).courtesyEmailCommunicationSubject(language, informalEmailCommunicationSubject);
+    }
+
+    @Test
+    void courtesyEmailSubjectTemplate_shouldPropagateException_whenSubjectTemplateApiThrows() {
+        // given
+        RuntimeException expectedException = new RuntimeException("external service error");
+        when(templateApi.courtesyEmailCommunicationSubject(language, informalEmailCommunicationSubject))
+                .thenThrow(expectedException);
+
+        // when / then
+        RuntimeException thrown = assertThrows(RuntimeException.class,
+                () -> templateEngineClient.courtesyEmailSubjectTemplate(language, informalEmailCommunicationSubject));
+        assertEquals("external service error", thrown.getMessage());
+
+        verify(templateApi).courtesyEmailCommunicationSubject(language, informalEmailCommunicationSubject);
+    }
+
+    @Test
+    void courtesySmsTemplate_shouldReturnTemplate_whenSmsTemplateApiRespondsSuccessfully() {
+        // given
+        String expectedTemplate = "SMS template content";
+        when(templateApi.courtesySmsCommunication(language, informalSmsCommunication))
+                .thenReturn(expectedTemplate);
+
+        // when
+        String result = templateEngineClient.courtesySmsTemplate(language, informalSmsCommunication);
+
+        // then
+        assertEquals(expectedTemplate, result);
+        verify(templateApi).courtesySmsCommunication(language, informalSmsCommunication);
+        verifyNoMoreInteractions(templateApi);
+    }
+
+    @Test
+    void courtesySmsTemplate_shouldReturnNull_whenSmsTemplateApiReturnsNull() {
+        // given
+        when(templateApi.courtesySmsCommunication(language, informalSmsCommunication))
+                .thenReturn(null);
+
+        // when
+        String result = templateEngineClient.courtesySmsTemplate(language, informalSmsCommunication);
+
+        // then
+        assertNull(result);
+        verify(templateApi).courtesySmsCommunication(language, informalSmsCommunication);
+    }
+
+    @Test
+    void courtesySmsTemplate_shouldPropagateException_whenSmsTemplateApiThrows() {
+        // given
+        RuntimeException expectedException = new RuntimeException("external service error");
+        when(templateApi.courtesySmsCommunication(language, informalSmsCommunication))
+                .thenThrow(expectedException);
+
+        // when / then
+        RuntimeException thrown = assertThrows(RuntimeException.class,
+                () -> templateEngineClient.courtesySmsTemplate(language, informalSmsCommunication));
+        assertEquals("external service error", thrown.getMessage());
+
+        verify(templateApi).courtesySmsCommunication(language, informalSmsCommunication);
     }
 }
