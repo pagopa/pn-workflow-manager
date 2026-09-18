@@ -52,7 +52,7 @@ public enum TimelineEventId {
                     .build();
         }
     },
-    PREPARE_ANALOG_DELIVERY("PREPARE_ANALOG_DELIVERY"){
+    PREPARE_ANALOG_DELIVERY("PREPARE_ANALOG_MESSAGE"){
         @Override
         public String buildEventId(EventId eventId) {
             return new TimelineEventIdBuilder()
