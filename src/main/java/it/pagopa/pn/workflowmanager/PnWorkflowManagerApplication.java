@@ -3,6 +3,8 @@ package it.pagopa.pn.workflowmanager;
 import it.pagopa.pn.commons.configs.listeners.TaskIdApplicationListener;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @SpringBootApplication
 public class PnWorkflowManagerApplication {
@@ -16,4 +18,12 @@ public class PnWorkflowManagerApplication {
         return app;
     }
 
+    @RestController
+    public static class HomeController {
+
+        @GetMapping("")
+        public String home() {
+            return "Sono Vivo";
+        }
+    }
 }
