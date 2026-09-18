@@ -387,7 +387,7 @@ Parameters:
     Description: "Maximum record age in seconds for CampaignEventsCollectorLambdaKinesisSource"
     Default: 604800 # 7 days
 
-  ESMKinesisFailureBucketName:
+  ESMKinesisFailureNotificationsBucketName:
     Type: String
     Description: "S3 bucket name for ESM Kinesis failure notifications"
 
@@ -1063,11 +1063,11 @@ Resources:
             Action:
               - s3:ListBucket
               - s3:GetBucketLocation
-            Resource: !Sub arn:aws:s3:::${ESMKinesisFailureBucketName}
+            Resource: !Sub arn:aws:s3:::${ESMKinesisFailureNotificationsBucketName}
           - Effect: Allow
             Action:
               - s3:PutObject
-            Resource: !Sub arn:aws:s3:::${ESMKinesisFailureBucketName}/*
+            Resource: !Sub arn:aws:s3:::${ESMKinesisFailureNotificationsBucketName}/*
 
   # CDC to Stream Event Manager
   CampaignEventsCollectorLambdaKinesisSource:
@@ -1086,7 +1086,7 @@ Resources:
       StartingPosition: LATEST
       DestinationConfig:
         OnFailure:
-          Destination: !Sub arn:aws:s3:::${ESMKinesisFailureBucketName}
+          Destination: !Sub arn:aws:s3:::${ESMKinesisFailureNotificationsBucketName}
       FilterCriteria:
         Filters:
           - Pattern: !Sub '{"data": {"communicationType": ["INFORMAL"], "eventName": ["INSERT"], "tableName": ["${PnTimelinesTableName}"]}}'
