@@ -1,5 +1,7 @@
 package it.pagopa.pn.workflowmanager.action.sendcourtesy.sender.impl;
 
+import it.pagopa.pn.commons.log.PnAuditLogEvent;
+import it.pagopa.pn.commons.log.PnAuditLogEventType;
 import it.pagopa.pn.workflowmanager.action.sendcourtesy.CourtesyMessageUtils;
 import it.pagopa.pn.workflowmanager.action.sendcourtesy.CourtesyRetryableErrorClassifier;
 import it.pagopa.pn.workflowmanager.dto.address.CourtesyDigitalAddressInt;
@@ -18,8 +20,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class InformalSmsCourtesySenderTest {
@@ -52,10 +53,11 @@ class InformalSmsCourtesySenderTest {
                 .address("123")
                 .build();
         when(templateGeneratorService.generateSmsTemplate(notification, recipient)).thenReturn("subject");
-        doReturn(null).when(pnExternalChannelsClient).sendNotificationSMS(org.mockito.ArgumentMatchers.anyString(), org.mockito.ArgumentMatchers.anyString(), org.mockito.ArgumentMatchers.anyString(), org.mockito.ArgumentMatchers.any());
+        when(auditLogService.buildAuditLogEvent("IUN-1", 0, PnAuditLogEventType.AUD_COM_SEND_SMS_COURTESY, "Sending courtesy email for notification {} to recipient {} with requestId {}", "IUN-1", 0, "SEND_COURTESY_MESSAGE.IUN_IUN-1.RECINDEX_0.COURTESYADDRESSTYPE_SMS")).thenReturn(new PnAuditLogEvent(PnAuditLogEventType.AUD_COM_SEND_SMS_COURTESY, null, null));
 
         CourtesySendOutcome outcome = sender.send(notification, address, 0);
 
+        verify(pnExternalChannelsClient).sendNotificationSMS(any(), any(), any(), any());
         assertEquals(CourtesySendOutcome.SENT, outcome);
     }
 }
