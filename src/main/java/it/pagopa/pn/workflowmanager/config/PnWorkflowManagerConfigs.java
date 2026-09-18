@@ -39,6 +39,9 @@ public class PnWorkflowManagerConfigs {
     private Integer ioPollingMaxMins;
     List<ConsentDto> consentsForPlatformSearch;
 
+    private Boolean smsCourtesyEnabled;
+
+
     @Data
     public static class Topics {
         private String actionQueue;
