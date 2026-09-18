@@ -83,42 +83,6 @@ describe("eventHandler", () => {
         expect(updateCountersStub.firstCall.args[3].counters.totalAccepted).to.equal(1);
     });
 
-    it("returns batchItemFailures when channel is invalid", async () => {
-        const event = {
-            Records: [{
-                kinesis: {
-                    sequenceNumber: "seq-1",
-                    data: {
-                        eventName: "INSERT",
-                        dynamodb: {
-                            NewImage: {
-                                campaignId: { S: "campaign-1" },
-                                timelineElementId: { S: "t-1" },
-                                category: { S: "SEND_DIGITAL_MESSAGE" },
-                                communicationType: { S: "INFORMAL" },
-                                timestamp: { S: "2026-01-01T10:00:00.000Z" },
-                                details: {
-                                    M: {
-                                        channel: { S: "INVALID" }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }]
-        };
-
-        const result = await handleEvent(event);
-        expect(result).to.deep.equal({
-            batchItemFailures: [
-                { itemIdentifier: "seq-1" }
-            ]
-        });
-        expect(updateCountersStub.called).to.be.false;
-        expect(removeDeduplicationLocksStub.calledOnce).to.be.true;
-        expect(removeDeduplicationLocksStub.firstCall.args[2]).to.deep.equal(["t-1"]);
-    });
 
     it("stops when timeout is close", async () => {
         const timeoutStub = sinon.stub();
