@@ -49,7 +49,7 @@ public class AddressSearchUtils {
             AddressSearchContext ctx,
             SourceSearchOutcome outcome
     ) {
-        TimelineElementInternal timelineElement = timelineUtils.buildAvailabilitySourceTimelineElement(ctx.recipientIndex(), ctx.notification(), outcome.source(), outcome.found(), ctx.attempt(), outcome.address());
+        TimelineElementInternal timelineElement = timelineUtils.buildAvailabilitySourceTimelineElement(ctx.recipientIndex(), ctx.notification(), outcome.source(), outcome.found(), ctx.attempt(), outcome.address(), outcome.tosAccepted(), ctx.channel().name());
         timelineService.addTimelineElement(timelineElement, ctx.notification());
     }
 

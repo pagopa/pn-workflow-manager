@@ -4,7 +4,6 @@ import it.pagopa.pn.workflowmanager.action.searchaddress.dto.SourceSearchOutcome
 import it.pagopa.pn.workflowmanager.action.utils.TimelineUtils;
 import it.pagopa.pn.workflowmanager.dto.action.common.ActionType;
 import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
-import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.EventId;
@@ -88,7 +87,9 @@ class AddressSearchUtilsTest {
                 DigitalAddressSourceInt.SPECIAL,
                 true,
                 context.attempt(),
-                null
+                null,
+                true,
+                ChannelType.PEC.name()
         )).thenReturn(timelineElement);
 
         utils.storeSearchOutcome(context, outcome);

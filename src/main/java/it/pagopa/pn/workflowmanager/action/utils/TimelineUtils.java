@@ -669,7 +669,7 @@ public class TimelineUtils {
     }
 
     public TimelineElementInternal buildAvailabilitySourceTimelineElement(Integer recIndex, NotificationInt notification, DigitalAddressSourceInt source, boolean isAvailable,
-                                                                          Integer sentAttemptMade, InformalDigitalAddressInt digitalAddress) {
+                                                                          Integer sentAttemptMade, InformalDigitalAddressInt digitalAddress, Boolean isTosAccepted, String channel) {
         log.debug("buildAvailabilitySourceTimelineElement - IUN={} and id={}", notification.getIun(), recIndex);
 
         String elementId = TimelineEventId.GET_ADDRESS.buildEventId(
@@ -677,6 +677,7 @@ public class TimelineUtils {
                         .iun(notification.getIun())
                         .recIndex(recIndex)
                         .source(source)
+                        .channel(channel)
                         .sentAttemptMade(sentAttemptMade)
                         .build()
         );
@@ -687,6 +688,8 @@ public class TimelineUtils {
                 .isAvailable(isAvailable)
                 .attemptDate(Instant.now())
                 .digitalAddress(digitalAddress)
+                .isTosAccepted(isTosAccepted)
+                .channel(DigitalChannelsInt.valueOf(channel))
                 .build();
 
         return buildTimeline(notification, TimelineElementCategoryInt.GET_ADDRESS, elementId, details);
