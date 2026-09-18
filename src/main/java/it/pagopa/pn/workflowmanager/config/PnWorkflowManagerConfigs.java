@@ -47,6 +47,7 @@ public class PnWorkflowManagerConfigs {
         private String ioQueue;
         private String safeStorageEvents;
         private String informalQueue;
+        private String nationalRegistriesToWorkflowManager;
     }
 
     @Data
