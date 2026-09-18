@@ -7,12 +7,12 @@ import it.pagopa.pn.workflowmanager.action.utils.ChannelSenderUtils;
 import it.pagopa.pn.workflowmanager.action.utils.WorkflowUtils;
 import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
 import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.DigitalChannelsInt;
 import it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.externalchannel.PnExternalChannelsClient;
-import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
-import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
 import it.pagopa.pn.workflowmanager.service.AuditLogService;
 import it.pagopa.pn.workflowmanager.service.TemplateGeneratorService;
 import lombok.RequiredArgsConstructor;
@@ -56,7 +56,7 @@ public class SmsChannelSender implements ChannelSender {
 
         String requestId = ChannelSenderUtils.buildSendDigitalMessageSkipTimelineElementId(recIndex, notification.getIun(), getChannelType());
         channelSenderUtils.saveSendDigitalMessageSkipElement(
-                recIndex, notification, requestId, DigitalChannelsInt.SMS, DigitalAddressSourceInt.SPECIAL
+                recIndex, notification, requestId, DigitalChannelsInt.SMS
         );
         workflowUtils.advanceWorkflow(notification.getIun(), recIndex, getChannelType(), campaign, notification.getRecipients().get(recIndex).getRecipientType());
     }

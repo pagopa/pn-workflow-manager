@@ -2,6 +2,7 @@ package it.pagopa.pn.workflowmanager.config;
 
 import it.pagopa.pn.commons.conf.SharedAutoConfiguration;
 import it.pagopa.pn.workflowmanager.dto.address.PhysicalAddressInt;
+import it.pagopa.pn.workflowmanager.dto.consent.ConsentDto;
 import jakarta.annotation.PostConstruct;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -32,8 +33,11 @@ public class PnWorkflowManagerConfigs {
     private String safeStorageBaseUrl;
     private String paperMessagesClientBaseUrl;
     private String externalChannelsBaseUrl;
+    private String userAttributesBaseUrl;
+    private String nationalRegistriesBaseUrl;
 
     private Integer ioPollingMaxMins;
+    List<ConsentDto> consentsForPlatformSearch;
 
     @Data
     public static class Topics {
