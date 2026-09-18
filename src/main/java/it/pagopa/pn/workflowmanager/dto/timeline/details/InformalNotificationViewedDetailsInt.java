@@ -14,17 +14,19 @@ import java.time.Instant;
 public class InformalNotificationViewedDetailsInt extends CategoryTypeTimelineElementDetailsInt implements RecipientReachedTimelineElement {
     private int recIndex;
     private Instant eventTimestamp;
+    private boolean firstView;
     private String sourceChannel;
     private String sourceChannelDetails;
 
     @Override
     public String toLog() {
         return String.format(
-                "recIndex=%d sourceChannel=%s sourceChannelDetails=%s eventTimestamp=%s",
+                "recIndex=%d sourceChannel=%s sourceChannelDetails=%s eventTimestamp=%s firstView=%b",
                 recIndex,
                 sourceChannel,
                 sourceChannelDetails,
-                eventTimestamp
+                eventTimestamp,
+                firstView
         );
     }
 }
