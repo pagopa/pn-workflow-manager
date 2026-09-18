@@ -991,7 +991,7 @@ Resources:
       Handler: "index.handler"
       Code:
         S3Bucket: !Ref MicroserviceBucketName
-        S3Key: !Sub "${MicroserviceBucketBaseKey}/functions_zip/campaignEventsCollector.zip"
+        S3Key: !Sub "${MicroserviceBucketBaseKey}/functions_zip/campaign-events-collector.zip"
       Role: !GetAtt CampaignEventsCollectorLambdaRole.Arn
       Environment:
         Variables:
