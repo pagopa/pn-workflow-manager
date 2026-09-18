@@ -68,7 +68,7 @@ class StartWorkflowActionHandlerTest {
         handler.startWorkflowAction(TEST_IUN, TEST_REC_INDEX, details);
 
         // Assert
-        verify(addressSearchOrchestrator).handle(any(AddressSearchContext.class));
+        verify(addressSearchOrchestrator).start(any(AddressSearchContext.class));
     }
 
 

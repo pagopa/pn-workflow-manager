@@ -15,7 +15,6 @@ import it.pagopa.pn.workflowmanager.service.TimelineService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -24,7 +23,6 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -75,12 +73,12 @@ class PublicRegistryUtilsTest {
     }
 
     @Test
-    void generateCorrelationIdBuildsNationalRegistryEventId() {
+    void generateCorrelationIdBuildsPublicRegistryEventId() {
         String iun = "IUN-PR-003";
 
         String result = utils.generateCorrelationId(iun, 2, ContactPhaseInt.SEND_ATTEMPT, 3, DeliveryModeInt.DIGITAL);
 
-        String expected = TimelineEventId.NATIONAL_REGISTRY_CALL.buildEventId(
+        String expected = TimelineEventId.PUBLIC_REGISTRY_CALL.buildEventId(
                 EventId.builder()
                         .iun(iun)
                         .recIndex(2)

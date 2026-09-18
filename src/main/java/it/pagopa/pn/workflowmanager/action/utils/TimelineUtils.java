@@ -3,7 +3,6 @@ package it.pagopa.pn.workflowmanager.action.utils;
 import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
 import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
-import it.pagopa.pn.workflowmanager.dto.address.LegalDigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.address.PhysicalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.event.NotificationPaidInt;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
@@ -727,8 +726,8 @@ public class TimelineUtils {
         return buildTimeline(notification, TimelineElementCategoryInt.PUBLIC_REGISTRY_RESPONSE, eventId, details);
     }
 
-    public void addAvailabilitySourceToTimeline(Integer recIndex, NotificationInt notification, DigitalAddressSourceInt addressSource, boolean isAvailable, InformalDigitalAddressInt digitalAddress) {
-        TimelineElementInternal element = buildAvailabilitySourceTimelineElement(recIndex, notification, addressSource, isAvailable, ZERO_SENT_ATTEMPT_NUMBER, digitalAddress);
+    public void addAvailabilitySourceToTimeline(Integer recIndex, NotificationInt notification, DigitalAddressSourceInt addressSource, boolean isAvailable, InformalDigitalAddressInt digitalAddress, boolean isTosAccepted, String channel) {
+        TimelineElementInternal element = buildAvailabilitySourceTimelineElement(recIndex, notification, addressSource, isAvailable, ZERO_SENT_ATTEMPT_NUMBER, digitalAddress, isTosAccepted, channel);
         timelineService.addTimelineElement(element, notification);
     }
 }

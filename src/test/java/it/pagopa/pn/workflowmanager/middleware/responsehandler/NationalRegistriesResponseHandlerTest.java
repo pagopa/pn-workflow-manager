@@ -132,6 +132,8 @@ class NationalRegistriesResponseHandlerTest {
                 org.mockito.Mockito.any(),
                 org.mockito.Mockito.any(),
                 org.mockito.Mockito.anyBoolean(),
+                org.mockito.Mockito.any(),
+                org.mockito.Mockito.anyBoolean(),
                 org.mockito.Mockito.any()
         );
     }
