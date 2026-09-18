@@ -35,6 +35,6 @@ public class StartWorkflowActionHandler {
     private void startAddressSearch(NotificationInt notificationInt, ChannelSender channelSender, int recIndex) {
         log.debug("Starting address search for iun {} recipient {} channel {}", notificationInt.getIun(), recIndex, channelSender.getChannelType());
         AddressSearchContext context = new AddressSearchContext(channelSender.getChannelType(), notificationInt.getSentAt(), notificationInt, recIndex, null);
-        addressSearchOrchestrator.handle(context);
+        addressSearchOrchestrator.start(context);
     }
 }

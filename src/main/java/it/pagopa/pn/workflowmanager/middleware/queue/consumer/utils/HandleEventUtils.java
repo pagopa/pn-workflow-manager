@@ -16,6 +16,15 @@ import static it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCo
 public class HandleEventUtils {
     private HandleEventUtils() {}
 
+    public static void handleException(MessageHeaders headers, Exception ex) {
+        if(headers != null){
+            StandardEventHeader standardEventHeader = mapStandardEventHeader(headers);
+            log.error("Generic exception for iun={} ex=", standardEventHeader.getIun(), ex);
+        }else {
+            log.error("Generic exception ex ", ex);
+        }
+    }
+
     public static StandardEventHeader mapStandardEventHeader(MessageHeaders headers) {
         if(headers != null){
             return StandardEventHeader.builder()
