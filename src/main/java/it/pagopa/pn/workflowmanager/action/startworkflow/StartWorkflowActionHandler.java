@@ -1,5 +1,7 @@
 package it.pagopa.pn.workflowmanager.action.startworkflow;
 
+import it.pagopa.pn.workflowmanager.action.searchaddress.AddressSearchContext;
+import it.pagopa.pn.workflowmanager.action.searchaddress.AddressSearchOrchestrator;
 import it.pagopa.pn.workflowmanager.dto.action.details.StartWorkflowDetails;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
@@ -15,7 +17,7 @@ import org.springframework.stereotype.Component;
 public class StartWorkflowActionHandler {
     private final ChannelSenderFactory channelSenderFactory;
     private final NotificationService notificationService;
-    private final CampaignService campaignService;
+    private final AddressSearchOrchestrator addressSearchOrchestrator;
 
     public void startWorkflowAction(String iun, int recIndex, StartWorkflowDetails startWorkflowDetails) {
         log.info("Start informal notification workflow for recipient - iun {} id {} channel {}",
@@ -25,16 +27,14 @@ public class StartWorkflowActionHandler {
 
         NotificationInt notificationInt = notificationService.getInformalNotificationByIun(iun);
 
-        log.debug("Retrieving campaign for campaignId {} - iun {}", notificationInt.getCampaignId(), iun);
-        Campaign campaign = campaignService.getCampaignByCampaignIdAndSenderId(
-                notificationInt.getCampaignId(),
-                notificationInt.getSender().getPaId()
-        );
-
-        log.info("Sending notification via channel {} for iun {} recipient {} campaignId {}",
-                startWorkflowDetails.getChannel(), iun, recIndex, campaign.getCampaignId());
-        channelSender.send(notificationInt, campaign, recIndex, startWorkflowDetails.getStepIdx());
+        startAddressSearch(notificationInt, channelSender, recIndex);
 
         log.info("Workflow started successfully for iun {} recipient {}", iun, recIndex);
+    }
+
+    private void startAddressSearch(NotificationInt notificationInt, ChannelSender channelSender, int recIndex) {
+        log.debug("Starting address search for iun {} recipient {} channel {}", notificationInt.getIun(), recIndex, channelSender.getChannelType());
+        AddressSearchContext context = new AddressSearchContext(channelSender.getChannelType(), notificationInt.getSentAt(), notificationInt, recIndex, null);
+        addressSearchOrchestrator.start(context);
     }
 }
