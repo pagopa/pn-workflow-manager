@@ -3,6 +3,7 @@ package it.pagopa.pn.workflowmanager.action.utils;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.RecipientTypeInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.DigitalChannelsInt;
+import it.pagopa.pn.workflowmanager.dto.timeline.details.SendDigitalMessageDetailsInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.SendDigitalMessageFeedbackDetailsInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.SendDigitalMessageSkipDetailsInt;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
@@ -29,7 +30,8 @@ public class RecipientDeliveryAnalyzer {
     private static final Set<ChannelType> VOLATILE_CHANNELS = Set.of(
             ChannelType.IO,
             ChannelType.EMAIL,
-            ChannelType.SMS
+            ChannelType.SMS,
+            ChannelType.PEC
     );
 
     public RecipientDeliveryInfo getDeliveryInfo(List<TimelineElementInternal> timelineElements,
@@ -78,14 +80,13 @@ public class RecipientDeliveryAnalyzer {
             int recIndex,
             ChannelType channel
     ) {
-        if (ChannelType.IO.equals(channel)) {
-            return hasAppIoFeedbackInTimeline(timelineElements, recIndex);
-        } else if (ChannelType.EMAIL.equals(channel)) {
-            return hasDigitalChannelSkipInTimeline(timelineElements, recIndex, DigitalChannelsInt.EMAIL);
-        } else if (ChannelType.SMS.equals(channel)) {
-            return hasDigitalChannelSkipInTimeline(timelineElements, recIndex, DigitalChannelsInt.SMS);
-        }
-        return false;
+        return switch (channel) {
+            case ChannelType.IO -> hasAppIoFeedbackInTimeline(timelineElements, recIndex);
+            case ChannelType.EMAIL -> missingSendDigitalMessageInTimeline(timelineElements, recIndex, DigitalChannelsInt.EMAIL);
+            case ChannelType.SMS -> missingSendDigitalMessageInTimeline(timelineElements, recIndex, DigitalChannelsInt.SMS);
+            case ChannelType.PEC -> missingSendDigitalMessageInTimeline(timelineElements, recIndex, DigitalChannelsInt.PEC);
+            default -> false;
+        };
     }
 
     private static boolean hasAppIoFeedbackInTimeline(List<TimelineElementInternal> timelineElements, int recIndex) {
@@ -97,16 +98,16 @@ public class RecipientDeliveryAnalyzer {
                 .anyMatch(d -> d.getRecIndex() == recIndex && DigitalChannelsInt.IO.equals(d.getChannel()));
     }
 
-    private static boolean hasDigitalChannelSkipInTimeline(
+    private static boolean missingSendDigitalMessageInTimeline(
             List<TimelineElementInternal> timelineElements,
             int recIndex,
             DigitalChannelsInt channel
     ) {
         return timelineElements.stream()
-                .filter(e -> SEND_DIGITAL_MESSAGE_SKIP.equals(e.getCategory()))
+                .filter(e -> SEND_DIGITAL_MESSAGE.equals(e.getCategory()))
                 .map(TimelineElementInternal::getDetails)
-                .filter(SendDigitalMessageSkipDetailsInt.class::isInstance)
-                .map(SendDigitalMessageSkipDetailsInt.class::cast)
-                .anyMatch(d -> d.getRecIndex() == recIndex && channel.equals(d.getChannel()));
+                .filter(SendDigitalMessageDetailsInt.class::isInstance)
+                .map(SendDigitalMessageDetailsInt.class::cast)
+                .noneMatch(d -> d.getRecIndex() == recIndex && channel.equals(d.getChannel()));
     }
 }
