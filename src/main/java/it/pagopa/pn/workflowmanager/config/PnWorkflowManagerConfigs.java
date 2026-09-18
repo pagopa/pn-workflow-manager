@@ -39,6 +39,10 @@ public class PnWorkflowManagerConfigs {
     private Integer ioPollingMaxMins;
     List<ConsentDto> consentsForPlatformSearch;
 
+    private Boolean smsCourtesyEnabled;
+    private CourtesyRetry courtesyRetry;
+    private Boolean emailCourtesyRequiresAttachments;
+
     @Data
     public static class Topics {
         private String actionQueue;
@@ -73,6 +77,19 @@ public class PnWorkflowManagerConfigs {
                     .municipality(senderAddress.getCity())
                     .foreignState(senderAddress.getCountry())
                     .build();
+        }
+    }
+
+    @Data
+    public static class CourtesyRetry {
+        private IntervalsMinutes intervalsMinutes;
+
+        @Data
+        public static class IntervalsMinutes {
+            private List<Integer> io;
+            private List<Integer> sms;
+            private List<Integer> email;
+            private List<Integer> tpp;
         }
     }
 

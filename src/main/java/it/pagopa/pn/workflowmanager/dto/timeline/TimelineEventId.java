@@ -228,6 +228,7 @@ public enum TimelineEventId {
                     .withIun(eventId.getIun())
                     .withRecIndex(eventId.getRecIndex())
                     .withCourtesyAddressType(eventId.getCourtesyAddressType())
+                    .withOptin(eventId.getOptin())
                     .build();
         }
     },

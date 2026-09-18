@@ -1,6 +1,7 @@
 package it.pagopa.pn.workflowmanager.action.utils;
 
 import it.pagopa.pn.commons.exceptions.PnInternalException;
+import it.pagopa.pn.workflowmanager.dto.address.CourtesyDigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
 import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.address.PhysicalAddressInt;
@@ -12,6 +13,7 @@ import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRe
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.CategorizedAttachmentsResultInt;
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.ResponseStatusInt;
 import it.pagopa.pn.workflowmanager.dto.ext.paperchannel.AnalogDtoInt;
+import it.pagopa.pn.workflowmanager.dto.io.IoSendMessageResultInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.*;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.*;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.model.SendResponse;
@@ -706,5 +708,36 @@ public class TimelineUtils {
                 .build();
 
         return buildTimeline(notification, TimelineElementCategoryInt.PUBLIC_REGISTRY_CALL, eventId, details);
+    }
+
+    public TimelineElementInternal buildSendCourtesyMessageTimelineElement(Integer recIndex, NotificationInt notification, CourtesyDigitalAddressInt address,
+                                                                           Instant sendDate, String eventId, IoSendMessageResultInt ioSendMessageResult) {
+        log.debug("buildSendCourtesyMessageTimelineElement - IUN={} and id={}", notification.getIun(), recIndex);
+
+        SendCourtesyMessageDetailsInt details = SendCourtesyMessageDetailsInt.builder()
+                .recIndex(recIndex)
+                .digitalAddress(address)
+                .sendDate(sendDate)
+                .ioSendMessageResult(ioSendMessageResult)
+                .build();
+
+
+        return buildTimeline(notification, TimelineElementCategoryInt.SEND_COURTESY_MESSAGE, eventId, details);
+    }
+
+    public TimelineElementInternal buildCourtesyChannelFailedTimelineElement(Integer recIndex, NotificationInt notification,
+                                                                             CourtesyDigitalAddressInt.COURTESY_DIGITAL_ADDRESS_TYPE_INT channelType,
+                                                                             DeliveryModeInt deliveryMode,
+                                                                             CourtesyChannelFailureReasonInt failureReason,
+                                                                             String eventId) {
+        log.debug("buildCourtesyChannelFailedTimelineElement - IUN={} and id={}", notification.getIun(), recIndex);
+
+        CourtesyChannelFailedDetailsInt details = CourtesyChannelFailedDetailsInt.builder()
+                .channelType(channelType)
+                .deliveryMode(deliveryMode)
+                .failureReason(failureReason)
+                .build();
+
+        return buildTimeline(notification, TimelineElementCategoryInt.COURTESY_CHANNEL_FAILED, eventId, details);
     }
 }

@@ -8,6 +8,7 @@ import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.LocalizedMessa
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationMessageInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
+import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.ExternalChannelEventType;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.externalchannels.api.DigitalCourtesyMessagesApi;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.externalchannels.api.DigitalLegalMessagesApi;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.externalchannels.model.DigitalCourtesyMailRequest;
@@ -208,7 +209,8 @@ class PnExternalChannelsClientImplTest {
                 notification,
                 recipient,
                 digitalAddress,
-                List.of("aarKey")
+                List.of("aarKey"),
+                ExternalChannelEventType.INFORMAL
         );
 
         ArgumentCaptor<DigitalCourtesyMailRequest> requestCaptor = ArgumentCaptor.forClass(DigitalCourtesyMailRequest.class);
@@ -254,7 +256,7 @@ class PnExternalChannelsClientImplTest {
 
         PnInternalException thrown = assertThrows(
                 PnInternalException.class,
-                () -> client.sendNotificationEMAIL(requestId, "body", "subject", notification, recipient, digitalAddress, List.of("aarKey"))
+                () -> client.sendNotificationEMAIL(requestId, "body", "subject", notification, recipient, digitalAddress, List.of("aarKey"), ExternalChannelEventType.INFORMAL)
         );
 
         assertSame(apiException, thrown.getCause());
@@ -269,7 +271,7 @@ class PnExternalChannelsClientImplTest {
 
         when(cfg.getCxId()).thenReturn(cxId);
 
-        client.sendNotificationSMS(requestIdx, textMessage, senderDigitalAddress);
+        client.sendNotificationSMS(requestIdx, textMessage, senderDigitalAddress, ExternalChannelEventType.INFORMAL);
 
         ArgumentCaptor<DigitalCourtesySmsRequest> requestCaptor = ArgumentCaptor.forClass(DigitalCourtesySmsRequest.class);
         verify(digitalCourtesyMessagesApi).sendCourtesyShortMessage(eq(requestIdx), eq(cxId), requestCaptor.capture());
@@ -296,7 +298,7 @@ class PnExternalChannelsClientImplTest {
 
         PnInternalException thrown = assertThrows(
                 PnInternalException.class,
-                () -> client.sendNotificationSMS(requestIdx, "text", "+39123456789")
+                () -> client.sendNotificationSMS(requestIdx, "text", "+39123456789", ExternalChannelEventType.INFORMAL)
         );
 
         assertSame(apiException, thrown.getCause());
