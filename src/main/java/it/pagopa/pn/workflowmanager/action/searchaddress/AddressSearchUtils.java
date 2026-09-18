@@ -4,9 +4,7 @@ import it.pagopa.pn.workflowmanager.action.searchaddress.dto.SourceSearchOutcome
 import it.pagopa.pn.workflowmanager.action.utils.TimelineUtils;
 import it.pagopa.pn.workflowmanager.dto.action.common.ActionType;
 import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
-import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
-import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.EventId;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineEventId;
@@ -51,7 +49,7 @@ public class AddressSearchUtils {
             AddressSearchContext ctx,
             SourceSearchOutcome outcome
     ) {
-        TimelineElementInternal timelineElement = timelineUtils.buildAvailabilitySourceTimelineElement(ctx.recipientIndex(), ctx.notification(), outcome.source(), outcome.found(), ctx.attempt());
+        TimelineElementInternal timelineElement = timelineUtils.buildAvailabilitySourceTimelineElement(ctx.recipientIndex(), ctx.notification(), outcome.source(), outcome.found(), ctx.attempt(), outcome.address(), outcome.tosAccepted(), ctx.channel().name());
         timelineService.addTimelineElement(timelineElement, ctx.notification());
     }
 

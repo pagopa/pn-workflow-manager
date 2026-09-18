@@ -12,6 +12,7 @@ import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRe
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.CategorizedAttachmentsResultInt;
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.ResponseStatusInt;
 import it.pagopa.pn.workflowmanager.dto.ext.paperchannel.AnalogDtoInt;
+import it.pagopa.pn.workflowmanager.dto.ext.publicregistry.NationalRegistriesResponse;
 import it.pagopa.pn.workflowmanager.dto.timeline.*;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.*;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.model.SendResponse;
@@ -39,6 +40,8 @@ import static it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCo
 @RequiredArgsConstructor
 public class TimelineUtils {
     private final TimelineService timelineService;
+
+    public static final int ZERO_SENT_ATTEMPT_NUMBER = 0;
 
     public TimelineElementInternal buildTimeline(NotificationInt notification,
                                                  TimelineElementCategoryInt category,
@@ -665,7 +668,7 @@ public class TimelineUtils {
     }
 
     public TimelineElementInternal buildAvailabilitySourceTimelineElement(Integer recIndex, NotificationInt notification, DigitalAddressSourceInt source, boolean isAvailable,
-                                                                          int sentAttemptMade) {
+                                                                          Integer sentAttemptMade, InformalDigitalAddressInt digitalAddress, Boolean isTosAccepted, String channel) {
         log.debug("buildAvailabilitySourceTimelineElement - IUN={} and id={}", notification.getIun(), recIndex);
 
         String elementId = TimelineEventId.GET_ADDRESS.buildEventId(
@@ -673,6 +676,7 @@ public class TimelineUtils {
                         .iun(notification.getIun())
                         .recIndex(recIndex)
                         .source(source)
+                        .channel(channel)
                         .sentAttemptMade(sentAttemptMade)
                         .build()
         );
@@ -682,6 +686,9 @@ public class TimelineUtils {
                 .digitalAddressSource(source)
                 .isAvailable(isAvailable)
                 .attemptDate(Instant.now())
+                .digitalAddress(digitalAddress)
+                .isTosAccepted(isTosAccepted)
+                .channel(DigitalChannelsInt.valueOf(channel))
                 .build();
 
         return buildTimeline(notification, TimelineElementCategoryInt.GET_ADDRESS, elementId, details);
@@ -702,5 +709,25 @@ public class TimelineUtils {
                 .build();
 
         return buildTimeline(notification, TimelineElementCategoryInt.PUBLIC_REGISTRY_CALL, eventId, details);
+    }
+
+    public TimelineElementInternal buildPublicRegistryResponseCallTimelineElement(NotificationInt notification, Integer recIndex, NationalRegistriesResponse response) {
+        log.debug("buildPublicRegistryResponseCallTimelineElement - iun={} and id={}", notification.getIun(), recIndex);
+
+        String eventId = TimelineEventId.PUBLIC_REGISTRY_RESPONSE.buildEventId(response.getCorrelationId());
+
+        PublicRegistryResponseDetailsInt details = PublicRegistryResponseDetailsInt.builder()
+                .recIndex(recIndex)
+                .digitalAddress(response.getDigitalAddress())
+                .physicalAddress(response.getPhysicalAddress())
+                .requestTimelineId(response.getCorrelationId())
+                .build();
+
+        return buildTimeline(notification, TimelineElementCategoryInt.PUBLIC_REGISTRY_RESPONSE, eventId, details);
+    }
+
+    public void addAvailabilitySourceToTimeline(Integer recIndex, NotificationInt notification, DigitalAddressSourceInt addressSource, boolean isAvailable, InformalDigitalAddressInt digitalAddress, boolean isTosAccepted, String channel) {
+        TimelineElementInternal element = buildAvailabilitySourceTimelineElement(recIndex, notification, addressSource, isAvailable, ZERO_SENT_ATTEMPT_NUMBER, digitalAddress, isTosAccepted, channel);
+        timelineService.addTimelineElement(element, notification);
     }
 }

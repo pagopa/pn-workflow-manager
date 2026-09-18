@@ -1,7 +1,5 @@
 package it.pagopa.pn.workflowmanager.action.searchaddress;
 
-import it.pagopa.pn.workflowmanager.action.searchaddress.dto.SourceChannelKey;
-import it.pagopa.pn.workflowmanager.action.searchaddress.strategy.AddressSearchStrategy;
 import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
 import jakarta.annotation.PostConstruct;
@@ -9,19 +7,14 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.*;
 
 @Component
 @AllArgsConstructor
 public class ChannelAddressSourceConfigResolver {
 
     private final SearchDigitalDomicileParameterConsumer parameterConsumer;
-    private final List<AddressSearchStrategy> addressSearchStrategies;
+    private final AddressSearchRegistry addressSearchRegistry;
 
     @PostConstruct
     public void validateRules() {
@@ -45,7 +38,7 @@ public class ChannelAddressSourceConfigResolver {
     public Optional<List<DigitalAddressSourceInt>> resolveSources(ChannelType channel, Instant sentAt) {
         return parameterConsumer.getSearchDigitalDomicileConfigs()
                 .stream()
-                .filter(config -> config.getValidFrom().isBefore(sentAt))
+                .filter(config -> !config.getValidFrom().isAfter(sentAt))
                 .max(Comparator.comparing(SearchDigitalDomicileConfig::getValidFrom))
                 .map(config -> getSourcesByChannel(config, channel));
     }
@@ -78,10 +71,6 @@ public class ChannelAddressSourceConfigResolver {
     }
 
     private boolean isSupported(ChannelType channel, DigitalAddressSourceInt source) {
-        SourceChannelKey key = new SourceChannelKey(source, channel);
-        return addressSearchStrategies.stream()
-                .flatMap(strategy -> strategy.supportedKeys().stream())
-                .collect(Collectors.toSet())
-                .contains(key);
+        return addressSearchRegistry.find(source, channel) != null;
     }
 }

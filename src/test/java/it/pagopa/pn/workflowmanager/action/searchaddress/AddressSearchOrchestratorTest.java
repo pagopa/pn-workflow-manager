@@ -1,11 +1,14 @@
 package it.pagopa.pn.workflowmanager.action.searchaddress;
 
+import it.pagopa.pn.workflowmanager.action.searchaddress.dto.SourceSearchOutcome;
 import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -33,26 +36,72 @@ class AddressSearchOrchestratorTest {
     }
 
     @Test
-    void handleSchedulesSpecialWhenNoSourcesAreConfigured() {
+    void handleDelegatesToProgressorWithConfiguredSources() {
         AddressSearchContext context = buildContext();
-        List<DigitalAddressSourceInt> sources = List.of(DigitalAddressSourceInt.SPECIAL);
-        when(configResolver.resolveSources(ChannelType.PEC, context.sentAt())).thenReturn(Optional.empty());
+        List<DigitalAddressSourceInt> sources = List.of(DigitalAddressSourceInt.PLATFORM, DigitalAddressSourceInt.SPECIAL);
+        when(configResolver.resolveSources(ChannelType.PEC, context.sentAt())).thenReturn(Optional.of(sources));
 
-        orchestrator.handle(context);
+        orchestrator.start(context);
 
         verify(progressor).run(context, sources, 0);
         verifyNoInteractions(searchUtils);
     }
 
     @Test
-    void handleDelegatesToProgressorWhenSourcesAreConfigured() {
+    void handleDelegatesToProgressorWithSpecialWhenNoSourcesAreConfigured() {
         AddressSearchContext context = buildContext();
-        List<DigitalAddressSourceInt> sources = List.of(DigitalAddressSourceInt.PLATFORM, DigitalAddressSourceInt.SPECIAL);
-        when(configResolver.resolveSources(ChannelType.PEC, context.sentAt())).thenReturn(Optional.of(sources));
+        List<DigitalAddressSourceInt> sources = List.of(DigitalAddressSourceInt.SPECIAL);
+        when(configResolver.resolveSources(ChannelType.PEC, context.sentAt())).thenReturn(Optional.empty());
 
-        orchestrator.handle(context);
+        orchestrator.start(context);
 
         verify(progressor).run(context, sources, 0);
+        verifyNoInteractions(searchUtils);
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "IO",
+            "ANALOG"
+    })
+    void handleSchedulesSendChannelMessageWhenChannelDoesntNeedSearches(ChannelType channel) {
+        Instant sentAt = Instant.parse("2026-03-10T11:15:30Z");
+        NotificationInt notification = NotificationInt.builder()
+                .iun("IUN-ORCH")
+                .sentAt(sentAt)
+                .build();
+        AddressSearchContext context = new AddressSearchContext(channel, sentAt, notification, 0, 1);
+
+        orchestrator.start(context);
+
+        verify(searchUtils).scheduleSendChannelMessageAction(context, DigitalAddressSourceInt.SPECIAL);
+        verifyNoInteractions(progressor);
+        verifyNoInteractions(configResolver);
+    }
+
+    @Test
+    void resumeDelegatesToProgressorWithResolvedSourcesWhenChannelIsPec() {
+        AddressSearchContext context = buildContext();
+        List<DigitalAddressSourceInt> sources = List.of(DigitalAddressSourceInt.PLATFORM, DigitalAddressSourceInt.SPECIAL);
+        SourceSearchOutcome outcome = SourceSearchOutcome.notFound(DigitalAddressSourceInt.PLATFORM);
+        when(configResolver.resolveSources(ChannelType.PEC, context.sentAt())).thenReturn(Optional.of(sources));
+
+        orchestrator.resume(context, DigitalAddressSourceInt.PLATFORM, outcome);
+
+        verify(progressor).resumeAfterAsyncOutcome(context, DigitalAddressSourceInt.PLATFORM, outcome, sources);
+        verifyNoInteractions(searchUtils);
+    }
+
+    @Test
+    void resumeUsesDefaultSpecialSourceWhenNoSourcesAreConfigured() {
+        AddressSearchContext context = buildContext();
+        List<DigitalAddressSourceInt> defaultSources = List.of(DigitalAddressSourceInt.SPECIAL);
+        SourceSearchOutcome outcome = SourceSearchOutcome.notFound(DigitalAddressSourceInt.SPECIAL);
+        when(configResolver.resolveSources(ChannelType.PEC, context.sentAt())).thenReturn(Optional.empty());
+
+        orchestrator.resume(context, DigitalAddressSourceInt.SPECIAL, outcome);
+
+        verify(progressor).resumeAfterAsyncOutcome(context, DigitalAddressSourceInt.SPECIAL, outcome, defaultSources);
         verifyNoInteractions(searchUtils);
     }
 

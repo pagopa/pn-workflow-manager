@@ -119,6 +119,19 @@ Resources:
         AlarmSNSTopicName: !Ref AlarmSNSTopicName
         DelaySeconds: 10
 
+  NationalRegistries2WorkflowManagerQueue:
+    Type: AWS::CloudFormation::Stack
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/sqs-queue.yaml"
+      Parameters:
+        QueueName: !Sub '${ProjectName}-nationalregistries_to_workflowmanager'
+        DelaySeconds: 1
+        VisibilityTimeout: 60
+        MaxReceiveCount: 10
+        AlarmSNSTopicName: !Ref AlarmSNSTopicName
+
 Outputs:
   # Queues
   WorkflowManagerActionQueueName:
@@ -220,3 +233,19 @@ Outputs:
   # Log groups
   EcsWorkflowLogGroup:
     Value: !GetAtt WorkflowManagerLogGroup.Outputs.LogGroupName
+
+  NationalRegistries2WorkflowManagerQueueName:
+    Value: !GetAtt NationalRegistries2WorkflowManagerQueue.Outputs.QueueName
+    Description: workflow-manager analog-event queue name
+  NationalRegistries2WorkflowManagerQueueURL:
+    Value: !GetAtt NationalRegistries2WorkflowManagerQueue.Outputs.QueueURL
+    Description: workflow-manager analog-event queue URL
+  NationalRegistries2WorkflowManagerQueueARN:
+    Value: !GetAtt NationalRegistries2WorkflowManagerQueue.Outputs.QueueARN
+    Description: workflow-manager analog-event queue ARN
+  NationalRegistries2WorkflowManagerQueueAlarmARN:
+    Value: !GetAtt NationalRegistries2WorkflowManagerQueue.Outputs.SqsDLQAlarmArn
+    Description: workflow-manager analog-event queue dlq alarm ARN
+  NationalRegistries2WorkflowManagerQueueAgeAlarmARN:
+    Value: !GetAtt NationalRegistries2WorkflowManagerQueue.Outputs.SqsAgeAlarmArn
+    Description: workflow-manager analog-event queue age alarm ARN

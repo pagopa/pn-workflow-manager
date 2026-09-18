@@ -32,9 +32,8 @@ class PnWorkflowManagerConfigsTest {
                 .orElseThrow(() -> new IllegalStateException("Failed to bind PnWorkflowManagerConfigs"));
 
         assertNotNull(pnNotificationCostServiceConfigs);
-
-        Assertions.assertEquals("http://localhost:8097", pnNotificationCostServiceConfigs.getNationalRegistriesBaseUrl());
         Assertions.assertEquals("http://localhost:8085", pnNotificationCostServiceConfigs.getUserAttributesBaseUrl());
+        Assertions.assertEquals("http://localhost:8097", pnNotificationCostServiceConfigs.getNationalRegistriesBaseUrl());
 
         PnWorkflowManagerConfigs.Topics topics =
                 pnNotificationCostServiceConfigs.getTopics();

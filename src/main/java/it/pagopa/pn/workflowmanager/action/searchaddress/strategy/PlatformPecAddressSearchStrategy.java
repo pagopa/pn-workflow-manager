@@ -39,7 +39,7 @@ public class PlatformPecAddressSearchStrategy implements SyncAddressSearchStrate
         log.info("Starting PLATFORM PEC address search - iun={} recipientIndex={} senderId={} recipientId={}",
                 context.notification().getIun(), context.recipientIndex(), senderId, recipientId);
 
-        if (addressBookService.areMandatoryConsentsAccepted(recipientId, cxId)) {
+        if (!addressBookService.areMandatoryConsentsAccepted(recipientId, cxId)) {
             log.info("TOS not accepted for PLATFORM PEC search - senderId={} recipientId={}", senderId, recipientId);
             return SourceSearchOutcome.tosNotAccepted(DigitalAddressSourceInt.PLATFORM);
         }

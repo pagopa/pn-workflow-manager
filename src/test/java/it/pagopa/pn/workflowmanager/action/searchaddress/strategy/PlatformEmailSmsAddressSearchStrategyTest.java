@@ -2,19 +2,15 @@ package it.pagopa.pn.workflowmanager.action.searchaddress.strategy;
 
 import it.pagopa.pn.workflowmanager.action.searchaddress.AddressSearchContext;
 import it.pagopa.pn.workflowmanager.action.searchaddress.dto.SourceSearchOutcome;
-import it.pagopa.pn.workflowmanager.config.PnWorkflowManagerConfigs;
+import it.pagopa.pn.workflowmanager.action.sendcourtesy.InformalCourtesyAddressResolver;
+import it.pagopa.pn.workflowmanager.dto.address.CourtesyDigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
-import it.pagopa.pn.workflowmanager.dto.consent.ConsentDto;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationSenderInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.RecipientTypeInt;
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.userattributes.addressbook.model.CourtesyChannelType;
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.userattributes.addressbook.model.CourtesyDigitalAddress;
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.userattributes.consents.model.Consent;
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.userattributes.consents.model.ConsentType;
-import it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.userattributes.PnUserAttributesClient;
+import it.pagopa.pn.workflowmanager.service.AddressBookService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -23,6 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -32,16 +29,16 @@ import static org.mockito.Mockito.when;
 class PlatformEmailSmsAddressSearchStrategyTest {
 
     @Mock
-    private PnUserAttributesClient userAttributesClient;
+    private AddressBookService addressBookService;
     @Mock
-    private PnWorkflowManagerConfigs configs;
+    private InformalCourtesyAddressResolver informalCourtesyAddressResolver;
+
     @InjectMocks
     private PlatformEmailSmsAddressSearchStrategy strategy;
 
     @Test
     void shouldReturnTosNotAcceptedWhenConsentIsMissing() {
         AddressSearchContext context = buildContext(ChannelType.EMAIL);
-        when(userAttributesClient.getConsents(any(), any())).thenReturn(List.of());
 
         SourceSearchOutcome outcome = strategy.search(context);
 
@@ -53,9 +50,7 @@ class PlatformEmailSmsAddressSearchStrategyTest {
     @Test
     void shouldReturnNotFoundWhenConsentsOkAndNoCourtesyAddress() {
         AddressSearchContext context = buildContext(ChannelType.SMS);
-        when(userAttributesClient.getConsents(any(), any())).thenReturn(List.of(validConsent()));
-        when(configs.getConsentsForPlatformSearch()).thenReturn(List.of(validConfigConsent()));
-        when(userAttributesClient.getCourtesyAddressBySender(any(), any())).thenReturn(List.of());
+        when(addressBookService.areMandatoryConsentsAccepted(any(), any())).thenReturn(true);
 
         SourceSearchOutcome outcome = strategy.search(context);
 
@@ -67,12 +62,10 @@ class PlatformEmailSmsAddressSearchStrategyTest {
     @Test
     void shouldReturnFoundWhenConsentsOkAndCourtesyAddressExists() {
         AddressSearchContext context = buildContext(ChannelType.EMAIL);
-        when(userAttributesClient.getConsents(any(), any())).thenReturn(List.of(validConsent()));
-        when(configs.getConsentsForPlatformSearch()).thenReturn(List.of(validConfigConsent()));
-        when(userAttributesClient.getCourtesyAddressBySender(any(), any())).thenReturn(List.of(
-                new CourtesyDigitalAddress().channelType(CourtesyChannelType.EMAIL).value("user@example.com")
+        when(informalCourtesyAddressResolver.resolveAddressByType(any(), any(), any())).thenReturn(Optional.of(
+                CourtesyDigitalAddressInt.builder().type(CourtesyDigitalAddressInt.COURTESY_DIGITAL_ADDRESS_TYPE_INT.EMAIL).build()
         ));
-
+        when(addressBookService.areMandatoryConsentsAccepted(any(), any())).thenReturn(true);
         SourceSearchOutcome outcome = strategy.search(context);
 
         assertTrue(outcome.found());
@@ -94,13 +87,4 @@ class PlatformEmailSmsAddressSearchStrategyTest {
                 .build();
         return new AddressSearchContext(channelType, Instant.now(), notification, 0, 0);
     }
-
-    private Consent validConsent() {
-        return new Consent().consentType(ConsentType.TOS).consentVersion("1");
-    }
-
-    private ConsentDto validConfigConsent() {
-        return new ConsentDto(ConsentType.TOS.getValue(), 1);
-    }
 }
-
