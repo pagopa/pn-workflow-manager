@@ -126,12 +126,7 @@ exports.handleEvent = async (event, context) => {
 
             // Applica la logica delle metriche
             if (!applyCategoryMetric(aggregate.counters, category, parsedData)) {
-                console.warn(`Category metric skipped/invalid for sequenceNumber=${record.kinesisSeqNumber}. Marked as failure.`);
-                recordFailures.push(record.kinesisSeqNumber);
-
-                if (timelineElementId && DEDUPLICATION_MANAGEMENT_ENABLED) {
-                    lockedFailedTimelineElementIds.push(timelineElementId);
-                }
+                console.warn(`Category metric skipped/invalid for sequenceNumber=${record.kinesisSeqNumber}. Skipping without retry.`);
                 continue;
             }
 
