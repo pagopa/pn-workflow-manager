@@ -126,7 +126,7 @@ exports.handleEvent = async (event, context) => {
 
             // Applica la logica delle metriche
             if (!applyCategoryMetric(aggregate.counters, category, parsedData)) {
-                console.warn(`Category metric skipped/invalid for sequenceNumber=${record.kinesisSeqNumber}. Skipping without retry.`);
+                console.fatal(`Category metric skipped/invalid for sequenceNumber=${record.kinesisSeqNumber}. Skipping without retry.`);
                 continue;
             }
 
