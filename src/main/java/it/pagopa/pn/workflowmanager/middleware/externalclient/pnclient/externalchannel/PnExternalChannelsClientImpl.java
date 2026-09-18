@@ -8,6 +8,7 @@ import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.address.LegalDigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
+import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.ExternalChannelEventType;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.externalchannels.api.DigitalCourtesyMessagesApi;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.externalchannels.api.DigitalLegalMessagesApi;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.externalchannels.model.DigitalCourtesyMailRequest;
@@ -28,7 +29,6 @@ import static it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCo
 @CustomLog
 @RequiredArgsConstructor
 public class PnExternalChannelsClientImpl implements PnExternalChannelsClient {
-    private static final String EVENT_TYPE_INFORMAL = "INFORMAL";
 
     private final PnWorkflowManagerConfigs cfg;
     private final DigitalLegalMessagesApi digitalLegalMessagesApi;
@@ -53,7 +53,7 @@ public class PnExternalChannelsClientImpl implements PnExternalChannelsClient {
             digitalNotificationRequest.setChannel(DigitalNotificationRequest.ChannelEnum.PEC);
             digitalNotificationRequest.setRequestId(requestId);
             digitalNotificationRequest.setCorrelationId(requestId);
-            digitalNotificationRequest.setEventType(EVENT_TYPE_INFORMAL);
+            digitalNotificationRequest.setEventType(ExternalChannelEventType.INFORMAL.name());
             digitalNotificationRequest.setMessageContentType(DigitalNotificationRequest.MessageContentTypeEnum.TEXT_HTML);
             digitalNotificationRequest.setQos(DigitalNotificationRequest.QosEnum.BATCH);
             digitalNotificationRequest.setReceiverDigitalAddress(digitalAddress.getAddress());
@@ -71,13 +71,16 @@ public class PnExternalChannelsClientImpl implements PnExternalChannelsClient {
     }
 
     @Override
-    public void sendNotificationEMAIL(String requestId,
-                                      String mailBody,
-                                      String subject,
-                                      NotificationInt notificationInt,
-                                      NotificationRecipientInt recipientInt,
-                                      DigitalAddressInt digitalAddress,
-                                      List<String> attachmentUrls) {
+    public void sendNotificationEMAIL(
+            String requestId,
+            String mailBody,
+            String subject,
+            NotificationInt notificationInt,
+            NotificationRecipientInt recipientInt,
+            DigitalAddressInt digitalAddress,
+            List<String> attachmentUrls,
+            ExternalChannelEventType eventType
+    ) {
         try {
             log.logInvokingAsyncExternalService(CLIENT_NAME, COURTESY_NOTIFICATION_REQUEST + "[EMAIL]", requestId);
             log.debug("[enter] sendNotificationEMAIL address={} requestId={} recipient={}", LogUtils.maskNumber(digitalAddress.getAddress()), requestId, LogUtils.maskGeneric(recipientInt.getDenomination()));
@@ -86,7 +89,7 @@ public class PnExternalChannelsClientImpl implements PnExternalChannelsClient {
             digitalNotificationRequest.setChannel(DigitalCourtesyMailRequest.ChannelEnum.EMAIL);
             digitalNotificationRequest.setRequestId(requestId);
             digitalNotificationRequest.setCorrelationId(requestId);
-            digitalNotificationRequest.setEventType(EVENT_TYPE_INFORMAL);
+            digitalNotificationRequest.setEventType(eventType.name());
             digitalNotificationRequest.setQos(DigitalCourtesyMailRequest.QosEnum.BATCH);
             digitalNotificationRequest.setReceiverDigitalAddress(digitalAddress.getAddress());
             digitalNotificationRequest.setClientRequestTimeStamp(Instant.now());
@@ -108,7 +111,8 @@ public class PnExternalChannelsClientImpl implements PnExternalChannelsClient {
     public void sendNotificationSMS(
             String requestIdx,
             String textMessage,
-            String receiverDigitalAddress   
+            String receiverDigitalAddress,
+            ExternalChannelEventType eventType
     ) {
         try {
             log.logInvokingAsyncExternalService(CLIENT_NAME, COURTESY_NOTIFICATION_REQUEST + "[SMS]", requestIdx);
@@ -118,7 +122,7 @@ public class PnExternalChannelsClientImpl implements PnExternalChannelsClient {
             digitalNotificationRequest.setChannel(DigitalCourtesySmsRequest.ChannelEnum.SMS);
             digitalNotificationRequest.setRequestId(requestIdx);
             digitalNotificationRequest.setCorrelationId(requestIdx);
-            digitalNotificationRequest.setEventType(EVENT_TYPE_INFORMAL);
+            digitalNotificationRequest.setEventType(eventType.name());
             digitalNotificationRequest.setQos(DigitalCourtesySmsRequest.QosEnum.BATCH);
             digitalNotificationRequest.setReceiverDigitalAddress(receiverDigitalAddress);
             digitalNotificationRequest.setClientRequestTimeStamp(Instant.now());

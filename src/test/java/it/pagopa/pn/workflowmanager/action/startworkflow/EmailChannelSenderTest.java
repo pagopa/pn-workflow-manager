@@ -12,6 +12,7 @@ import it.pagopa.pn.workflowmanager.dto.ext.campaign.WorkFlowEntity;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.RecipientTypeInt;
+import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.ExternalChannelEventType;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.DigitalChannelsInt;
 import it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.externalchannel.PnExternalChannelsClient;
 import it.pagopa.pn.workflowmanager.service.AuditLogService;
@@ -93,7 +94,8 @@ class EmailChannelSenderTest {
                 eq(notification),
                 any(NotificationRecipientInt.class),
                 argThat(addr -> EMAIL_ADDRESS.equals(addr.getAddress())),
-                eq(List.of("safestorage://doc1", "safestorage://doc2"))
+                eq(List.of("safestorage://doc1", "safestorage://doc2")),
+                eq(ExternalChannelEventType.INFORMAL)
         );
         verify(channelSenderUtils).saveSendDigitalMessageElement(
                 eq(notification), eq(expectedRequestId), eq(recIndex),
@@ -139,7 +141,8 @@ class EmailChannelSenderTest {
                 eq(notification),
                 any(NotificationRecipientInt.class),
                 any(InformalDigitalAddressInt.class),
-                eq(List.of())
+                eq(List.of()),
+                eq(ExternalChannelEventType.INFORMAL)
         );
         verify(channelSenderUtils).resolveAttachmentsForChannel(any(), anyInt(), any(), any());
         verify(workflowUtils).scheduleTimeoutForCurrentChannel(IUN, recIndex, campaign, ChannelType.EMAIL);
