@@ -21,7 +21,6 @@ public class TemplateEngineMapper {
                 .body(mapToInformalCommunicationBody(recipient.getMessage()))
                 .sender(mapToInformalCommunicationSender(notification.getSender(), campaign))
                 .recipient(mapToInformalCommunicationRecipient(recipient));
-                //TODO: .checkoutUrl();
     }
 
     private static InformalCommunicationBody mapToInformalCommunicationBody(NotificationMessageInt message) {

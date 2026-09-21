@@ -1,6 +1,7 @@
 package it.pagopa.pn.workflowmanager.action.utils;
 
 import it.pagopa.pn.commons.exceptions.PnInternalException;
+import it.pagopa.pn.workflowmanager.dto.address.CourtesyDigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
 import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.address.PhysicalAddressInt;
@@ -13,6 +14,7 @@ import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.CategorizedAttachmen
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.ResponseStatusInt;
 import it.pagopa.pn.workflowmanager.dto.ext.paperchannel.AnalogDtoInt;
 import it.pagopa.pn.workflowmanager.dto.ext.publicregistry.NationalRegistriesResponse;
+import it.pagopa.pn.workflowmanager.dto.io.IoSendMessageResultInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.*;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.*;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.model.SendResponse;
@@ -40,8 +42,6 @@ import static it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCo
 @RequiredArgsConstructor
 public class TimelineUtils {
     private final TimelineService timelineService;
-
-    public static final int ZERO_SENT_ATTEMPT_NUMBER = 0;
 
     public TimelineElementInternal buildTimeline(NotificationInt notification,
                                                  TimelineElementCategoryInt category,
@@ -747,8 +747,34 @@ public class TimelineUtils {
         return buildTimeline(notification, TimelineElementCategoryInt.PUBLIC_REGISTRY_RESPONSE, eventId, details);
     }
 
-    public void addAvailabilitySourceToTimeline(Integer recIndex, NotificationInt notification, DigitalAddressSourceInt addressSource, boolean isAvailable, InformalDigitalAddressInt digitalAddress, boolean isTosAccepted, String channel) {
-        TimelineElementInternal element = buildAvailabilitySourceTimelineElement(recIndex, notification, addressSource, isAvailable, ZERO_SENT_ATTEMPT_NUMBER, digitalAddress, isTosAccepted, channel);
-        timelineService.addTimelineElement(element, notification);
+    public TimelineElementInternal buildSendCourtesyMessageTimelineElement(Integer recIndex, NotificationInt notification, CourtesyDigitalAddressInt address,
+                                                                           Instant sendDate, String eventId, IoSendMessageResultInt ioSendMessageResult) {
+        log.debug("buildSendCourtesyMessageTimelineElement - IUN={} and id={}", notification.getIun(), recIndex);
+
+        SendCourtesyMessageDetailsInt details = SendCourtesyMessageDetailsInt.builder()
+                .recIndex(recIndex)
+                .digitalAddress(address)
+                .sendDate(sendDate)
+                .ioSendMessageResult(ioSendMessageResult)
+                .build();
+
+
+        return buildTimeline(notification, TimelineElementCategoryInt.SEND_COURTESY_MESSAGE, eventId, details);
+    }
+
+    public TimelineElementInternal buildCourtesyChannelFailedTimelineElement(Integer recIndex, NotificationInt notification,
+                                                                             CourtesyDigitalAddressInt.COURTESY_DIGITAL_ADDRESS_TYPE_INT channelType,
+                                                                             DeliveryModeInt deliveryMode,
+                                                                             CourtesyChannelFailureReasonInt failureReason,
+                                                                             String eventId) {
+        log.debug("buildCourtesyChannelFailedTimelineElement - IUN={} and id={}", notification.getIun(), recIndex);
+
+        CourtesyChannelFailedDetailsInt details = CourtesyChannelFailedDetailsInt.builder()
+                .channelType(channelType)
+                .deliveryMode(deliveryMode)
+                .failureReason(failureReason)
+                .build();
+
+        return buildTimeline(notification, TimelineElementCategoryInt.COURTESY_CHANNEL_FAILED, eventId, details);
     }
 }

@@ -127,14 +127,5 @@ class NationalRegistriesResponseHandlerTest {
 
         assertThat(exception.getProblem().getDetail()).contains("Specified contactPhase");
         verify(publicRegistryUtils).addPublicRegistryResponseToTimeline(notification, 5, response);
-        verify(timelineUtils, never()).addAvailabilitySourceToTimeline(
-                org.mockito.Mockito.anyInt(),
-                org.mockito.Mockito.any(),
-                org.mockito.Mockito.any(),
-                org.mockito.Mockito.anyBoolean(),
-                org.mockito.Mockito.any(),
-                org.mockito.Mockito.anyBoolean(),
-                org.mockito.Mockito.any()
-        );
     }
 }
