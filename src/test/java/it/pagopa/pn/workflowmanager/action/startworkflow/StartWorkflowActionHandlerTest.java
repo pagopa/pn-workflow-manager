@@ -16,6 +16,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Instant;
 import java.util.List;
 
 import static org.mockito.Mockito.verify;
@@ -31,19 +32,19 @@ class StartWorkflowActionHandlerTest {
     private NotificationService notificationService;
 
     @Mock
-    private CampaignService campaignService;
+    private ChannelSender channelSender;
 
     @Mock
-    private ChannelSender channelSender;
+    private CampaignService campaignService;
 
     private StartWorkflowActionHandler handler;
 
     private static final String TEST_IUN = "TEST-IUN-001";
     private static final int TEST_REC_INDEX = 0;
-    private static final String TEST_CAMPAIGN_ID = "CAMPAIGN-001";
     private static final String TEST_PA_ID = "PA-001";
     private static final ChannelType TEST_CHANNEL_DIGITAL = ChannelType.IO;
     private static final int TEST_STEP_IDX = 0;
+    private static final Instant TEST_SENT_AT = Instant.parse("2026-09-15T07:37:10.836Z");
 
     @BeforeEach
     void setup() {
@@ -55,15 +56,17 @@ class StartWorkflowActionHandlerTest {
     }
 
     @Test
-    void startWorkflowAction_shouldPassCorrectParametersToChannelSender() {
+    void startWorkflowAction_shouldTriggerAddressSearch() {
         // Arrange
         StartWorkflowDetails details = createStartWorkflowDetails();
         NotificationInt notification = createMockNotification();
         Campaign campaign = createMockCampaign();
-
         when(channelSenderFactory.getChannelSender(TEST_CHANNEL_DIGITAL)).thenReturn(channelSender);
         when(notificationService.getInformalNotificationByIun(TEST_IUN)).thenReturn(notification);
-        when(campaignService.getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_PA_ID)).thenReturn(campaign);
+        when(campaignService.getCampaignByCampaignIdAndSenderId(
+                notification.getCampaignId(),
+                notification.getSender().getPaId()
+        )).thenReturn(campaign);
 
         // Act
         handler.startWorkflowAction(TEST_IUN, TEST_REC_INDEX, details);
@@ -97,15 +100,13 @@ class StartWorkflowActionHandlerTest {
 
         return NotificationInt.builder()
                 .iun(TEST_IUN)
-                .campaignId(TEST_CAMPAIGN_ID)
                 .sender(sender)
                 .recipients(List.of(recipient))
+                .sentAt(TEST_SENT_AT)
                 .build();
     }
 
     private Campaign createMockCampaign() {
-        Campaign campaign = new Campaign();
-        campaign.setCampaignId(TEST_CAMPAIGN_ID);
-        return campaign;
+        return new Campaign();
     }
 }

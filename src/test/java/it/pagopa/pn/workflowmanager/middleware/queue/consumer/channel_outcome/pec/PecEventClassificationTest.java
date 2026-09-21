@@ -30,7 +30,10 @@ class PecEventClassificationTest {
                 Arguments.of(PecEventClassification.C008, false, ChannelOutcomeCategory.negativeFeedback()),
                 Arguments.of(PecEventClassification.C009, false, ChannelOutcomeCategory.negativeFeedback()),
                 Arguments.of(PecEventClassification.C010, false, ChannelOutcomeCategory.negativeFeedback()),
-                Arguments.of(PecEventClassification.C011, false, ChannelOutcomeCategory.negativeFeedback())
+                Arguments.of(PecEventClassification.C011, false, ChannelOutcomeCategory.negativeFeedback()),
+                Arguments.of(PecEventClassification.Q003, true, ChannelOutcomeCategory.positiveFeedback(false)),
+                Arguments.of(PecEventClassification.Q010, false, ChannelOutcomeCategory.negativeFeedback()),
+                Arguments.of(PecEventClassification.Q011, false, ChannelOutcomeCategory.negativeFeedback())
         );
     }
 
@@ -45,7 +48,8 @@ class PecEventClassificationTest {
     @ParameterizedTest(name = "Input: {0}")
     @ValueSource(strings = {
             "C000", "C002", "C004", "C005", "C006",
-            "C007", "C008", "C009", "C010", "C011"
+            "C007", "C008", "C009", "C010", "C011",
+            "Q010", "Q011"
     })
     void shouldReturnEmptyOptionalWhenDesiredFeedbackIsNull(String enumName) {
         // Act
@@ -58,7 +62,8 @@ class PecEventClassificationTest {
     @ParameterizedTest(name = "Tipo {0} -> desiredFeedback={1}")
     @CsvSource({
             "C001, SENT",
-            "C003, RECEIVED"
+            "C003, RECEIVED",
+            "Q003, RECEIVED"
     })
     void shouldReturnCorrectDesiredFeedbackWhenPresent(PecEventClassification classification, DesiredFeedbackType expectedFeedback) {
         // Act & Assert

@@ -1,5 +1,6 @@
 package it.pagopa.pn.workflowmanager.action.searchaddress;
 
+import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;

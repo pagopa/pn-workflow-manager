@@ -16,7 +16,8 @@ import it.pagopa.pn.workflowmanager.dto.timeline.details.SendChannelMessageDetai
         @JsonSubTypes.Type(value = NotHandledDetails.class, name = "END_WORKFLOW"),
         @JsonSubTypes.Type(value = WorkflowDoneDetails.class, name = "WORKFLOW_DONE"),
         @JsonSubTypes.Type(value = DocumentCreationResponseActionDetails.class, name = "DOCUMENT_CREATION_RESPONSE"),
-        @JsonSubTypes.Type(value = SendChannelMessageDetails.class, name = "SEND_CHANNEL_MESSAGE")
+        @JsonSubTypes.Type(value = SendChannelMessageDetails.class, name = "SEND_CHANNEL_MESSAGE"),
+        @JsonSubTypes.Type(value = SendCourtesyMessageActionDetails.class, name = "SEND_COURTESY_MESSAGE_ACTION")
 })
 public interface ActionDetails {
 

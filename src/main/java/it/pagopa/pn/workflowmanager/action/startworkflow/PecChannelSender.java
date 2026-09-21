@@ -84,6 +84,8 @@ public class PecChannelSender implements ChannelSender {
             );
 
             workflowUtils.scheduleTimeoutForCurrentChannel(notification.getIun(), recIndex, campaign, getChannelType());
+            // TODO: controlla se l'indirizzo utilizzato è di tipo SERCQ e in tal caso schedula l'azione di invio del messaggio di cortesia
+            //courtesyAddressActionDispatcher.dispatch(notification, recIndex);
             auditLogEvent.generateSuccess("Pec sent successfully").log();
         } catch (Exception e) {
             auditLogEvent.generateFailure("Error sending pec", e).log();
