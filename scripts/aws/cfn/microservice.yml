@@ -1089,7 +1089,7 @@ Resources:
           Destination: !Sub arn:aws:s3:::${ESMKinesisFailureNotificationsBucketName}
       FilterCriteria:
         Filters:
-          - Pattern: !Sub '{"data": {"communicationType": ["INFORMAL"], "eventName": ["INSERT"], "tableName": ["${PnTimelinesTableName}"]}}'
+          - Pattern: '{ "data": { "tableName": ["pn-Timelines"], "eventName": ["INSERT"], "dynamodb": { "NewImage": { "communicationType": { "S": ["INFORMAL"] } } } } }'
 
   CampaignEventsCollectorLambdaKinesisFailuresAlarm:
     Type: AWS::CloudWatch::Alarm
