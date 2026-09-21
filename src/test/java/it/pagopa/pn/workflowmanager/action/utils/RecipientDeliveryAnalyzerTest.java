@@ -6,6 +6,7 @@ import it.pagopa.pn.workflowmanager.dto.ext.campaign.WorkFlowEntity;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.RecipientTypeInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.DigitalChannelsInt;
+import it.pagopa.pn.workflowmanager.dto.timeline.details.SendDigitalMessageDetailsInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.SendDigitalMessageFeedbackDetailsInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.SendDigitalMessageSkipDetailsInt;
 import it.pagopa.pn.workflowmanager.exceptions.PnWorkflowException;
@@ -20,8 +21,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import static it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt.SEND_DIGITAL_MESSAGE_FEEDBACK;
-import static it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt.SEND_DIGITAL_MESSAGE_SKIP;
+import static it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt.*;
 import static it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCodes.ERROR_CODE_WORKFLOWMANAGER_GENERIC_WORKFLOW_ERROR;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -176,7 +176,7 @@ class RecipientDeliveryAnalyzerTest {
     void getDeliveryInfo_shouldReturnUnreached_whenNoChannelConditionsMet() {
         // Arrange
         Campaign campaign = createCampaign(List.of(ChannelType.IO, ChannelType.EMAIL));
-        List<TimelineElementInternal> timelineElements = createTimelineWithAppIoFeedback();
+        List<TimelineElementInternal> timelineElements = createTimelineWithAppIoFeedbackAndSendEmail();
 
         when(timelineUtils.findFirstReachedElementId(anyList(), eq(TEST_REC_INDEX)))
                 .thenReturn(Optional.empty());
@@ -227,6 +227,30 @@ class RecipientDeliveryAnalyzerTest {
                 .build();
 
         return List.of(element);
+    }
+
+    private List<TimelineElementInternal> createTimelineWithAppIoFeedbackAndSendEmail() {
+        SendDigitalMessageFeedbackDetailsInt details = SendDigitalMessageFeedbackDetailsInt.builder()
+                .recIndex(TEST_REC_INDEX)
+                .channel(DigitalChannelsInt.IO)
+                .build();
+
+        TimelineElementInternal element = TimelineElementInternal.builder()
+                .category(SEND_DIGITAL_MESSAGE_FEEDBACK)
+                .details(details)
+                .build();
+
+        SendDigitalMessageDetailsInt emailDetails = SendDigitalMessageDetailsInt.builder()
+                .recIndex(TEST_REC_INDEX)
+                .channel(DigitalChannelsInt.EMAIL)
+                .build();
+
+        TimelineElementInternal emailElement = TimelineElementInternal.builder()
+                .category(SEND_DIGITAL_MESSAGE)
+                .details(emailDetails)
+                .build();
+
+        return List.of(element, emailElement);
     }
 
     private List<TimelineElementInternal> createTimelineWithEmailSkip() {
