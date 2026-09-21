@@ -260,10 +260,10 @@ public enum TimelineEventId {
 
     PUBLIC_REGISTRY_RESPONSE("PUBLIC_REGISTRY_RESPONSE") {
         @Override
-        public String buildEventId(String eventId) {
+        public String buildEventId(EventId eventId) {
             return new TimelineEventIdBuilder()
                     .withCategory(this.getValue())
-                    .withCorrelationId(eventId)
+                    .withCorrelationId(eventId.getCorrelationId())
                     .build();
         }
     },
@@ -284,10 +284,6 @@ public enum TimelineEventId {
 
     public String buildEventId(EventId eventId) {
         throw new UnsupportedOperationException("Must be implemented for each action type event ID");
-    }
-
-    public String buildEventId(String eventId) {
-        throw new UnsupportedOperationException("Must be implemented for each action type");
     }
 
     private final String value;

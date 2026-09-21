@@ -623,6 +623,27 @@ public class TimelineUtils {
         return buildTimeline(notification, TimelineElementCategoryInt.SEND_DIGITAL_MESSAGE_FEEDBACK, elementId, detailsInt);
     }
 
+    public TimelineElementInternal buildGetAddressTimelineElement(NotificationInt notification, int recIndex,
+                                                                  DigitalChannelsInt channel,
+                                                                  DigitalAddressSourceInt digitalAddressSource,
+                                                                  Integer attempt) {
+        String elementId = TimelineEventId.GET_ADDRESS.buildEventId(
+                EventId.builder()
+                        .iun(notification.getIun())
+                        .recIndex(recIndex)
+                        .channel(channel.name())
+                        .build()
+        );
+
+        GetAddressDetailsInt getAddressDetailsInt = GetAddressDetailsInt.builder()
+                .recIndex(recIndex)
+                .channel(channel)
+                .digitalAddressSource(digitalAddressSource)
+                .attempt(attempt)
+                .build();
+        return buildTimeline(notification, TimelineElementCategoryInt.GET_ADDRESS, elementId, getAddressDetailsInt);
+    }
+
     public String getIunFromTimelineId(String timelineId) {
         //<timelineId = CATEGORY_VALUE>;IUN_<IUN_VALUE>;RECINDEX_<RECINDEX_VALUE>...
         return timelineId.split("\\" + TimelineEventIdBuilder.DELIMITER)[1].replace("IUN_", "");
@@ -714,7 +735,7 @@ public class TimelineUtils {
     public TimelineElementInternal buildPublicRegistryResponseCallTimelineElement(NotificationInt notification, Integer recIndex, NationalRegistriesResponse response) {
         log.debug("buildPublicRegistryResponseCallTimelineElement - iun={} and id={}", notification.getIun(), recIndex);
 
-        String eventId = TimelineEventId.PUBLIC_REGISTRY_RESPONSE.buildEventId(response.getCorrelationId());
+        String eventId = TimelineEventId.PUBLIC_REGISTRY_RESPONSE.buildEventId(EventId.builder().correlationId(response.getCorrelationId()).build());
 
         PublicRegistryResponseDetailsInt details = PublicRegistryResponseDetailsInt.builder()
                 .recIndex(recIndex)

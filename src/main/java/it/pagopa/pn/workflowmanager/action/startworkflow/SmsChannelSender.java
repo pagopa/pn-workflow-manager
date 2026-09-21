@@ -16,6 +16,7 @@ import it.pagopa.pn.workflowmanager.dto.timeline.details.DigitalChannelsInt;
 import it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.externalchannel.PnExternalChannelsClient;
 import it.pagopa.pn.workflowmanager.service.AuditLogService;
 import it.pagopa.pn.workflowmanager.service.TemplateGeneratorService;
+import it.pagopa.pn.workflowmanager.utils.AddressSearchUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -33,6 +34,7 @@ public class SmsChannelSender implements ChannelSender {
     private final ChannelSenderUtils channelSenderUtils;
     private final WorkflowUtils workflowUtils;
     private final TemplateGeneratorService templateGeneratorService;
+    private final AddressSearchUtils addressSearchUtils;
     private final PnExternalChannelsClient pnExternalChannelsClient;
 
     @Override
@@ -41,14 +43,14 @@ public class SmsChannelSender implements ChannelSender {
     }
 
     @Override
-    public void send(NotificationInt notification, Campaign campaign, int recIndex, int currentStep) {
+    public void send(NotificationInt notification, Campaign campaign, int recIndex, DigitalAddressSourceInt addressSource) {
         NotificationRecipientInt recipient = notification.getRecipients().get(recIndex);
         String phoneNumber = recipient.getPhoneNumber();
 
         if (ObjectUtils.isEmpty(phoneNumber)) {
             handleMissingPhoneNumber(notification, campaign, recIndex);
         } else {
-            handlePhoneNumberPresent(notification, campaign, recIndex, phoneNumber);
+            handlePhoneNumberPresent(notification, campaign, recIndex, addressSource);
         }
     }
 
@@ -62,20 +64,25 @@ public class SmsChannelSender implements ChannelSender {
         workflowUtils.advanceWorkflow(notification.getIun(), recIndex, getChannelType(), campaign, notification.getRecipients().get(recIndex).getRecipientType());
     }
 
-    private void handlePhoneNumberPresent(NotificationInt notification, Campaign campaign, int recIndex, String phoneNumber) {
+    private void handlePhoneNumberPresent(NotificationInt notification, Campaign campaign, int recIndex, DigitalAddressSourceInt addressSource) {
         log.info("Recipient phone number is present - iun={} recIndex={}", notification.getIun(), recIndex);
 
         String requestId = ChannelSenderUtils.buildSendDigitalMessageEventId(notification.getIun(), recIndex, getChannelType(), FIRST_ATTEMPT);
         PnAuditLogEvent auditLogEvent = buildAuditLogEvent(notification.getIun(), recIndex, requestId);
 
         try {
+            InformalDigitalAddressInt digitalAddress = addressSearchUtils.getDigitalAddress(notification, recIndex,
+                    DigitalChannelsInt.SMS,addressSource, requestId);
+            if (digitalAddress == null) return;
+
             String subject = templateGeneratorService.generateSmsTemplate(notification, notification.getRecipients().get(recIndex));
-            InformalDigitalAddressInt smsAddress = ChannelSenderUtils.buildDigitalAddress(phoneNumber, InformalDigitalAddressInt.INFORMAL_DIGITAL_ADDRESS_TYPE.SMS);
+            InformalDigitalAddressInt smsAddress = ChannelSenderUtils.buildDigitalAddress(digitalAddress.getAddress(), InformalDigitalAddressInt.INFORMAL_DIGITAL_ADDRESS_TYPE.SMS);
 
             log.info("Sending SMS for notification {} to recipient {} with requestId {}", notification.getIun(), recIndex, requestId);
-            pnExternalChannelsClient.sendNotificationSMS(requestId, subject, phoneNumber, ExternalChannelEventType.INFORMAL);
+            pnExternalChannelsClient.sendNotificationSMS(requestId, subject, smsAddress.getAddress(), ExternalChannelEventType.INFORMAL);
 
-            channelSenderUtils.saveSendDigitalMessageElement(notification, requestId, recIndex, smsAddress, DigitalChannelsInt.SMS, DigitalAddressSourceInt.SPECIAL);
+            channelSenderUtils.saveSendDigitalMessageElement(notification, requestId, recIndex, smsAddress, DigitalChannelsInt.SMS,
+                    addressSource);
             workflowUtils.scheduleTimeoutForCurrentChannel(notification.getIun(), recIndex, campaign, getChannelType());
             auditLogEvent.generateSuccess("Sms sent successfully").log();
 
