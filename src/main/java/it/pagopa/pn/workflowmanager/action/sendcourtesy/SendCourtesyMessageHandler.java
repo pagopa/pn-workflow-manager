@@ -28,7 +28,6 @@ import java.util.List;
 @Slf4j
 public class SendCourtesyMessageHandler {
     private final InformalCourtesyAddressResolver informalCourtesyAddressResolver;
-    private final CourtesyMessageUtils courtesyMessageUtils;
     private final NotificationService notificationService;
     private final TimelineService timelineService;
     private final TimelineUtils timelineUtils;

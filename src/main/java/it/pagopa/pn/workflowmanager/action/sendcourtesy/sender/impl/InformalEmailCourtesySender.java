@@ -58,12 +58,12 @@ public class InformalEmailCourtesySender implements CourtesyAddressSender {
         try {
             Campaign campaign = campaignService.getCampaignByCampaignIdAndSenderId(notification.getCampaignId(), notification.getSender().getPaId());
             NotificationRecipientInt recipient = NotificationUtils.getRecipientFromIndex(notification, recIndex);
-            String subject = templateGeneratorService.generateEmailSubjectTemplate(notification, recipient);
-            String htmlBody = templateGeneratorService.generateEmailBodyTemplate(notification, recipient, campaign);
+            String subject = templateGeneratorService.generateCourtesyEmailSubjectTemplate(notification, recipient);
+            String htmlBody = templateGeneratorService.generateCourtesyEmailBodyTemplate(notification, recipient, campaign);
             List<String> attachmentUrls = retrieveAttachmentUrls(notification, recIndex, campaign);
             InformalDigitalAddressInt emailAddress = toInformalDigitalAddress(address);
 
-            pnExternalChannelsClient.sendNotificationEMAIL(requestId, htmlBody, subject, notification, recipient, emailAddress, attachmentUrls, ExternalChannelEventType.INFORMAL);
+            pnExternalChannelsClient.sendNotificationEMAIL(requestId, htmlBody, subject, notification, recipient, emailAddress, attachmentUrls, ExternalChannelEventType.COURTESY);
         } catch (Exception e) {
             boolean retryable = retryableErrorClassifier.isRetryableTransportError(address.getType(), e);
             auditLogEvent.generateFailure("Error sending courtesy message on channel={} retryable={} - iun={} id={}", address.getType(), retryable, notification.getIun(), recIndex, e);

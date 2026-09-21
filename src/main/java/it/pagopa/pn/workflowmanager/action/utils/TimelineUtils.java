@@ -43,8 +43,6 @@ import static it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCo
 public class TimelineUtils {
     private final TimelineService timelineService;
 
-    public static final int ZERO_SENT_ATTEMPT_NUMBER = 0;
-
     public TimelineElementInternal buildTimeline(NotificationInt notification,
                                                  TimelineElementCategoryInt category,
                                                  String elementId,
@@ -726,11 +724,6 @@ public class TimelineUtils {
                 .build();
 
         return buildTimeline(notification, TimelineElementCategoryInt.PUBLIC_REGISTRY_RESPONSE, eventId, details);
-    }
-
-    public void addAvailabilitySourceToTimeline(Integer recIndex, NotificationInt notification, DigitalAddressSourceInt addressSource, boolean isAvailable, InformalDigitalAddressInt digitalAddress, boolean isTosAccepted, String channel) {
-        TimelineElementInternal element = buildAvailabilitySourceTimelineElement(recIndex, notification, addressSource, isAvailable, ZERO_SENT_ATTEMPT_NUMBER, digitalAddress, isTosAccepted, channel);
-        timelineService.addTimelineElement(element, notification);
     }
 
     public TimelineElementInternal buildSendCourtesyMessageTimelineElement(Integer recIndex, NotificationInt notification, CourtesyDigitalAddressInt address,

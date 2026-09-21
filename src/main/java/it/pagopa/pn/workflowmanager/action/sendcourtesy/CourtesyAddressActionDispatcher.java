@@ -43,7 +43,7 @@ public class CourtesyAddressActionDispatcher {
 
         for (CourtesyDigitalAddressInt address : courtesyAddresses) {
             log.info("Dispatching courtesy message for IUN: {}, recIndex: {}, addressType: {}", notification.getIun(), recIndex, address.getType());
-            if(address.getType() == CourtesyDigitalAddressInt.COURTESY_DIGITAL_ADDRESS_TYPE_INT.SMS && !pnWorkflowManagerConfigs.getSmsCourtesyEnabled()) {
+            if(address.getType() == CourtesyDigitalAddressInt.COURTESY_DIGITAL_ADDRESS_TYPE_INT.SMS && Boolean.FALSE.equals(pnWorkflowManagerConfigs.getSmsCourtesyEnabled())) {
                 log.info("SMS courtesy messages are disabled. Skipping SMS dispatch for IUN: {}, recIndex: {}", notification.getIun(), recIndex);
                 continue;
             }

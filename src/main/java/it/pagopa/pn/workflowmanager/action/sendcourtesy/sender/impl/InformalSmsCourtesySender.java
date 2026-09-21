@@ -44,8 +44,8 @@ public class InformalSmsCourtesySender implements CourtesyAddressSender {
         String requestId = CourtesyMessageUtils.getSendCourtesyTimelineElementId(recIndex, notification.getIun(), getCourtesyAddressType(), Boolean.FALSE);
         PnAuditLogEvent auditLogEvent = buildAuditLogEvent(notification.getIun(), recIndex, requestId);
         try {
-            String subject = templateGeneratorService.generateSmsTemplate(notification, notification.getRecipients().get(recIndex));
-            pnExternalChannelsClient.sendNotificationSMS(requestId, subject, address.getAddress(), ExternalChannelEventType.INFORMAL);
+            String subject = templateGeneratorService.generateCourtesySmsTemplate(notification, notification.getRecipients().get(recIndex));
+            pnExternalChannelsClient.sendNotificationSMS(requestId, subject, address.getAddress(), ExternalChannelEventType.COURTESY);
         } catch (Exception e) {
             boolean retryable = retryableErrorClassifier.isRetryableTransportError(address.getType(), e);
             auditLogEvent.generateFailure("Error sending courtesy message on channel={} retryable={} - iun={} id={}", address.getType(), retryable, notification.getIun(), recIndex, e);
