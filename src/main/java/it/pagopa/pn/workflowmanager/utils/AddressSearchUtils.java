@@ -13,11 +13,9 @@ import it.pagopa.pn.workflowmanager.service.TimelineService;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
-import java.util.Objects;
-
-import static it.pagopa.pn.workflowmanager.action.utils.PnConstants.FIRST_ATTEMPT;
 import static it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCodes.ERROR_CODE_TIMELINESERVICE_TIMELINE_ELEMENT_NOT_PRESENT;
 
 @AllArgsConstructor
@@ -29,10 +27,10 @@ public class AddressSearchUtils {
     private final TimelineUtils timelineUtils;
     private final ChannelSenderUtils channelSenderUtils;
 
-    public InformalDigitalAddressInt retrieveDigitalAddressFromTimeline(NotificationInt notification, int recIndex, DigitalAddressSourceInt addressSource,
+    public @NotNull InformalDigitalAddressInt retrieveDigitalAddressFromTimeline(NotificationInt notification, int recIndex, DigitalAddressSourceInt addressSource,
                                                      DigitalChannelsInt channel, Integer attempt) {
-        TimelineElementInternal timelineElementBuilder = timelineUtils.buildGetAddressTimelineElement(notification, recIndex, channel, addressSource, attempt);
-        TimelineElementInternal timelineElement = timelineService.getTimelineElement(notification.getIun(), timelineElementBuilder.getElementId())
+        String eventId = TimelineUtils.buildGetAddressEventId(notification.getIun(), recIndex, channel.name(), addressSource, attempt);
+        TimelineElementInternal timelineElement = timelineService.getTimelineElement(notification.getIun(), eventId)
                 .orElseThrow(() -> new PnNotFoundException(
                         "Timeline element not found",
                         String.format("Timeline element not found for iun=%s recIndex=%d addressSource=%s channel=%s",
@@ -52,28 +50,5 @@ public class AddressSearchUtils {
             );
         }
         return details.getDigitalAddress();
-    }
-
-
-    public InformalDigitalAddressInt getDigitalAddress(NotificationInt notification, int recIndex,DigitalChannelsInt digitalChannelsInt,
-                                                       DigitalAddressSourceInt addressSource, String timelineId) {
-        if (Objects.equals(addressSource, DigitalAddressSourceInt.NONE)) {
-            log.warn("Recipient digital address source is NONE - iun={} recIndex={}", notification.getIun(), recIndex);
-            channelSenderUtils.saveSendDigitalMessageSkipElement(
-                    recIndex,
-                    notification,
-                    timelineId,
-                    digitalChannelsInt
-            );
-            return null;
-        }
-
-        return retrieveDigitalAddressFromTimeline(
-                notification,
-                recIndex,
-                addressSource,
-                digitalChannelsInt,
-                FIRST_ATTEMPT
-        );
     }
 }

@@ -5,7 +5,7 @@ import it.pagopa.pn.commons.utils.LogUtils;
 import it.pagopa.pn.workflowmanager.action.utils.FileUtils;
 import it.pagopa.pn.workflowmanager.config.PnWorkflowManagerConfigs;
 import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressInt;
-import it.pagopa.pn.workflowmanager.dto.address.LegalDigitalAddressInt;
+import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.ExternalChannelEventType;
@@ -21,9 +21,7 @@ import org.springframework.stereotype.Component;
 import java.time.Instant;
 import java.util.List;
 
-import static it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCodes.ERROR_CODE_WORKFLOWMANAGER_SENDEMAILNOTIFICATIONFAILED;
-import static it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCodes.ERROR_CODE_WORKFLOWMANAGER_SENDPECNOTIFICATIONFAILED;
-import static it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCodes.ERROR_CODE_WORKFLOWMANAGER_SENDSMSNOTIFICATIONFAILED;
+import static it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCodes.*;
 
 @Component
 @CustomLog
@@ -41,7 +39,7 @@ public class PnExternalChannelsClientImpl implements PnExternalChannelsClient {
             String subject,
             NotificationInt notificationInt,
             NotificationRecipientInt recipientInt,
-            LegalDigitalAddressInt digitalAddress,
+            InformalDigitalAddressInt digitalAddress,
             List<String> fileKeys
     ) {
         try {

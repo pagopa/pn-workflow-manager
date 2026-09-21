@@ -73,8 +73,7 @@ class SmsChannelSenderTest {
         String expectedRequestId = ChannelSenderUtils.buildSendDigitalMessageEventId(IUN, recIndex, ChannelType.SMS,0);
         PnAuditLogEvent auditLogEvent = mock(PnAuditLogEvent.class);
 
-        when(addressSearchUtils.getDigitalAddress(notification, recIndex, DigitalChannelsInt.SMS,
-                DigitalAddressSourceInt.SPECIAL, expectedRequestId))
+        when(addressSearchUtils.retrieveDigitalAddressFromTimeline(notification, recIndex, DigitalAddressSourceInt.SPECIAL, DigitalChannelsInt.SMS, 0))
                 .thenReturn(buildDigitalAddress());
         when(templateGeneratorService.generateSmsTemplate(notification, recipient)).thenReturn(SMS_CONTENT);
         when(auditLogService.buildAuditLogEvent(eq(IUN), eq(recIndex), eq(PnAuditLogEventType.AUD_COM_SEND_SMS),
@@ -110,16 +109,11 @@ class SmsChannelSenderTest {
         Campaign campaign = mock(Campaign.class);
         int recIndex = 0;
 
-        String expectedRequestId = ChannelSenderUtils.buildSendDigitalMessageEventId(IUN, recIndex, ChannelType.SMS,0);
-        when(addressSearchUtils.getDigitalAddress(notification, recIndex, DigitalChannelsInt.SMS,
-                DigitalAddressSourceInt.NONE, expectedRequestId))
-                .thenReturn(null);
-
         // When
         smsChannelSender.send(notification, campaign, recIndex, DigitalAddressSourceInt.NONE);
 
         // Then
-        verifyNoInteractions(pnExternalChannelsClient, templateGeneratorService, workflowUtils);
+        verifyNoInteractions(pnExternalChannelsClient, templateGeneratorService);
         verify(channelSenderUtils, never()).saveSendDigitalMessageElement(any(), any(), anyInt(), any(), any(), any());
     }
 
@@ -134,7 +128,7 @@ class SmsChannelSenderTest {
                 recIndex, IUN, ChannelType.SMS);
 
         // When
-        smsChannelSender.send(notification, campaign, recIndex, DigitalAddressSourceInt.SPECIAL);
+        smsChannelSender.send(notification, campaign, recIndex, DigitalAddressSourceInt.NONE);
 
         // Then
         verify(channelSenderUtils).saveSendDigitalMessageSkipElement(
@@ -164,8 +158,7 @@ class SmsChannelSenderTest {
         String expectedRequestId = ChannelSenderUtils.buildSendDigitalMessageEventId(IUN, recIndex, ChannelType.SMS,0);
         PnAuditLogEvent auditLogEvent = mock(PnAuditLogEvent.class);
 
-        when(addressSearchUtils.getDigitalAddress(notification, recIndex, DigitalChannelsInt.SMS,
-                DigitalAddressSourceInt.SPECIAL, expectedRequestId))
+        when(addressSearchUtils.retrieveDigitalAddressFromTimeline(notification, recIndex, DigitalAddressSourceInt.SPECIAL, DigitalChannelsInt.SMS, 0))
                 .thenReturn(buildDigitalAddress());
         when(templateGeneratorService.generateSmsTemplate(notification, recipient)).thenReturn(SMS_CONTENT);
         when(auditLogService.buildAuditLogEvent(eq(IUN), eq(recIndex), eq(PnAuditLogEventType.AUD_COM_SEND_SMS),
