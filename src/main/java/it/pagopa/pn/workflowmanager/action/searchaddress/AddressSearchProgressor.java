@@ -18,6 +18,12 @@ public class AddressSearchProgressor {
     private final AddressSearchUtils utils;
     private final AddressSearchRegistry registry;
 
+    /**
+     * Avvia l'orchestrazione della ricerca di indirizzi digitali per un destinatario
+     * @param ctx Dati contestuali della ricerca di indirizzo digitale
+     * @param sources Lista completa delle sorgenti da cui cercare l'indirizzo digitale
+     * @param fromIndex Indice da cui partire nella lista delle sorgenti (utile per riprendere la ricerca dopo una sorgente asincrona)
+     */
     public void run(AddressSearchContext ctx, List<DigitalAddressSourceInt> sources, int fromIndex) {
         for (int i = fromIndex; i < sources.size(); i++) {
             DigitalAddressSourceInt source = sources.get(i);
@@ -59,6 +65,30 @@ public class AddressSearchProgressor {
 
         // piano esaurito, nessun indirizzo trovato su nessuna fonte
         utils.scheduleSendChannelMessageAction(ctx, DigitalAddressSourceInt.NONE);
+    }
+
+    /**
+     * Riprende l'orchestrazione della ricerca di indirizzi digitali in seguito all'esito di una ricerca su sorgente asincrona
+     * @param ctx Dati contestuali della ricerca di indirizzo digitale
+     * @param asyncSource Sorgente asincrona che ha restituito l'esito
+     * @param outcome Esito della ricerca asincrona
+     * @param sources Lista completa delle sorgenti da cui cercare l'indirizzo digitale
+     */
+    public void resumeAfterAsyncOutcome(
+            AddressSearchContext ctx,
+            DigitalAddressSourceInt asyncSource,
+            SourceSearchOutcome outcome,
+            List<DigitalAddressSourceInt> sources
+    ) {
+        utils.storeSearchOutcome(ctx, outcome);
+
+        if (outcome.found()) {
+            utils.scheduleSendChannelMessageAction(ctx, asyncSource);
+            return;
+        }
+
+        int resumeIndex = sources.indexOf(asyncSource) + 1;
+        run(ctx, sources, resumeIndex);
     }
 
 }

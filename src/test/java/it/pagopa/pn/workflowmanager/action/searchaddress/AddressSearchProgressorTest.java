@@ -94,6 +94,49 @@ class AddressSearchProgressorTest {
         verify(utils, never()).storeSearchOutcome(any(), any());
     }
 
+    @Test
+    void resumeAfterAsyncOutcomeSchedulesActionAndStopsWhenOutcomeFound() {
+        AddressSearchContext context = buildContext();
+        SourceSearchOutcome outcome = SourceSearchOutcome.found(DigitalAddressSourceInt.GENERAL, null);
+        List<DigitalAddressSourceInt> sources = List.of(DigitalAddressSourceInt.GENERAL, DigitalAddressSourceInt.SPECIAL);
+
+        progressor.resumeAfterAsyncOutcome(context, DigitalAddressSourceInt.GENERAL, outcome, sources);
+
+        verify(utils).storeSearchOutcome(context, outcome);
+        verify(utils).scheduleSendChannelMessageAction(context, DigitalAddressSourceInt.GENERAL);
+        verifyNoInteractions(registry);
+    }
+
+    @Test
+    void resumeAfterAsyncOutcomeResumesRunFromNextSourceWhenOutcomeNotFound() {
+        AddressSearchContext context = buildContext();
+        SourceSearchOutcome outcome = SourceSearchOutcome.notFound(DigitalAddressSourceInt.GENERAL);
+        TestSyncStrategy strategy = new TestSyncStrategy(SourceSearchOutcome.found(DigitalAddressSourceInt.SPECIAL, null), ChannelType.PEC, DigitalAddressSourceInt.SPECIAL);
+        List<DigitalAddressSourceInt> sources = List.of(DigitalAddressSourceInt.GENERAL, DigitalAddressSourceInt.SPECIAL);
+        when(utils.findPreviousSearchOutcome(context.notification().getIun(), context.recipientIndex(), DigitalAddressSourceInt.SPECIAL, context.channel(), context.attempt()))
+                .thenReturn(Optional.empty());
+        when(registry.find(DigitalAddressSourceInt.SPECIAL, ChannelType.PEC)).thenReturn(strategy);
+
+        progressor.resumeAfterAsyncOutcome(context, DigitalAddressSourceInt.GENERAL, outcome, sources);
+
+        verify(utils).storeSearchOutcome(context, outcome);
+        verify(utils).storeSearchOutcome(context, strategy.outcome);
+        verify(utils).scheduleSendChannelMessageAction(context, DigitalAddressSourceInt.SPECIAL);
+    }
+
+    @Test
+    void resumeAfterAsyncOutcomeSchedulesNoneWhenNoMoreSourcesAfterAsync() {
+        AddressSearchContext context = buildContext();
+        SourceSearchOutcome outcome = SourceSearchOutcome.notFound(DigitalAddressSourceInt.GENERAL);
+        List<DigitalAddressSourceInt> sources = List.of(DigitalAddressSourceInt.GENERAL);
+
+        progressor.resumeAfterAsyncOutcome(context, DigitalAddressSourceInt.GENERAL, outcome, sources);
+
+        verify(utils).storeSearchOutcome(context, outcome);
+        verify(utils).scheduleSendChannelMessageAction(context, DigitalAddressSourceInt.NONE);
+        verifyNoInteractions(registry);
+    }
+
     private static AddressSearchContext buildContext() {
         Instant sentAt = Instant.parse("2026-05-05T12:00:00Z");
         NotificationInt notification = NotificationInt.builder()
