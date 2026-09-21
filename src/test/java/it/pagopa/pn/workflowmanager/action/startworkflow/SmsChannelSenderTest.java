@@ -10,6 +10,7 @@ import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.RecipientTypeInt;
+import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.ExternalChannelEventType;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.DigitalChannelsInt;
 import it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.externalchannel.PnExternalChannelsClient;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
@@ -89,7 +90,8 @@ class SmsChannelSenderTest {
         verify(pnExternalChannelsClient).sendNotificationSMS(
                 eq(expectedRequestId),
                 eq(SMS_CONTENT),
-                eq(PHONE_NUMBER)
+                eq(PHONE_NUMBER),
+                eq(ExternalChannelEventType.INFORMAL)
         );
         verify(channelSenderUtils).saveSendDigitalMessageElement(
                 eq(notification), eq(expectedRequestId), eq(recIndex),
@@ -170,7 +172,7 @@ class SmsChannelSenderTest {
                 anyString(), eq(IUN), eq(recIndex), eq(expectedRequestId)))
                 .thenReturn(auditLogEvent);
         doThrow(new RuntimeException("external service error"))
-                .when(pnExternalChannelsClient).sendNotificationSMS(anyString(), anyString(), anyString());
+                .when(pnExternalChannelsClient).sendNotificationSMS(anyString(), anyString(), anyString(), eq(ExternalChannelEventType.INFORMAL));
         when(auditLogEvent.generateFailure(anyString(), any())).thenReturn(auditLogEvent);
         when(auditLogEvent.log()).thenReturn(auditLogEvent);
 

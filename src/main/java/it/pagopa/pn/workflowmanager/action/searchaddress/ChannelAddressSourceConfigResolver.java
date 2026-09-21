@@ -1,22 +1,20 @@
 package it.pagopa.pn.workflowmanager.action.searchaddress;
 
+import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
 import jakarta.annotation.PostConstruct;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @Component
 @AllArgsConstructor
 public class ChannelAddressSourceConfigResolver {
 
     private final SearchDigitalDomicileParameterConsumer parameterConsumer;
+    private final AddressSearchRegistry addressSearchRegistry;
 
     @PostConstruct
     public void validateRules() {
@@ -40,7 +38,7 @@ public class ChannelAddressSourceConfigResolver {
     public Optional<List<DigitalAddressSourceInt>> resolveSources(ChannelType channel, Instant sentAt) {
         return parameterConsumer.getSearchDigitalDomicileConfigs()
                 .stream()
-                .filter(config -> config.getValidFrom().isBefore(sentAt))
+                .filter(config -> !config.getValidFrom().isAfter(sentAt))
                 .max(Comparator.comparing(SearchDigitalDomicileConfig::getValidFrom))
                 .map(config -> getSourcesByChannel(config, channel));
     }
@@ -57,6 +55,9 @@ public class ChannelAddressSourceConfigResolver {
             if (!uniqueSources.add(source)) {
                 throw new IllegalArgumentException("Channel " + channel + " has duplicated source " + source + " for validFrom " + validFrom);
             }
+            if (!isSupported(channel, source)) {
+                throw new IllegalArgumentException("Channel " + channel + " has unsupported source " + source + " for validFrom " + validFrom);
+            }
         });
     }
 
@@ -67,5 +68,9 @@ public class ChannelAddressSourceConfigResolver {
             case EMAIL -> config.getEmail();
             default -> List.of();
         };
+    }
+
+    private boolean isSupported(ChannelType channel, DigitalAddressSourceInt source) {
+        return addressSearchRegistry.find(source, channel) != null;
     }
 }

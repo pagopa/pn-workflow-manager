@@ -228,6 +228,7 @@ public enum TimelineEventId {
                     .withIun(eventId.getIun())
                     .withRecIndex(eventId.getRecIndex())
                     .withCourtesyAddressType(eventId.getCourtesyAddressType())
+                    .withOptin(eventId.getOptin())
                     .build();
         }
     },
@@ -264,6 +265,20 @@ public enum TimelineEventId {
             return new TimelineEventIdBuilder()
                     .withCategory(this.getValue())
                     .withCorrelationId(eventId.getCorrelationId())
+                    .build();
+        }
+    },
+
+    NATIONAL_REGISTRY_CALL("NATIONAL_REGISTRY_CALL") {
+        @Override
+        public String buildEventId(EventId eventId) {
+            return new TimelineEventIdBuilder()
+                    .withCategory(this.getValue())
+                    .withIun(eventId.getIun())
+                    .withRecIndex(eventId.getRecIndex())
+                    .withDeliveryMode(eventId.getDeliveryMode())
+                    .withContactPhase(eventId.getContactPhase())
+                    .withSentAttemptMade(eventId.getSentAttemptMade())
                     .build();
         }
     };

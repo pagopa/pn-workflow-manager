@@ -2,6 +2,7 @@ package it.pagopa.pn.workflowmanager.action.searchaddress;
 
 import it.pagopa.pn.commons.abstractions.ParameterConsumer;
 import it.pagopa.pn.commons.exceptions.PnInternalException;
+import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

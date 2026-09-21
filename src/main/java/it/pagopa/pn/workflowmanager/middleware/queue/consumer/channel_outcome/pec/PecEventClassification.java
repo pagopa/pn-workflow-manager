@@ -27,8 +27,10 @@ public enum PecEventClassification implements ChannelOutcomeClassification {
     C008(false, ChannelOutcomeCategory.negativeFeedback(), null), // StatusPec.ERRORE_COMUNICAZIONE_SERVER_PEC  - con retry da parte di PN (senza busta)
     C009(false, ChannelOutcomeCategory.negativeFeedback(), null), // StatusPec.ERRORE_DOMINIO_PEC_NON_VALIDO - senza retry:  indica un dominio pec non valido; (senza busta)
     C010(false, ChannelOutcomeCategory.negativeFeedback(), null), // StatusPec.ERROR_INVIO_PEC - con retry da parte di PN: indica un errore generico di invio pec (senza busta)
-    C011(false, ChannelOutcomeCategory.negativeFeedback(), null); // PEC - ADDRESS_ERROR
-
+    C011(false, ChannelOutcomeCategory.negativeFeedback(), null), // PEC - ADDRESS_ERROR
+    Q003(true, ChannelOutcomeCategory.positiveFeedback(false), DesiredFeedbackType.RECEIVED), // SERCQ-SENT
+    Q010(false, ChannelOutcomeCategory.negativeFeedback(), null), // SERCQ - ERRORE_INVIO_SERCQ
+    Q011(false, ChannelOutcomeCategory.negativeFeedback(), null); // SERCQ - ADDRESS_ERROR
 
     private final ChannelOutcomeCategory category;
     private final boolean recipientReached;

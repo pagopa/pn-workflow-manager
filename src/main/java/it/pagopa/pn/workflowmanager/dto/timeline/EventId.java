@@ -25,4 +25,5 @@ public class EventId {
     private String correlationId;
     private ContactPhaseInt contactPhase;
     private DeliveryModeInt deliveryMode;
+    private Boolean optin;
 }

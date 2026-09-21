@@ -13,6 +13,7 @@ import it.pagopa.pn.workflowmanager.middleware.queue.consumer.event.ExtChannelOu
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.pec.PecEventNormalizer;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.sms.SmsEventNormalizer;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
+import it.pagopa.pn.workflowmanager.utils.CourtesyEventOriginResolver;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -27,27 +28,40 @@ public class DigitalEventHandler {
     private final PecEventNormalizer pecEventNormalizer;
     private final EmailEventNormalizer emailEventNormalizer;
     private final SmsEventNormalizer smsEventNormalizer;
+    private final CourtesyEventOriginResolver courtesyEventOriginResolver;
+
 
     public void handle(SingleStatusUpdate event) {
         if (event.getDigitalLegal() != null) {
             ExtChannelOutcomeEvent legalEvent = mapLegalEvent(event.getDigitalLegal());
             channelEventProcessor.process(legalEvent, pecEventNormalizer);
         } else if (event.getDigitalCourtesy() != null) {
-            ExtChannelOutcomeEvent courtesyEvent = mapCourtesyEvent(event.getDigitalCourtesy());
-            ChannelType channelType = courtesyEvent.getEventCode().getChannelType();
-            if (channelType == ChannelType.EMAIL) {
-                channelEventProcessor.process(courtesyEvent, emailEventNormalizer);
-            } else if (channelType == ChannelType.SMS) {
-                channelEventProcessor.process(courtesyEvent, smsEventNormalizer);
-            } else {
-                throw new PnInternalException(
-                        "Unsupported courtesy channel type: " + channelType,
-                        ERROR_CODE_WORKFLOWMANAGER_INVALID_EVENT_RECEIVED
-                );
+            CourtesyEventOriginResolver.CourtesyEventOrigin eventOrigin = courtesyEventOriginResolver.resolveOrigin(event.getDigitalCourtesy());
+            switch (eventOrigin) {
+                case CHANNEL_MESSAGE -> handleCourtesyChannelEvent(event.getDigitalCourtesy());
+                case COURTESY_MESSAGE -> {
+                    String skipMessage = "Digital courtesy event with code: {} and status: {} received for requestId: {}, but the related timeline element is a CourtesyAddressRelatedTimelineElement, skipping further actions.";
+                    log.info(skipMessage, event.getDigitalCourtesy().getEventCode(), event.getDigitalCourtesy().getStatus(), event.getDigitalCourtesy().getRequestId());
+                }
             }
         } else {
             throw new PnInternalException(
                     "Invalid digital event: both digitalLegal and digitalCourtesy are null",
+                    ERROR_CODE_WORKFLOWMANAGER_INVALID_EVENT_RECEIVED
+            );
+        }
+    }
+
+    private void handleCourtesyChannelEvent(CourtesyMessageProgressEvent event) {
+        ExtChannelOutcomeEvent courtesyEvent = mapCourtesyEvent(event);
+        ChannelType channelType = courtesyEvent.getEventCode().getChannelType();
+        if (channelType == ChannelType.EMAIL) {
+            channelEventProcessor.process(courtesyEvent, emailEventNormalizer);
+        } else if (channelType == ChannelType.SMS) {
+            channelEventProcessor.process(courtesyEvent, smsEventNormalizer);
+        } else {
+            throw new PnInternalException(
+                    "Unsupported courtesy channel type: " + channelType,
                     ERROR_CODE_WORKFLOWMANAGER_INVALID_EVENT_RECEIVED
             );
         }

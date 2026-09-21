@@ -6,6 +6,8 @@ import it.pagopa.pn.workflowmanager.dto.timeline.details.ContactPhaseInt;
 import jakarta.validation.constraints.NotNull;
 import javax.annotation.Nullable;
 
+import static java.lang.Boolean.TRUE;
+
 /**
  * Classe builder che permette di costruire un timelineEventId
  * <p>
@@ -42,6 +44,8 @@ public class TimelineEventIdBuilder {
     private String courtesyAddressType = "";
 
     private String correlationId = "";
+
+    private String optin = "";
 
     public TimelineEventIdBuilder withIun(@Nullable String iun) {
         if(iun != null)
@@ -122,6 +126,13 @@ public class TimelineEventIdBuilder {
         return this;
     }
 
+    public TimelineEventIdBuilder withOptin(Boolean optin) {
+        if (TRUE.equals(optin)){
+            this.optin = ".OPTIN";
+        }
+        return this;
+    }
+
     public String build() {
         return category +
                 iun +
@@ -135,6 +146,7 @@ public class TimelineEventIdBuilder {
                 channel +
                 deliveryType +
                 paymentCode +
+                optin +
                 correlationId;
     }
 
