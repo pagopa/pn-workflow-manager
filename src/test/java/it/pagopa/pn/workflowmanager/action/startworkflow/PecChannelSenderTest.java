@@ -115,8 +115,7 @@ class PecChannelSenderTest {
                 .thenReturn(auditLogEvent);
         when(auditLogEvent.generateSuccess(anyString())).thenReturn(auditLogEvent);
         when(auditLogEvent.log()).thenReturn(auditLogEvent);
-        when(addressSearchUtils.getDigitalAddress(notification, recIndex, DigitalChannelsInt.PEC,
-                DigitalAddressSourceInt.SPECIAL, expectedRequestId))
+        when(addressSearchUtils.retrieveDigitalAddressFromTimeline(notification, recIndex, DigitalAddressSourceInt.SPECIAL, DigitalChannelsInt.PEC, 0))
                 .thenReturn(buildDigitalAddress());
         when(templateGeneratorService.generatePecBodyTemplate(notification, recipient, campaign))
                 .thenReturn("<html>PEC</html>");
@@ -159,13 +158,9 @@ class PecChannelSenderTest {
     void send_shouldSkipSendWhenAddressSourceIsNone() {
         int recIndex = 0;
 
-        when(addressSearchUtils.getDigitalAddress(notification, recIndex, DigitalChannelsInt.PEC,
-                DigitalAddressSourceInt.NONE, expectedRequestId(recIndex)))
-                .thenReturn(null);
-
         pecChannelSender.send(notification, campaign, recIndex, DigitalAddressSourceInt.NONE);
 
-        verifyNoInteractions(pnExternalChannelsClient, templateGeneratorService, workflowUtils);
+        verifyNoInteractions(pnExternalChannelsClient, templateGeneratorService);
         verify(channelSenderUtils, never()).saveSendDigitalMessageElement(any(), any(), anyInt(), any(), any(), any());
     }
 
@@ -181,8 +176,7 @@ class PecChannelSenderTest {
                 .thenReturn(auditLogEvent);
         when(auditLogEvent.generateFailure(anyString(), any(RuntimeException.class))).thenReturn(auditLogEvent);
         when(auditLogEvent.log()).thenReturn(auditLogEvent);
-        when(addressSearchUtils.getDigitalAddress(notification, recIndex, DigitalChannelsInt.PEC,
-                DigitalAddressSourceInt.SPECIAL, expectedRequestId))
+        when(addressSearchUtils.retrieveDigitalAddressFromTimeline(notification, recIndex, DigitalAddressSourceInt.SPECIAL, DigitalChannelsInt.PEC, 0))
                 .thenReturn(buildDigitalAddress());
         when(templateGeneratorService.generatePecBodyTemplate(notification, recipient, campaign))
                 .thenThrow(new RuntimeException("Template generation failed"));

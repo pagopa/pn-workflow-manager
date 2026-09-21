@@ -3,7 +3,7 @@ package it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.external
 import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.workflowmanager.config.PnWorkflowManagerConfigs;
 import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressInt;
-import it.pagopa.pn.workflowmanager.dto.address.LegalDigitalAddressInt;
+import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.LocalizedMessageInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationMessageInt;
@@ -50,7 +50,7 @@ class PnExternalChannelsClientImplTest {
 
         NotificationInt notification = mock(NotificationInt.class);
 
-        LegalDigitalAddressInt digitalAddress = mock(LegalDigitalAddressInt.class);
+        InformalDigitalAddressInt digitalAddress = mock(InformalDigitalAddressInt.class);
         when(digitalAddress.getAddress()).thenReturn(pecAddress);
 
         NotificationRecipientInt recipient = NotificationRecipientInt.builder()
@@ -99,7 +99,7 @@ class PnExternalChannelsClientImplTest {
 
         NotificationInt notification = mock(NotificationInt.class);
 
-        LegalDigitalAddressInt digitalAddress = mock(LegalDigitalAddressInt.class);
+        InformalDigitalAddressInt digitalAddress = mock(InformalDigitalAddressInt.class);
         when(digitalAddress.getAddress()).thenReturn("receiver@pec.it");
 
         NotificationRecipientInt recipient = NotificationRecipientInt.builder()
@@ -129,7 +129,7 @@ class PnExternalChannelsClientImplTest {
         NotificationInt notification = mock(NotificationInt.class);
         when(notification.getIun()).thenReturn("IUN12345");
 
-        LegalDigitalAddressInt digitalAddress = mock(LegalDigitalAddressInt.class);
+        InformalDigitalAddressInt digitalAddress = mock(InformalDigitalAddressInt.class);
         when(digitalAddress.getAddress()).thenReturn("receiver@pec.it");
 
         NotificationRecipientInt recipient = NotificationRecipientInt.builder()
@@ -159,7 +159,7 @@ class PnExternalChannelsClientImplTest {
         NotificationInt notification = mock(NotificationInt.class);
         when(notification.getIun()).thenReturn("IUN12345");
 
-        LegalDigitalAddressInt digitalAddress = mock(LegalDigitalAddressInt.class);
+        InformalDigitalAddressInt digitalAddress = mock(InformalDigitalAddressInt.class);
 
         NotificationRecipientInt recipient = NotificationRecipientInt.builder()
                 .message(NotificationMessageInt.builder()

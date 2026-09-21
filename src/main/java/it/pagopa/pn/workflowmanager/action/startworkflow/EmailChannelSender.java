@@ -49,11 +49,11 @@ public class EmailChannelSender implements ChannelSender {
         log.info("Sending email notification - iun={} recIndex={} addressSource={} channel={}",
                 notification.getIun(), recIndex, addressSource, getChannelType());
         NotificationRecipientInt recipient = notification.getRecipients().get(recIndex);
-        boolean emailMissing = ObjectUtils.isEmpty(recipient.getEmail());
+        boolean emailMissing = addressSource == DigitalAddressSourceInt.NONE;
         if (emailMissing) {
             handleMissingEmail(notification, campaign, recIndex, getChannelType(), recipient);
         } else {
-            handleEmailPresent(notification, campaign, recIndex, getChannelType(), recipient,addressSource);
+            handleEmailPresent(notification, campaign, recIndex, getChannelType(), recipient, addressSource);
         }
     }
 
@@ -79,16 +79,13 @@ public class EmailChannelSender implements ChannelSender {
         PnAuditLogEvent auditLogEvent = buildAuditLogEvent(notification.getIun(), recIndex, requestId);
 
         try {
-            InformalDigitalAddressInt digitalAddress = addressSearchUtils.getDigitalAddress(notification, recIndex,
-                    DigitalChannelsInt.EMAIL,addressSource, requestId);
-            if (digitalAddress == null) return;
+            InformalDigitalAddressInt emailAddress = addressSearchUtils.retrieveDigitalAddressFromTimeline(notification, recIndex,
+                    addressSource, DigitalChannelsInt.EMAIL, FIRST_ATTEMPT);
 
             String subject = templateGeneratorService.generateEmailSubjectTemplate(notification, recipient);
             String htmlBody = templateGeneratorService.generateEmailBodyTemplate(notification, recipient, campaign);
             List<String> attachmentUrls = channelSenderUtils.resolveAttachmentsForChannel(notification, recIndex, campaign, channel);
-            InformalDigitalAddressInt emailAddress = ChannelSenderUtils.buildDigitalAddress(
-                    digitalAddress.getAddress(), InformalDigitalAddressInt.INFORMAL_DIGITAL_ADDRESS_TYPE.EMAIL
-            );
+
             log.info("Sending email for notification {} to recipient {} with requestId {}",
                     notification.getIun(), recIndex, requestId);
             pnExternalChannelsClient.sendNotificationEMAIL(

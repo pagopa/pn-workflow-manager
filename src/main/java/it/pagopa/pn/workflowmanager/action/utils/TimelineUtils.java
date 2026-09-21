@@ -623,25 +623,16 @@ public class TimelineUtils {
         return buildTimeline(notification, TimelineElementCategoryInt.SEND_DIGITAL_MESSAGE_FEEDBACK, elementId, detailsInt);
     }
 
-    public TimelineElementInternal buildGetAddressTimelineElement(NotificationInt notification, int recIndex,
-                                                                  DigitalChannelsInt channel,
-                                                                  DigitalAddressSourceInt digitalAddressSource,
-                                                                  Integer attempt) {
-        String elementId = TimelineEventId.GET_ADDRESS.buildEventId(
+    public static String buildGetAddressEventId(String iun, int recIndex, String channel, DigitalAddressSourceInt source, int sentAttemptMade) {
+        return TimelineEventId.GET_ADDRESS.buildEventId(
                 EventId.builder()
-                        .iun(notification.getIun())
+                        .iun(iun)
                         .recIndex(recIndex)
-                        .channel(channel.name())
+                        .channel(channel)
+                        .source(source)
+                        .sentAttemptMade(sentAttemptMade)
                         .build()
         );
-
-        GetAddressDetailsInt getAddressDetailsInt = GetAddressDetailsInt.builder()
-                .recIndex(recIndex)
-                .channel(channel)
-                .digitalAddressSource(digitalAddressSource)
-                .attempt(attempt)
-                .build();
-        return buildTimeline(notification, TimelineElementCategoryInt.GET_ADDRESS, elementId, getAddressDetailsInt);
     }
 
     public String getIunFromTimelineId(String timelineId) {
@@ -692,15 +683,7 @@ public class TimelineUtils {
                                                                           Integer sentAttemptMade, InformalDigitalAddressInt digitalAddress, Boolean isTosAccepted, String channel) {
         log.debug("buildAvailabilitySourceTimelineElement - IUN={} and id={}", notification.getIun(), recIndex);
 
-        String elementId = TimelineEventId.GET_ADDRESS.buildEventId(
-                EventId.builder()
-                        .iun(notification.getIun())
-                        .recIndex(recIndex)
-                        .source(source)
-                        .channel(channel)
-                        .sentAttemptMade(sentAttemptMade)
-                        .build()
-        );
+        String elementId = buildGetAddressEventId(notification.getIun(), recIndex, channel, source, sentAttemptMade);
 
         GetAddressInfoDetailsInt details = GetAddressInfoDetailsInt.builder()
                 .recIndex(recIndex)

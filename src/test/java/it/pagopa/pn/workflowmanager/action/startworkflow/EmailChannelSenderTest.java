@@ -73,8 +73,7 @@ class EmailChannelSenderTest {
         String expectedRequestId = ChannelSenderUtils.buildSendDigitalMessageEventId(IUN, recIndex, ChannelType.EMAIL,0);
         PnAuditLogEvent auditLogEvent = mock(PnAuditLogEvent.class);
 
-        when(addressSearchUtils.getDigitalAddress(notification, recIndex, DigitalChannelsInt.EMAIL,
-                DigitalAddressSourceInt.SPECIAL, expectedRequestId))
+        when(addressSearchUtils.retrieveDigitalAddressFromTimeline(notification, recIndex, DigitalAddressSourceInt.SPECIAL, DigitalChannelsInt.EMAIL,0))
                 .thenReturn(buildDigitalAddress());
         when(templateGeneratorService.generateEmailBodyTemplate(notification, recipient, campaign))
                 .thenReturn(HTML_CONTENT);
@@ -120,16 +119,11 @@ class EmailChannelSenderTest {
         Campaign campaign = buildCampaign(true);
         int recIndex = 0;
 
-        String expectedRequestId = ChannelSenderUtils.buildSendDigitalMessageEventId(IUN, recIndex, ChannelType.EMAIL,0);
-        when(addressSearchUtils.getDigitalAddress(notification, recIndex, DigitalChannelsInt.EMAIL,
-                DigitalAddressSourceInt.NONE, expectedRequestId))
-                .thenReturn(null);
-
         // When
         emailChannelSender.send(notification, campaign, recIndex, DigitalAddressSourceInt.NONE);
 
         // Then
-        verifyNoInteractions(pnExternalChannelsClient, templateGeneratorService, workflowUtils);
+        verifyNoInteractions(pnExternalChannelsClient, templateGeneratorService);
         verify(channelSenderUtils, never()).saveSendDigitalMessageElement(any(), any(), anyInt(), any(), any(), any());
     }
 
@@ -144,8 +138,7 @@ class EmailChannelSenderTest {
         String expectedRequestId = ChannelSenderUtils.buildSendDigitalMessageEventId(IUN, recIndex, ChannelType.EMAIL,0);
         PnAuditLogEvent auditLogEvent = mock(PnAuditLogEvent.class);
 
-        when(addressSearchUtils.getDigitalAddress(notification, recIndex, DigitalChannelsInt.EMAIL,
-                DigitalAddressSourceInt.SPECIAL, expectedRequestId))
+        when(addressSearchUtils.retrieveDigitalAddressFromTimeline(notification, recIndex, DigitalAddressSourceInt.SPECIAL, DigitalChannelsInt.EMAIL,0))
                 .thenReturn(buildDigitalAddress());
         when(templateGeneratorService.generateEmailBodyTemplate(notification, recipient, campaign))
                 .thenReturn(HTML_CONTENT);
@@ -186,7 +179,7 @@ class EmailChannelSenderTest {
                 recIndex, IUN, ChannelType.EMAIL);
 
         // When
-        emailChannelSender.send(notification, campaign, recIndex, DigitalAddressSourceInt.SPECIAL);
+        emailChannelSender.send(notification, campaign, recIndex, DigitalAddressSourceInt.NONE);
 
         // Then
         verify(channelSenderUtils).saveSendDigitalMessageSkipElement(
