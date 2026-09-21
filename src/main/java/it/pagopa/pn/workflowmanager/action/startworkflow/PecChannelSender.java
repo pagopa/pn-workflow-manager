@@ -3,11 +3,11 @@ package it.pagopa.pn.workflowmanager.action.startworkflow;
 import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.commons.log.PnAuditLogEvent;
 import it.pagopa.pn.commons.log.PnAuditLogEventType;
+import it.pagopa.pn.workflowmanager.action.sendcourtesy.CourtesyAddressActionDispatcher;
 import it.pagopa.pn.workflowmanager.action.utils.ChannelSenderUtils;
 import it.pagopa.pn.workflowmanager.action.utils.WorkflowUtils;
 import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
 import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
-import it.pagopa.pn.workflowmanager.dto.address.LegalDigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
@@ -37,6 +37,7 @@ public class PecChannelSender implements ChannelSender {
     private final WorkflowUtils workflowUtils;
     private final AddressSearchUtils addressSearchUtils;
     private final AuditLogService auditLogService;
+    private final CourtesyAddressActionDispatcher courtesyAddressActionDispatcher;
 
     @Override
     public ChannelType getChannelType() {
@@ -45,16 +46,39 @@ public class PecChannelSender implements ChannelSender {
 
     @Override
     public void send(NotificationInt notification, Campaign campaign, int recIndex, DigitalAddressSourceInt addressSource) {
-        log.info("Sending pec for notification {} to recipient {} addressSource={}", notification.getIun(), recIndex, addressSource);
+        log.info("Sending pec notification - iun={} recIndex={} addressSource={} channel={}",
+                notification.getIun(), recIndex, addressSource, getChannelType());
         NotificationRecipientInt recipient = notification.getRecipients().get(recIndex);
+        boolean pecMissing = addressSource == DigitalAddressSourceInt.NONE;
+        if (pecMissing) {
+            handleMissingPec(notification, campaign, recIndex, getChannelType(), recipient);
+        } else {
+            handlePecPresent(notification, campaign, recIndex, getChannelType(), recipient, addressSource);
+        }
+    }
+
+    private void handleMissingPec(NotificationInt notification, Campaign campaign, int recIndex,
+                                    ChannelType channel, NotificationRecipientInt recipient) {
+        log.info("Recipient pec is not present - iun={} recIndex={}", notification.getIun(), recIndex);
+        String requestId = ChannelSenderUtils.buildSendDigitalMessageSkipTimelineElementId(recIndex, notification.getIun(), channel);
+        channelSenderUtils.saveSendDigitalMessageSkipElement(
+                recIndex, notification, requestId,
+                DigitalChannelsInt.PEC
+        );
+        workflowUtils.advanceWorkflow(
+                notification.getIun(), recIndex, channel, campaign, recipient.getRecipientType()
+        );
+    }
+
+    private void handlePecPresent(NotificationInt notification, Campaign campaign, int recIndex, ChannelType channel, NotificationRecipientInt recipient, DigitalAddressSourceInt addressSource) {
+        log.info("Sending pec for notification {} to recipient {} addressSource={}", notification.getIun(), recIndex, addressSource);
 
         String timelineId = ChannelSenderUtils.buildSendDigitalMessageEventId(notification.getIun(), recIndex, getChannelType(), FIRST_ATTEMPT);
         PnAuditLogEvent auditLogEvent = buildAuditLogEvent(notification.getIun(), recIndex, timelineId);
 
         try {
-            InformalDigitalAddressInt digitalAddress = addressSearchUtils.getDigitalAddress(notification, recIndex,
-                    DigitalChannelsInt.PEC,addressSource, timelineId);
-            if (digitalAddress == null) return;
+            InformalDigitalAddressInt digitalAddress = addressSearchUtils.retrieveDigitalAddressFromTimeline(notification, recIndex,
+                    addressSource, DigitalChannelsInt.PEC, FIRST_ATTEMPT);
 
             String messageText = templateGeneratorService.generatePecBodyTemplate(notification, recipient, campaign);
             String subject = templateGeneratorService.generatePecSubjectTemplate(notification, recipient);
@@ -67,10 +91,7 @@ public class PecChannelSender implements ChannelSender {
                     subject,
                     notification,
                     recipient,
-                    LegalDigitalAddressInt.builder()
-                            .address(digitalAddress.getAddress())
-                            .type(LegalDigitalAddressInt.LEGAL_DIGITAL_ADDRESS_TYPE.PEC)
-                            .build(),
+                    digitalAddress,
                     attachmentUrls
             );
 
@@ -78,14 +99,17 @@ public class PecChannelSender implements ChannelSender {
                     notification,
                     timelineId,
                     recIndex,
-                    ChannelSenderUtils.buildDigitalAddress(digitalAddress.getAddress(), InformalDigitalAddressInt.INFORMAL_DIGITAL_ADDRESS_TYPE.PEC),
+                    digitalAddress,
                     DigitalChannelsInt.PEC,
                     addressSource
             );
 
             workflowUtils.scheduleTimeoutForCurrentChannel(notification.getIun(), recIndex, campaign, getChannelType());
-            // TODO: controlla se l'indirizzo utilizzato è di tipo SERCQ e in tal caso schedula l'azione di invio del messaggio di cortesia
-            //courtesyAddressActionDispatcher.dispatch(notification, recIndex);
+
+            if (InformalDigitalAddressInt.INFORMAL_DIGITAL_ADDRESS_TYPE.SERCQ.equals(digitalAddress.getType())) {
+                log.debug("scheduling courtesy messages for iun : {} recIndex : {}", notification.getIun(), recIndex);
+                courtesyAddressActionDispatcher.dispatch(notification, recIndex);
+            }
             auditLogEvent.generateSuccess("Pec sent successfully").log();
         } catch (Exception e) {
             auditLogEvent.generateFailure("Error sending pec", e).log();

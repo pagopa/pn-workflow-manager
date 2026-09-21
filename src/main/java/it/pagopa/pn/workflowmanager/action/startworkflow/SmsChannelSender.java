@@ -10,7 +10,6 @@ import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
-import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.ExternalChannelEventType;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.DigitalChannelsInt;
 import it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.externalchannel.PnExternalChannelsClient;
@@ -20,7 +19,6 @@ import it.pagopa.pn.workflowmanager.utils.AddressSearchUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.util.ObjectUtils;
 
 import static it.pagopa.pn.workflowmanager.action.utils.PnConstants.FIRST_ATTEMPT;
 import static it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCodes.ERROR_CODE_WORKFLOWMANAGER_SEND_ON_CHANNEL_ERROR;
@@ -44,10 +42,9 @@ public class SmsChannelSender implements ChannelSender {
 
     @Override
     public void send(NotificationInt notification, Campaign campaign, int recIndex, DigitalAddressSourceInt addressSource) {
-        NotificationRecipientInt recipient = notification.getRecipients().get(recIndex);
-        String phoneNumber = recipient.getPhoneNumber();
-
-        if (ObjectUtils.isEmpty(phoneNumber)) {
+        log.info("Sending sms notification - iun={} recIndex={} addressSource={} channel={}",
+                notification.getIun(), recIndex, addressSource, getChannelType());
+        if (addressSource == DigitalAddressSourceInt.NONE) {
             handleMissingPhoneNumber(notification, campaign, recIndex);
         } else {
             handlePhoneNumberPresent(notification, campaign, recIndex, addressSource);
@@ -71,12 +68,10 @@ public class SmsChannelSender implements ChannelSender {
         PnAuditLogEvent auditLogEvent = buildAuditLogEvent(notification.getIun(), recIndex, requestId);
 
         try {
-            InformalDigitalAddressInt digitalAddress = addressSearchUtils.getDigitalAddress(notification, recIndex,
-                    DigitalChannelsInt.SMS,addressSource, requestId);
-            if (digitalAddress == null) return;
+            InformalDigitalAddressInt smsAddress = addressSearchUtils.retrieveDigitalAddressFromTimeline(notification, recIndex,
+                    addressSource, DigitalChannelsInt.SMS, FIRST_ATTEMPT);
 
             String subject = templateGeneratorService.generateSmsTemplate(notification, notification.getRecipients().get(recIndex));
-            InformalDigitalAddressInt smsAddress = ChannelSenderUtils.buildDigitalAddress(digitalAddress.getAddress(), InformalDigitalAddressInt.INFORMAL_DIGITAL_ADDRESS_TYPE.SMS);
 
             log.info("Sending SMS for notification {} to recipient {} with requestId {}", notification.getIun(), recIndex, requestId);
             pnExternalChannelsClient.sendNotificationSMS(requestId, subject, smsAddress.getAddress(), ExternalChannelEventType.INFORMAL);
