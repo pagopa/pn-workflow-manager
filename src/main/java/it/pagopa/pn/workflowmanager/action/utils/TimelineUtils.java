@@ -1,6 +1,7 @@
 package it.pagopa.pn.workflowmanager.action.utils;
 
 import it.pagopa.pn.commons.exceptions.PnInternalException;
+import it.pagopa.pn.workflowmanager.dto.address.CourtesyDigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
 import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.address.PhysicalAddressInt;
@@ -12,10 +13,9 @@ import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRe
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.CategorizedAttachmentsResultInt;
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.ResponseStatusInt;
 import it.pagopa.pn.workflowmanager.dto.ext.paperchannel.AnalogDtoInt;
-import it.pagopa.pn.workflowmanager.dto.timeline.EventId;
-import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
-import it.pagopa.pn.workflowmanager.dto.timeline.TimelineEventId;
-import it.pagopa.pn.workflowmanager.dto.timeline.TimelineEventIdBuilder;
+import it.pagopa.pn.workflowmanager.dto.ext.publicregistry.NationalRegistriesResponse;
+import it.pagopa.pn.workflowmanager.dto.io.IoSendMessageResultInt;
+import it.pagopa.pn.workflowmanager.dto.timeline.*;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.*;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.model.SendResponse;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.model.NotificationHistoryResponse;
@@ -72,14 +72,12 @@ public class TimelineUtils {
 
     public TimelineElementInternal buildSendDigitalMessageSkipTimelineElement(Integer recIndex, NotificationInt notification,
                                                                               String eventId,
-                                                                              DigitalChannelsInt digitalAddressChannel,
-                                                                              DigitalAddressSourceInt digitalAddressSource){
+                                                                              DigitalChannelsInt digitalAddressChannel){
         log.debug("buildSendDigitalMessageSkipTimelineElement - IUN={} and id={}", notification.getIun(), recIndex);
 
         SendDigitalMessageSkipDetailsInt details = SendDigitalMessageSkipDetailsInt.builder()
                 .recIndex(recIndex)
                 .channel(digitalAddressChannel)
-                .digitalAddressSource(digitalAddressSource)
                 .build();
 
         return buildTimeline(notification, TimelineElementCategoryInt.SEND_DIGITAL_MESSAGE_SKIP, eventId, details);
@@ -625,6 +623,18 @@ public class TimelineUtils {
         return buildTimeline(notification, TimelineElementCategoryInt.SEND_DIGITAL_MESSAGE_FEEDBACK, elementId, detailsInt);
     }
 
+    public static String buildGetAddressEventId(String iun, int recIndex, String channel, DigitalAddressSourceInt source, int sentAttemptMade) {
+        return TimelineEventId.GET_ADDRESS.buildEventId(
+                EventId.builder()
+                        .iun(iun)
+                        .recIndex(recIndex)
+                        .channel(channel)
+                        .source(source)
+                        .sentAttemptMade(sentAttemptMade)
+                        .build()
+        );
+    }
+
     public String getIunFromTimelineId(String timelineId) {
         //<timelineId = CATEGORY_VALUE>;IUN_<IUN_VALUE>;RECINDEX_<RECINDEX_VALUE>...
         return timelineId.split("\\" + TimelineEventIdBuilder.DELIMITER)[1].replace("IUN_", "");
@@ -667,5 +677,87 @@ public class TimelineUtils {
                 .build();
 
         return buildTimeline(notification, TimelineElementCategoryInt.PAYMENT, elementId, detailsInt);
+    }
+
+    public TimelineElementInternal buildAvailabilitySourceTimelineElement(Integer recIndex, NotificationInt notification, DigitalAddressSourceInt source, boolean isAvailable,
+                                                                          Integer sentAttemptMade, InformalDigitalAddressInt digitalAddress, Boolean isTosAccepted, String channel) {
+        log.debug("buildAvailabilitySourceTimelineElement - IUN={} and id={}", notification.getIun(), recIndex);
+
+        String elementId = buildGetAddressEventId(notification.getIun(), recIndex, channel, source, sentAttemptMade);
+
+        GetAddressInfoDetailsInt details = GetAddressInfoDetailsInt.builder()
+                .recIndex(recIndex)
+                .digitalAddressSource(source)
+                .isAvailable(isAvailable)
+                .attemptDate(Instant.now())
+                .digitalAddress(digitalAddress)
+                .isTosAccepted(isTosAccepted)
+                .channel(DigitalChannelsInt.valueOf(channel))
+                .build();
+
+        return buildTimeline(notification, TimelineElementCategoryInt.GET_ADDRESS, elementId, details);
+    }
+
+    public TimelineElementInternal buildPublicRegistryCallTimelineElement(NotificationInt notification, Integer recIndex, String eventId, DeliveryModeInt deliveryMode,
+                                                                          ContactPhaseInt contactPhase, int sentAttemptMade,
+                                                                          String relatedFeedbackTimelineId) {
+        log.debug("buildPublicRegistryCallTimelineElement - iun={} and id={}", notification.getIun(), recIndex);
+
+        PublicRegistryCallDetailsInt details = PublicRegistryCallDetailsInt.builder()
+                .recIndex(recIndex)
+                .contactPhase(contactPhase)
+                .sentAttemptMade(sentAttemptMade)
+                .deliveryMode(deliveryMode)
+                .sendDate(Instant.now())
+                .relatedFeedbackTimelineId(relatedFeedbackTimelineId)
+                .build();
+
+        return buildTimeline(notification, TimelineElementCategoryInt.PUBLIC_REGISTRY_CALL, eventId, details);
+    }
+
+    public TimelineElementInternal buildPublicRegistryResponseCallTimelineElement(NotificationInt notification, Integer recIndex, NationalRegistriesResponse response) {
+        log.debug("buildPublicRegistryResponseCallTimelineElement - iun={} and id={}", notification.getIun(), recIndex);
+
+        String eventId = TimelineEventId.PUBLIC_REGISTRY_RESPONSE.buildEventId(EventId.builder().correlationId(response.getCorrelationId()).build());
+
+        PublicRegistryResponseDetailsInt details = PublicRegistryResponseDetailsInt.builder()
+                .recIndex(recIndex)
+                .digitalAddress(response.getDigitalAddress())
+                .physicalAddress(response.getPhysicalAddress())
+                .requestTimelineId(response.getCorrelationId())
+                .build();
+
+        return buildTimeline(notification, TimelineElementCategoryInt.PUBLIC_REGISTRY_RESPONSE, eventId, details);
+    }
+
+    public TimelineElementInternal buildSendCourtesyMessageTimelineElement(Integer recIndex, NotificationInt notification, CourtesyDigitalAddressInt address,
+                                                                           Instant sendDate, String eventId, IoSendMessageResultInt ioSendMessageResult) {
+        log.debug("buildSendCourtesyMessageTimelineElement - IUN={} and id={}", notification.getIun(), recIndex);
+
+        SendCourtesyMessageDetailsInt details = SendCourtesyMessageDetailsInt.builder()
+                .recIndex(recIndex)
+                .digitalAddress(address)
+                .sendDate(sendDate)
+                .ioSendMessageResult(ioSendMessageResult)
+                .build();
+
+
+        return buildTimeline(notification, TimelineElementCategoryInt.SEND_COURTESY_MESSAGE, eventId, details);
+    }
+
+    public TimelineElementInternal buildCourtesyChannelFailedTimelineElement(Integer recIndex, NotificationInt notification,
+                                                                             CourtesyDigitalAddressInt.COURTESY_DIGITAL_ADDRESS_TYPE_INT channelType,
+                                                                             DeliveryModeInt deliveryMode,
+                                                                             CourtesyChannelFailureReasonInt failureReason,
+                                                                             String eventId) {
+        log.debug("buildCourtesyChannelFailedTimelineElement - IUN={} and id={}", notification.getIun(), recIndex);
+
+        CourtesyChannelFailedDetailsInt details = CourtesyChannelFailedDetailsInt.builder()
+                .channelType(channelType)
+                .deliveryMode(deliveryMode)
+                .failureReason(failureReason)
+                .build();
+
+        return buildTimeline(notification, TimelineElementCategoryInt.COURTESY_CHANNEL_FAILED, eventId, details);
     }
 }

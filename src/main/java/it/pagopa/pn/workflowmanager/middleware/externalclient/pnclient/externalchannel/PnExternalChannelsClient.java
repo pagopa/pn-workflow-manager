@@ -2,9 +2,10 @@ package it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.external
 
 import it.pagopa.pn.commons.log.PnLogger;
 import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressInt;
-import it.pagopa.pn.workflowmanager.dto.address.LegalDigitalAddressInt;
+import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
+import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.ExternalChannelEventType;
 
 import java.util.List;
 
@@ -20,7 +21,7 @@ public interface PnExternalChannelsClient {
         String subject,
         NotificationInt notificationInt,
         NotificationRecipientInt recipientInt,
-        LegalDigitalAddressInt digitalAddress,
+        InformalDigitalAddressInt digitalAddress,
         List<String> fileKeys
     );
 
@@ -31,12 +32,14 @@ public interface PnExternalChannelsClient {
             NotificationInt notificationInt,
             NotificationRecipientInt recipientInt,
             DigitalAddressInt digitalAddress,
-            List<String> attachmentUrls
+            List<String> attachmentUrls,
+            ExternalChannelEventType eventType
     );
 
     void sendNotificationSMS(
             String requestIdx,
             String textMessage,
-            String receiverDigitalAddress
+            String receiverDigitalAddress,
+            ExternalChannelEventType eventType
     );
 }

@@ -7,7 +7,9 @@ import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.em
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.event.ExtChannelOutcomeEvent;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.pec.PecEventNormalizer;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.sms.SmsEventNormalizer;
+import it.pagopa.pn.workflowmanager.utils.CourtesyEventOriginResolver;
 import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -21,8 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class DigitalEventHandlerTest {
@@ -35,6 +36,8 @@ class DigitalEventHandlerTest {
     private EmailEventNormalizer emailEventNormalizer;
     @Mock
     private SmsEventNormalizer smsEventNormalizer;
+    @Mock
+    private CourtesyEventOriginResolver courtesyEventOriginResolver;
 
     @InjectMocks
     private DigitalEventHandler digitalEventHandler;
@@ -66,11 +69,28 @@ class DigitalEventHandlerTest {
     }
 
     @Test
+    void shouldIgnoreCourtesyEventOriginatedFromCourtesyMessage() {
+        CourtesyMessageProgressEvent courtesy = getCourtesyMessageProgressEvent("REQ-MAIL", CourtesyMessageProgressEvent.EventCodeEnum.M004, "2026-07-07T11:00:00Z");
+
+        SingleStatusUpdate update = new SingleStatusUpdate();
+        update.setDigitalCourtesy(courtesy);
+
+        Assertions.assertNotNull(update.getDigitalCourtesy());
+        when(courtesyEventOriginResolver.resolveOrigin(update.getDigitalCourtesy())).thenReturn(CourtesyEventOriginResolver.CourtesyEventOrigin.COURTESY_MESSAGE);
+
+        digitalEventHandler.handle(update);
+        verifyNoInteractions(channelEventProcessor);
+    }
+
+    @Test
     void shouldRouteCourtesyMailEventToEmailNormalizer() {
         CourtesyMessageProgressEvent courtesy = getCourtesyMessageProgressEvent("REQ-MAIL", CourtesyMessageProgressEvent.EventCodeEnum.M004, "2026-07-07T11:00:00Z");
 
         SingleStatusUpdate update = new SingleStatusUpdate();
         update.setDigitalCourtesy(courtesy);
+
+        Assertions.assertNotNull(update.getDigitalCourtesy());
+        when(courtesyEventOriginResolver.resolveOrigin(update.getDigitalCourtesy())).thenReturn(CourtesyEventOriginResolver.CourtesyEventOrigin.CHANNEL_MESSAGE);
 
         digitalEventHandler.handle(update);
 
@@ -87,6 +107,8 @@ class DigitalEventHandlerTest {
 
         SingleStatusUpdate update = new SingleStatusUpdate();
         update.setDigitalCourtesy(courtesy);
+        Assertions.assertNotNull(update.getDigitalCourtesy());
+        when(courtesyEventOriginResolver.resolveOrigin(update.getDigitalCourtesy())).thenReturn(CourtesyEventOriginResolver.CourtesyEventOrigin.CHANNEL_MESSAGE);
 
         digitalEventHandler.handle(update);
 

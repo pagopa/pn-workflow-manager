@@ -2,6 +2,7 @@ package it.pagopa.pn.workflowmanager.config;
 
 import it.pagopa.pn.commons.conf.SharedAutoConfiguration;
 import it.pagopa.pn.workflowmanager.dto.address.PhysicalAddressInt;
+import it.pagopa.pn.workflowmanager.dto.consent.ConsentDto;
 import jakarta.annotation.PostConstruct;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -32,8 +33,15 @@ public class PnWorkflowManagerConfigs {
     private String safeStorageBaseUrl;
     private String paperMessagesClientBaseUrl;
     private String externalChannelsBaseUrl;
+    private String userAttributesBaseUrl;
+    private String nationalRegistriesBaseUrl;
 
     private Integer ioPollingMaxMins;
+    List<ConsentDto> consentsForPlatformSearch;
+
+    private Boolean smsCourtesyEnabled;
+    private CourtesyRetry courtesyRetry;
+    private Boolean emailCourtesyRequiresAttachments;
 
     @Data
     public static class Topics {
@@ -43,6 +51,7 @@ public class PnWorkflowManagerConfigs {
         private String ioQueue;
         private String safeStorageEvents;
         private String informalQueue;
+        private String nationalRegistriesToWorkflowManager;
     }
 
     @Data
@@ -69,6 +78,19 @@ public class PnWorkflowManagerConfigs {
                     .municipality(senderAddress.getCity())
                     .foreignState(senderAddress.getCountry())
                     .build();
+        }
+    }
+
+    @Data
+    public static class CourtesyRetry {
+        private IntervalsMinutes intervalsMinutes;
+
+        @Data
+        public static class IntervalsMinutes {
+            private List<Integer> io;
+            private List<Integer> sms;
+            private List<Integer> email;
+            private List<Integer> tpp;
         }
     }
 

@@ -1,13 +1,14 @@
 package it.pagopa.pn.workflowmanager.action.startworkflow;
 
+import it.pagopa.pn.workflowmanager.action.searchaddress.AddressSearchContext;
+import it.pagopa.pn.workflowmanager.action.searchaddress.AddressSearchOrchestrator;
+import it.pagopa.pn.workflowmanager.action.utils.ChannelSenderUtils;
 import it.pagopa.pn.workflowmanager.dto.action.details.StartWorkflowDetails;
-import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationSenderInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.RecipientTypeInt;
-import it.pagopa.pn.workflowmanager.service.CampaignService;
 import it.pagopa.pn.workflowmanager.service.NotificationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,8 +16,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Instant;
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -30,57 +33,48 @@ class StartWorkflowActionHandlerTest {
     private NotificationService notificationService;
 
     @Mock
-    private CampaignService campaignService;
+    private ChannelSender channelSender;
 
     @Mock
-    private ChannelSender channelSender;
+    private AddressSearchOrchestrator addressSearchOrchestrator;
+    @Mock
+    private ChannelSenderUtils channelSenderUtils;
 
     private StartWorkflowActionHandler handler;
 
     private static final String TEST_IUN = "TEST-IUN-001";
     private static final int TEST_REC_INDEX = 0;
-    private static final String TEST_CAMPAIGN_ID = "CAMPAIGN-001";
     private static final String TEST_PA_ID = "PA-001";
     private static final ChannelType TEST_CHANNEL_DIGITAL = ChannelType.IO;
-    private static final int TEST_STEP_IDX = 0;
+    private static final Instant TEST_SENT_AT = Instant.parse("2026-09-15T07:37:10.836Z");
 
     @BeforeEach
     void setup() {
         handler = new StartWorkflowActionHandler(
-                channelSenderFactory,
                 notificationService,
-                campaignService
+                addressSearchOrchestrator
         );
     }
 
     @Test
-    void startWorkflowAction_shouldPassCorrectParametersToChannelSender() {
+    void startWorkflowAction_shouldTriggerAddressSearch() {
         // Arrange
         StartWorkflowDetails details = createStartWorkflowDetails();
         NotificationInt notification = createMockNotification();
-        Campaign campaign = createMockCampaign();
 
-        when(channelSenderFactory.getChannelSender(TEST_CHANNEL_DIGITAL)).thenReturn(channelSender);
         when(notificationService.getInformalNotificationByIun(TEST_IUN)).thenReturn(notification);
-        when(campaignService.getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_PA_ID)).thenReturn(campaign);
 
         // Act
         handler.startWorkflowAction(TEST_IUN, TEST_REC_INDEX, details);
 
         // Assert
-        verify(channelSender).send(
-                notification,
-                campaign,
-                TEST_REC_INDEX,
-                TEST_STEP_IDX
-        );
+        verify(addressSearchOrchestrator).start(any(AddressSearchContext.class));
     }
 
 
     private StartWorkflowDetails createStartWorkflowDetails() {
         StartWorkflowDetails details = new StartWorkflowDetails();
         details.setChannel(TEST_CHANNEL_DIGITAL);
-        details.setStepIdx(TEST_STEP_IDX);
         return details;
     }
 
@@ -95,15 +89,9 @@ class StartWorkflowActionHandlerTest {
 
         return NotificationInt.builder()
                 .iun(TEST_IUN)
-                .campaignId(TEST_CAMPAIGN_ID)
                 .sender(sender)
                 .recipients(List.of(recipient))
+                .sentAt(TEST_SENT_AT)
                 .build();
-    }
-
-    private Campaign createMockCampaign() {
-        Campaign campaign = new Campaign();
-        campaign.setCampaignId(TEST_CAMPAIGN_ID);
-        return campaign;
     }
 }

@@ -4,8 +4,10 @@ package it.pagopa.pn.workflowmanager.middleware.queue.consumer.router;
 public enum SupportedEventType {
     POST_ACCEPTED_PROCESSING_COMPLETED,
     START_WORKFLOW,
+    SEND_CHANNEL_MESSAGE,
     TIMEOUT_WORKFLOW,
     END_WORKFLOW,
     WORKFLOW_DONE,
-    DOCUMENT_CREATION_RESPONSE
+    DOCUMENT_CREATION_RESPONSE,
+    SEND_COURTESY_MESSAGE_ACTION
 }

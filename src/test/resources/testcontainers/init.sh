@@ -202,4 +202,10 @@ for campaign in "${Campaigns_ok[@]}"; do
         --item "$campaign"
 done
 
+aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
+	ssm put-parameter \
+	--name "/config/workflow/search-digital-domicile" \
+	--value "[{\"validFrom\": \"1970-01-01T00:00:00.000Z\",\"pec\": [],\"sms\": [],\"email\": []},{\"validFrom\": \"2026-10-01T00:00:00.000Z\",\"pec\": [],\"sms\": [\"PLATFORM\", \"SPECIAL\"],\"email\": [\"PLATFORM\", \"SPECIAL\"]}]"\
+	--type String \
+
 echo "Initialization terminated"
