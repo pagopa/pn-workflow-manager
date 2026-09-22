@@ -2,6 +2,7 @@ package it.pagopa.pn.workflowmanager.dto.action.common;
 
 import it.pagopa.pn.workflowmanager.dto.action.ActionDetails;
 import it.pagopa.pn.workflowmanager.dto.action.details.*;
+import it.pagopa.pn.workflowmanager.dto.timeline.details.SendChannelMessageDetails;
 import lombok.Getter;
 
 @Getter
@@ -65,6 +66,30 @@ public enum ActionType {
       return String.format("safe_storage_response_timelineId=%s",
               action.getTimelineId()
       );
+    }
+  },
+
+  SEND_CHANNEL_MESSAGE(SendChannelMessageDetails.class) {
+    @Override
+    public String buildActionId(Action action) {
+      return String.format(
+              "%s_send_channel_message_recIndex_%d_channel_%s",
+              action.getIun(),
+              action.getRecipientIndex(),
+              ((SendChannelMessageDetails) action.getDetails()).getChannel()
+      );
+    }
+  },
+
+  SEND_COURTESY_MESSAGE_ACTION(SendCourtesyMessageActionDetails.class) {
+    @Override
+    public String buildActionId(Action action) {
+      SendCourtesyMessageActionDetails details = (SendCourtesyMessageActionDetails) action.getDetails();
+      return String.format("%s_send_courtesy_message_recIndex_%d_channel_%s_retry_%d",
+              action.getIun(),
+              action.getRecipientIndex(),
+              details.getChannel(),
+              details.getRetryIndex());
     }
   };
 

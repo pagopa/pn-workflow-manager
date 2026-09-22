@@ -1,14 +1,13 @@
 package it.pagopa.pn.workflowmanager.action.utils;
 
-import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
 import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.address.PhysicalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.WorkFlowEntity;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.DigitalChannelsInt;
-import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
 import it.pagopa.pn.workflowmanager.exceptions.PnWorkflowException;
 import it.pagopa.pn.workflowmanager.service.TimelineService;
 import it.pagopa.pn.workflowmanager.utils.SendAttachmentMode;
@@ -18,9 +17,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class ChannelSenderUtilsTest {
@@ -99,15 +96,15 @@ class ChannelSenderUtilsTest {
         TimelineElementInternal timelineElement = TimelineElementInternal.builder().build();
 
         when(timelineUtils.buildSendDigitalMessageSkipTimelineElement(
-                REC_INDEX, notification, "skip-event-id", DigitalChannelsInt.EMAIL, DigitalAddressSourceInt.SPECIAL))
+                REC_INDEX, notification, "skip-event-id", DigitalChannelsInt.EMAIL))
                 .thenReturn(timelineElement);
 
         channelSenderUtils.saveSendDigitalMessageSkipElement(
                 REC_INDEX, notification, "skip-event-id",
-                DigitalChannelsInt.EMAIL, DigitalAddressSourceInt.SPECIAL);
+                DigitalChannelsInt.EMAIL);
 
         verify(timelineUtils).buildSendDigitalMessageSkipTimelineElement(
-                REC_INDEX, notification, "skip-event-id", DigitalChannelsInt.EMAIL, DigitalAddressSourceInt.SPECIAL);
+                REC_INDEX, notification, "skip-event-id", DigitalChannelsInt.EMAIL);
         verify(timelineService).addTimelineElement(timelineElement, notification);
     }
 

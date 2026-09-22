@@ -7,6 +7,7 @@ import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.ResponseStatusInt;
 import it.pagopa.pn.workflowmanager.utils.AuditLogUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
 import java.time.Instant;
 
 class InformalDigitalDetailsIntTest {
@@ -75,13 +76,12 @@ class InformalDigitalDetailsIntTest {
         SendDigitalMessageSkipDetailsInt details = SendDigitalMessageSkipDetailsInt.builder()
                 .recIndex(4)
                 .channel(DigitalChannelsInt.IO)
-                .digitalAddressSource(DigitalAddressSourceInt.PLATFORM)
                 .retryNumber(5)
                 .build();
 
         Assertions.assertEquals(
-                String.format("recIndex=%d channel=%s digitalAddressSource=%s retryNumber=%s",
-                        4, DigitalChannelsInt.IO, DigitalAddressSourceInt.PLATFORM, 5),
+                String.format("recIndex=%d channel=%s retryNumber=%s",
+                        4, DigitalChannelsInt.IO, 5),
                 details.toLog()
         );
         Assertions.assertEquals(4, details.getRecIndex());

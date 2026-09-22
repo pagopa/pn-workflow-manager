@@ -446,6 +446,26 @@ Parameters:
     Default: '-Dreactor.netty.ioWorkerCount=50'
     Description: Java tool options for the Fargate tasks
 
+  NationalRegistries2WorkflowManagerQueueName:
+    Type: String
+    Description: workflow-manager national-registries queue name
+
+  NationalRegistries2WorkflowManagerQueueURL:
+    Type: String
+    Description: workflow-manager national-registries queue URL
+
+  NationalRegistries2WorkflowManagerQueueARN:
+    Type: String
+    Description: workflow-manager national-registries queue ARN
+
+  NationalRegistries2WorkflowManagerQueueAlarmARN:
+    Type: String
+    Description: workflow-manager national-registries queue dlq alarm ARN
+
+  NationalRegistries2WorkflowManagerQueueAgeAlarmARN:
+    Type: String
+    Description: workflow-manager national-registries queue age alarm ARN
+
 Conditions:
   UseExternalChannelMock: !Equals [ !Ref ExternalChannelBaseUrl, "Mock" ]
 
@@ -498,6 +518,10 @@ Resources:
         ContainerEnvEntry18: !Sub 'PN_WORKFLOWMANAGER_TOPICS_INFORMALQUEUE=${WorkflowManagerInputsQueueName}'
         ContainerEnvEntry19: !Sub 'PN_WORKFLOWMANAGER_DAO_CAMPAIGNSTATISTICSTABLENAME=${CampaignStatisticsTableName}'
         ContainerEnvEntry20: !Sub 'PN_WORKFLOWMANAGER_CAMPAIGNS_TABLE_NAME=${CampaignsTableName}'
+        ContainerEnvEntry21: !Sub 'PN_WORKFLOWMANAGER_CAMPAIGNS_TABLE_NAME=${CampaignsTableName}'
+        ContainerEnvEntry22: !Sub 'PN_WORKFLOWMANAGER_USERATTRIBUTESBASEURL=http://${ApplicationLoadBalancerDomain}:8080'
+        ContainerEnvEntry23: !Sub 'PN_WORKFLOWMANAGER_NATIONALREGISTRIESBASEURL=http://${ApplicationLoadBalancerDomain}:8080'
+        ContainerEnvEntry24: !Sub 'PN_WORKFLOWMANAGER_TOPICS_NATIONALREGISTRIESTOWORKFLOWMANAGER=${NationalRegistries2WorkflowManagerQueueName}'
         ApplicativeEnvFileChecksum: !Ref ApplicativeEnvFileChecksum
         MappedPaths: '/workflow-private/*'
         ECSClusterName: !Ref ECSClusterName
@@ -535,6 +559,8 @@ Resources:
             - !Ref SafeStorageToWorkflowManagerQueueAgeAlarmARN
             - !Ref WorkflowManagerInputsQueueAlarmARN
             - !Ref WorkflowManagerInputsQueueAgeAlarmARN
+            - !Ref NationalRegistries2WorkflowManagerQueueAlarmARN
+            - !Ref NationalRegistries2WorkflowManagerQueueAgeAlarmARN
         QueueArns: !Join
           - ','
           - - !Ref WorkflowManagerActionQueueARN
@@ -543,6 +569,7 @@ Resources:
             - !Ref WorkflowManagerIoEventQueueARN
             - !Ref SafeStorageToWorkflowManagerQueueARN
             - !Ref WorkflowManagerInputsQueueARN
+            - !Ref NationalRegistries2WorkflowManagerQueueARN
         DynamoDBTableNames: !Join
           - ','
           - - !Ref CampaignStatisticsTableName
@@ -582,6 +609,14 @@ Resources:
               - !Ref WorkflowManagerIoEventQueueARN
               - !Ref SafeStorageToWorkflowManagerQueueARN
               - !Ref WorkflowManagerInputsQueueARN
+              - !Ref NationalRegistries2WorkflowManagerQueueARN
+          - Effect: Allow
+            Action:
+              - 'ssm:GetParameter'
+              - 'ssm:GetParameters'
+            Resource:
+              - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/MVPCampaigns'
+              - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/config/workflow/search-digital-domicile'
           - Effect: Allow
             Action:
               - "dynamodb:Scan"
@@ -616,6 +651,7 @@ Resources:
                   - !Ref WorkflowManagerIoEventQueueARN
                   - !Ref SafeStorageToWorkflowManagerQueueARN
                   - !Ref WorkflowManagerInputsQueueARN
+                  - !Ref NationalRegistries2WorkflowManagerQueueARN
 
   PnCoreEventBusToWorkflowManagerActionQueueRule:
     Type: AWS::Events::Rule
@@ -1133,3 +1169,51 @@ Resources:
       Parameters:
         FunctionName: !Ref CampaignEventsCollectorLambda
         AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
+  # Send National Registries Response to pn-workflow-manager
+  # pn-national-registries
+  PnCoreEventBusToNationalRegistries2WorkflowManager:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: Route National Registries Events to pn-workflow-manager
+      RoleArn: !GetAtt "EventBusEnqueueRole.Arn"
+      EventBusName: !Sub "${ProjectName}-CoreEventBus"
+      EventPattern:
+        detail-type: [ "NationalRegistriesOutcomeEvent" ]
+        detail:
+          source: [ !Ref WorkflowManagerCxId ]
+      Targets:
+        - Arn: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:PnCoreEventBusMatchedEventLogger'
+          Id: !Sub ${ProjectName}-Logger-NationalRegistries2WorkflowManager
+          InputTransformer:
+            InputPathsMap:
+              "timestamp": "$.time"
+            InputTemplate: |
+              {
+                  "timestamp": <timestamp>,
+                  "ruleArn": <aws.events.rule-arn>,
+                  "ruleName": <aws.events.rule-name>,
+                  "ingestionTime": <aws.events.event.ingestion-time>,
+                  "originalEvent": <aws.events.event.json>
+              }
+        - Id: !Sub '${ProjectName}-CoreEventBus-NationalRegistries2WorkflowManager'
+          Arn: !Ref NationalRegistries2WorkflowManagerQueueARN
+          InputPath: $.detail.body
+          DeadLetterConfig:
+            Arn: !Sub 'arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:pn-CoreEventBus-DLQ'
+
+  PnCoreEventBusToNationalRegistries2WorkflowManagerPolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues:
+        - !Ref NationalRegistries2WorkflowManagerQueueURL
+      PolicyDocument:
+        Statement:
+          - Sid: AllowEventBridgeToSendMessage
+            Effect: Allow
+            Principal:
+              Service: events.amazonaws.com
+            Action: sqs:SendMessage
+            Resource: !Ref NationalRegistries2WorkflowManagerQueueARN
+            Condition:
+              ArnEquals:
+                aws:SourceArn: !GetAtt PnCoreEventBusToNationalRegistries2WorkflowManager.Arn

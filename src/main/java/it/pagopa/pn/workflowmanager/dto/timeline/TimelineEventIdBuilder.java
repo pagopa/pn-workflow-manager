@@ -1,7 +1,12 @@
 package it.pagopa.pn.workflowmanager.dto.timeline;
 
+import it.pagopa.pn.workflowmanager.dto.address.CourtesyDigitalAddressInt;
+import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
+import it.pagopa.pn.workflowmanager.dto.timeline.details.ContactPhaseInt;
 import jakarta.validation.constraints.NotNull;
 import javax.annotation.Nullable;
+
+import static java.lang.Boolean.TRUE;
 
 /**
  * Classe builder che permette di costruire un timelineEventId
@@ -30,6 +35,17 @@ public class TimelineEventIdBuilder {
 
     private String paymentCode = "";
 
+    private String source = "";
+
+    private String deliveryMode = "";
+
+    private String contactPhase = "";
+
+    private String courtesyAddressType = "";
+
+    private String correlationId = "";
+
+    private String optin = "";
 
     public TimelineEventIdBuilder withIun(@Nullable String iun) {
         if(iun != null)
@@ -80,16 +96,58 @@ public class TimelineEventIdBuilder {
         return this;
     }
 
+    public TimelineEventIdBuilder withSource(@Nullable DigitalAddressSourceInt source) {
+        if(source != null)
+            this.source = DELIMITER.concat("SOURCE_").concat(source.getValue());
+        return this;
+    }
+
+    public TimelineEventIdBuilder withDeliveryMode(@Nullable DeliveryModeInt deliveryMode) {
+        if(deliveryMode != null)
+            this.deliveryMode = DELIMITER.concat("DELIVERYMODE_").concat(deliveryMode.getValue());
+        return this;
+    }
+
+    public TimelineEventIdBuilder withContactPhase(@Nullable ContactPhaseInt contactPhase) {
+        if(contactPhase != null)
+            this.contactPhase = DELIMITER.concat("CONTACTPHASE_").concat(contactPhase.getValue());
+        return this;
+    }
+
+    public TimelineEventIdBuilder withCourtesyAddressType(@Nullable CourtesyDigitalAddressInt.COURTESY_DIGITAL_ADDRESS_TYPE_INT courtesyAddressType) {
+        if(courtesyAddressType != null)
+            this.courtesyAddressType = DELIMITER.concat("COURTESYADDRESSTYPE_").concat(courtesyAddressType.getValue());
+        return this;
+    }
+
+    public TimelineEventIdBuilder withCorrelationId(@Nullable String correlationId) {
+        if(correlationId != null)
+            this.correlationId = DELIMITER.concat("CORRELATIONID_").concat(correlationId);
+        return this;
+    }
+
+    public TimelineEventIdBuilder withOptin(Boolean optin) {
+        if (TRUE.equals(optin)){
+            this.optin = ".OPTIN";
+        }
+        return this;
+    }
 
     public String build() {
         return category +
                 iun +
                 recIndex +
+                courtesyAddressType +
+                source +
+                deliveryMode +
+                contactPhase +
                 sentAttemptMade +
                 progressIndex +
                 channel +
                 deliveryType +
-                paymentCode;
+                paymentCode +
+                optin +
+                correlationId;
     }
 
 }

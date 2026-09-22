@@ -56,4 +56,22 @@ public class TemplateEngineClientImpl implements TemplateEngineClient {
         log.logInvokingExternalService(CLIENT_NAME, SMS_TEMPLATE);
         return templateApi.informalSmsCommunication(language, informalCommunication);
     }
+
+    @Override
+    public String courtesyEmailBodyTemplate(LanguageEnum language, InformalCommunication informalCommunication) {
+        log.logInvokingExternalService(CLIENT_NAME, EMAIL_BODY_TEMPLATE);
+        return templateApi.courtesyEmailCommunicationBody(language, informalCommunication);
+    }
+
+    @Override
+    public String courtesyEmailSubjectTemplate(LanguageEnum language, InformalEmailCommunicationSubject informalCommunicationSubject) {
+        log.logInvokingExternalService(CLIENT_NAME, EMAIL_SUBJECT_TEMPLATE);
+        return templateApi.courtesyEmailCommunicationSubject(language, informalCommunicationSubject);
+    }
+
+    @Override
+    public String courtesySmsTemplate(LanguageEnum language, InformalSmsCommunication informalCommunication) {
+        log.logInvokingExternalService(CLIENT_NAME, SMS_TEMPLATE);
+        return templateApi.courtesySmsCommunication(language, informalCommunication);
+    }
 }

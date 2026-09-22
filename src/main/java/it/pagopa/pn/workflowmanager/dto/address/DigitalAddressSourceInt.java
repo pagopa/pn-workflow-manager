@@ -8,7 +8,9 @@ public enum DigitalAddressSourceInt {
 
     SPECIAL("SPECIAL"),
 
-    GENERAL("GENERAL");
+    GENERAL("GENERAL"),
+
+    NONE("NONE");
 
     private final String value;
 
