@@ -254,6 +254,32 @@ class IoEventNormalizerTest {
         verify(timelineUtils, never()).buildSendDigitalMessageProgress(any(), anyInt(), any(), any(), any(), any(), any(), any());
     }
 
+    @Test
+    void shouldInvokeFeedbackWithKoWhenFailedToSend() {
+        // Arrange
+        IoOutcomeEvent ioEvent = IoOutcomeEvent.builder()
+                .eventType(IoOutcomeEventType.FAILED_TO_SEND)
+                .eventTimestamp(now)
+                .requestId(requestId)
+                .build();
+
+        // Ci aspettiamo il metodo di Feedback anziché Progress
+        when(timelineUtils.buildSendDigitalMessageFeedback(
+                eq(notification), eq(recIndex), eq(DigitalChannelsInt.IO), eq(requestId),
+                any(DigitalDeliveryDetailsInt.class), eq(sendDigitalMessageDetails.getDigitalAddress()),
+                eq(sendDigitalMessageDetails.getDigitalAddressSource()), eq(ResponseStatusInt.KO), isNull(), eq(now)))
+                .thenReturn(mockTimelineElement);
+
+        // Act
+        NormalizedChannelOutcome result = ioEventNormalizer.normalize(ioEvent, notification, sendDigitalMessageDetails);
+
+        // Assert
+        verifyCommonsAssertionsForNormalizedChannelOutcome(result, IoEventClassification.FAILED_TO_SEND);
+        assertTrue(result.getTriggers().isEmpty());
+
+        verify(timelineUtils, never()).buildSendDigitalMessageProgress(any(), anyInt(), any(), any(), any(), any(), any(), any());
+    }
+
     private void verifyCommonsAssertionsForNormalizedChannelOutcome(NormalizedChannelOutcome result, IoEventClassification expectedClassification) {
         assertNotNull(result);
         assertEquals(iun, result.getIun());
