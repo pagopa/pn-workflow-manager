@@ -108,4 +108,5 @@ public class CampaignStatisticsEntity {
 
     @Getter(onMethod=@__({@DynamoDbAttribute(COL_LAST_COMPLETED_TIMESTAMP)}))
     private Instant lastCompletedTimestamp;
+
 }
