@@ -19,6 +19,7 @@ class IoEventClassificationTest {
         return Stream.of(
                 Arguments.of(IoEventClassification.DELIVERED_TO_USER, true, ChannelOutcomeCategory.progress()),
                 Arguments.of(IoEventClassification.SENDER_NOT_ALLOWED, false, ChannelOutcomeCategory.negativeFeedback()),
+                Arguments.of(IoEventClassification.FAILED_TO_SEND,false, ChannelOutcomeCategory.negativeFeedback()),
                 Arguments.of(IoEventClassification.SENT_TO_IO, false, ChannelOutcomeCategory.progress()),
                 Arguments.of(IoEventClassification.READ, true, ChannelOutcomeCategory.progress()),
                 Arguments.of(IoEventClassification.PAID, true, ChannelOutcomeCategory.progress())
@@ -37,6 +38,7 @@ class IoEventClassificationTest {
     void shouldReturnEmptyOptionalWhenDesiredFeedbackIsNull() {
         // Act & Assert
         assertFalse(IoEventClassification.SENDER_NOT_ALLOWED.getSatisfiedDesiredFeedback().isPresent());
+        assertFalse(IoEventClassification.FAILED_TO_SEND.getSatisfiedDesiredFeedback().isPresent());
         assertFalse(IoEventClassification.SENT_TO_IO.getSatisfiedDesiredFeedback().isPresent());
     }
 
