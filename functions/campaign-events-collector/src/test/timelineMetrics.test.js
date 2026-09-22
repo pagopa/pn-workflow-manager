@@ -25,7 +25,7 @@ describe("timelineMetrics", () => {
 
         expect(metrics.DIGITAL_CHANNELS).to.deep.equal(["IO", "EMAIL", "PEC", "SMS"]);
         expect(metrics.ANALOG_CHANNELS).to.deep.equal(["RS"]);
-        expect(metrics.VIEW_CHANNELS).to.deep.equal(["IO", "SEND"]);
+        expect(metrics.VIEW_CHANNELS).to.deep.equal(["IO", "WEB"]);
         expect(metrics.DELIVERED_CHANNELS).to.deep.equal(["IO", "EMAIL", "PEC", "SMS", "RS"]);
     });
 
@@ -83,7 +83,7 @@ describe("timelineMetrics", () => {
             expect(counters.totalDelivered).to.equal(1);
         });
 
-        ["IO", "SEND"].forEach((sourceChannel) => {
+        ["IO", "WEB"].forEach((sourceChannel) => {
             [true, false, undefined, "true"].forEach((firstView) => {
                 it(`handles ${sourceChannel} views with firstView=${firstView}`, () => {
                     const counters = {[`viewed${sourceChannel}`]: 2, firstView: 3};
