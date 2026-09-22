@@ -66,12 +66,12 @@ public class InformalEmailCourtesySender implements CourtesyAddressSender {
             pnExternalChannelsClient.sendNotificationEMAIL(requestId, htmlBody, subject, notification, recipient, emailAddress, attachmentUrls, ExternalChannelEventType.COURTESY);
         } catch (Exception e) {
             boolean retryable = retryableErrorClassifier.isRetryableTransportError(address.getType(), e);
-            auditLogEvent.generateFailure("Error sending courtesy message on channel={} retryable={} - iun={} id={}", address.getType(), retryable, notification.getIun(), recIndex, e);
+            auditLogEvent.generateFailure("Error sending courtesy message on channel={} retryable={} - iun={} id={}", address.getType(), retryable, notification.getIun(), recIndex, e).log();
             return retryable ? CourtesySendOutcome.RETRYABLE_ERROR : CourtesySendOutcome.PERMANENT_FAILURE;
         }
 
         courtesyMessageUtils.addSendCourtesyMessageToTimeline(notification, recIndex, address, Instant.now(), requestId, null);
-        auditLogEvent.generateSuccess("Courtesy email sent successfully - iun={} id={}", notification.getIun(), recIndex);
+        auditLogEvent.generateSuccess("Courtesy email sent successfully - iun={} id={}", notification.getIun(), recIndex).log();
         return CourtesySendOutcome.SENT;
     }
 
@@ -83,7 +83,7 @@ public class InformalEmailCourtesySender implements CourtesyAddressSender {
     }
 
     private List<String> retrieveAttachmentUrls(NotificationInt notification, int recIndex, Campaign campaign) {
-        if(configs.getEmailCourtesyRequiresAttachments().equals(Boolean.TRUE)) {
+        if(Boolean.TRUE.equals(configs.getEmailCourtesyRequiresAttachments())) {
             return channelSenderUtils.resolveAttachmentsForChannel(notification, recIndex, campaign, ChannelType.EMAIL);
         }
 

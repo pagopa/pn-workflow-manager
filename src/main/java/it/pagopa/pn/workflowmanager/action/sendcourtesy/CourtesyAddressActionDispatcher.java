@@ -7,6 +7,7 @@ import it.pagopa.pn.workflowmanager.dto.action.details.SendCourtesyMessageAction
 import it.pagopa.pn.workflowmanager.dto.address.CourtesyDigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
+import it.pagopa.pn.workflowmanager.dto.timeline.DeliveryModeInt;
 import it.pagopa.pn.workflowmanager.service.SchedulerService;
 import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
@@ -43,7 +44,7 @@ public class CourtesyAddressActionDispatcher {
 
         for (CourtesyDigitalAddressInt address : courtesyAddresses) {
             log.info("Dispatching courtesy message for IUN: {}, recIndex: {}, addressType: {}", notification.getIun(), recIndex, address.getType());
-            if(address.getType() == CourtesyDigitalAddressInt.COURTESY_DIGITAL_ADDRESS_TYPE_INT.SMS && Boolean.FALSE.equals(pnWorkflowManagerConfigs.getSmsCourtesyEnabled())) {
+            if(address.getType() == CourtesyDigitalAddressInt.COURTESY_DIGITAL_ADDRESS_TYPE_INT.SMS && !Boolean.TRUE.equals(pnWorkflowManagerConfigs.getSmsCourtesyEnabled())) {
                 log.info("SMS courtesy messages are disabled. Skipping SMS dispatch for IUN: {}, recIndex: {}", notification.getIun(), recIndex);
                 continue;
             }
@@ -52,6 +53,7 @@ public class CourtesyAddressActionDispatcher {
                     .channel(address.getType())
                     .retryIndex(0)
                     .plannedChannels(plannedChannels)
+                    .deliveryMode(DeliveryModeInt.DIGITAL)
                     .build();
             schedulerService.scheduleEvent(notification.getIun(), recIndex, Instant.now(), ActionType.SEND_COURTESY_MESSAGE_ACTION, details);
         }

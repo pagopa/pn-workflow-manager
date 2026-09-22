@@ -48,17 +48,17 @@ public class InformalSmsCourtesySender implements CourtesyAddressSender {
             pnExternalChannelsClient.sendNotificationSMS(requestId, subject, address.getAddress(), ExternalChannelEventType.COURTESY);
         } catch (Exception e) {
             boolean retryable = retryableErrorClassifier.isRetryableTransportError(address.getType(), e);
-            auditLogEvent.generateFailure("Error sending courtesy message on channel={} retryable={} - iun={} id={}", address.getType(), retryable, notification.getIun(), recIndex, e);
+            auditLogEvent.generateFailure("Error sending courtesy message on channel={} retryable={} - iun={} id={}", address.getType(), retryable, notification.getIun(), recIndex, e).log();
             return retryable ? CourtesySendOutcome.RETRYABLE_ERROR : CourtesySendOutcome.PERMANENT_FAILURE;
         }
 
         courtesyMessageUtils.addSendCourtesyMessageToTimeline(notification, recIndex, address, Instant.now(), requestId, null);
-        auditLogEvent.generateSuccess("Courtesy SMS sent successfully - iun={} id={}", notification.getIun(), recIndex);
+        auditLogEvent.generateSuccess("Courtesy SMS sent successfully - iun={} id={}", notification.getIun(), recIndex).log();
         return CourtesySendOutcome.SENT;
     }
 
     private PnAuditLogEvent buildAuditLogEvent(String iun, int recIndex, String requestId) {
-        String msg = "Sending courtesy email for notification {} to recipient {} with requestId {}";
+        String msg = "Sending courtesy SMS for notification {} to recipient {} with requestId {}";
         return auditLogService.buildAuditLogEvent(iun, recIndex, PnAuditLogEventType.AUD_COM_SEND_SMS_COURTESY , msg, iun, recIndex, requestId);
     }
 }

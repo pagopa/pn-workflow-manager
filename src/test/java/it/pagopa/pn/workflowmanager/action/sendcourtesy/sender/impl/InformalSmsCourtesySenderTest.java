@@ -63,7 +63,9 @@ class InformalSmsCourtesySenderTest {
         String smsBody = "template";
         when(templateGeneratorService.generateCourtesySmsTemplate(notification, recipient)).thenReturn(smsBody);
         PnAuditLogEvent auditLogEvent = mock(PnAuditLogEvent.class);
-        when(auditLogService.buildAuditLogEvent("IUN-1", 0, PnAuditLogEventType.AUD_COM_SEND_SMS_COURTESY, "Sending courtesy email for notification {} to recipient {} with requestId {}", "IUN-1", 0, "SEND_COURTESY_MESSAGE.IUN_IUN-1.RECINDEX_0.COURTESYADDRESSTYPE_SMS")).thenReturn(auditLogEvent);
+        when(auditLogService.buildAuditLogEvent("IUN-1", 0, PnAuditLogEventType.AUD_COM_SEND_SMS_COURTESY, "Sending courtesy SMS for notification {} to recipient {} with requestId {}", "IUN-1", 0, "SEND_COURTESY_MESSAGE.IUN_IUN-1.RECINDEX_0.COURTESYADDRESSTYPE_SMS")).thenReturn(auditLogEvent);
+        when(auditLogEvent.generateSuccess(anyString(), anyString(), anyInt())).thenReturn(auditLogEvent);
+
 
         CourtesySendOutcome outcome = sender.send(notification, address, 0);
 
@@ -83,10 +85,11 @@ class InformalSmsCourtesySenderTest {
                 .build();
         when(templateGeneratorService.generateCourtesySmsTemplate(notification, recipient)).thenReturn("subject");
         PnAuditLogEvent auditLogEvent = mock(PnAuditLogEvent.class);
-        when(auditLogService.buildAuditLogEvent("IUN-1", 0, PnAuditLogEventType.AUD_COM_SEND_SMS_COURTESY, "Sending courtesy email for notification {} to recipient {} with requestId {}", "IUN-1", 0, "SEND_COURTESY_MESSAGE.IUN_IUN-1.RECINDEX_0.COURTESYADDRESSTYPE_SMS")).thenReturn(auditLogEvent);
+        when(auditLogService.buildAuditLogEvent("IUN-1", 0, PnAuditLogEventType.AUD_COM_SEND_SMS_COURTESY, "Sending courtesy SMS for notification {} to recipient {} with requestId {}", "IUN-1", 0, "SEND_COURTESY_MESSAGE.IUN_IUN-1.RECINDEX_0.COURTESYADDRESSTYPE_SMS")).thenReturn(auditLogEvent);
         Exception exception = new RuntimeException("Transport error");
         doThrow(exception).when(pnExternalChannelsClient).sendNotificationSMS(any(), any(), any(), any());
         when(retryableErrorClassifier.isRetryableTransportError(eq(address.getType()), any())).thenReturn(true);
+        when(auditLogEvent.generateFailure(anyString(), any(CourtesyDigitalAddressInt.COURTESY_DIGITAL_ADDRESS_TYPE_INT.class), anyBoolean(), anyString(), anyInt(), any(Exception.class))).thenReturn(auditLogEvent);
 
         CourtesySendOutcome outcome = sender.send(notification, address, 0);
 

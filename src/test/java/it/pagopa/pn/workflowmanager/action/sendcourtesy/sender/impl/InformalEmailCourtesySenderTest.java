@@ -76,6 +76,7 @@ class InformalEmailCourtesySenderTest {
         when(channelSenderUtils.resolveAttachmentsForChannel(any(), anyInt(), any(), any())).thenReturn(List.of("attachment1"));
         PnAuditLogEvent auditLogEvent = mock(PnAuditLogEvent.class);
         when(auditLogService.buildAuditLogEvent("IUN-1", 0, PnAuditLogEventType.AUD_COM_SEND_EMAIL_COURTESY, "Sending courtesy email for notification {} to recipient {} with requestId {}", "IUN-1", 0, "SEND_COURTESY_MESSAGE.IUN_IUN-1.RECINDEX_0.COURTESYADDRESSTYPE_EMAIL")).thenReturn(auditLogEvent);
+        when(auditLogEvent.generateSuccess(anyString(), anyString(), anyInt())).thenReturn(auditLogEvent);
 
         CourtesySendOutcome outcome = sender.send(notification, address, 0);
 
@@ -106,6 +107,7 @@ class InformalEmailCourtesySenderTest {
         when(retryableErrorClassifier.isRetryableTransportError(any(), any())).thenReturn(true);
         PnAuditLogEvent auditLogEvent = mock(PnAuditLogEvent.class);
         when(auditLogService.buildAuditLogEvent("IUN-1", 0, PnAuditLogEventType.AUD_COM_SEND_EMAIL_COURTESY, "Sending courtesy email for notification {} to recipient {} with requestId {}", "IUN-1", 0, "SEND_COURTESY_MESSAGE.IUN_IUN-1.RECINDEX_0.COURTESYADDRESSTYPE_EMAIL")).thenReturn(auditLogEvent);
+        when(auditLogEvent.generateFailure(anyString(), any(CourtesyDigitalAddressInt.COURTESY_DIGITAL_ADDRESS_TYPE_INT.class), anyBoolean(), anyString(), anyInt(), any(Exception.class))).thenReturn(auditLogEvent);
 
         doThrow(new RuntimeException("Simulated transport error")).when(pnExternalChannelsClient).sendNotificationEMAIL(any(), any(), any(), any(), any(), any(), any(), any());
 

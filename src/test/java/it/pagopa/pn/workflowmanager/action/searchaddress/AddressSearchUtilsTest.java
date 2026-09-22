@@ -1,6 +1,7 @@
 package it.pagopa.pn.workflowmanager.action.searchaddress;
 
 import it.pagopa.pn.workflowmanager.action.searchaddress.dto.SourceSearchOutcome;
+import it.pagopa.pn.workflowmanager.action.utils.ChannelSenderUtils;
 import it.pagopa.pn.workflowmanager.action.utils.TimelineUtils;
 import it.pagopa.pn.workflowmanager.dto.action.common.ActionType;
 import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
@@ -37,12 +38,14 @@ class AddressSearchUtilsTest {
     private TimelineUtils timelineUtils;
     @Mock
     private SchedulerService schedulerService;
+    @Mock
+    private ChannelSenderUtils channelSenderUtils;
 
     private AddressSearchUtils utils;
 
     @BeforeEach
     void setUp() {
-        utils = new AddressSearchUtils(timelineService, timelineUtils, schedulerService);
+        utils = new AddressSearchUtils(timelineService, timelineUtils, schedulerService, channelSenderUtils);
     }
 
     @Test
