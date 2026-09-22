@@ -95,7 +95,7 @@ class TimelineEventIdBuilderTest {
 
     @Test
     void buildPREPARE_ANALOG_DELIVERYTest() {
-        String timeLineEventIdExpected = "PREPARE_ANALOG_DELIVERY.IUN_KWKU-JHXN-HJXM-202304-U-A.RECINDEX_0.ATTEMPT_0.DELIVERYTYPE_RS";
+        String timeLineEventIdExpected = "PREPARE_ANALOG_MESSAGE.IUN_KWKU-JHXN-HJXM-202304-U-A.RECINDEX_0.ATTEMPT_0.DELIVERYTYPE_RS";
         String timeLineEventIdActual = new TimelineEventIdBuilder()
                 .withCategory(TimelineEventId.PREPARE_ANALOG_DELIVERY.getValue())
                 .withIun(IUN)

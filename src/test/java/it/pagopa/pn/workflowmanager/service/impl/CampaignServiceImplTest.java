@@ -1,18 +1,23 @@
 package it.pagopa.pn.workflowmanager.service.impl;
 
+import it.pagopa.pn.commons.db.campaign.CampaignServiceCachedProvider;
+import it.pagopa.pn.commons.db.campaign.entity.*;
 import it.pagopa.pn.commons.exceptions.PnInternalException;
-import it.pagopa.pn.workflowmanager.config.CampaignsParameterConsumer;
+import it.pagopa.pn.commons.utils.qr.models.RecipientTypeInt;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
-import it.pagopa.pn.workflowmanager.dto.ext.campaign.CampaignStatus;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.OffsetDateTime;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -22,27 +27,27 @@ import static org.mockito.Mockito.*;
 class CampaignServiceImplTest {
 
     @Mock
-    private CampaignsParameterConsumer campaignsParameterConsumer;
+    private CampaignServiceCachedProvider campaignServiceCachedProvider;
 
     private CampaignServiceImpl service;
 
     private static final String TEST_CAMPAIGN_ID = "CAMPAIGN-001";
-    private static final String TEST_SENDER_ID = "SENDER-001";
+    private static final String TEST_SENDER_ID = "12345678-1234-1234-1234-123456789012";
     private static final String TEST_TITLE = "Test Campaign";
     private static final String TEST_DESCRIPTION = "Test Description";
     private static final String TEST_SERVICE_ID = "SERVICE-001";
 
     @BeforeEach
     void setup() {
-        service = new CampaignServiceImpl(campaignsParameterConsumer);
+        service = new CampaignServiceImpl(campaignServiceCachedProvider);
     }
 
     @Test
     void getCampaignByCampaignIdAndSenderId_shouldReturnCampaign_whenCampaignExists() {
         // Arrange
-        Campaign expectedCampaign = createMockCampaign();
-        when(campaignsParameterConsumer.getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_SENDER_ID))
-                .thenReturn(expectedCampaign);
+        CampaignEntity campaignEntity = createMockCampaignEntity();
+        when(campaignServiceCachedProvider.getByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_SENDER_ID))
+                .thenReturn(campaignEntity);
 
         // Act
         Campaign result = service.getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_SENDER_ID);
@@ -52,32 +57,33 @@ class CampaignServiceImplTest {
         assertEquals(TEST_CAMPAIGN_ID, result.getCampaignId());
         assertEquals(TEST_SENDER_ID, result.getSenderId());
         assertEquals(TEST_TITLE, result.getTitle());
-        verify(campaignsParameterConsumer).getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_SENDER_ID);
+        assertEquals(TEST_DESCRIPTION, result.getDescriptionScope());
+        verify(campaignServiceCachedProvider).getByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_SENDER_ID);
     }
 
     @Test
-    void getCampaignByCampaignIdAndSenderId_shouldCallConsumerWithCorrectParameters() {
+    void getCampaignByCampaignIdAndSenderId_shouldCallProviderWithCorrectParameters() {
         // Arrange
-        Campaign campaign = createMockCampaign();
-        when(campaignsParameterConsumer.getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_SENDER_ID))
-                .thenReturn(campaign);
+        CampaignEntity campaignEntity = createMockCampaignEntity();
+        when(campaignServiceCachedProvider.getByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_SENDER_ID))
+                .thenReturn(campaignEntity);
 
         // Act
         service.getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_SENDER_ID);
 
         // Assert
-        verify(campaignsParameterConsumer, times(1)).getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_SENDER_ID);
+        verify(campaignServiceCachedProvider, times(1)).getByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_SENDER_ID);
     }
 
     @Test
     void getCampaignByCampaignIdAndSenderId_shouldHandleDifferentCampaignIds() {
         // Arrange
         String differentCampaignId = "CAMPAIGN-999";
-        Campaign campaign = createMockCampaign();
-        campaign.setCampaignId(differentCampaignId);
+        CampaignEntity campaignEntity = createMockCampaignEntity();
+        campaignEntity.setCampaignId(differentCampaignId);
         
-        when(campaignsParameterConsumer.getCampaignByCampaignIdAndSenderId(differentCampaignId, TEST_SENDER_ID))
-                .thenReturn(campaign);
+        when(campaignServiceCachedProvider.getByCampaignIdAndSenderId(differentCampaignId, TEST_SENDER_ID))
+                .thenReturn(campaignEntity);
 
         // Act
         Campaign result = service.getCampaignByCampaignIdAndSenderId(differentCampaignId, TEST_SENDER_ID);
@@ -85,18 +91,18 @@ class CampaignServiceImplTest {
         // Assert
         assertNotNull(result);
         assertEquals(differentCampaignId, result.getCampaignId());
-        verify(campaignsParameterConsumer).getCampaignByCampaignIdAndSenderId(differentCampaignId, TEST_SENDER_ID);
+        verify(campaignServiceCachedProvider).getByCampaignIdAndSenderId(differentCampaignId, TEST_SENDER_ID);
     }
 
     @Test
     void getCampaignByCampaignIdAndSenderId_shouldHandleDifferentSenderIds() {
         // Arrange
-        String differentSenderId = "SENDER-999";
-        Campaign campaign = createMockCampaign();
-        campaign.setSenderId(differentSenderId);
+        String differentSenderId = "87654321-4321-4321-4321-210987654321";
+        CampaignEntity campaignEntity = createMockCampaignEntity();
+        campaignEntity.setSenderId(differentSenderId);
         
-        when(campaignsParameterConsumer.getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, differentSenderId))
-                .thenReturn(campaign);
+        when(campaignServiceCachedProvider.getByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, differentSenderId))
+                .thenReturn(campaignEntity);
 
         // Act
         Campaign result = service.getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, differentSenderId);
@@ -104,15 +110,15 @@ class CampaignServiceImplTest {
         // Assert
         assertNotNull(result);
         assertEquals(differentSenderId, result.getSenderId());
-        verify(campaignsParameterConsumer).getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, differentSenderId);
+        verify(campaignServiceCachedProvider).getByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, differentSenderId);
     }
 
     @Test
     void getCampaignByCampaignIdAndSenderId_shouldReturnCampaignWithAllFields() {
         // Arrange
-        Campaign campaign = createCompletelyPopulatedCampaign();
-        when(campaignsParameterConsumer.getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_SENDER_ID))
-                .thenReturn(campaign);
+        CampaignEntity campaignEntity = createCompletelyPopulatedCampaignEntity();
+        when(campaignServiceCachedProvider.getByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_SENDER_ID))
+                .thenReturn(campaignEntity);
 
         // Act
         Campaign result = service.getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_SENDER_ID);
@@ -129,94 +135,87 @@ class CampaignServiceImplTest {
         assertNotNull(result.getStatus());
         assertNotNull(result.getSensitiveContent());
         assertNotNull(result.getStopOnViewed());
-        verify(campaignsParameterConsumer).getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_SENDER_ID);
+        verify(campaignServiceCachedProvider).getByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_SENDER_ID);
     }
 
     @Test
-    void getCampaignByCampaignIdAndSenderId_shouldThrowException_whenConsumerThrowsException() {
+    void getCampaignByCampaignIdAndSenderId_shouldThrowException_whenProviderThrowsException() {
         // Arrange
-        RuntimeException expectedException = new RuntimeException("Consumer error");
-        when(campaignsParameterConsumer.getCampaignByCampaignIdAndSenderId(anyString(), anyString()))
+        RuntimeException expectedException = new RuntimeException("Provider error");
+        when(campaignServiceCachedProvider.getByCampaignIdAndSenderId(anyString(), anyString()))
                 .thenThrow(expectedException);
 
         // Act & Assert
         RuntimeException thrownException = assertThrows(RuntimeException.class, 
                 () -> service.getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_SENDER_ID));
         
-        assertEquals("Consumer error", thrownException.getMessage());
-        verify(campaignsParameterConsumer).getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_SENDER_ID);
-    }
-
-    @Test
-    void getCampaignByCampaignIdAndSenderId_shouldReturnSameCampaignObjectFromConsumer() {
-        // Arrange
-        Campaign campaign = createMockCampaign();
-        when(campaignsParameterConsumer.getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_SENDER_ID))
-                .thenReturn(campaign);
-
-        // Act
-        Campaign result = service.getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_SENDER_ID);
-
-        // Assert
-        assertSame(campaign, result);
-    }
-
-    @Test
-    void getCampaignByCampaignIdAndSenderId_shouldDelegateDirectlyToConsumer() {
-        // Arrange
-        Campaign campaign = createMockCampaign();
-        when(campaignsParameterConsumer.getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_SENDER_ID))
-                .thenReturn(campaign);
-
-        // Act
-        Campaign result = service.getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_SENDER_ID);
-
-        // Assert
-        assertEquals(campaign, result);
-        verify(campaignsParameterConsumer, times(1)).getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_SENDER_ID);
-        verifyNoMoreInteractions(campaignsParameterConsumer);
+        assertEquals("Provider error", thrownException.getMessage());
+        verify(campaignServiceCachedProvider).getByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_SENDER_ID);
     }
 
     @Test
     void getCampaignByCampaignIdAndSenderId_shouldThrowException_whenCampaignStatusIsNotInProgress() {
+        // Arrange
+        CampaignEntity campaignEntity = createMockCampaignEntity();
+        campaignEntity.setStatus(CampaignStatus.DRAFT);
+        
+        when(campaignServiceCachedProvider.getByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_SENDER_ID))
+                .thenReturn(campaignEntity);
 
-        Campaign campaign = createMockCampaign();
-        campaign.setStatus(CampaignStatus.DRAFT);
-        when(campaignsParameterConsumer.getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_SENDER_ID))
-                .thenReturn(campaign);
-
+        // Act & Assert
         PnInternalException thrownException = assertThrows(PnInternalException.class,
                 () -> service.getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_SENDER_ID));
-        Assertions.assertNotNull(thrownException.getProblem().getDetail());
+        
+        assertNotNull(thrownException.getProblem().getDetail());
         assertTrue(thrownException.getProblem().getDetail().contains("Campaign CAMPAIGN-001 has DRAFT status"));
-        verify(campaignsParameterConsumer).getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_SENDER_ID);
+        verify(campaignServiceCachedProvider).getByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_SENDER_ID);
     }
 
-    private Campaign createMockCampaign() {
-        return Campaign.builder()
+    private CampaignEntity createMockCampaignEntity() {
+        return CampaignEntity.builder()
                 .campaignId(TEST_CAMPAIGN_ID)
                 .senderId(TEST_SENDER_ID)
                 .title(TEST_TITLE)
                 .descriptionScope(TEST_DESCRIPTION)
                 .serviceId(TEST_SERVICE_ID)
                 .status(CampaignStatus.IN_PROGRESS)
+                .startDate(Instant.now())
+                .endDate(Instant.now().plus(30, ChronoUnit.DAYS))
+                .workflow(new ArrayList<>())
                 .build();
     }
 
-    private Campaign createCompletelyPopulatedCampaign() {
-        return Campaign.builder()
+    private CampaignEntity createCompletelyPopulatedCampaignEntity() {
+        Set<RecipientTypeInt> recipientTypes = new HashSet<>();
+        recipientTypes.add(RecipientTypeInt.PF);
+        recipientTypes.add(RecipientTypeInt.PG);
+
+        Set<DesiredFeedback> desiredFeedbacks = new HashSet<>();
+        desiredFeedbacks.add(DesiredFeedback.SENT);
+
+        List<WorkflowEntity> workflow = new ArrayList<>();
+        WorkflowEntity step = WorkflowEntity.builder()
+                .channel(CampaignChannel.EMAIL)
+                .recipientType(recipientTypes)
+                .timeout(Duration.ofHours(24))
+                .includeAttachment(true)
+                .desiredFeedback(desiredFeedbacks)
+                .build();
+        workflow.add(step);
+
+        return CampaignEntity.builder()
                 .campaignId(TEST_CAMPAIGN_ID)
                 .senderId(TEST_SENDER_ID)
                 .title(TEST_TITLE)
                 .descriptionScope(TEST_DESCRIPTION)
                 .serviceId(TEST_SERVICE_ID)
-                .startDate(OffsetDateTime.now())
-                .endDate(OffsetDateTime.now().plusDays(30))
+                .startDate(Instant.now())
+                .endDate(Instant.now().plus(30, ChronoUnit.DAYS))
                 .status(CampaignStatus.IN_PROGRESS)
                 .senderContact("contact@example.com")
                 .sensitiveContent(false)
                 .stopOnViewed(true)
-                .workflow(new ArrayList<>())
+                .workflow(workflow)
                 .build();
     }
 }
