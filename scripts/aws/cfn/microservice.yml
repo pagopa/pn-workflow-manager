@@ -335,6 +335,16 @@ Parameters:
     Type: String
     Description: 'External channel base url'
 
+  CpuArchitecture:
+    Type: String
+    Default: 'ARM'
+    Description: CPU architecture for the Fargate tasks
+
+  JavaToolOptions:
+    Type: String
+    Default: '-Dreactor.netty.ioWorkerCount=50'
+    Description: Java tool options for the Fargate tasks
+
 Conditions:
   UseExternalChannelMock: !Equals [ !Ref ExternalChannelBaseUrl, "Mock" ]
 
@@ -387,7 +397,6 @@ Resources:
         ContainerEnvEntry18: !Sub 'PN_WORKFLOWMANAGER_TOPICS_INFORMALQUEUE=${WorkflowManagerInputsQueueName}'
         ContainerEnvEntry19: !Sub 'PN_WORKFLOWMANAGER_CAMPAIGNS_TABLE_NAME=${CampaignsTableName}'
         ApplicativeEnvFileChecksum: !Ref ApplicativeEnvFileChecksum
-        JavaToolOptions: '-Dreactor.netty.ioWorkerCount=50'
         MappedPaths: '/workflow-manager-not-available'
         ECSClusterName: !Ref ECSClusterName
         Subnets: !Join [ ',', !Ref SubnetsIds ]
@@ -399,6 +408,8 @@ Resources:
         AlbSecurityGroup: !Ref AlbSecurityGroup
         EcsLogGroup: !Ref EcsWorkflowLogGroup
         LogAlarmStrategyV1: !Ref LogAlarmStrategy
+        CpuArchitecture: !Ref CpuArchitecture
+        JavaToolOptions: !Ref JavaToolOptions
 
   ## Dashboard
   WorkflowManagerMicroserviceCloudWatchDashboard:
