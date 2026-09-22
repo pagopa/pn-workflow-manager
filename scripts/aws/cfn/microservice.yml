@@ -436,6 +436,16 @@ Parameters:
     Default: '["IO","EMAIL","PEC","SMS","RS"]'
     Description: Delivered channels used by the lambda CampaignEventsCollector
 
+  CpuArchitecture:
+    Type: String
+    Default: 'ARM'
+    Description: CPU architecture for the Fargate tasks
+
+  JavaToolOptions:
+    Type: String
+    Default: '-Dreactor.netty.ioWorkerCount=50'
+    Description: Java tool options for the Fargate tasks
+
 Conditions:
   UseExternalChannelMock: !Equals [ !Ref ExternalChannelBaseUrl, "Mock" ]
 
@@ -489,7 +499,6 @@ Resources:
         ContainerEnvEntry19: !Sub 'PN_WORKFLOWMANAGER_DAO_CAMPAIGNSTATISTICSTABLENAME=${CampaignStatisticsTableName}'
         ContainerEnvEntry20: !Sub 'PN_WORKFLOWMANAGER_CAMPAIGNS_TABLE_NAME=${CampaignsTableName}'
         ApplicativeEnvFileChecksum: !Ref ApplicativeEnvFileChecksum
-        JavaToolOptions: '-Dreactor.netty.ioWorkerCount=50'
         MappedPaths: '/workflow-private/*'
         ECSClusterName: !Ref ECSClusterName
         Subnets: !Join [ ',', !Ref SubnetsIds ]
@@ -501,6 +510,8 @@ Resources:
         AlbSecurityGroup: !Ref AlbSecurityGroup
         EcsLogGroup: !Ref EcsWorkflowLogGroup
         LogAlarmStrategyV1: !Ref LogAlarmStrategy
+        CpuArchitecture: !Ref CpuArchitecture
+        JavaToolOptions: !Ref JavaToolOptions
 
   ## Dashboard
   WorkflowManagerMicroserviceCloudWatchDashboard:
