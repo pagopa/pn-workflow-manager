@@ -16,7 +16,7 @@
     "PnTimelinesTableName": "pn-Timelines",
     "CampaignMonitoringDigitalChannels": "[\"IO\",\"EMAIL\",\"PEC\",\"SMS\"]",
     "CampaignMonitoringAnalogChannels": "[\"RS\"]",
-    "CampaignMonitoringViewChannels": "[\"IO\",\"SEND\"]",
+    "CampaignMonitoringViewChannels": "[\"IO\",\"WEB\"]",
     "CampaignMonitoringDeliveredChannels": "[\"IO\",\"EMAIL\",\"PEC\",\"SMS\",\"RS\"]"
   }
 }

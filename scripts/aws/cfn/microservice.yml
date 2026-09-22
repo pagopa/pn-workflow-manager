@@ -429,7 +429,7 @@ Parameters:
     Description: Analog channels used by the lambda CampaignEventsCollector
   CampaignMonitoringViewChannels:
     Type: String
-    Default: '["IO","SEND"]'
+    Default: '["IO","WEB"]'
     Description: View channels used by the lambda CampaignEventsCollector
   CampaignMonitoringDeliveredChannels:
     Type: String
