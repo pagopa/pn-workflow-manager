@@ -335,6 +335,16 @@ Parameters:
     Type: String
     Description: 'External channel base url'
 
+  CpuArchitecture:
+    Type: String
+    Default: 'ARM'
+    Description: CPU architecture for the Fargate tasks
+
+  JavaToolOptions:
+    Type: String
+    Default: '-Dreactor.netty.ioWorkerCount=50'
+    Description: Java tool options for the Fargate tasks
+
   NationalRegistries2WorkflowManagerQueueName:
     Type: String
     Description: workflow-manager national-registries queue name
@@ -410,7 +420,6 @@ Resources:
         ContainerEnvEntry21: !Sub 'PN_WORKFLOWMANAGER_NATIONALREGISTRIESBASEURL=http://${ApplicationLoadBalancerDomain}:8080'
         ContainerEnvEntry22: !Sub 'PN_WORKFLOWMANAGER_TOPICS_NATIONALREGISTRIESTOWORKFLOWMANAGER=${NationalRegistries2WorkflowManagerQueueName}'
         ApplicativeEnvFileChecksum: !Ref ApplicativeEnvFileChecksum
-        JavaToolOptions: '-Dreactor.netty.ioWorkerCount=50'
         MappedPaths: '/workflow-manager-not-available'
         ECSClusterName: !Ref ECSClusterName
         Subnets: !Join [ ',', !Ref SubnetsIds ]
@@ -422,6 +431,8 @@ Resources:
         AlbSecurityGroup: !Ref AlbSecurityGroup
         EcsLogGroup: !Ref EcsWorkflowLogGroup
         LogAlarmStrategyV1: !Ref LogAlarmStrategy
+        CpuArchitecture: !Ref CpuArchitecture
+        JavaToolOptions: !Ref JavaToolOptions
 
   ## Dashboard
   WorkflowManagerMicroserviceCloudWatchDashboard:
