@@ -1,14 +1,12 @@
 package it.pagopa.pn.workflowmanager.service.mapper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
+import it.pagopa.pn.workflowmanager.dto.timeline.details.*;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.model.*;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
-import it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt;
-import it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementDetailsInt;
-import it.pagopa.pn.workflowmanager.dto.timeline.details.CoverpageCreationRequestDetailsInt;
-import it.pagopa.pn.workflowmanager.dto.timeline.details.InformalNotificationViewedDetailsInt;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
@@ -86,6 +84,41 @@ class TimelineServiceMapperTest {
         assertEquals("IUN_TEST", result.getTimelineElement().getIun());
         assertEquals("PROT_123", result.getNotificationInfo().getPaProtocolNumber());
         assertEquals(2, result.getNotificationInfo().getNumberOfRecipients());
+        assertEquals(CommunicationType.INFORMAL, result.getTimelineElement().getCommunicationType());
+    }
+
+    @Test
+    void getNewTimelineElement_mapsFieldsCorrectly_InformalDigitalAddress() {
+        // Arrange
+        TimelineElementInternal timelineElementInternal = TimelineElementInternal.builder()
+                .iun("IUN_TEST")
+                .elementId("ELEM_ID")
+                .category(TimelineElementCategoryInt.GET_ADDRESS)
+                .details(GetAddressInfoDetailsInt.builder().digitalAddress(InformalDigitalAddressInt.builder().type(InformalDigitalAddressInt.INFORMAL_DIGITAL_ADDRESS_TYPE.SMS).build()).build())
+                .build();
+
+        NotificationRecipientInt recipient1 = NotificationRecipientInt.builder().internalId("rec1").build();
+        NotificationRecipientInt recipient2 = NotificationRecipientInt.builder().internalId("rec2").build();
+
+        NotificationInt notificationInt = NotificationInt.builder()
+                .iun("IUN_TEST")
+                .paProtocolNumber("PROT_123")
+                .sentAt(Instant.now())
+                .recipients(List.of(recipient1, recipient2))
+                .build();
+
+        // Act
+        NewTimelineElement result = timelineServiceMapper.getNewTimelineElement(timelineElementInternal, notificationInt);
+
+        // Assert
+        assertNotNull(result);
+        assertNotNull(result.getTimelineElement());
+        assertNotNull(result.getNotificationInfo());
+        assertEquals("IUN_TEST", result.getTimelineElement().getIun());
+        assertEquals("PROT_123", result.getNotificationInfo().getPaProtocolNumber());
+        assertEquals(2, result.getNotificationInfo().getNumberOfRecipients());
+        assertNotNull(((GetAddressInfoDetails) result.getTimelineElement().getDetails()).getDigitalAddress());
+        assertEquals(InformalDigitalAddressInt.INFORMAL_DIGITAL_ADDRESS_TYPE.SMS.name(), ((GetAddressInfoDetails) result.getTimelineElement().getDetails()).getDigitalAddress().getType());
         assertEquals(CommunicationType.INFORMAL, result.getTimelineElement().getCommunicationType());
     }
 
