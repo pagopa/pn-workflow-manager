@@ -36,7 +36,12 @@ public enum ExtChannelOutcomeEventCodeInt {
     // SMS events (Courtesy channel) - start with S
     S003("S003", ChannelType.SMS), // SENT
     S008("S008", ChannelType.SMS), // ERROR
-    S010("S010", ChannelType.SMS); // ERROR
+    S010("S010", ChannelType.SMS), // ERROR
+
+    Q003("Q003", ChannelType.PEC),  // SECRQ - SENT
+    Q010("Q010", ChannelType.PEC),  // SECRQ - ERRORE_INVIO_SERCQ
+    Q011("Q011", ChannelType.PEC);  // SECRQ - ADDRESS_ERROR
+
 
     private final String value;
     private final ChannelType channel;

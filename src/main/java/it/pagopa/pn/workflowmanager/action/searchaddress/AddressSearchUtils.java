@@ -66,7 +66,6 @@ public class AddressSearchUtils {
             SourceSearchOutcome outcome
     ) {
         TimelineElementInternal timelineElement = timelineUtils.buildAvailabilitySourceTimelineElement(ctx.recipientIndex(), ctx.notification(), outcome.source(), outcome.found(), ctx.attempt(), outcome.address(), outcome.tosAccepted(), ctx.channel().name());
-        log.info("Built availability source element : {}", timelineElement);
         timelineService.addTimelineElement(timelineElement, ctx.notification());
     }
 
