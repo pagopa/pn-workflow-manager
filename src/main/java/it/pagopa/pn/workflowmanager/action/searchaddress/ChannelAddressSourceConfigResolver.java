@@ -35,12 +35,13 @@ public class ChannelAddressSourceConfigResolver {
         });
     }
 
-    public Optional<List<DigitalAddressSourceInt>> resolveSources(ChannelType channel, Instant sentAt) {
+    public List<DigitalAddressSourceInt> resolveSources(ChannelType channel, Instant sentAt) {
         return parameterConsumer.getSearchDigitalDomicileConfigs()
                 .stream()
                 .filter(config -> !config.getValidFrom().isAfter(sentAt))
                 .max(Comparator.comparing(SearchDigitalDomicileConfig::getValidFrom))
-                .map(config -> getSourcesByChannel(config, channel));
+                .map(config -> getSourcesByChannel(config, channel))
+                .orElse(List.of(DigitalAddressSourceInt.SPECIAL)); // In assenza di sorgenti configurate per canale, effettuiamo di default una ricerca SPECIAL
     }
 
     private void validateChannelSources(Instant validFrom, ChannelType channel, List<DigitalAddressSourceInt> sources) {
@@ -61,11 +62,14 @@ public class ChannelAddressSourceConfigResolver {
         });
     }
 
+    /*
+        In caso di configurazioni vuote si va di default con SPECIAL.
+     */
     private List<DigitalAddressSourceInt> getSourcesByChannel(SearchDigitalDomicileConfig config, ChannelType channel) {
         return switch (channel) {
-            case PEC -> config.getPec();
-            case SMS -> config.getSms();
-            case EMAIL -> config.getEmail();
+            case PEC -> config.getPec().isEmpty() ? List.of(DigitalAddressSourceInt.SPECIAL) : config.getPec();
+            case SMS -> config.getSms().isEmpty() ? List.of(DigitalAddressSourceInt.SPECIAL) : config.getSms();
+            case EMAIL -> config.getEmail().isEmpty() ? List.of(DigitalAddressSourceInt.SPECIAL) : config.getEmail();
             default -> List.of();
         };
     }
