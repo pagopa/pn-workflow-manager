@@ -1,7 +1,9 @@
 package it.pagopa.pn.workflowmanager.config.springbootcfg;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import it.pagopa.pn.commons.pnclients.RestTemplateFactory;
+import it.pagopa.pn.commons.pnclients.RestTemplateRetryable;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -15,20 +17,22 @@ import java.util.TimeZone;
 @Configuration
 public class RestTemplateFactoryActivation extends RestTemplateFactory {
     @Bean
-    @Qualifier("withOffsetDateTimeFormatter")
-    public RestTemplate restTemplateWithOffsetDateTimeFormatter(@Value("${pn.commons.retry.max-attempts}") int retryMaxAttempts, @Value("${pn.commons.connection-timeout-millis}") int connectionTimeout , @Value("${pn.commons.read-timeout-millis}") int readTimeout) {
-        // Override del comportamento di serializzazione delle date
-        // per ovviare al problema del numero di cifre nella frazione di secondo
-        RestTemplate template = this.restTemplateWithTracing(retryMaxAttempts, connectionTimeout, readTimeout);
+    @Qualifier("withJavaTimeModule")
+    public RestTemplate restTemplateWithOffsetDateTimeFormatter(
+            @Value("${pn.commons.retry.max-attempts}") int retryMaxAttempts,
+            @Value("${pn.commons.connection-timeout-millis}") int connectionTimeout,
+            @Value("${pn.commons.read-timeout-millis}") int readTimeout,
+            ObjectMapper objectMapper
+    ) {
+        RestTemplate template = new RestTemplateRetryable(retryMaxAttempts + 1);
+        this.configureRestTemplate(connectionTimeout, readTimeout, template);
+        ObjectMapper customObjectMapper = objectMapper.copy();
+        customObjectMapper.registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
         template.getMessageConverters().stream()
                 .filter(AbstractJackson2HttpMessageConverter.class::isInstance)
                 .map(AbstractJackson2HttpMessageConverter.class::cast)
-                .forEach(converter -> converter.getObjectMapper()
-                        .configOverride(Instant.class)
-                        .setFormat(JsonFormat.Value.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSSX")
-                                .withTimeZone(TimeZone.getTimeZone("UTC")))
-                );
+                .forEach(converter -> converter.setObjectMapper(customObjectMapper));
+
         return template;
     }
-
 }
