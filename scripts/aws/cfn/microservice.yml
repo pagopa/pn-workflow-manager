@@ -1100,6 +1100,7 @@ Resources:
               - dynamodb:UpdateItem
               - dynamodb:GetItem
               - dynamodb:Query
+              - dynamodb:BatchWriteItem
             Resource:
               - !Ref CampaignStatisticsTableArn
               - !Ref CampaignEventsDeduplicationTableArn
@@ -1136,7 +1137,7 @@ Resources:
           Destination: !Sub arn:aws:s3:::${ESMKinesisFailureNotificationsBucketName}
       FilterCriteria:
         Filters:
-          - Pattern: '{ "data": { "tableName": ["pn-Timelines"], "eventName": ["INSERT"], "dynamodb": { "NewImage": { "communicationType": { "S": ["INFORMAL"] } } } } }'
+          - Pattern: !Sub '{ "data": { "tableName": ["${PnTimelinesTableName}"], "eventName": ["INSERT"], "dynamodb": { "NewImage": { "communicationType": { "S": ["INFORMAL"] } } } } }'
 
   CampaignEventsCollectorLambdaKinesisFailuresAlarm:
     Type: AWS::CloudWatch::Alarm
