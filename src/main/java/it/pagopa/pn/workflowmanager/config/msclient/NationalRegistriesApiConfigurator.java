@@ -14,7 +14,7 @@ public class NationalRegistriesApiConfigurator {
 
     @Bean
     @Primary
-    public AddressApi addressApi(@Qualifier("withTracing") RestTemplate restTemplate, PnWorkflowManagerConfigs cfg) {
+    public AddressApi addressApi(@Qualifier("withOffsetDateTimeFormatter") RestTemplate restTemplate, PnWorkflowManagerConfigs cfg) {
         ApiClient newApiClient = new ApiClient(restTemplate);
         newApiClient.setBasePath(cfg.getNationalRegistriesBaseUrl());
         return new AddressApi(newApiClient);
