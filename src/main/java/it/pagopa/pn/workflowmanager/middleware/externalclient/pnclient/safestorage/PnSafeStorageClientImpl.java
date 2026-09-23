@@ -12,7 +12,7 @@ import it.pagopa.pn.workflowmanager.generated.openapi.msclient.safestorage.model
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.safestorage.model.FileDownloadResponse;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.safestorage.model.UpdateFileMetadataRequest;
 import lombok.CustomLog;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpEntity;
@@ -29,13 +29,24 @@ import org.springframework.web.client.RestTemplate;
 import java.net.URI;
 
 @CustomLog
-@RequiredArgsConstructor
 @Component
 public class PnSafeStorageClientImpl implements PnSafeStorageClient {
     private final FileUploadApi fileUploadApi;
     private final FileDownloadApi fileDownloadApi;
     private final PnWorkflowManagerConfigs cfg;
     private final RestTemplate restTemplate;
+
+    public PnSafeStorageClientImpl(
+            FileUploadApi fileUploadApi,
+            FileDownloadApi fileDownloadApi,
+            PnWorkflowManagerConfigs cfg,
+            @Qualifier("withTracing") RestTemplate restTemplate
+    ) {
+        this.fileUploadApi = fileUploadApi;
+        this.fileDownloadApi = fileDownloadApi;
+        this.cfg = cfg;
+        this.restTemplate = restTemplate;
+    }
 
     @Override
     public FileCreationResponse createFile(String checksumValue, String checksum, FileCreationRequest fileCreationRequest) {
