@@ -28,6 +28,7 @@ public class TimelineClientImpl implements TimelineClient {
     public AddTimelineElementResponse addTimelineElement(TimelineElementInternal element, NotificationInt notification) {
         log.logInvokingExternalService(CLIENT_NAME, ADD_TIMELINE_ELEMENT);
         NewTimelineElement newTimelineElement = timelineServiceMapper.getNewTimelineElement(element, notification);
+        log.info("Mapped generated timelineElement : {}", newTimelineElement.getTimelineElement());
         try {
             TimelineElementIdResponse timelineElementIdResponse = timelineControllerApi.addTimelineElement(newTimelineElement);
             return new AddTimelineElementResponse(timelineElementIdResponse.getElementId(), false);
