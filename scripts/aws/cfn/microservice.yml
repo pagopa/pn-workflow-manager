@@ -518,10 +518,9 @@ Resources:
         ContainerEnvEntry18: !Sub 'PN_WORKFLOWMANAGER_TOPICS_INFORMALQUEUE=${WorkflowManagerInputsQueueName}'
         ContainerEnvEntry19: !Sub 'PN_WORKFLOWMANAGER_DAO_CAMPAIGNSTATISTICSTABLENAME=${CampaignStatisticsTableName}'
         ContainerEnvEntry20: !Sub 'PN_WORKFLOWMANAGER_CAMPAIGNS_TABLE_NAME=${CampaignsTableName}'
-        ContainerEnvEntry21: !Sub 'PN_WORKFLOWMANAGER_CAMPAIGNS_TABLE_NAME=${CampaignsTableName}'
-        ContainerEnvEntry22: !Sub 'PN_WORKFLOWMANAGER_USERATTRIBUTESBASEURL=http://${ApplicationLoadBalancerDomain}:8080'
-        ContainerEnvEntry23: !Sub 'PN_WORKFLOWMANAGER_NATIONALREGISTRIESBASEURL=http://${ApplicationLoadBalancerDomain}:8080'
-        ContainerEnvEntry24: !Sub 'PN_WORKFLOWMANAGER_TOPICS_NATIONALREGISTRIESTOWORKFLOWMANAGER=${NationalRegistries2WorkflowManagerQueueName}'
+        ContainerEnvEntry21: !Sub 'PN_WORKFLOWMANAGER_USERATTRIBUTESBASEURL=http://${ApplicationLoadBalancerDomain}:8080'
+        ContainerEnvEntry22: !Sub 'PN_WORKFLOWMANAGER_NATIONALREGISTRIESBASEURL=http://${ApplicationLoadBalancerDomain}:8080'
+        ContainerEnvEntry23: !Sub 'PN_WORKFLOWMANAGER_TOPICS_NATIONALREGISTRIESTOWORKFLOWMANAGER=${NationalRegistries2WorkflowManagerQueueName}'
         ApplicativeEnvFileChecksum: !Ref ApplicativeEnvFileChecksum
         MappedPaths: '/workflow-private/*'
         ECSClusterName: !Ref ECSClusterName
