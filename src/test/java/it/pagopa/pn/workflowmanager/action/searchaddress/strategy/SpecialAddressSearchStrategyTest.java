@@ -24,7 +24,7 @@ class SpecialAddressSearchStrategyTest {
         SourceSearchOutcome outcome = strategy.search(context);
 
         assertTrue(outcome.found());
-        assertTrue(outcome.tosAccepted());
+        assertNull(outcome.tosAccepted());
         assertNotNull(outcome.address());
         assertEquals("user@pec.it", outcome.address().getAddress());
     }
@@ -36,7 +36,7 @@ class SpecialAddressSearchStrategyTest {
         SourceSearchOutcome outcome = strategy.search(context);
 
         assertTrue(outcome.found());
-        assertTrue(outcome.tosAccepted());
+        assertNull(outcome.tosAccepted());
         assertNotNull(outcome.address());
         assertEquals("3331234567", outcome.address().getAddress());
     }
@@ -48,7 +48,7 @@ class SpecialAddressSearchStrategyTest {
         SourceSearchOutcome outcome = strategy.search(context);
 
         assertTrue(outcome.found());
-        assertTrue(outcome.tosAccepted());
+        assertNull(outcome.tosAccepted());
         assertNotNull(outcome.address());
         assertEquals("user@example.com", outcome.address().getAddress());
     }
@@ -60,7 +60,7 @@ class SpecialAddressSearchStrategyTest {
         SourceSearchOutcome outcome = strategy.search(context);
 
         assertFalse(outcome.found());
-        assertTrue(outcome.tosAccepted());
+        assertNull(outcome.tosAccepted());
         assertNull(outcome.address());
     }
 

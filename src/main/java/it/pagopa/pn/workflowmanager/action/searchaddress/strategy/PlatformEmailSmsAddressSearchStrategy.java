@@ -44,19 +44,21 @@ public class PlatformEmailSmsAddressSearchStrategy implements SyncAddressSearchS
         log.info("Starting PLATFORM EMAIL/SMS address search - iun={} recipientIndex={} senderId={} recipientId={} channel={}",
                 context.notification().getIun(), context.recipientIndex(), senderId, recipientId, context.channel());
 
-        if (!addressBookService.areMandatoryConsentsAccepted(recipientId, cxId)) {
+        Boolean mandatoryConsentsAccepted = addressBookService.areMandatoryConsentsAccepted(recipientId, cxId);
+
+        if (Boolean.FALSE.equals(mandatoryConsentsAccepted)) {
             log.info("TOS not accepted for PLATFORM EMAIL/SMS search - senderId={} recipientId={}", senderId, recipientId);
             return SourceSearchOutcome.tosNotAccepted(DigitalAddressSourceInt.PLATFORM);
         }
 
-        return getCourtesyAddressBySender(recipientId, senderId, channel);
+        return getCourtesyAddressBySender(recipientId, senderId, channel, mandatoryConsentsAccepted);
     }
 
-    private SourceSearchOutcome getCourtesyAddressBySender(String recipientId, String senderId, String channel) {
+    private SourceSearchOutcome getCourtesyAddressBySender(String recipientId, String senderId, String channel, Boolean mandatoryConsentsAccepted) {
         Optional<CourtesyDigitalAddressInt> optCourtesyAddress = informalCourtesyAddressResolver.resolveAddressByType(recipientId, senderId, CourtesyDigitalAddressInt.COURTESY_DIGITAL_ADDRESS_TYPE_INT.valueOf(channel));
         if (optCourtesyAddress.isEmpty()) {
             log.debug("Courtesy digital addresses not found - senderId={} recipientId={}", senderId, recipientId);
-            return SourceSearchOutcome.notFound(DigitalAddressSourceInt.PLATFORM);
+            return SourceSearchOutcome.notFound(DigitalAddressSourceInt.PLATFORM, mandatoryConsentsAccepted);
         }
 
         CourtesyDigitalAddressInt courtesyAddress = optCourtesyAddress.get();
@@ -66,6 +68,6 @@ public class PlatformEmailSmsAddressSearchStrategy implements SyncAddressSearchS
         log.debug("For senderId={} address type={} is available", senderId, address.getType());
         log.info("PLATFORM EMAIL/SMS address found - senderId={} recipientId={} type={}", senderId, recipientId, address.getType());
 
-        return SourceSearchOutcome.found(DigitalAddressSourceInt.PLATFORM, address);
+        return SourceSearchOutcome.found(DigitalAddressSourceInt.PLATFORM, address, mandatoryConsentsAccepted);
     }
 }

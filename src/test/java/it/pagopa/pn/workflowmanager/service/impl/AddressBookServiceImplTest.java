@@ -190,7 +190,7 @@ class AddressBookServiceImplTest {
         when(configs.getConsentsForPlatformSearch()).thenReturn(List.of(ConsentDto.builder().type(ConsentType.TOS.getValue()).version(1).build()));
 
         // when
-        boolean result = addressBookService.areMandatoryConsentsAccepted(RECIPIENT_ID, CX_ID);
+        Boolean result = addressBookService.areMandatoryConsentsAccepted("PF-MAnu", CX_ID);
 
         // then
         assertFalse(result);
@@ -203,23 +203,22 @@ class AddressBookServiceImplTest {
         when(configs.getConsentsForPlatformSearch()).thenReturn(List.of(ConsentDto.builder().type(ConsentType.TOS.getValue()).version(1).build()));
 
         // when
-        boolean result = addressBookService.areMandatoryConsentsAccepted(RECIPIENT_ID, CX_ID);
+        Boolean result = addressBookService.areMandatoryConsentsAccepted(RECIPIENT_ID, CX_ID);
 
         // then
         assertFalse(result);
     }
 
     @Test
-    void areMandatoryConsentsAccepted_shouldReturnTrue_whenConsentsListIsEmptyAndThereAreNoConsentsConfigured() {
+    void areMandatoryConsentsAccepted_shouldReturnNull_whenConsentsListIsEmptyAndThereAreNoConsentsConfigured() {
         // given
-        when(userAttributesClient.getConsents(anyString(), any())).thenReturn(Collections.emptyList());
         when(configs.getConsentsForPlatformSearch()).thenReturn(Collections.emptyList());
 
         // when
-        boolean result = addressBookService.areMandatoryConsentsAccepted(RECIPIENT_ID, CX_ID);
+        Boolean result = addressBookService.areMandatoryConsentsAccepted(RECIPIENT_ID, CX_ID);
 
         // then
-        assertTrue(result);
+        assertNull(result);
     }
 
     @Test
@@ -232,7 +231,7 @@ class AddressBookServiceImplTest {
         when(configs.getConsentsForPlatformSearch()).thenReturn(List.of(configConsent));
 
         // when
-        boolean result = addressBookService.areMandatoryConsentsAccepted(RECIPIENT_ID, CX_ID);
+        Boolean result = addressBookService.areMandatoryConsentsAccepted(RECIPIENT_ID, CX_ID);
 
         // then
         assertFalse(result);
@@ -248,7 +247,7 @@ class AddressBookServiceImplTest {
         when(configs.getConsentsForPlatformSearch()).thenReturn(List.of(configConsent));
 
         // when
-        boolean result = addressBookService.areMandatoryConsentsAccepted(RECIPIENT_ID, CX_ID);
+        Boolean result = addressBookService.areMandatoryConsentsAccepted(RECIPIENT_ID, CX_ID);
 
         // then
         assertFalse(result);
@@ -264,7 +263,7 @@ class AddressBookServiceImplTest {
         when(configs.getConsentsForPlatformSearch()).thenReturn(List.of(configConsent));
 
         // when
-        boolean result = addressBookService.areMandatoryConsentsAccepted(RECIPIENT_ID, CX_ID);
+        Boolean result = addressBookService.areMandatoryConsentsAccepted(RECIPIENT_ID, CX_ID);
 
         // then
         assertFalse(result);
@@ -280,7 +279,7 @@ class AddressBookServiceImplTest {
         when(configs.getConsentsForPlatformSearch()).thenReturn(List.of(configConsent));
 
         // when
-        boolean result = addressBookService.areMandatoryConsentsAccepted(RECIPIENT_ID, CX_ID);
+        Boolean result = addressBookService.areMandatoryConsentsAccepted(RECIPIENT_ID, CX_ID);
 
         // then
         assertTrue(result);
@@ -296,7 +295,7 @@ class AddressBookServiceImplTest {
         when(configs.getConsentsForPlatformSearch()).thenReturn(List.of(configConsent));
 
         // when
-        boolean result = addressBookService.areMandatoryConsentsAccepted(RECIPIENT_ID, CX_ID);
+        Boolean result = addressBookService.areMandatoryConsentsAccepted(RECIPIENT_ID, CX_ID);
 
         // then
         assertTrue(result);
@@ -313,7 +312,7 @@ class AddressBookServiceImplTest {
         when(configs.getConsentsForPlatformSearch()).thenReturn(List.of(configConsent1, configConsent2));
 
         // when
-        boolean result = addressBookService.areMandatoryConsentsAccepted(RECIPIENT_ID, CX_ID);
+        Boolean result = addressBookService.areMandatoryConsentsAccepted(RECIPIENT_ID, CX_ID);
 
         // then
         assertFalse(result);
@@ -332,7 +331,7 @@ class AddressBookServiceImplTest {
         when(configs.getConsentsForPlatformSearch()).thenReturn(List.of(configConsent1, configConsent2));
 
         // when
-        boolean result = addressBookService.areMandatoryConsentsAccepted(RECIPIENT_ID, CX_ID);
+        Boolean result = addressBookService.areMandatoryConsentsAccepted(RECIPIENT_ID, CX_ID);
 
         // then
         assertTrue(result);

@@ -75,9 +75,23 @@ public class AddressBookServiceImpl implements AddressBookService {
         return new ArrayList<>();
     }
 
+    /**
+     * Check if the recipient has accepted all mandatory consents for the platform search.
+     *
+     * @param recipientId The recipient's internal ID.
+     * @param cxId        The recipient's CX ID.
+     * @return null if there are no mandatory consents to check, true if all mandatory consents are accepted, false otherwise.
+     */
     @Override
-    public boolean areMandatoryConsentsAccepted(String recipientId, String cxId) {
-        List<Consent> consents = userAttributesClient.getConsents(recipientId, CxTypeAuthFleet.fromValue(cxId));
+    public Boolean areMandatoryConsentsAccepted(String recipientId, String cxId) {
+        if (CollectionUtils.isEmpty(configs.getConsentsForPlatformSearch())) {
+            log.debug("No configurations for consents to check");
+            return null;
+        }
+
+        String recipientIdWithoutPrefix = recipientId.replace("PF-", "").replace("PG-", "");
+
+        List<Consent> consents = userAttributesClient.getConsents(recipientIdWithoutPrefix, CxTypeAuthFleet.fromValue(cxId));
         boolean thereAreConsentsToCheck = !CollectionUtils.isEmpty(configs.getConsentsForPlatformSearch());
         if (CollectionUtils.isEmpty(consents) && thereAreConsentsToCheck) {
             log.debug("Mandatory consents not accepted - recipientId={} cxId={}", recipientId, cxId);

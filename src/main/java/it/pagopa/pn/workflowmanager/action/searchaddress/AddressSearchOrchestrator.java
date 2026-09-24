@@ -28,7 +28,7 @@ public class AddressSearchOrchestrator {
             return;
         }
 
-        List<DigitalAddressSourceInt> sources = getSourcesForChannel(ctx.channel(), ctx);
+        List<DigitalAddressSourceInt> sources = configResolver.resolveSources(ctx.channel(), ctx.sentAt());
         progressor.run(ctx, sources, 0);
     }
 
@@ -39,12 +39,7 @@ public class AddressSearchOrchestrator {
      * @param outcome Esito della ricerca asincrona
      */
     public void resume(AddressSearchContext ctx, DigitalAddressSourceInt asyncSource, SourceSearchOutcome outcome) {
-        List<DigitalAddressSourceInt> sources = getSourcesForChannel(ctx.channel(), ctx);
+        List<DigitalAddressSourceInt> sources = configResolver.resolveSources(ctx.channel(), ctx.sentAt());
         progressor.resumeAfterAsyncOutcome(ctx, asyncSource, outcome, sources);
-    }
-
-    private List<DigitalAddressSourceInt> getSourcesForChannel(ChannelType channel, AddressSearchContext ctx) {
-        return configResolver.resolveSources(channel, ctx.sentAt())
-                .orElse(List.of(DigitalAddressSourceInt.SPECIAL)); // In assenza di sorgenti configurate per canale, effettuiamo di default una ricerca SPECIAL
     }
 }

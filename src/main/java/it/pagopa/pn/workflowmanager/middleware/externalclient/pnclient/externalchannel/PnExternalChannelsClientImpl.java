@@ -6,6 +6,7 @@ import it.pagopa.pn.workflowmanager.action.utils.FileUtils;
 import it.pagopa.pn.workflowmanager.config.PnWorkflowManagerConfigs;
 import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
+import it.pagopa.pn.workflowmanager.dto.address.LegalDigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.ExternalChannelEventType;
@@ -48,7 +49,7 @@ public class PnExternalChannelsClientImpl implements PnExternalChannelsClient {
             List<String> fileKeysWithStoragePrefix = fileKeys.stream().map(FileUtils::getKeyWithStoragePrefix).toList();
 
             DigitalNotificationRequest digitalNotificationRequest = new DigitalNotificationRequest();
-            digitalNotificationRequest.setChannel(DigitalNotificationRequest.ChannelEnum.PEC);
+            digitalNotificationRequest.setChannel(digitalAddress.getType() == InformalDigitalAddressInt.INFORMAL_DIGITAL_ADDRESS_TYPE.PEC ? DigitalNotificationRequest.ChannelEnum.PEC : DigitalNotificationRequest.ChannelEnum.SERCQ);
             digitalNotificationRequest.setRequestId(requestId);
             digitalNotificationRequest.setCorrelationId(requestId);
             digitalNotificationRequest.setEventType(ExternalChannelEventType.INFORMAL.name());

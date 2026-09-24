@@ -2,7 +2,6 @@ package it.pagopa.pn.workflowmanager.action.searchaddress;
 
 import it.pagopa.pn.workflowmanager.action.searchaddress.dto.SourceChannelKey;
 import it.pagopa.pn.workflowmanager.action.searchaddress.dto.SourceSearchOutcome;
-import it.pagopa.pn.workflowmanager.action.searchaddress.strategy.AddressSearchStrategy;
 import it.pagopa.pn.workflowmanager.action.searchaddress.strategy.PlatformPecAddressSearchStrategy;
 import it.pagopa.pn.workflowmanager.action.searchaddress.strategy.SyncAddressSearchStrategy;
 import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
@@ -11,12 +10,10 @@ import it.pagopa.pn.workflowmanager.service.AddressBookService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -137,9 +134,9 @@ class ChannelAddressSourceConfigResolverTest {
 
         ChannelAddressSourceConfigResolver resolver = new ChannelAddressSourceConfigResolver(parameterConsumer, addressSearchRegistry);
 
-        Optional<List<DigitalAddressSourceInt>> sources = resolver.resolveSources(ChannelType.EMAIL, Instant.parse("2024-02-15T00:00:00Z"));
+        List<DigitalAddressSourceInt> sources = resolver.resolveSources(ChannelType.EMAIL, Instant.parse("2024-02-15T00:00:00Z"));
 
-        assertThat(sources).contains(List.of(DigitalAddressSourceInt.SPECIAL));
+        assertThat(sources).isEqualTo(List.of(DigitalAddressSourceInt.SPECIAL));
     }
 
     @Test
@@ -150,9 +147,9 @@ class ChannelAddressSourceConfigResolverTest {
 
         ChannelAddressSourceConfigResolver resolver = new ChannelAddressSourceConfigResolver(parameterConsumer, addressSearchRegistry);
 
-        Optional<List<DigitalAddressSourceInt>> sources = resolver.resolveSources(ChannelType.PEC, Instant.parse("2024-01-15T00:00:00Z"));
+        List<DigitalAddressSourceInt> sources = resolver.resolveSources(ChannelType.PEC, Instant.parse("2024-01-15T00:00:00Z"));
 
-        assertThat(sources).isEmpty();
+        assertThat(sources).isEqualTo(List.of(DigitalAddressSourceInt.SPECIAL));
     }
 
     @Test
@@ -163,9 +160,9 @@ class ChannelAddressSourceConfigResolverTest {
 
         ChannelAddressSourceConfigResolver resolver = new ChannelAddressSourceConfigResolver(parameterConsumer, addressSearchRegistry);
 
-        Optional<List<DigitalAddressSourceInt>> sources = resolver.resolveSources(ChannelType.IO, Instant.parse("2024-02-15T00:00:00Z"));
+        List<DigitalAddressSourceInt> sources = resolver.resolveSources(ChannelType.IO, Instant.parse("2024-02-15T00:00:00Z"));
 
-        assertThat(sources).contains(List.of());
+        assertThat(sources).isEqualTo(List.of());
     }
 
     private static SearchDigitalDomicileParameterConsumer mockConsumer(SearchDigitalDomicileConfig... configs) {
