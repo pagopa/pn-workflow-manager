@@ -13,7 +13,7 @@ public record SendAttachmentMode(Set<AttachmentType> types) {
         return types.contains(type);
     }
 
-    /** Parsing da stringa: "COVERPAGE,DOCUMENTS,PAYMENTS" */
+    /** Parsing da stringa: "COVERPAGE|DOCUMENTS|PAYMENTS" */
     public static SendAttachmentMode fromValue(String value) {
         if (value == null || value.isBlank()) {
             throw new IllegalArgumentException("SendAttachmentMode value cannot be blank");

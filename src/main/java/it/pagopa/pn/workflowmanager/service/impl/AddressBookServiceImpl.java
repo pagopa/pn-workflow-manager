@@ -84,7 +84,8 @@ public class AddressBookServiceImpl implements AddressBookService {
      */
     @Override
     public Boolean areMandatoryConsentsAccepted(String recipientId, String cxId) {
-        if (CollectionUtils.isEmpty(configs.getConsentsForPlatformSearch())) {
+        boolean thereAreConsentsToCheck = !CollectionUtils.isEmpty(configs.getConsentsForPlatformSearch());
+        if (!thereAreConsentsToCheck) {
             log.debug("No configurations for consents to check");
             return null;
         }
@@ -92,8 +93,8 @@ public class AddressBookServiceImpl implements AddressBookService {
         String recipientIdWithoutPrefix = recipientId.replace("PF-", "").replace("PG-", "");
 
         List<Consent> consents = userAttributesClient.getConsents(recipientIdWithoutPrefix, CxTypeAuthFleet.fromValue(cxId));
-        boolean thereAreConsentsToCheck = !CollectionUtils.isEmpty(configs.getConsentsForPlatformSearch());
-        if (CollectionUtils.isEmpty(consents) && thereAreConsentsToCheck) {
+
+        if (CollectionUtils.isEmpty(consents)) {
             log.debug("Mandatory consents not accepted - recipientId={} cxId={}", recipientId, cxId);
             return false;
         }

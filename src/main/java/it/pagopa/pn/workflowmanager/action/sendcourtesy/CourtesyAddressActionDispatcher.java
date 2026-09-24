@@ -38,13 +38,16 @@ public class CourtesyAddressActionDispatcher {
             return;
         }
 
+        boolean smsEnabled = Boolean.TRUE.equals(pnWorkflowManagerConfigs.getSmsCourtesyEnabled());
+
         List<CourtesyDigitalAddressInt.COURTESY_DIGITAL_ADDRESS_TYPE_INT> plannedChannels = courtesyAddresses.stream()
                 .map(CourtesyDigitalAddressInt::getType)
+                .filter(type -> type != CourtesyDigitalAddressInt.COURTESY_DIGITAL_ADDRESS_TYPE_INT.SMS || smsEnabled)
                 .toList();
 
         for (CourtesyDigitalAddressInt address : courtesyAddresses) {
             log.info("Dispatching courtesy message for IUN: {}, recIndex: {}, addressType: {}", notification.getIun(), recIndex, address.getType());
-            if(address.getType() == CourtesyDigitalAddressInt.COURTESY_DIGITAL_ADDRESS_TYPE_INT.SMS && !Boolean.TRUE.equals(pnWorkflowManagerConfigs.getSmsCourtesyEnabled())) {
+            if(address.getType() == CourtesyDigitalAddressInt.COURTESY_DIGITAL_ADDRESS_TYPE_INT.SMS && !smsEnabled) {
                 log.info("SMS courtesy messages are disabled. Skipping SMS dispatch for IUN: {}, recIndex: {}", notification.getIun(), recIndex);
                 continue;
             }
