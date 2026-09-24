@@ -12,11 +12,11 @@
     "ActionQueueDetailType": "POST_ACCEPTED_PROCESSING_COMPLETED,START_WORKFLOW,TIMEOUT_WORKFLOW,END_WORKFLOW,WORKFLOW_DONE,DOCUMENT_CREATION_RESPONSE,SEND_CHANNEL_MESSAGE,SEND_COURTESY_MESSAGE_ACTION",
     "WorkflowManagerCxId": "pn-workflow-manager",
     "CampaignEventsDeduplicationTtlDays": "7",
-    "DeduplicationManagementEnabled": "true",
+    "DeduplicationManagementEnabled": "false",
     "PnTimelinesTableName": "pn-Timelines",
     "CampaignMonitoringDigitalChannels": "[\"IO\",\"EMAIL\",\"PEC\",\"SMS\"]",
     "CampaignMonitoringAnalogChannels": "[\"RS\"]",
     "CampaignMonitoringViewChannels": "[\"IO\",\"WEB\"]",
-    "CampaignMonitoringDeliveredChannels": "[\"IO\",\"EMAIL\",\"PEC\",\"SMS\",\"RS\"]"
+    "CampaignMonitoringDeliveredChannels": "[\"IO\",\"EMAIL\",\"PEC\",\"SMS\",\"ANALOG\"]"
   }
 }

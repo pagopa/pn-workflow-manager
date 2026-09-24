@@ -183,7 +183,7 @@ components:
             - EMAIL
             - PEC
             - SMS
-            - RS
+            - ANALOG
           properties:
             IO:
               type: integer
@@ -197,7 +197,7 @@ components:
             SMS:
               type: integer
               example: 12000
-            RS:
+            ANALOG:
               type: integer
               example: 410
         viewed:

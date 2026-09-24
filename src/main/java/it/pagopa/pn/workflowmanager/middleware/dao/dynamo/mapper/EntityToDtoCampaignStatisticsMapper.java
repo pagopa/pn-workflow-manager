@@ -47,7 +47,7 @@ public class EntityToDtoCampaignStatisticsMapper {
                 .EMAIL(checkValue(entity.getReceivedEMAIL()))
                 .PEC(checkValue(entity.getReceivedPEC()))
                 .SMS(checkValue(entity.getReceivedSMS()))
-                .RS(checkValue(entity.getReceivedRS()));
+                .ANALOG(checkValue(entity.getReceivedAnalog()));
     }
 
     private static CampaignStatsViewed mapViewed(CampaignStatisticsEntity entity) {

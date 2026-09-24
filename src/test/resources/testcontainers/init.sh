@@ -183,12 +183,6 @@ aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
         AttributeName=campaignId,KeyType=HASH \
     --provisioned-throughput \
         ReadCapacityUnits=10,WriteCapacityUnits=5
-echo "Add example of CampaignStatistics's item"
-aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
-    dynamodb put-item \
-    --table-name pn-CampaignStatistics \
-    --item '{"campaignId":{"S":"FattOrd"},"totalSent":{"N":"12"},"totalAccepted":{"N":"10"},"totalRefused":{"N":"1"},"totalUndeliverable":{"N":"1"},"totalDelivered":{"N":"9"},"workflowDone":{"N":"7"},"digitalSentIO":{"N":"2"},"digitalSentEMAIL":{"N":"3"},"digitalSentPEC":{"N":"1"},"digitalSentSMS":{"N":"4"},"analogSentRS":{"N":"2"},"receivedIO":{"N":"1"},"receivedEMAIL":{"N":"2"},"receivedPEC":{"N":"1"},"receivedRS":{"N":"3"},"receivedSMS":{"N":"2"},"viewedIO":{"N":"4"},"viewedSEND":{"N":"3"},"firstViewedCount":{"N":"2"},"paid":{"N":"5"},"lastCompletedTimestamp":{"S":"2026-09-15T10:30:00Z"}}'
-
 echo "### INSERT TEST CAMPAIGNS - OK CASES ###"
 
 Campaigns_ok=(

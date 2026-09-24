@@ -34,7 +34,7 @@ class EntityToDtoCampaignStatisticsMapperTest {
         entity.setReceivedEMAIL(31000);
         entity.setReceivedPEC(9800);
         entity.setReceivedSMS(10);
-        entity.setReceivedRS(410);
+        entity.setReceivedAnalog(410);
 
         entity.setViewedIO(600);
         entity.setViewedSEND(400);
@@ -77,7 +77,7 @@ class EntityToDtoCampaignStatisticsMapperTest {
         assertThat(dto.getStats().getDelivered().getIO()).isEqualTo(72000);
         assertThat(dto.getStats().getDelivered().getEMAIL()).isEqualTo(31000);
         assertThat(dto.getStats().getDelivered().getPEC()).isEqualTo(9800);
-        assertThat(dto.getStats().getDelivered().getRS()).isEqualTo(410);
+        assertThat(dto.getStats().getDelivered().getANALOG()).isEqualTo(410);
         assertThat(dto.getStats().getDelivered().getSMS()).isEqualTo(10);
 
         // Dettaglio viewed

@@ -26,7 +26,7 @@ describe("timelineMetrics", () => {
         expect(metrics.DIGITAL_CHANNELS).to.deep.equal(["IO", "EMAIL", "PEC", "SMS"]);
         expect(metrics.ANALOG_CHANNELS).to.deep.equal(["RS"]);
         expect(metrics.VIEW_CHANNELS).to.deep.equal(["IO", "WEB"]);
-        expect(metrics.DELIVERED_CHANNELS).to.deep.equal(["IO", "EMAIL", "PEC", "SMS", "RS"]);
+        expect(metrics.DELIVERED_CHANNELS).to.deep.equal(["IO", "EMAIL", "PEC", "SMS", "ANALOG"]);
     });
 
     describe("Logica delle Metriche", () => {
@@ -202,11 +202,11 @@ describe("timelineMetrics", () => {
         it("handles DELIVERED by channel", () => {
             const counters = {};
             const ok = metrics.applyCategoryMetric(counters, "DELIVERED", {
-                details: {channel: "RS"}
+                details: {channel: "ANALOG"}
             });
 
             expect(ok).to.be.true;
-            expect(counters.receivedRS).to.equal(1);
+            expect(counters.receivedANALOG).to.equal(1);
         });
 
         it("rejects DELIVERED without a valid channel", () => {

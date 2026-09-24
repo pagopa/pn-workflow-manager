@@ -2,7 +2,7 @@ const { parseEnvJson } = require("./jsonUtils");
 const DIGITAL_CHANNELS = parseEnvJson("CAMPAIGN_MONITORING_DIGITAL_CHANNELS", ["IO", "EMAIL", "PEC", "SMS"]);
 const ANALOG_CHANNELS = parseEnvJson("CAMPAIGN_MONITORING_ANALOG_CHANNELS", ["RS"]);
 const VIEW_CHANNELS = parseEnvJson("CAMPAIGN_MONITORING_VIEW_CHANNELS", ["IO", "WEB"]);
-const DELIVERED_CHANNELS = parseEnvJson("CAMPAIGN_MONITORING_DELIVERED_CHANNELS", ["IO", "EMAIL", "PEC", "SMS", "RS"]);
+const DELIVERED_CHANNELS = parseEnvJson("CAMPAIGN_MONITORING_DELIVERED_CHANNELS", ["IO", "EMAIL", "PEC", "SMS", "ANALOG"]);
 
 /**
  * Verifica se l'evento ha comportato un cambio di stato verso lo stato atteso,
