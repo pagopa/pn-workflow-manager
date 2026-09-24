@@ -102,10 +102,19 @@ public class AddressBookServiceImpl implements AddressBookService {
         return configs.getConsentsForPlatformSearch().stream().allMatch(configConsent ->
                 consents.stream().anyMatch(consent ->
                         configConsent.getType().equals(consent.getConsentType().getValue()) &&
-                                configConsent.getVersion() <= Integer.parseInt(consent.getConsentVersion()) &&
+                                isVersionAtLeast(configConsent.getVersion(), consent.getConsentVersion()) &&
                                 Boolean.TRUE.equals(consent.getAccepted())
                 )
         );
+    }
+
+    private boolean isVersionAtLeast(int requiredVersion, String actualVersion) {
+        try {
+            return requiredVersion <= Integer.parseInt(actualVersion);
+        } catch (NumberFormatException e) {
+            log.debug("Invalid consent version format: {}", actualVersion);
+            return false;
+        }
     }
 
 }
