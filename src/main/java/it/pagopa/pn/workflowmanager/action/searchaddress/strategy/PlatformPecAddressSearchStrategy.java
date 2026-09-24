@@ -39,28 +39,29 @@ public class PlatformPecAddressSearchStrategy implements SyncAddressSearchStrate
         log.info("Starting PLATFORM PEC address search - iun={} recipientIndex={} senderId={} recipientId={}",
                 context.notification().getIun(), context.recipientIndex(), senderId, recipientId);
 
-        if (!addressBookService.areMandatoryConsentsAccepted(recipientId, cxId)) {
+        Boolean mandatoryConsentsAccepted = addressBookService.areMandatoryConsentsAccepted(recipientId, cxId);
+
+        if (Boolean.FALSE.equals(mandatoryConsentsAccepted)) {
             log.info("TOS not accepted for PLATFORM PEC search - senderId={} recipientId={}", senderId, recipientId);
             return SourceSearchOutcome.tosNotAccepted(DigitalAddressSourceInt.PLATFORM);
         }
 
-        return getPlatformAddresses(recipientId, senderId);
+        return getPlatformAddresses(recipientId, senderId, mandatoryConsentsAccepted);
     }
 
-    public SourceSearchOutcome getPlatformAddresses(String recipientId, String senderId) {
+    public SourceSearchOutcome getPlatformAddresses(String recipientId, String senderId, Boolean mandatoryConsentsAccepted) {
         Optional<LegalDigitalAddressInt> optLegalDigitalAddress = addressBookService.getPlatformAddresses(recipientId, senderId);
 
         log.info("GetLegalAddress OK - senderId={}", senderId);
 
         if(optLegalDigitalAddress.isEmpty()) {
-            log.debug("PLATFORM PEC address not found - senderId={} recipientId={}", senderId, recipientId);
-            return SourceSearchOutcome.notFound(DigitalAddressSourceInt.PLATFORM);
+            log.debug("PLATFORM PEC address not found - senderId={} recipientId={} consentsAccepted={}", senderId, recipientId, mandatoryConsentsAccepted);
+            return SourceSearchOutcome.notFound(DigitalAddressSourceInt.PLATFORM, mandatoryConsentsAccepted);
         }
 
         LegalDigitalAddressInt legalDigitalAddress = optLegalDigitalAddress.get();
         InformalDigitalAddressInt informalDigitalAddress = AddressMapper.externalToInternal(legalDigitalAddress);
-        log.info("PLATFORM PEC address found - senderId={} recipientId={} type={}", senderId, recipientId, informalDigitalAddress.getType());
-        return SourceSearchOutcome.found(DigitalAddressSourceInt.PLATFORM, informalDigitalAddress);
-
+        log.info("PLATFORM PEC address found - senderId={} recipientId={} type={} consentsAccepted={}", senderId, recipientId, informalDigitalAddress.getType(), mandatoryConsentsAccepted);
+        return SourceSearchOutcome.found(DigitalAddressSourceInt.PLATFORM, informalDigitalAddress, mandatoryConsentsAccepted);
     }
 }
