@@ -7,17 +7,25 @@ public record SourceSearchOutcome(
       DigitalAddressSourceInt source,
       boolean found,
       InformalDigitalAddressInt address,
-      boolean tosAccepted
+      Boolean tosAccepted
 ) {
     public static SourceSearchOutcome tosNotAccepted(DigitalAddressSourceInt source) {
         return new SourceSearchOutcome(source, false, null, false);
     }
 
     public static SourceSearchOutcome notFound(DigitalAddressSourceInt source) {
-        return new SourceSearchOutcome(source, false, null, true);
+        return notFound(source, null);
+    }
+
+    public static SourceSearchOutcome notFound(DigitalAddressSourceInt source, Boolean tosAccepted) {
+        return new SourceSearchOutcome(source, false, null, tosAccepted);
     }
 
     public static SourceSearchOutcome found(DigitalAddressSourceInt source, InformalDigitalAddressInt address) {
-        return new SourceSearchOutcome(source, true, address, true);
+        return found(source, address, null);
+    }
+
+    public static SourceSearchOutcome found(DigitalAddressSourceInt source, InformalDigitalAddressInt address, Boolean tosAccepted) {
+        return new SourceSearchOutcome(source, true, address, tosAccepted);
     }
 }

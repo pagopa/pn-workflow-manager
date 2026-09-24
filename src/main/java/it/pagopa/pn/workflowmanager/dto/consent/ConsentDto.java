@@ -6,9 +6,10 @@ import lombok.experimental.SuperBuilder;
 @Setter
 @Getter
 @AllArgsConstructor
+@NoArgsConstructor
 @ToString
 @SuperBuilder( toBuilder = true )
 public class ConsentDto {
-    private final String type;
-    private final int version;
+    private String type;
+    private int version;
 }

@@ -79,7 +79,7 @@ class PnExternalChannelsClientImplTest {
         verify(digitalLegalMessagesApi).sendDigitalLegalMessage(eq(requestId), eq(cxId), requestCaptor.capture());
 
         DigitalNotificationRequest sent = requestCaptor.getValue();
-        assertEquals(DigitalNotificationRequest.ChannelEnum.PEC, sent.getChannel());
+        assertEquals(DigitalNotificationRequest.ChannelEnum.SERCQ, sent.getChannel());
         assertEquals(requestId, sent.getRequestId());
         assertEquals(requestId, sent.getCorrelationId());
         assertEquals("INFORMAL", sent.getEventType());

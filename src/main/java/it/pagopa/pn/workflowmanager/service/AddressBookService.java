@@ -11,5 +11,5 @@ public interface AddressBookService {
 
     List<CourtesyDigitalAddressInt> getCourtesyAddress(String recipientId, String senderId);
 
-    boolean areMandatoryConsentsAccepted(String recipientId, String cxId);
+    Boolean areMandatoryConsentsAccepted(String recipientId, String cxId);
 }

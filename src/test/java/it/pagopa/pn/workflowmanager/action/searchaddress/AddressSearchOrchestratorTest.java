@@ -14,7 +14,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 
 import static org.mockito.Mockito.*;
 
@@ -39,7 +38,7 @@ class AddressSearchOrchestratorTest {
     void handleDelegatesToProgressorWithConfiguredSources() {
         AddressSearchContext context = buildContext();
         List<DigitalAddressSourceInt> sources = List.of(DigitalAddressSourceInt.PLATFORM, DigitalAddressSourceInt.SPECIAL);
-        when(configResolver.resolveSources(ChannelType.PEC, context.sentAt())).thenReturn(Optional.of(sources));
+        when(configResolver.resolveSources(ChannelType.PEC, context.sentAt())).thenReturn(sources);
 
         orchestrator.start(context);
 
@@ -51,7 +50,7 @@ class AddressSearchOrchestratorTest {
     void handleDelegatesToProgressorWithSpecialWhenNoSourcesAreConfigured() {
         AddressSearchContext context = buildContext();
         List<DigitalAddressSourceInt> sources = List.of(DigitalAddressSourceInt.SPECIAL);
-        when(configResolver.resolveSources(ChannelType.PEC, context.sentAt())).thenReturn(Optional.empty());
+        when(configResolver.resolveSources(ChannelType.PEC, context.sentAt())).thenReturn(sources);
 
         orchestrator.start(context);
 
@@ -84,7 +83,7 @@ class AddressSearchOrchestratorTest {
         AddressSearchContext context = buildContext();
         List<DigitalAddressSourceInt> sources = List.of(DigitalAddressSourceInt.PLATFORM, DigitalAddressSourceInt.SPECIAL);
         SourceSearchOutcome outcome = SourceSearchOutcome.notFound(DigitalAddressSourceInt.PLATFORM);
-        when(configResolver.resolveSources(ChannelType.PEC, context.sentAt())).thenReturn(Optional.of(sources));
+        when(configResolver.resolveSources(ChannelType.PEC, context.sentAt())).thenReturn(sources);
 
         orchestrator.resume(context, DigitalAddressSourceInt.PLATFORM, outcome);
 
@@ -97,7 +96,7 @@ class AddressSearchOrchestratorTest {
         AddressSearchContext context = buildContext();
         List<DigitalAddressSourceInt> defaultSources = List.of(DigitalAddressSourceInt.SPECIAL);
         SourceSearchOutcome outcome = SourceSearchOutcome.notFound(DigitalAddressSourceInt.SPECIAL);
-        when(configResolver.resolveSources(ChannelType.PEC, context.sentAt())).thenReturn(Optional.empty());
+        when(configResolver.resolveSources(ChannelType.PEC, context.sentAt())).thenReturn(List.of(DigitalAddressSourceInt.SPECIAL));
 
         orchestrator.resume(context, DigitalAddressSourceInt.SPECIAL, outcome);
 

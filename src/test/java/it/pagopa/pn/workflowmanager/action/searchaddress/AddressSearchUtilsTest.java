@@ -91,7 +91,7 @@ class AddressSearchUtilsTest {
                 true,
                 context.attempt(),
                 null,
-                true,
+                null,
                 ChannelType.PEC.name()
         )).thenReturn(timelineElement);
 
