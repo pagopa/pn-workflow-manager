@@ -190,7 +190,7 @@ class AddressBookServiceImplTest {
         when(configs.getConsentsForPlatformSearch()).thenReturn(List.of(ConsentDto.builder().type(ConsentType.TOS.getValue()).version(1).build()));
 
         // when
-        Boolean result = addressBookService.areMandatoryConsentsAccepted(RECIPIENT_ID, CX_ID);
+        Boolean result = addressBookService.areMandatoryConsentsAccepted("PF-MAnu", CX_ID);
 
         // then
         assertFalse(result);

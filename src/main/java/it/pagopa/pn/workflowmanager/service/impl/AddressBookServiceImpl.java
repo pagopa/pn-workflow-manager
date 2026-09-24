@@ -89,7 +89,9 @@ public class AddressBookServiceImpl implements AddressBookService {
             return null;
         }
 
-        List<Consent> consents = userAttributesClient.getConsents(recipientId, CxTypeAuthFleet.fromValue(cxId));
+        String recipientIdWithoutPrefix = recipientId.replace("PF-", "").replace("PG-", "");
+
+        List<Consent> consents = userAttributesClient.getConsents(recipientIdWithoutPrefix, CxTypeAuthFleet.fromValue(cxId));
         boolean thereAreConsentsToCheck = !CollectionUtils.isEmpty(configs.getConsentsForPlatformSearch());
         if (CollectionUtils.isEmpty(consents) && thereAreConsentsToCheck) {
             log.debug("Mandatory consents not accepted - recipientId={} cxId={}", recipientId, cxId);
