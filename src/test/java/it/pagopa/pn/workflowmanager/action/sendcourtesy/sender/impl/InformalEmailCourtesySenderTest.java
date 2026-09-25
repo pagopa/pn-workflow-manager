@@ -4,11 +4,12 @@ import it.pagopa.pn.commons.log.PnAuditLogEvent;
 import it.pagopa.pn.commons.log.PnAuditLogEventType;
 import it.pagopa.pn.workflowmanager.action.sendcourtesy.CourtesyMessageUtils;
 import it.pagopa.pn.workflowmanager.action.sendcourtesy.CourtesyRetryableErrorClassifier;
-import it.pagopa.pn.workflowmanager.action.utils.ChannelSenderUtils;
+import it.pagopa.pn.workflowmanager.action.utils.AttachmentUtils;
 import it.pagopa.pn.workflowmanager.config.PnWorkflowManagerConfigs;
 import it.pagopa.pn.workflowmanager.dto.address.CourtesyDigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.courtesy.CourtesySendOutcome;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.CommunicationType;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
@@ -18,6 +19,7 @@ import it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.externalc
 import it.pagopa.pn.workflowmanager.service.AuditLogService;
 import it.pagopa.pn.workflowmanager.service.CampaignService;
 import it.pagopa.pn.workflowmanager.service.TemplateGeneratorService;
+import it.pagopa.pn.workflowmanager.utils.SendAttachmentMode;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -38,7 +40,7 @@ class InformalEmailCourtesySenderTest {
     @Mock private PnExternalChannelsClient pnExternalChannelsClient;
     @Mock private TemplateGeneratorService templateGeneratorService;
     @Mock private CampaignService campaignService;
-    @Mock private ChannelSenderUtils channelSenderUtils;
+    @Mock private AttachmentUtils attachmentUtils;
     @Mock private CourtesyRetryableErrorClassifier retryableErrorClassifier;
     @Mock private CourtesyMessageUtils courtesyMessageUtils;
 
@@ -73,7 +75,9 @@ class InformalEmailCourtesySenderTest {
         when(templateGeneratorService.generateCourtesyEmailSubjectTemplate(notification, recipient)).thenReturn("subject");
         when(templateGeneratorService.generateCourtesyEmailBodyTemplate(notification, recipient, campaign)).thenReturn("body");
         when(configs.getEmailCourtesyRequiresAttachments()).thenReturn(true);
-        when(channelSenderUtils.resolveAttachmentsForChannel(any(), anyInt(), any(), any())).thenReturn(List.of("attachment1"));
+        SendAttachmentMode sendAttachmentMode = SendAttachmentMode.fromValue("DOCUMENTS");
+        when(attachmentUtils.retrieveAttachmentTypesToSend(notification, ChannelType.EMAIL)).thenReturn(sendAttachmentMode);
+        when(attachmentUtils.retrieveAttachments(notification, 0, sendAttachmentMode, false)).thenReturn(List.of("attachment1"));
         PnAuditLogEvent auditLogEvent = mock(PnAuditLogEvent.class);
         when(auditLogService.buildAuditLogEvent("IUN-1", 0, PnAuditLogEventType.AUD_COM_SEND_EMAIL_COURTESY, "Sending courtesy email for notification {} to recipient {} with requestId {}", "IUN-1", 0, "SEND_COURTESY_MESSAGE.IUN_IUN-1.RECINDEX_0.COURTESYADDRESSTYPE_EMAIL")).thenReturn(auditLogEvent);
         when(auditLogEvent.generateSuccess(anyString(), anyString(), anyInt())).thenReturn(auditLogEvent);
@@ -83,6 +87,37 @@ class InformalEmailCourtesySenderTest {
         verify(pnExternalChannelsClient).sendNotificationEMAIL(any(), any(), any(), any(), any(), any(), any(), eq(ExternalChannelEventType.COURTESY));
         verify(courtesyMessageUtils).addSendCourtesyMessageToTimeline(any(), any(), any(), any(), any(), any());
         verify(auditLogEvent).generateSuccess("Courtesy email sent successfully - iun={} id={}", "IUN-1", 0);
+        assertEquals(CourtesySendOutcome.SENT, outcome);
+    }
+
+    @Test
+    void sendReturnsSentWithoutAttachmentWhenConfigIsDisabled() {
+        NotificationRecipientInt recipient = NotificationRecipientInt.builder().internalId("r1").build();
+        NotificationInt notification = NotificationInt.builder()
+                .iun("IUN-1")
+                .campaignId("c1")
+                .recipients(List.of(recipient))
+                .sender(NotificationSenderInt.builder().paId(null).build())
+                .build();
+        CourtesyDigitalAddressInt address = CourtesyDigitalAddressInt.builder()
+                .type(CourtesyDigitalAddressInt.COURTESY_DIGITAL_ADDRESS_TYPE_INT.EMAIL)
+                .address("a@b.it")
+                .build();
+        Campaign campaign = Campaign.builder().build();
+        when(campaignService.getCampaignByCampaignIdAndSenderId("c1", null)).thenReturn(campaign);
+        when(templateGeneratorService.generateCourtesyEmailSubjectTemplate(notification, recipient)).thenReturn("subject");
+        when(templateGeneratorService.generateCourtesyEmailBodyTemplate(notification, recipient, campaign)).thenReturn("body");
+        when(configs.getEmailCourtesyRequiresAttachments()).thenReturn(false);
+        PnAuditLogEvent auditLogEvent = mock(PnAuditLogEvent.class);
+        when(auditLogService.buildAuditLogEvent("IUN-1", 0, PnAuditLogEventType.AUD_COM_SEND_EMAIL_COURTESY, "Sending courtesy email for notification {} to recipient {} with requestId {}", "IUN-1", 0, "SEND_COURTESY_MESSAGE.IUN_IUN-1.RECINDEX_0.COURTESYADDRESSTYPE_EMAIL")).thenReturn(auditLogEvent);
+        when(auditLogEvent.generateSuccess(anyString(), anyString(), anyInt())).thenReturn(auditLogEvent);
+
+        CourtesySendOutcome outcome = sender.send(notification, address, 0);
+
+        verify(pnExternalChannelsClient).sendNotificationEMAIL(any(), any(), any(), any(), any(), any(), any(), eq(ExternalChannelEventType.COURTESY));
+        verify(courtesyMessageUtils).addSendCourtesyMessageToTimeline(any(), any(), any(), any(), any(), any());
+        verify(auditLogEvent).generateSuccess("Courtesy email sent successfully - iun={} id={}", "IUN-1", 0);
+        verifyNoInteractions(attachmentUtils);
         assertEquals(CourtesySendOutcome.SENT, outcome);
     }
 
