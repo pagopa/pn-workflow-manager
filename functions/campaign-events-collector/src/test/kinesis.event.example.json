@@ -1,0 +1,47 @@
+{
+  "Records": [
+    {
+      "kinesis": {
+        "sequenceNumber": "49651151769547260642845689623061309776858789665900068930",
+        "data": {
+          "eventName": "INSERT",
+          "dynamodb": {
+            "NewImage": {
+              "iun": { "S": "XHRX-MYNM-YVHA-202609-D-A" },
+              "timelineElementId": { "S": "REQUEST_ACCEPTED.IUN_XHRX-MYNM-YVHA-202609-D-A" },
+              "businessTimestamp": { "S": "2026-09-03T08:45:42.450368271Z" },
+              "campaignId": { "S": "FattOrd" },
+              "category": { "S": "REQUEST_ACCEPTED" },
+              "communicationType": { "S": "INFORMAL" },
+              "details": {
+                "M": {
+                  "nextSourceAttemptsMade": { "N": 0 },
+                  "notificationRequestId": { "S": "WEhSWC1NWU5NLVlWSEEtMjAyNjA5LUQtQQ==" },
+                  "paProtocolNumber": { "S": "20260903104511" }
+                }
+              },
+              "legalFactId": { "L": [] },
+              "notificationSentAt": { "S": "2026-09-03T08:45:12.198565379Z" },
+              "paId": { "S": "5b994d4a-0fa8-47ac-9c7b-354f1d44a1ce" },
+              "statusInfo": {
+                "M": {
+                  "actual": { "S": "ACCEPTED" },
+                  "statusChanged": { "BOOL": true },
+                  "statusChangeTimestamp": { "S": "2026-09-03T08:45:42.504231297Z" }
+                }
+              },
+              "timestamp": { "S": "2026-09-03T08:45:42.450368271Z" }
+            }
+          }
+        }
+      },
+      "eventSource": "aws:kinesis",
+      "eventVersion": "1.0",
+      "eventID": "shardId-000000000004:49651151769547260642845689623061309776858789665900068930",
+      "eventName": "aws:kinesis:record",
+      "invokeIdentityArn": "arn:aws:iam::830192246553:role/PocWrite-PocActionEnqueuerLambdaRole-u7ogpX8zivgF",
+      "awsRegion": "eu-central-1",
+      "eventSourceARN": "arn:aws:kinesis:eu-central-1:830192246553:stream/pn-deleted-actions"
+    }
+  ]
+}

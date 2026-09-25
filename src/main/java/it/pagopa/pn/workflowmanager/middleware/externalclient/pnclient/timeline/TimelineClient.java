@@ -1,12 +1,12 @@
 package it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.timeline;
 
 import it.pagopa.pn.commons.log.PnLogger;
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.model.NotificationHistoryResponse;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.AddTimelineElementResponse;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementDetailsInt;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.model.NotificationHistoryResponse;
 
 import java.time.Instant;
 import java.util.List;

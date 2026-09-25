@@ -1,7 +1,6 @@
 package it.pagopa.pn.workflowmanager.dto.timeline.details;
 
 import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
-import it.pagopa.pn.workflowmanager.dto.address.LegalDigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.address.PhysicalAddressInt;
 import it.pagopa.pn.workflowmanager.utils.AuditLogUtils;
 import lombok.*;

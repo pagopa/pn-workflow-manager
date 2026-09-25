@@ -60,6 +60,11 @@
 		</dependency>
 
 		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+
+		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-stream</artifactId>
 		</dependency>
@@ -142,7 +147,44 @@
 				<groupId>org.openapitools</groupId>
 				<artifactId>openapi-generator-maven-plugin</artifactId>
 				<version>7.4.0</version>
-				<executions>					
+				<executions>
+					<!-- OPEN API CAMPAIGNS MONITORING -->
+					<execution>
+						<phase>generate-resources</phase>
+						<id>pn-workflowmanager-campaigns-internal</id>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<configuration>
+							<typeMappings>
+								<typeMapping>OffsetDateTime=java.time.Instant</typeMapping>
+							</typeMappings>
+							<importMappings><importMapping>java.time.OffsetDateTime=java.time.Instant</importMapping></importMappings>
+							<inputSpec>${project.basedir}/docs/openapi/campaigns-api-internal.yaml</inputSpec>
+							<generatorName>spring</generatorName>
+							<library>spring-boot</library>
+							<generateApiDocumentation>false</generateApiDocumentation>
+							<generateApiTests>false</generateApiTests>
+							<generateModelTests>false</generateModelTests>
+							<configOptions>
+								<useSpringBoot3>true</useSpringBoot3>
+								<dateLibrary>java8</dateLibrary>
+								<delegatePattern>true</delegatePattern>
+								<interfaceOnly>true</interfaceOnly>
+								<annotationLibrary>none</annotationLibrary>
+								<documentationProvider>source</documentationProvider>
+								<openApiNullable>false</openApiNullable>
+								<reactive>false</reactive>
+								<skipDefaultInterface>false</skipDefaultInterface>
+								<useTags>true</useTags>
+								<basePackage>${project.groupId}.workflowmanager.generated.openapi.server.v1</basePackage>
+								<modelPackage>${project.groupId}.workflowmanager.generated.openapi.server.v1.dto</modelPackage>
+								<apiPackage>${project.groupId}.workflowmanager.generated.openapi.server.v1.api</apiPackage>
+								<configPackage>${project.groupId}.workflowmanager.generated.openapi.server.v1.config</configPackage>
+							</configOptions>
+						</configuration>
+					</execution>
+
 					<!-- OPEN API CLIENT PN-DELIVERY -->
 					<execution>
 						<phase>generate-resources</phase>
@@ -189,7 +231,7 @@
 						<phase>generate-resources</phase>
 						<configuration>
 							<inputSpec>
-								https://raw.githubusercontent.com/pagopa/pn-timeline-service/9cc27c61aeb37a7f3d5ffff12b0bb80384d229a3/docs/openapi/pn-timeline-service-private.yaml
+								https://raw.githubusercontent.com/pagopa/pn-timeline-service/63d88695e433ff698f15b74fbb637b24685ca088/docs/openapi/pn-timeline-service-private.yaml
 							</inputSpec>
 							<templateDirectory>${project.build.directory}/dependency-resources/scripts/openapi/templates/7.4.0/client</templateDirectory>
 							<generatorName>java</generatorName>

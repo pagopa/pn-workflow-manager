@@ -1294,6 +1294,56 @@ class TimelineUtilsTest {
         assertEquals(eventTimestamp, details.getEventTimestamp());
     }
 
+    @Test
+    void buildInformalNotificationViewedTimelineElement() {
+        NotificationInt notification = createNotification();
+        String sourceChannel = "WEB";
+        String sourceChannelDetails = "PORTAL";
+        Instant eventTimestamp = Instant.now();
+        String eventId = TimelineUtils.getInformalNotificationViewedTimelineElementId(TEST_REC_INDEX, TEST_IUN, sourceChannel);
+
+        TimelineElementInternal actual = timelineUtils.buildInformalNotificationViewedTimelineElement(
+                notification,
+                TEST_REC_INDEX,
+                eventId,
+                eventTimestamp,
+                sourceChannel,
+                sourceChannelDetails,
+                true
+        );
+
+        assertAll(
+                () -> assertEquals(TEST_IUN, actual.getIun()),
+                () -> assertEquals(INFORMAL_NOTIFICATION_VIEWED, actual.getCategory()),
+                () -> assertEquals(eventId, actual.getElementId()),
+                () -> assertEquals(TEST_PA_ID, actual.getPaId()),
+                () -> assertNotNull(actual.getTimestamp()),
+                () -> assertNotNull(actual.getDetails()),
+                () -> assertInstanceOf(InformalNotificationViewedDetailsInt.class, actual.getDetails())
+        );
+
+        InformalNotificationViewedDetailsInt details = (InformalNotificationViewedDetailsInt) actual.getDetails();
+        assertAll(
+                () -> assertEquals(TEST_REC_INDEX, details.getRecIndex()),
+                () -> assertEquals(eventTimestamp, details.getEventTimestamp()),
+                () -> assertEquals(sourceChannel, details.getSourceChannel()),
+                () -> assertEquals(sourceChannelDetails, details.getSourceChannelDetails()),
+                () -> assertTrue(details.isFirstView())
+        );
+    }
+
+    @Test
+    void getInformalNotificationViewedTimelineElementId() {
+        String sourceChannel = "WEB";
+        String result = TimelineUtils.getInformalNotificationViewedTimelineElementId(TEST_REC_INDEX, TEST_IUN, sourceChannel);
+
+        assertAll(
+                () -> assertNotNull(result),
+                () -> assertTrue(result.contains(TEST_IUN)),
+                () -> assertTrue(result.contains(sourceChannel))
+        );
+    }
+
     private TimelineElementInternal createTimelineElement(TimelineElementCategoryInt category, int recIndex) {
         RecipientRelatedTimelineElementDetails details = new RecipientRelatedTimelineElementDetails() {
             @Override

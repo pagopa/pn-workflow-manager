@@ -335,6 +335,107 @@ Parameters:
     Type: String
     Description: 'External channel base url'
 
+  CampaignStatisticsTableName:
+    Type: String
+    Description: Name of dynamodb table containing campaign's statistics
+
+  CampaignStatisticsTableArn:
+    Type: String
+    Description: ARN of dynamodb table containing campaign's statistics
+
+  CampaignEventsDeduplicationTableName:
+    Type: String
+    Description: Name of dynamodb table containing campaign's events deduplication
+
+  CampaignEventsDeduplicationTableArn:
+    Type: String
+    Description: ARN of dynamodb table containing campaign's events deduplication
+
+  PnTimelinesTableName:
+    Type: String
+    Description: Name of PN timelines table used by CDC filtering
+
+  CampaignEventsCollectorLambdaName:
+    Type: String
+    Description: Name of the lambda that manages and updates statistics
+
+  # OpenApi Bucket params
+  MicroserviceBucketName:
+    Type: String
+    Default: ''
+    Description: 'Name of the bucket where the microservice files are copied during deploy'
+
+  CdcKinesisSourceStreamName:
+    Type: String
+    Description: 'Kinesis source CDC stream name'
+
+  CdcKinesisSourceStreamArn:
+    Type: String
+    Description: 'Where to send CDC'
+
+  CdcKinesisSourceStreamKeyArn:
+    Description: "Kinesis source CDC stream crypto key ARN"
+    Type: String
+
+  MaximumRetryAttemptsValue:
+    Type: Number
+    Description: 'Maximum number of retries'
+    Default: 5
+
+  CampaignEventsCollectorMaximumRecordAge:
+    Type: Number
+    Description: "Maximum record age in seconds for CampaignEventsCollectorLambdaKinesisSource"
+    Default: 604800 # 7 days
+
+  ESMKinesisFailureNotificationsBucketName:
+    Type: String
+    Description: "S3 bucket name for ESM Kinesis failure notifications"
+
+  MicroserviceBucketBaseKey:
+    Type: String
+    Default: ''
+    Description: 'Base key of the microservice in the s3 bucket'
+
+  CampaignEventsCollectorLambdaBatchSize:
+    Type: Number
+    Default: 60
+    Description: Batch size for lambda triggering
+
+  CampaignEventsCollectorLambdaMaximumBatchingWindowInSeconds:
+    Type: Number
+    Default: 20
+    Description: Batching window size for lambda triggering
+
+  CampaignEventsDeduplicationTtlDays:
+    Type: Number
+    Default: 7
+    Description: Retention window, in days, for campaign events deduplication locks
+
+  DeduplicationManagementEnabled:
+    Type: String
+    Default: true
+    Description: Enable management of campaign events deduplication
+    AllowedValues:
+      - true
+      - false
+
+  CampaignMonitoringDigitalChannels:
+    Type: String
+    Default: '["IO","EMAIL","PEC","SMS"]'
+    Description: Digital channels used by the lambda CampaignEventsCollector
+  CampaignMonitoringAnalogChannels:
+    Type: String
+    Default: '["RS"]'
+    Description: Analog channels used by the lambda CampaignEventsCollector
+  CampaignMonitoringViewChannels:
+    Type: String
+    Default: '["IO","WEB"]'
+    Description: View channels used by the lambda CampaignEventsCollector
+  CampaignMonitoringDeliveredChannels:
+    Type: String
+    Default: '["IO","EMAIL","PEC","SMS","RS"]'
+    Description: Delivered channels used by the lambda CampaignEventsCollector
+
   CpuArchitecture:
     Type: String
     Default: 'ARM'
@@ -415,12 +516,13 @@ Resources:
         ContainerEnvEntry16: !Sub 'PN_WORKFLOWMANAGER_SAFESTORAGEBASEURL=${SandboxSafeStorageBaseUrl}'
         ContainerEnvEntry17: !Sub 'PN_WORKFLOWMANAGER_TOPICS_SAFESTORAGEEVENTS=${SafeStorageToWorkflowManagerQueueName}'
         ContainerEnvEntry18: !Sub 'PN_WORKFLOWMANAGER_TOPICS_INFORMALQUEUE=${WorkflowManagerInputsQueueName}'
-        ContainerEnvEntry19: !Sub 'PN_WORKFLOWMANAGER_CAMPAIGNS_TABLE_NAME=${CampaignsTableName}'
-        ContainerEnvEntry20: !Sub 'PN_WORKFLOWMANAGER_USERATTRIBUTESBASEURL=http://${ApplicationLoadBalancerDomain}:8080'
-        ContainerEnvEntry21: !Sub 'PN_WORKFLOWMANAGER_NATIONALREGISTRIESBASEURL=http://${ApplicationLoadBalancerDomain}:8080'
-        ContainerEnvEntry22: !Sub 'PN_WORKFLOWMANAGER_TOPICS_NATIONALREGISTRIESTOWORKFLOWMANAGER=${NationalRegistries2WorkflowManagerQueueName}'
+        ContainerEnvEntry19: !Sub 'PN_WORKFLOWMANAGER_DAO_CAMPAIGNSTATISTICSTABLENAME=${CampaignStatisticsTableName}'
+        ContainerEnvEntry20: !Sub 'PN_WORKFLOWMANAGER_CAMPAIGNS_TABLE_NAME=${CampaignsTableName}'
+        ContainerEnvEntry21: !Sub 'PN_WORKFLOWMANAGER_USERATTRIBUTESBASEURL=http://${ApplicationLoadBalancerDomain}:8080'
+        ContainerEnvEntry22: !Sub 'PN_WORKFLOWMANAGER_NATIONALREGISTRIESBASEURL=http://${ApplicationLoadBalancerDomain}:8080'
+        ContainerEnvEntry23: !Sub 'PN_WORKFLOWMANAGER_TOPICS_NATIONALREGISTRIESTOWORKFLOWMANAGER=${NationalRegistries2WorkflowManagerQueueName}'
         ApplicativeEnvFileChecksum: !Ref ApplicativeEnvFileChecksum
-        MappedPaths: '/workflow-manager-not-available'
+        MappedPaths: '/workflow-private/*'
         ECSClusterName: !Ref ECSClusterName
         Subnets: !Join [ ',', !Ref SubnetsIds ]
         VpcId: !Ref VpcId
@@ -467,6 +569,9 @@ Resources:
             - !Ref SafeStorageToWorkflowManagerQueueARN
             - !Ref WorkflowManagerInputsQueueARN
             - !Ref NationalRegistries2WorkflowManagerQueueARN
+        DynamoDBTableNames: !Join
+          - ','
+          - - !Ref CampaignStatisticsTableName
         LogGroupsNames: !Join
           - ','
           - - !Sub '/aws/ecs/${ProjectName}-workflow-manager'
@@ -478,6 +583,14 @@ Resources:
       PolicyDocument:
         Version: 2012-10-17
         Statement:
+          - Effect: Allow
+            Action:
+              - dynamodb:GetItem
+              - dynamodb:Query
+              - dynamodb:BatchGetItem
+            Resource:
+              - !Sub "${CampaignStatisticsTableArn}"
+              - !Sub "${CampaignStatisticsTableArn}/*"
           - Effect: Allow
             Action:
               - sqs:ChangeMessageVisibility
@@ -911,6 +1024,151 @@ Resources:
               ArnEquals:
                 aws:SourceArn: !GetAtt PnCoreEventBusToWorkflowManagerInputsQueueRule.Arn
 
+  #########################################################
+  ###          CampaignEventsCollectorLambda            ###
+  #########################################################
+
+  # Lambda function
+  CampaignEventsCollectorLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Ref CampaignEventsCollectorLambdaName
+      Runtime: nodejs22.x
+      Handler: "index.handler"
+      Code:
+        S3Bucket: !Ref MicroserviceBucketName
+        S3Key: !Sub "${MicroserviceBucketBaseKey}/functions_zip/campaign-events-collector.zip"
+      Role: !GetAtt CampaignEventsCollectorLambdaRole.Arn
+      Environment:
+        Variables:
+          REGION: !Sub ${AWS::Region}
+          CAMPAIGN_STATISTICS_TABLE: !Sub '${CampaignStatisticsTableName}'
+          CAMPAIGN_EVENTS_DEDUPLICATION_TABLE: !Sub '${CampaignEventsDeduplicationTableName}'
+          CAMPAIGN_EVENTS_DEDUPLICATION_TTL_DAYS: !Sub '${CampaignEventsDeduplicationTtlDays}'
+          DEDUPLICATION_MANAGEMENT_ENABLED: !Sub '${DeduplicationManagementEnabled}'
+          CAMPAIGN_MONITORING_DIGITAL_CHANNELS: !Ref CampaignMonitoringDigitalChannels
+          CAMPAIGN_MONITORING_ANALOG_CHANNELS: !Ref CampaignMonitoringAnalogChannels
+          CAMPAIGN_MONITORING_VIEW_CHANNELS: !Ref CampaignMonitoringViewChannels
+          CAMPAIGN_MONITORING_DELIVERED_CHANNELS: !Ref CampaignMonitoringDeliveredChannels
+      TracingConfig:
+        Mode: Active
+      Layers:
+        - !Sub "arn:aws:lambda:${AWS::Region}:339249233099:layer:LambdaInsightsExtension:13"
+      Timeout: 10
+
+  # Lambda function role
+  CampaignEventsCollectorLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${ProjectName}-CampaignEventsCollectorLambdaRole
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+
+  # Lambda function IAM policy
+  CampaignEventsCollectorLambdaPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Sub ${ProjectName}-CampaignEventsCollectorLambdaPolicy
+      Roles:
+        - !Ref CampaignEventsCollectorLambdaRole
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - kinesis:DescribeStream
+              - kinesis:DescribeStreamSummary
+              - kinesis:GetShardIterator
+              - kinesis:GetRecords
+              - kinesis:ListShards
+              - kinesis:ListStreams
+              - kinesis:SubscribeToShard
+            Resource: !Ref CdcKinesisSourceStreamArn
+          - Effect: Allow
+            Action:
+              - dynamodb:PutItem
+              - dynamodb:UpdateItem
+              - dynamodb:GetItem
+              - dynamodb:Query
+              - dynamodb:BatchWriteItem
+            Resource:
+              - !Ref CampaignStatisticsTableArn
+              - !Ref CampaignEventsDeduplicationTableArn
+          - Action: kms:Decrypt
+            Effect: Allow
+            Resource: !Ref CdcKinesisSourceStreamKeyArn
+          - Effect: Allow
+            Action:
+              - s3:ListBucket
+              - s3:GetBucketLocation
+            Resource: !Sub arn:aws:s3:::${ESMKinesisFailureNotificationsBucketName}
+          - Effect: Allow
+            Action:
+              - s3:PutObject
+            Resource: !Sub arn:aws:s3:::${ESMKinesisFailureNotificationsBucketName}/*
+
+  # CDC to Stream Event Manager
+  CampaignEventsCollectorLambdaKinesisSource:
+    Type: AWS::Lambda::EventSourceMapping
+    DependsOn: CampaignEventsCollectorLambdaPolicy
+    Properties:
+      BatchSize: !Sub ${CampaignEventsCollectorLambdaBatchSize}
+      BisectBatchOnFunctionError: true
+      EventSourceArn: !Ref CdcKinesisSourceStreamArn
+      FunctionName: !Ref CampaignEventsCollectorLambda
+      FunctionResponseTypes:
+        - ReportBatchItemFailures
+      MaximumBatchingWindowInSeconds: !Sub ${CampaignEventsCollectorLambdaMaximumBatchingWindowInSeconds}
+      MaximumRetryAttempts: !Ref MaximumRetryAttemptsValue
+      MaximumRecordAgeInSeconds: !Ref CampaignEventsCollectorMaximumRecordAge
+      StartingPosition: LATEST
+      DestinationConfig:
+        OnFailure:
+          Destination: !Sub arn:aws:s3:::${ESMKinesisFailureNotificationsBucketName}
+      FilterCriteria:
+        Filters:
+          - Pattern: !Sub '{ "data": { "tableName": ["${PnTimelinesTableName}"], "eventName": ["INSERT"], "dynamodb": { "NewImage": { "communicationType": { "S": ["INFORMAL"] } } } } }'
+
+  CampaignEventsCollectorLambdaKinesisFailuresAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${ProjectName}-CampaignEventsCollectorLambda-ESM-Alarm"
+      AlarmDescription: "CloudWatch alarm for when CampaignEventsCollectorLambda has Kinesis stream read failures, which can indicate problems with the function processing or with the stream itself."
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref AlarmSNSTopicArn
+      OKActions:
+        - !Ref AlarmSNSTopicArn
+      Dimensions:
+        - Value: !Ref CampaignEventsCollectorLambda
+          Name: FunctionName
+        - Value: !Ref CdcKinesisSourceStreamName
+          Name: StreamName
+      DatapointsToAlarm: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 6
+      Period: 600
+      Namespace: ESM/Kinesis
+      MetricName: ProcessingFailures
+      Statistic: Maximum
+      Threshold: 1
+
+  CampaignEventsCollectorLambdaAlarms:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/lambda-alarms.yaml"
+      Parameters:
+        FunctionName: !Ref CampaignEventsCollectorLambda
+        AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
   # Send National Registries Response to pn-workflow-manager
   # pn-national-registries
   PnCoreEventBusToNationalRegistries2WorkflowManager:

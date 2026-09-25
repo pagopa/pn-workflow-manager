@@ -21,6 +21,7 @@ import java.util.List;
 @Slf4j
 public class PnWorkflowManagerConfigs {
     private Topics topics;
+    private Dao dao;
     private String cxId;
     private List<String> pnSendMode;
     private PaperChannel paperChannel;
@@ -79,6 +80,11 @@ public class PnWorkflowManagerConfigs {
                     .foreignState(senderAddress.getCountry())
                     .build();
         }
+    }
+
+    @Data
+    public static class Dao {
+        private String campaignStatisticsTableName;
     }
 
     @Data

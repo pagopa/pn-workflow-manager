@@ -1,7 +1,7 @@
 package it.pagopa.pn.workflowmanager.middleware.queue.consumer.handler;
 
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.safestorage.model.FileDownloadResponse;
 import it.pagopa.pn.workflowmanager.dto.action.details.DocumentCreationResponseActionDetails;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.safestorage.model.FileDownloadResponse;
 import it.pagopa.pn.workflowmanager.service.SchedulerService;
 import lombok.AllArgsConstructor;
 import lombok.CustomLog;

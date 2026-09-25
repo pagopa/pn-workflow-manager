@@ -1,6 +1,5 @@
 package it.pagopa.pn.workflowmanager.config.springbootcfg;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.pagopa.pn.commons.pnclients.RestTemplateFactory;
 import it.pagopa.pn.commons.pnclients.RestTemplateRetryable;
@@ -10,9 +9,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
-
-import java.time.Instant;
-import java.util.TimeZone;
 
 @Configuration
 public class RestTemplateFactoryActivation extends RestTemplateFactory {

@@ -2,7 +2,7 @@
 
 echo "### CREATE QUEUES ###"
 
-queues="pn-workflow-manager_action pn-workflow-manager_digital_event pn-workflow-manager_analog_event pn-workflow-manager_io_event pn-safestore_to_workflowmanager pn-workflow_manager_inputs"
+queues="pn-workflow-manager_action pn-workflow-manager_digital_event pn-workflow-manager_analog_event pn-workflow-manager_io_event pn-safestore_to_workflowmanager pn-workflow_manager_inputs pn-nationalregistries_to_workflowmanager"
 
 for qn in  $( echo $queues | tr " " "\n" ) ; do
 
@@ -32,32 +32,23 @@ echo "### GET QUEUE ARNs ###"
 
 ACTION_QUEUE_ARN=$(aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
     sqs get-queue-attributes \
-    --queue-url http://localstack:4566/000000000000/pn-workflow-manager-action-queue \
-    --attribute-names QueueArn \
-    --query 'Attributes.QueueArn' \
-    --output text)
+    --queue-url http://localstack:4566/000000000000/pn-workflow-manager_action \
+    --attribute-names QueueArn --query 'Attributes.QueueArn' --output text)
 
 ANALOG_QUEUE_ARN=$(aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
     sqs get-queue-attributes \
-    --queue-url http://localstack:4566/000000000000/pn-workflow-manager-analog-event-queue \
-    --attribute-names QueueArn \
-    --query 'Attributes.QueueArn' \
-    --output text)
+    --queue-url http://localstack:4566/000000000000/pn-workflow-manager_analog_event \
+    --attribute-names QueueArn --query 'Attributes.QueueArn' --output text)
 
 DIGITAL_QUEUE_ARN=$(aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
     sqs get-queue-attributes \
-    --queue-url http://localstack:4566/000000000000/pn-workflow-manager-digital-event-queue \
-    --attribute-names QueueArn \
-    --query 'Attributes.QueueArn' \
-    --output text)
+    --queue-url http://localstack:4566/000000000000/pn-workflow-manager_digital_event \
+    --attribute-names QueueArn --query 'Attributes.QueueArn' --output text)
 
 IO_QUEUE_ARN=$(aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
     sqs get-queue-attributes \
-    --queue-url http://localstack:4566/000000000000/pn-workflow-manager-io-event-queue \
-    --attribute-names QueueArn \
-    --query 'Attributes.QueueArn' \
-    --output text)
-
+    --queue-url http://localstack:4566/000000000000/pn-workflow-manager_io_event \
+    --attribute-names QueueArn --query 'Attributes.QueueArn' --output text)
 SAFESTORE_QUEUE_ARN=$(aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
     sqs get-queue-attributes \
     --queue-url http://localstack:4566/000000000000/pn-safestore_to_workflowmanager \
@@ -157,6 +148,13 @@ aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
     --event-bus-name pn-CoreEventBus \
     --event-pattern '{"detail-type":["InformalNotificationViewedEvent"]}'
 
+aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
+    ssm put-parameter \
+    --name "MVPCampaigns" \
+    --type String \
+    --overwrite \
+    --value '[{"campaignId":"FattOrd","senderId":"5b994d4a-0fa8-47ac-9c7b-354f1d44a1ce","title":"Fatturazione Ordinaria","descriptionScope":" In questa campagna, l’ente comunica l’emissione di una fattura ai suoi clienti. La comunicazione contiene gli allegati ed il pagamento.","startDate":"2026-07-10T10:00:00Z","endDate":"2026-08-10T18:00:00Z","status":"IN_PROGRESS","senderContact":"info@comune.esempio.it","serviceId":"01KP5QYVRZDDEMHCN3TV1QY1H6","serviceName":"Servizi idrici","sensitiveContent":false,"stopOnViewed":true,"taxonomyCode":"010201P","workflow":[{"channel":"IO","recipientType":["PF"],"timeout":"PT8M","desiredFeedback":["READ","PAID"],"includeAttachment":true},{"channel":"EMAIL","recipientType":["PF"],"timeout":"PT4M","desiredFeedback":["RECEIVED"],"includeAttachment":true},{"channel":"PEC","recipientType":["PG"],"timeout":"PT6M","includeAttachment":true,"desiredFeedback":["RECEIVED"]}]}]'
+
 echo "Adding target to InformalNotificationViewedEvent rule..."
 aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
     events put-targets \
@@ -176,6 +174,17 @@ aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
     --provisioned-throughput \
         ReadCapacityUnits=10,WriteCapacityUnits=5
 
+aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
+    dynamodb create-table \
+    --table-name pn-CampaignStatistics  \
+    --attribute-definitions \
+        AttributeName=senderId,AttributeType=S \
+        AttributeName=campaignId,AttributeType=S \
+    --key-schema \
+        AttributeName=senderId,KeyType=HASH \
+        AttributeName=campaignId,KeyType=RANGE \
+    --provisioned-throughput \
+        ReadCapacityUnits=10,WriteCapacityUnits=5
 echo "### INSERT TEST CAMPAIGNS - OK CASES ###"
 
 Campaigns_ok=(
@@ -186,7 +195,7 @@ Campaigns_ok=(
     '{"senderId": {"S": "550e8400-e29b-41d4-a716-446655440001"}, "campaignId": {"S": "camp-002-email"}, "title": {"S": "Campagna Newsletter"}, "descriptionScope": {"S": "Newsletter mensile"}, "status": {"S": "DRAFT"}, "serviceId": {"S": "svc-001"}, "serviceName": {"S": "Marketing"}, "senderContact": {"S": "marketing@example.com"}, "sensitiveContent": {"BOOL": false}, "stopOnViewed": {"BOOL": false}, "startDate": {"S": "2025-03-01T00:00:00Z"}, "endDate": {"S": "2025-03-08T23:59:59Z"}, "taxonomyCode": {"S": "TAX-002"}, "workflow": {"L": [{"M": {"channel": {"S": "EMAIL"}, "recipientType": {"SS": ["PF"]}, "timeout": {"S": "PT48H"}, "desiredFeedback": {"SS": ["SENT", "RECEIVED"]}, "includeAttachment": {"BOOL": false}}}]}}'
 
     # Case 3: Campagna Multi-Canale (IO + SMS + EMAIL)
-    '{"senderId": {"S": "550e8400-e29b-41d4-a716-446655440002"}, "campaignId": {"S": "camp-003-multi"}, "title": {"S": "Campagna Multi-Canale"}, "descriptionScope": {"S": "Comunicazione su più canali"}, "status": {"S": "IN_PROGRESS"}, "serviceId": {"S": "svc-002"}, "serviceName": {"S": "Comunicazioni"}, "senderContact": {"S": "comms@example.com"}, "sensitiveContent": {"BOOL": false}, "stopOnViewed": {"BOOL": false}, "startDate": {"S": "2024-02-01T00:00:00Z"}, "endDate": {"S": "2024-02-02T00:00:00Z"}, "taxonomyCode": {"S": "TAX-003"}, "workflow": {"L": [{"M": {"channel": {"S": "IO"}, "recipientType": {"SS": ["PF"]}, "timeout": {"S": "PT12H"}, "desiredFeedback": {"SS": ["READ"]}, "includeAttachment": {"BOOL": true}}}, {"M": {"channel": {"S": "SMS"}, "recipientType": {"SS": ["PF", "PG"]}, "timeout": {"S": "PT6H"}, "desiredFeedback": {"SS": ["SENT"]}, "includeAttachment": {"BOOL": false}}}, {"M": {"channel": {"S": "EMAIL"}, "recipientType": {"SS": ["PG"]}, "timeout": {"S": "PT72H"}, "desiredFeedback": {"SS": ["RECEIVED", "PAID"]}, "includeAttachment": {"BOOL": true}}}]}}'
+    '{"senderId": {"S": "5b994d4a-0fa8-47ac-9c7b-354f1d44a1ce"}, "campaignId": {"S": "FattOrd"}, "title": {"S": "Campagna Multi-Canale"}, "descriptionScope": {"S": "Comunicazione su più canali"}, "status": {"S": "IN_PROGRESS"}, "serviceId": {"S": "svc-002"}, "serviceName": {"S": "Comunicazioni"}, "senderContact": {"S": "comms@example.com"}, "sensitiveContent": {"BOOL": false}, "stopOnViewed": {"BOOL": false}, "startDate": {"S": "2024-02-01T00:00:00Z"}, "endDate": {"S": "2024-02-02T00:00:00Z"}, "taxonomyCode": {"S": "TAX-003"}, "workflow": {"L": [{"M": {"channel": {"S": "IO"}, "recipientType": {"SS": ["PF"]}, "timeout": {"S": "PT12H"}, "desiredFeedback": {"SS": ["READ"]}, "includeAttachment": {"BOOL": true}}}, {"M": {"channel": {"S": "SMS"}, "recipientType": {"SS": ["PF", "PG"]}, "timeout": {"S": "PT6H"}, "desiredFeedback": {"SS": ["SENT"]}, "includeAttachment": {"BOOL": false}}}, {"M": {"channel": {"S": "EMAIL"}, "recipientType": {"SS": ["PG"]}, "timeout": {"S": "PT72H"}, "desiredFeedback": {"SS": ["RECEIVED", "PAID"]}, "includeAttachment": {"BOOL": true}}}]}}'
 
     # Case 4: Campagna PEC
     '{"senderId": {"S": "550e8400-e29b-41d4-a716-446655440003"}, "campaignId": {"S": "camp-004-pec"}, "title": {"S": "Comunicazione Legale"}, "descriptionScope": {"S": "Comunicazione tramite PEC"}, "status": {"S": "CONCLUDED"}, "serviceId": {"S": "svc-003"}, "serviceName": {"S": "Legale"}, "senderContact": {"S": "legal@example.com"}, "sensitiveContent": {"BOOL": true}, "stopOnViewed": {"BOOL": false}, "startDate": {"S": "2023-01-01T00:00:00Z"}, "endDate": {"S": "2023-03-01T23:59:59Z"}, "taxonomyCode": {"S": "TAX-004"}, "workflow": {"L": [{"M": {"channel": {"S": "PEC"}, "recipientType": {"SS": ["PG"]}, "timeout": {"S": "PT168H"}, "desiredFeedback": {"SS": ["SKIP"]}, "includeAttachment": {"BOOL": true}}}]}}'

@@ -1,8 +1,8 @@
 package it.pagopa.pn.workflowmanager.dto.client;
 
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
-import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

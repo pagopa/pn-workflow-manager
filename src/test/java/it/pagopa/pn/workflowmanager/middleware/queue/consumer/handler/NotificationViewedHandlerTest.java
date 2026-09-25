@@ -10,6 +10,8 @@ import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationSe
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.DesiredFeedbackType;
+import it.pagopa.pn.workflowmanager.dto.timeline.details.InformalNotificationViewedDetailsInt;
+import it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt;
 import it.pagopa.pn.workflowmanager.service.AuditLogService;
 import it.pagopa.pn.workflowmanager.service.CampaignService;
 import it.pagopa.pn.workflowmanager.service.NotificationService;
@@ -22,7 +24,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
+import java.util.Set;
 
 import static it.pagopa.pn.workflowmanager.action.utils.TimelineUtils.getInformalNotificationViewedTimelineElementId;
 import static org.mockito.ArgumentMatchers.any;
@@ -62,9 +64,14 @@ class NotificationViewedHandlerTest {
                 .viewedDate(Instant.now())
                 .build();
 
-        String viewedTimelineId = getInformalNotificationViewedTimelineElementId(0, "IUN_1", "WEB");
-        when(timelineService.getTimelineElement("IUN_1", viewedTimelineId))
-                .thenReturn(Optional.of(TimelineElementInternal.builder().build()));
+        when(timelineService.getTimelineStrongly("IUN_1", false))
+                .thenReturn(Set.of(TimelineElementInternal.builder()
+                        .category(TimelineElementCategoryInt.INFORMAL_NOTIFICATION_VIEWED)
+                        .details(InformalNotificationViewedDetailsInt.builder()
+                                .recIndex(0)
+                                .sourceChannel("WEB")
+                                .build())
+                        .build()));
 
         handler.handleViewNotification(payload);
 
@@ -104,8 +111,8 @@ class NotificationViewedHandlerTest {
                 .elementId(viewedTimelineId)
                 .build();
 
-        when(timelineService.getTimelineElement("IUN_2", viewedTimelineId))
-                .thenReturn(Optional.empty());
+        when(timelineService.getTimelineStrongly("IUN_2", false))
+                .thenReturn(Set.of());
         when(notificationService.getInformalNotificationByIun("IUN_2")).thenReturn(notification);
         when(campaignService.getCampaignByCampaignIdAndSenderId("CMP_1", "PA_1")).thenReturn(campaign);
         when(timelineUtils.buildInformalNotificationViewedTimelineElement(
@@ -114,7 +121,8 @@ class NotificationViewedHandlerTest {
                 viewedTimelineId,
                 viewedAt,
                 "WEB",
-                "PORTAL"
+                "PORTAL",
+                true
         )).thenReturn(viewedElement);
 
         handler.handleViewNotification(payload);
@@ -156,8 +164,8 @@ class NotificationViewedHandlerTest {
 
         String viewedTimelineId = getInformalNotificationViewedTimelineElementId(0, "IUN_3", "IO");
 
-        when(timelineService.getTimelineElement("IUN_3", viewedTimelineId))
-                .thenReturn(Optional.empty());
+        when(timelineService.getTimelineStrongly("IUN_3", false))
+                .thenReturn(Set.of());
         when(notificationService.getInformalNotificationByIun("IUN_3")).thenReturn(notification);
         when(campaignService.getCampaignByCampaignIdAndSenderId("CMP_2", "PA_2")).thenReturn(campaign);
         when(timelineUtils.buildInformalNotificationViewedTimelineElement(
@@ -166,7 +174,8 @@ class NotificationViewedHandlerTest {
                 eq(viewedTimelineId),
                 any(Instant.class),
                 eq("IO"),
-                eq(null)
+                eq(null),
+                eq(true)
         )).thenReturn(TimelineElementInternal.builder().elementId(viewedTimelineId).build());
 
         handler.handleViewNotification(payload);

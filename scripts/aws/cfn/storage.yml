@@ -30,6 +30,27 @@ Parameters:
     Description: 'Where to send Logs'
   
 Resources:
+  # CampaignStatistics table
+  CampaignStatisticsTable:
+    Type: AWS::DynamoDB::Table
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Properties:
+      TableName: !Sub '${ProjectName}-CampaignStatistics'
+      AttributeDefinitions:
+        - AttributeName: "senderId"
+          AttributeType: "S"
+        - AttributeName: "campaignId"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "senderId"
+          KeyType: "HASH"
+        - AttributeName: "campaignId"
+          KeyType: "RANGE"
+      BillingMode: "PAY_PER_REQUEST"
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+
   #Log Group
   WorkflowManagerLogGroup:
     Type: AWS::CloudFormation::Stack
@@ -41,6 +62,18 @@ Resources:
         LogGroupName: !Sub '${ProjectName}-workflow-manager'
         LogsKinesisSourceStreamArn: !Ref LogsKinesisSourceStreamArn
         LogGroupRetention: !Ref LogRetention
+
+  CampaignEventsCollectorLambdaLogGroup:
+    Type: AWS::CloudFormation::Stack
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/log-group.yaml"
+      Parameters:
+        LogGroupName: !Sub "${ProjectName}-campaign-events-collector"
+        LogsKinesisSourceStreamArn: !Ref LogsKinesisSourceStreamArn
+        LogGroupRetention: !Ref LogRetention
+        LogGroupPrefix: '/aws/lambda'
 
   # Queues
   WorkflowManagerActionQueue:
@@ -119,6 +152,23 @@ Resources:
         AlarmSNSTopicName: !Ref AlarmSNSTopicName
         DelaySeconds: 10
 
+  CampaignEventsDeduplicationTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      TableName: pn-CampaignEventsDeduplication
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: timelineElementId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: timelineElementId
+          KeyType: HASH
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+
   NationalRegistries2WorkflowManagerQueue:
     Type: AWS::CloudFormation::Stack
     UpdateReplacePolicy: Retain
@@ -153,6 +203,22 @@ Resources:
         PointInTimeRecoveryEnabled: true
 
 Outputs:
+  # DynamoDB tables
+  CampaignStatisticsTableName:
+    Description: Name of dynamodb table containing campaign's statistics
+    Value: !Ref CampaignStatisticsTable
+  CampaignStatisticsTableArn:
+    Description: ARN of dynamodb table containing campaign's statistics
+    Value: !GetAtt CampaignStatisticsTable.Arn
+
+  CampaignEventsDeduplicationTableName:
+    Value: !Ref CampaignEventsDeduplicationTable
+    Description: campaign events deduplication DynamoDB table name
+
+  CampaignEventsDeduplicationTableArn:
+    Value: !GetAtt CampaignEventsDeduplicationTable.Arn
+    Description: campaign events deduplication DynamoDB table ARN
+
   # Queues
   WorkflowManagerActionQueueName:
     Value: !GetAtt WorkflowManagerActionQueue.Outputs.QueueName
@@ -276,3 +342,6 @@ Outputs:
   NationalRegistries2WorkflowManagerQueueAgeAlarmARN:
     Value: !GetAtt NationalRegistries2WorkflowManagerQueue.Outputs.SqsAgeAlarmArn
     Description: workflow-manager analog-event queue age alarm ARN
+  # Lambda names
+  CampaignEventsCollectorLambdaName:
+    Value: !Sub "${ProjectName}-campaign-events-collector"

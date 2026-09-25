@@ -1,0 +1,226 @@
+openapi: 3.0.3
+info:
+  termsOfService: https://selfcare.notifichedigitali.it/termini-di-servizio
+  title: 'Piattaforma Notifiche: API B2B monitoraggio campagne'
+  x-summary: 'API B2B monitoraggio campagne'
+  version: '2.3.0'
+  x-api-id: pn-workflow-manager-api-internal-b2b-campaign # NO EXTERNAL
+  contact:
+    name: 'SEND: supporto enti'
+    url: https://pagopa.atlassian.net/servicedesk/customer/portal/5
+  description: >- 
+    I mittenti possono monitorare l'andamento delle campagne inviate tramite le API di monitoraggio campagne.
+servers:
+  - url: https://api.notifichedigitali.it
+    description: Ambiente di produzione
+  - url: https://api.uat.notifichedigitali.it
+    description: Ambiente di collaudo
+tags:
+  - name: HealthCheck
+    description: >-
+      Invocazioni per sapere lo stato del micro-servizio # il servizio è ancora in fase di sviluppo
+  - name: Streams
+    description: >-
+      Gestione degli stream di eventi che PN mette a disposizione
+  - name: Events
+    description: Metodi per la lettura degli eventi dagli stream
+
+paths:
+  /workflow-private/informal/{campaignId}/statistics:
+    get:
+      summary: Recupera le statistiche di una campagna
+      description: >
+        Restituisce i contatori aggregati (accettate, inviate su canale,
+        consegnate, visualizzate, pagate, ecc.) associati a una specifica
+        campagna tramite il suo id
+      operationId: getCampaignStatistics
+      tags:
+        - CampaignStatistics
+      parameters:
+        - $ref: '#/components/parameters/cxIdAuthFleet'
+        - name: campaignId
+          in: path
+          required: true
+          description: Campaign ID
+          schema:
+            type: string
+            example: CAMP-12345-2026
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CampaignStatisticsResponse'
+        '404':
+          description: Campaign not found
+          content:
+            application/json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
+components:
+  parameters:
+    cxIdAuthFleet:
+      $ref: 'remote-refs.yaml#/components/parameters/cxIdAuthFleet'
+  schemas:
+    CampaignStatisticsResponse:
+      type: object
+      required:
+        - campaignId
+        - stats
+        - lastCompletedTimestamp
+      properties:
+        campaignId:
+          type: string
+          description: Campaign ID
+          example: CAMP-12345-2026
+        stats:
+          $ref: '#/components/schemas/CampaignStats'
+        lastCompletedTimestamp:
+          type: string
+          format: date-time
+          description: Ultimo aggiornamento (ISO 8601)
+          example: '2026-06-08T19:13:00Z'
+
+    CampaignStats:
+      type: object
+      description: Contatori aggregati della campagna
+      required:
+        - totalCount
+        - totalRefusedCount
+        - sentOnChannelCount
+        - deliveredCount
+        - undeliverableCount
+        - workflowDoneCount
+        - viewedCount
+        - paidCount
+        - sentOnChannel
+        - delivered
+        - viewed
+      properties:
+        totalCount:
+          type: integer
+          description: >
+            Numero di comunicazioni accettate (REQUEST_ACCEPTED). Non
+            rappresenta il totale di tutte le comunicazioni della campagna,
+            ma solo quelle accettate.
+          example: 150500
+        totalRefusedCount:
+          type: integer
+          description: Comunicazioni rifiutate (REQUEST_REFUSED)
+          example: 45
+        sentOnChannelCount:
+          type: integer
+          description: >
+            Numero di comunicazioni con almeno un invio, digitale o
+            analogico (SEND_DIGITAL_MESSAGE / SEND_ANALOG_MESSAGE)
+          example: 145500
+        deliveredCount:
+          type: integer
+          description: Numero di comunicazioni che hanno raggiunto il cittadino (REACHED)
+          example: 113210
+        undeliverableCount:
+          type: integer
+          description: Comunicazioni non consegnabili
+          example: 1000
+        workflowDoneCount:
+          type: integer
+          description: Comunicazioni che hanno completato il workflow (WORKFLOW_DONE)
+          example: 113210
+        viewedCount:
+          type: integer
+          description: Numero di comunicazioni visualizzate (IO + SEND)
+          example: 1000
+        paidCount:
+          type: integer
+          description: Comunicazioni pagate
+          example: 1000
+        sentOnChannel:
+          type: object
+          description: Dettaglio invii per canale
+          required:
+            - digital
+            - analog
+          properties:
+            digital:
+              type: object
+              description: Invii su canale digitale
+              required:
+                - IO
+                - EMAIL
+                - PEC
+                - SMS
+              properties:
+                IO:
+                  type: integer
+                  example: 85000
+                EMAIL:
+                  type: integer
+                  example: 40000
+                PEC:
+                  type: integer
+                  example: 10000
+                SMS:
+                  type: integer
+                  example: 15000
+            analog:
+              type: object
+              description: Invii su canale analogico
+              required:
+                - RS
+              properties:
+                RS:
+                  type: integer
+                  description: Raccomandata Semplice
+                  example: 500
+        delivered:
+          type: object
+          description: Dettaglio comunicazioni consegnate al destinatario, per canale
+          required:
+            - IO
+            - EMAIL
+            - PEC
+            - SMS
+            - ANALOG
+          properties:
+            IO:
+              type: integer
+              example: 72000
+            EMAIL:
+              type: integer
+              example: 31000
+            PEC:
+              type: integer
+              example: 9800
+            SMS:
+              type: integer
+              example: 12000
+            ANALOG:
+              type: integer
+              example: 410
+        viewed:
+          type: object
+          description: Dettaglio comunicazioni visualizzate, per canale di lettura
+          required:
+            - IO
+            - SEND
+            - firstViewedCount
+          properties:
+            IO:
+              type: integer
+              description: Comunicazioni lette da IO
+              example: 600
+            SEND:
+              type: integer
+              description: Comunicazioni lette da SEND
+              example: 400
+            firstViewedCount:
+              type: integer
+              description: Indica la somma totale delle prime visualizzazioni
+              example: 100
