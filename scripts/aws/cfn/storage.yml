@@ -38,11 +38,15 @@ Resources:
     Properties:
       TableName: !Sub '${ProjectName}-CampaignStatistics'
       AttributeDefinitions:
+        - AttributeName: "senderId"
+          AttributeType: "S"
         - AttributeName: "campaignId"
           AttributeType: "S"
       KeySchema:
-        - AttributeName: "campaignId"
+        - AttributeName: "senderId"
           KeyType: "HASH"
+        - AttributeName: "campaignId"
+          KeyType: "RANGE"
       BillingMode: "PAY_PER_REQUEST"
       PointInTimeRecoverySpecification:
         PointInTimeRecoveryEnabled: true

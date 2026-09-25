@@ -1,15 +1,16 @@
 package it.pagopa.pn.workflowmanager.service.impl;
 
+import it.pagopa.pn.commons.db.campaign.CampaignServiceCachedProvider;
 import it.pagopa.pn.workflowmanager.exceptions.PnCampaignNotFoundException;
+import it.pagopa.pn.workflowmanager.exceptions.PnCampaignStatisticsNotFoundException;
 import it.pagopa.pn.workflowmanager.generated.openapi.server.v1.dto.CampaignStatisticsResponse;
 import it.pagopa.pn.workflowmanager.middleware.dao.dynamo.CampaignStatisticsEntityDao;
+import it.pagopa.pn.workflowmanager.middleware.dao.dynamo.entity.CampaignStatisticsEntity;
 import it.pagopa.pn.workflowmanager.middleware.dao.dynamo.mapper.EntityToDtoCampaignStatisticsMapper;
 import it.pagopa.pn.workflowmanager.service.CampaignStatisticsService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.helpers.MessageFormatter;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Mono;
 
 @Service
 @AllArgsConstructor
@@ -17,18 +18,33 @@ import reactor.core.publisher.Mono;
 public class CampaignStatisticsServiceImpl implements CampaignStatisticsService {
 
     private final CampaignStatisticsEntityDao campaignStatisticsEntityDao;
+    private final CampaignServiceCachedProvider campaignServiceCachedProvider;
 
     @Override
-    public Mono<CampaignStatisticsResponse> getCampaignStatistics(String campaignId) {
-        log.debug(MessageFormatter.arrayFormat("getCampaignStatistics campaignId={}", new Object[]{campaignId}).getMessage());
+    public CampaignStatisticsResponse getCampaignStatistics(
+            String xPagopaPnCxId, String campaignId) {
 
-        return campaignStatisticsEntityDao.get(campaignId)
-                .switchIfEmpty(Mono.error(new PnCampaignNotFoundException("Campaign with id: " + campaignId + " not found ")))
-                .map(EntityToDtoCampaignStatisticsMapper::entityToDto)
-                .doOnSuccess(entity ->
-                        log.info(MessageFormatter.arrayFormat("getCampaignStatistics campaignId={} result={}", new Object[]{campaignId, entity}).getMessage())
-                )
-                .doOnError(err -> log.error(MessageFormatter.arrayFormat("getCampaignStatistics campaignId={} error={}", new Object[]{campaignId, err.getMessage()}).getMessage()));
+        log.debug("getCampaignStatistics for campaignId={}", campaignId);
+
+        CampaignStatisticsEntity entity = campaignStatisticsEntityDao
+                .get(xPagopaPnCxId, campaignId)
+                .orElseThrow(() -> {
+                    var campaign = campaignServiceCachedProvider
+                            .getByCampaignIdAndSenderId(campaignId, xPagopaPnCxId);
+
+                    if (campaign == null) {
+                        log.warn("Campaign not found for campaignId={} senderId={}",
+                                campaignId, xPagopaPnCxId);
+                        return new PnCampaignNotFoundException(
+                                "Campaign with id: " + campaignId + " Not Found");
+                    }
+
+                    log.warn("Statistics not found for campaignId={} senderId={}",
+                            campaignId, xPagopaPnCxId);
+                    return new PnCampaignStatisticsNotFoundException(
+                            "Statistics not found for campaign with id: " + campaignId);
+                });
+
+        return EntityToDtoCampaignStatisticsMapper.entityToDto(entity);
     }
-
 }

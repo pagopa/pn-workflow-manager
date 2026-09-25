@@ -1,12 +1,13 @@
 package it.pagopa.pn.workflowmanager.middleware.dao.dynamo;
 
 import it.pagopa.pn.workflowmanager.middleware.dao.dynamo.entity.CampaignStatisticsEntity;
-import reactor.core.publisher.Mono;
+
+import java.util.Optional;
 
 public interface CampaignStatisticsEntityDao {
 
-    Mono<CampaignStatisticsEntity> get(String campaignId);
+    Optional<CampaignStatisticsEntity> get(String senderId, String campaignId);
 
-    Mono<CampaignStatisticsEntity> save(CampaignStatisticsEntity entity);
+    CampaignStatisticsEntity save(CampaignStatisticsEntity entity);
 
 }

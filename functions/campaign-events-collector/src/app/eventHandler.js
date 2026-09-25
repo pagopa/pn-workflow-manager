@@ -34,20 +34,29 @@ const createAggregate = (timestamp) => ({
 });
 
 /**
- * Assicura che esista un contenitore di aggregazione per la campagna specificata
+ * Assicura che esista un contenitore di aggregazione per la campagna specificata di un determinato senderId
  */
-const ensureAggregate = (aggregates, campaignId, timestamp) => {
-    if (!aggregates[campaignId]) {
-        aggregates[campaignId] = createAggregate(timestamp);
+const ensureAggregate = (aggregates, senderId, campaignId, timestamp) => {
+    const aggregateKey = JSON.stringify([senderId, campaignId]);
+    if (!aggregates[aggregateKey]) {
+        aggregates[aggregateKey] = {
+            ...createAggregate(timestamp),
+            senderId,
+            campaignId
+        };
     }
-    return aggregates[campaignId];
+    return aggregates[aggregateKey];
 };
+
+function logFatalError(message) {
+    console.error(`* FATAL * ALLARM!: ${message}`);
+}
 
 /**
  * Estrae gli ID/sequenceNumbers per la lista di campagne fallite o andate in timeout
  */
-const buildFailures = (campaignIds, aggregates, fieldName) =>
-    campaignIds.flatMap((campaignId) => aggregates[campaignId]?.[fieldName] || []);
+const buildFailures = (aggregateKeys, aggregates, fieldName) =>
+    aggregateKeys.flatMap((aggregateKey) => aggregates[aggregateKey]?.[fieldName] || []);
 
 exports.handleEvent = async (event, context) => {
     const decodedRecords = extractKinesisData(event);
@@ -74,6 +83,7 @@ exports.handleEvent = async (event, context) => {
         }
         const parsedData = unmarshall(record.dynamodb.NewImage);
         let timelineElementId = parsedData.timelineElementId;
+        const senderId = parsedData.paId;
         let campaignId = parsedData.campaignId;
         let category = parsedData.category;
 
@@ -85,13 +95,16 @@ exports.handleEvent = async (event, context) => {
             });
 
             // Valida la presenza dei campi obbligatori
+            if (typeof senderId !== "string" || senderId.trim().length === 0) {
+              logFatalError(`Missing or invalid paId for record: ${record.kinesisSeqNumber}. Skipping without retry.`);
+              continue;
+            }
             if (!campaignId) {
-                console.warn(`Missing campaignId for record: ${record.kinesisSeqNumber}. Skipping.`);
+                logFatalError(`Missing campaignId for record: ${record.kinesisSeqNumber}. Skipping without retry.`);
                 continue;
             }
-
             if (!timelineElementId) {
-                console.warn(`Missing timelineElementId for record: ${record.kinesisSeqNumber}. Skipping.`);
+                logFatalError(`Missing timelineElementId for record: ${record.kinesisSeqNumber}. Skipping without retry.`);
                 continue;
             }
 
@@ -107,17 +120,19 @@ exports.handleEvent = async (event, context) => {
                     }
 
                     // Se fallisce per un errore di rete o DB, segnala il record come fallito per riprovare
-                    console.error(
-                        `Deduplication lock error for campaignId=${campaignId}, timelineElementId=${timelineElementId}, category=${category}:`,
-                        dedupErr
-                    );
+                    logFatalError(`Deduplication lock error for campaignId=${campaignId}, timelineElementId=${timelineElementId}, category=${category}: ${dedupErr}`);
                     recordFailures.push(record.kinesisSeqNumber);
                     continue;
                 }
             }
 
             // Prepara o recupera l'aggregato in memoria per questa campagna
-            const aggregate = ensureAggregate(campaignAggregates, campaignId, parsedData.timestamp);
+            const aggregate = ensureAggregate(
+                campaignAggregates,
+                senderId,
+                campaignId,
+                parsedData.timestamp
+            );
 
             // Mantiene aggiornato l'ultimo timestamp utile di aggiornamento della campagna
             if (parsedData.timestamp > aggregate.lastTimestamp) {
@@ -126,9 +141,7 @@ exports.handleEvent = async (event, context) => {
 
             // Applica la logica delle metriche
             if (!applyCategoryMetric(aggregate.counters, category, parsedData)) {
-                console.error(
-                    `* FATAL * ALLARM!: Category metric skipped/invalid for sequenceNumber=${record.kinesisSeqNumber}. Skipping without retry.`
-                );
+                logFatalError(`Category metric skipped/invalid for sequenceNumber=${record.kinesisSeqNumber}. Skipping without retry.`);
                 continue;
             }
 
@@ -136,10 +149,7 @@ exports.handleEvent = async (event, context) => {
             aggregate.timelineElementIds.push(timelineElementId);
             aggregate.sequenceNumbers.push(record.kinesisSeqNumber);
         } catch (err) {
-            console.error(
-                `Parsing error on record: sequenceNumber=${record.kinesisSeqNumber}. Error:`,
-                err
-            );
+            logFatalError(`Parsing error on record: sequenceNumber=${record.kinesisSeqNumber}. Error: ${err}`);
             recordFailures.push(record.kinesisSeqNumber);
             if (typeof timelineElementId !== "undefined" && DEDUPLICATION_MANAGEMENT_ENABLED) {
                 lockedFailedTimelineElementIds.push(timelineElementId);
@@ -147,39 +157,50 @@ exports.handleEvent = async (event, context) => {
         }
     }
 
-    const campaignIds = Object.keys(campaignAggregates).filter(
-        (campaignId) => campaignAggregates[campaignId].timelineElementIds.length > 0
-    );    const failedCampaigns = [];
-    const timedOutCampaignIds = [];
+    //recupera le chiavi degli aggregati identificati dalla coppia senderId+campaignId
+    const aggregateKeys = Object.keys(campaignAggregates).filter(
+        (aggregateKey) => campaignAggregates[aggregateKey].timelineElementIds.length > 0
+    );
 
-    for (let index = 0; index < campaignIds.length; index++) {
-        const campaignId = campaignIds[index];
+    const failedCampaigns = [];
+    const timedOutAggregateKeys = [];
+
+    for (let index = 0; index < aggregateKeys.length; index++) {
+        const aggregateKey = aggregateKeys[index];
 
         if (isTimedOut()) {
             console.warn("Stopping campaign updates because Lambda is close to timeout.");
-            timedOutCampaignIds.push(...campaignIds.slice(index));
+            timedOutAggregateKeys.push(...aggregateKeys.slice(index));
             break;
         }
 
         try {
-            // Esegue la query di UPDATE condizionale/incrementale sulla tabella delle statistiche
-            await updateCounters(client, STATS_TABLE, campaignId, campaignAggregates[campaignId], isTimedOut);
+            const aggregate = campaignAggregates[aggregateKey];
+
+            await updateCounters(
+                client,
+                STATS_TABLE,
+                aggregate.senderId,
+                aggregate.campaignId,
+                aggregate,
+                isTimedOut
+            );
         } catch (error) {
             if (error?.name === TIMEOUT_GUARD_TRIGGERED) {
-                console.warn(`Timeout guard triggered while updating campaign: ${campaignId}.`);
-                timedOutCampaignIds.push(...campaignIds.slice(index));
+                console.warn(`Timeout guard triggered while updating campaign: ${aggregateKey}.`);
+                timedOutAggregateKeys.push(...aggregateKeys.slice(index));
                 break;
             }
 
-            failedCampaigns.push({ campaignId, reason: error });
+            failedCampaigns.push({ aggregateKey, reason: error });
         }
     }
 
     // Raccoglie tutti i timelineElementId dei record che non sono stati scritti a DB
     const failedTimelineElementIds = [
         ...lockedFailedTimelineElementIds,
-        ...buildFailures(timedOutCampaignIds, campaignAggregates, "timelineElementIds"),
-        ...buildFailures(failedCampaigns.map(({ campaignId }) => campaignId), campaignAggregates, "timelineElementIds")
+        ...buildFailures(timedOutAggregateKeys, campaignAggregates, "timelineElementIds"),
+        ...buildFailures(failedCampaigns.map(({ aggregateKey }) => aggregateKey), campaignAggregates, "timelineElementIds")
     ];
 
     // Rimuove i lock di deduplicazione per gli eventi falliti, consentendone il riprocessamento al retry Kinesis
@@ -190,15 +211,15 @@ exports.handleEvent = async (event, context) => {
     // Costruisce la risposta strutturata per Kinesis indicando solo gli elementi falliti
     const batchItemFailures = [
         ...recordFailures,
-        ...buildFailures(timedOutCampaignIds, campaignAggregates, "sequenceNumbers"),
-        ...buildFailures(failedCampaigns.map(({ campaignId }) => campaignId), campaignAggregates, "sequenceNumbers")
+        ...buildFailures(timedOutAggregateKeys, campaignAggregates, "sequenceNumbers"),
+        ...buildFailures(failedCampaigns.map(({ aggregateKey }) => aggregateKey), campaignAggregates, "sequenceNumbers")
     ].map((sequenceNumber) => ({ itemIdentifier: sequenceNumber }));
 
     if (batchItemFailures.length > 0) {
         console.warn(
             `Batch completed with partial failures. Failed items=${batchItemFailures.length}. ` +
-            `Failed campaigns=${JSON.stringify(failedCampaigns.map((f) => f.campaignId))}. ` +
-            `Timed out campaigns=${JSON.stringify(timedOutCampaignIds)}.`
+            `Failed campaigns=${JSON.stringify(failedCampaigns.map((f) => f.aggregateKey))}. ` +
+            `Timed out campaigns=${JSON.stringify(timedOutAggregateKeys)}.`
         );
     }
 

@@ -1,8 +1,8 @@
 package it.pagopa.pn.workflowmanager.config.msclient;
 
+import it.pagopa.pn.workflowmanager.config.PnWorkflowManagerConfigs;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.delivery.ApiClient;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.delivery.api.InternalOnlyApi;
-import it.pagopa.pn.workflowmanager.config.PnWorkflowManagerConfigs;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

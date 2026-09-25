@@ -9,11 +9,7 @@ import lombok.Getter;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.services.ssm.model.ParameterNotFoundException;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @Component
 @AllArgsConstructor
@@ -24,7 +20,7 @@ public class SearchDigitalDomicileParameterConsumer {
     private static final String PARAMETER_STORE_SEARCH_DIGITAL_DOMICILE = "/config/workflow/search-digital-domicile";
 
     private final ParameterConsumer parameterConsumer;
-    private List<SearchDigitalDomicileConfig> searchDigitalDomicileConfigs = Collections.emptyList();
+    private List<SearchDigitalDomicileConfig> searchDigitalDomicileConfigs;
 
     @PostConstruct
     protected void initialize() {

@@ -1,9 +1,8 @@
 package it.pagopa.pn.workflowmanager.dto.ext.delivery.notification;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.*;
-
 import jakarta.annotation.Nonnull;
+import lombok.*;
 
 @NoArgsConstructor
 @AllArgsConstructor

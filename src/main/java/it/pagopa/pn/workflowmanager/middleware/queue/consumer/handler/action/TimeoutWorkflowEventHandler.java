@@ -1,11 +1,11 @@
 package it.pagopa.pn.workflowmanager.middleware.queue.consumer.handler.action;
 
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.actionmanager.model.ActionType;
 import it.pagopa.pn.workflowmanager.action.timeoutworkflow.TimeoutWorkflowActionHandler;
 import it.pagopa.pn.workflowmanager.action.utils.TimelineUtils;
 import it.pagopa.pn.workflowmanager.dto.action.common.Action;
 import it.pagopa.pn.workflowmanager.dto.action.details.TimeoutWorkflowDetails;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.actionmanager.model.ActionType;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.router.SupportedEventType;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.utils.MdcUtils;
 import lombok.CustomLog;

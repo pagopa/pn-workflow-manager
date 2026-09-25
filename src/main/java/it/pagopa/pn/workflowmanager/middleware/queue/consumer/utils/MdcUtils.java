@@ -12,7 +12,6 @@ import java.time.Instant;
 import java.util.UUID;
 
 import static it.pagopa.pn.api.dto.events.GenericEventHeader.*;
-import static it.pagopa.pn.api.dto.events.GenericEventHeader.PN_EVENT_HEADER_PUBLISHER;
 import static it.pagopa.pn.api.dto.events.StandardEventHeader.PN_EVENT_HEADER_IUN;
 import static it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCodes.ERROR_CODE_WORKFLOWMANAGER_HANDLEEVENTFAILED;
 

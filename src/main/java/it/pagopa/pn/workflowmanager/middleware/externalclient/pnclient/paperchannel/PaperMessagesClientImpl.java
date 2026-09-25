@@ -2,14 +2,14 @@ package it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.papercha
 
 import it.pagopa.pn.commons.exceptions.PnHttpResponseException;
 import it.pagopa.pn.commons.utils.LogUtils;
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.api.InformalMessagesApi;
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.api.PaperMessagesApi;
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.model.*;
 import it.pagopa.pn.workflowmanager.config.PnWorkflowManagerConfigs;
 import it.pagopa.pn.workflowmanager.dto.address.PhysicalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.ext.paperchannel.PaperChannelPrepareRequest;
 import it.pagopa.pn.workflowmanager.dto.ext.paperchannel.PaperChannelSendRequest;
 import it.pagopa.pn.workflowmanager.exceptions.PnPaperChannelChangedCostException;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.api.InformalMessagesApi;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.api.PaperMessagesApi;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.model.*;
 import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

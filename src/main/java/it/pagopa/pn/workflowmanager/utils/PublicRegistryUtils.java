@@ -2,7 +2,6 @@ package it.pagopa.pn.workflowmanager.utils;
 
 import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.workflowmanager.action.utils.TimelineUtils;
-import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.publicregistry.NationalRegistriesResponse;
 import it.pagopa.pn.workflowmanager.dto.timeline.DeliveryModeInt;

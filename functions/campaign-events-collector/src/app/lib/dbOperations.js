@@ -5,13 +5,14 @@ const {
  * Aggiornamento dei contatori su DynamoDB per una singola campagna
  * @param {DynamoDBClient} dynamoDb - Client DynamoDB inizializzato
  * @param {string} statsTable - Nome della tabella di statistiche
+ * @param {string} senderId - ID del mittente
  * @param {string} campaignId - ID della campagna
  * @param {Object} aggregate - Oggetto aggregato con counters e lastTimestamp
  * @param {Object} isTimedOut - Funzione per verificare se il Lambda è vicino al timeout
  * @throws {Error} - Lancia un errore se l'aggiornamento fallisce o se il Lambda è vicino al timeout
  */
-exports.updateCounters = async (dynamoDb, statsTable, campaignId,
-                                aggregate, isTimedOut) => {
+exports.updateCounters = async (
+    dynamoDb, statsTable, senderId, campaignId, aggregate, isTimedOut) => {
     const counterKeys = Object.keys(aggregate.counters);
 
     if (counterKeys.length === 0) return;
@@ -41,6 +42,7 @@ exports.updateCounters = async (dynamoDb, statsTable, campaignId,
     const command = new UpdateItemCommand({
         TableName: statsTable,
         Key: {
+            senderId: { S: senderId },
             campaignId: { S: campaignId }
         },
         UpdateExpression: updateExpression,

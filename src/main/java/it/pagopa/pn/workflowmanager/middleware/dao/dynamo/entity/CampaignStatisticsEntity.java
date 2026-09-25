@@ -4,6 +4,7 @@ import lombok.*;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbAttribute;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSortKey;
 
 import java.time.Instant;
 
@@ -17,7 +18,8 @@ import java.time.Instant;
 @Data
 public class CampaignStatisticsEntity {
 
-    public static final String COL_PK = "campaignId";
+    public static final String COL_PK = "senderId";
+    public static final String COL_SK = "campaignId";
     private static final String COL_TOTAL_SENT = "totalSent";
     private static final String COL_TOTAL_ACCEPTED = "totalAccepted";
     private static final String COL_TOTAL_REFUSED = "totalRefused";
@@ -44,6 +46,9 @@ public class CampaignStatisticsEntity {
     private static final String COL_LAST_COMPLETED_TIMESTAMP = "lastCompletedTimestamp";
 
     @Getter(onMethod=@__({@DynamoDbPartitionKey, @DynamoDbAttribute(COL_PK)}))
+    private String senderId;
+
+    @Getter(onMethod=@__({@DynamoDbSortKey, @DynamoDbAttribute(COL_SK)}))
     private String campaignId;
 
     @Getter(onMethod=@__({@DynamoDbAttribute(COL_TOTAL_SENT)}))

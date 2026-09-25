@@ -1,8 +1,8 @@
 package it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.paperchannel;
 
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.model.SendResponse;
 import it.pagopa.pn.workflowmanager.dto.ext.paperchannel.PaperChannelPrepareRequest;
 import it.pagopa.pn.workflowmanager.dto.ext.paperchannel.PaperChannelSendRequest;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.model.SendResponse;
 
 public interface PaperMessagesClient {
     String CLIENT_NAME = "pn-paper-messages";

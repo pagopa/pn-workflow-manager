@@ -1,10 +1,9 @@
 package it.pagopa.pn.workflowmanager.service.mapper;
 
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.delivery.model.*;
 import it.pagopa.pn.workflowmanager.dto.address.LegalDigitalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.address.PhysicalAddressInt;
-import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.RecipientTypeInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.*;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.delivery.model.*;
 
 import java.util.ArrayList;
 import java.util.List;
