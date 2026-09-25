@@ -71,7 +71,7 @@ class CampaignStatisticsControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value(404))
-                .andExpect(jsonPath("$.title").value("Campaign statistics not found"))
+                .andExpect(jsonPath("$.title").value("Handled error"))
                 .andExpect(jsonPath("$.errors[0].code")
                         .value(ERROR_CODE_WORKFLOWMANAGER_CAMPAIGN_STATISTICS_NOT_FOUND));
 
@@ -88,7 +88,7 @@ class CampaignStatisticsControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value(404))
-                .andExpect(jsonPath("$.title").value("Campaign not found"))
+                .andExpect(jsonPath("$.title").value("Handled error"))
                 .andExpect(jsonPath("$.errors[0].code")
                         .value(ERROR_CODE_WORKFLOWMANAGER_CAMPAIGN_NOT_FOUND));
     }
