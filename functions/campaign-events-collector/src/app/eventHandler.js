@@ -99,11 +99,11 @@ exports.handleEvent = async (event, context) => {
               logFatalError(`Missing or invalid paId for record: ${record.kinesisSeqNumber}. Skipping without retry.`);
               continue;
             }
-            if (!campaignId) {
+            if (typeof campaignId !== "string" || campaignId.trim().length === 0) {
                 logFatalError(`Missing campaignId for record: ${record.kinesisSeqNumber}. Skipping without retry.`);
                 continue;
             }
-            if (!timelineElementId) {
+            if (typeof timelineElementId !== "string" || timelineElementId.trim().length === 0) {
                 logFatalError(`Missing timelineElementId for record: ${record.kinesisSeqNumber}. Skipping without retry.`);
                 continue;
             }
