@@ -270,6 +270,23 @@ class AddressBookServiceImplTest {
     }
 
     @Test
+    void areMandatoryConsentsAccepted_shouldReturnFalse_whenConsentVersionsAreNotComparable() {
+        // given
+        Consent consent = buildConsent(ConsentType.TOS, "a1", true);
+        Consent consent2 = buildConsent(ConsentType.TOS, "default", true);
+        when(userAttributesClient.getConsents(anyString(), any())).thenReturn(List.of(consent, consent2));
+
+        ConsentDto configConsent = ConsentDto.builder().type(ConsentType.TOS.getValue()).version(2).build();
+        when(configs.getConsentsForPlatformSearch()).thenReturn(List.of(configConsent));
+
+        // when
+        Boolean result = addressBookService.areMandatoryConsentsAccepted(RECIPIENT_ID, CX_ID);
+
+        // then
+        assertFalse(result);
+    }
+
+    @Test
     void areMandatoryConsentsAccepted_shouldReturnTrue_whenConsentMatchesConfigTypeVersionAndIsAccepted() {
         // given
         Consent consent = buildConsent(ConsentType.TOS, "1", true);

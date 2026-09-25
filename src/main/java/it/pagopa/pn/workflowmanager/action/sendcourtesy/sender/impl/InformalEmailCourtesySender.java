@@ -5,7 +5,7 @@ import it.pagopa.pn.commons.log.PnAuditLogEventType;
 import it.pagopa.pn.workflowmanager.action.sendcourtesy.CourtesyMessageUtils;
 import it.pagopa.pn.workflowmanager.action.sendcourtesy.CourtesyRetryableErrorClassifier;
 import it.pagopa.pn.workflowmanager.action.sendcourtesy.sender.CourtesyAddressSender;
-import it.pagopa.pn.workflowmanager.action.utils.ChannelSenderUtils;
+import it.pagopa.pn.workflowmanager.action.utils.AttachmentUtils;
 import it.pagopa.pn.workflowmanager.action.utils.NotificationUtils;
 import it.pagopa.pn.workflowmanager.config.PnWorkflowManagerConfigs;
 import it.pagopa.pn.workflowmanager.dto.address.CourtesyDigitalAddressInt;
@@ -37,7 +37,7 @@ public class InformalEmailCourtesySender implements CourtesyAddressSender {
     private final PnExternalChannelsClient pnExternalChannelsClient;
     private final TemplateGeneratorService templateGeneratorService;
     private final CampaignService campaignService;
-    private final ChannelSenderUtils channelSenderUtils;
+    private final AttachmentUtils attachmentUtils;
     private final CourtesyRetryableErrorClassifier retryableErrorClassifier;
     private final CourtesyMessageUtils courtesyMessageUtils;
 
@@ -60,7 +60,7 @@ public class InformalEmailCourtesySender implements CourtesyAddressSender {
             NotificationRecipientInt recipient = NotificationUtils.getRecipientFromIndex(notification, recIndex);
             String subject = templateGeneratorService.generateCourtesyEmailSubjectTemplate(notification, recipient);
             String htmlBody = templateGeneratorService.generateCourtesyEmailBodyTemplate(notification, recipient, campaign);
-            List<String> attachmentUrls = retrieveAttachmentUrls(notification, recIndex, campaign);
+            List<String> attachmentUrls = retrieveAttachmentUrls(notification, recIndex);
             InformalDigitalAddressInt emailAddress = toInformalDigitalAddress(address);
 
             pnExternalChannelsClient.sendNotificationEMAIL(requestId, htmlBody, subject, notification, recipient, emailAddress, attachmentUrls, ExternalChannelEventType.COURTESY);
@@ -82,9 +82,13 @@ public class InformalEmailCourtesySender implements CourtesyAddressSender {
                 .build();
     }
 
-    private List<String> retrieveAttachmentUrls(NotificationInt notification, int recIndex, Campaign campaign) {
+    private List<String> retrieveAttachmentUrls(NotificationInt notification, int recIndex) {
         if(Boolean.TRUE.equals(configs.getEmailCourtesyRequiresAttachments())) {
-            return channelSenderUtils.resolveAttachmentsForChannel(notification, recIndex, campaign, ChannelType.EMAIL);
+            return attachmentUtils.retrieveAttachments(
+                    notification, recIndex,
+                    attachmentUtils.retrieveAttachmentTypesToSend(notification, ChannelType.EMAIL),
+                    false
+            );
         }
 
         log.debug("Email courtesy message does not require attachments - iun={} id={}", notification.getIun(), recIndex);

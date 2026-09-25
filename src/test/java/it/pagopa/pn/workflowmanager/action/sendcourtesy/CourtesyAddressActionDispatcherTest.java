@@ -11,6 +11,7 @@ import it.pagopa.pn.workflowmanager.service.SchedulerService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -18,6 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.Instant;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -89,9 +91,16 @@ class CourtesyAddressActionDispatcherTest {
 
         dispatcher.dispatch(notification, 0);
 
-        verify(schedulerService, times(1)).scheduleEvent(
-                eq("IUN-123"), eq(0), any(Instant.class), eq(ActionType.SEND_COURTESY_MESSAGE_ACTION), any(SendCourtesyMessageActionDetails.class));
+        ArgumentCaptor<SendCourtesyMessageActionDetails> detailsCaptor =
+                ArgumentCaptor.forClass(SendCourtesyMessageActionDetails.class);
 
+        verify(schedulerService, times(1)).scheduleEvent(
+                eq("IUN-123"), eq(0), any(Instant.class), eq(ActionType.SEND_COURTESY_MESSAGE_ACTION), detailsCaptor.capture());
+
+        SendCourtesyMessageActionDetails capturedDetails = detailsCaptor.getValue();
+        assertEquals(CourtesyDigitalAddressInt.COURTESY_DIGITAL_ADDRESS_TYPE_INT.EMAIL, capturedDetails.getChannel());
+        assertEquals(1, capturedDetails.getPlannedChannels().size());
+        assertEquals(CourtesyDigitalAddressInt.COURTESY_DIGITAL_ADDRESS_TYPE_INT.EMAIL, capturedDetails.getPlannedChannels().getFirst());
     }
 
     @Test
