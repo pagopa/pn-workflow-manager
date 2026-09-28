@@ -22,7 +22,7 @@ public class EntityToDtoCampaignStatisticsMapper {
                         .deliveredCount(checkValue(entity.getTotalDelivered()))
                         .undeliverableCount(checkValue(entity.getTotalUndeliverable()))
                         .workflowDoneCount(checkValue(entity.getWorkflowDone()))
-                        .viewedCount(checkValue(entity.getViewedIO()) + checkValue(entity.getViewedSEND()))
+                        .viewedCount(checkValue(entity.getViewedIO()) + checkValue(entity.getViewedWEB()))
                         .paidCount(checkValue(entity.getPaid()))
                         .sentOnChannel(mapSentOnChannel(entity))
                         .delivered(mapDelivered(entity))
@@ -53,8 +53,8 @@ public class EntityToDtoCampaignStatisticsMapper {
     private static CampaignStatsViewed mapViewed(CampaignStatisticsEntity entity) {
         return new CampaignStatsViewed()
                 .IO(checkValue(entity.getViewedIO()))
-                .SEND(checkValue(entity.getViewedSEND()))
-                .firstViewedCount(checkValue(entity.getFirstViewedCount()));
+                .SEND(checkValue(entity.getViewedWEB()))
+                .firstViewedCount(checkValue(entity.getFirstView()));
     }
 
     private static int checkValue(Integer value) {
