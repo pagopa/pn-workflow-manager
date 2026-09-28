@@ -40,8 +40,8 @@ public class CampaignStatisticsEntity {
     private static final String COL_RECEIVED_ANALOG = "receivedANALOG";
 
     private static final String COL_VIEWED_IO = "viewedIO";
-    private static final String COL_VIEWED_SEND = "viewedSEND";
-    private static final String COL_FIRST_VIEWED_COUNT = "firstViewedCount";
+    private static final String COL_VIEWED_WEB = "viewedSEND";
+    private static final String COL_FIRST_VIEW = "firstViewedCount";
     private static final String COL_PAID = "paid";
     private static final String COL_LAST_COMPLETED_TIMESTAMP = "lastCompletedTimestamp";
 
@@ -102,11 +102,11 @@ public class CampaignStatisticsEntity {
     @Getter(onMethod=@__({@DynamoDbAttribute(COL_VIEWED_IO)}))
     private Integer viewedIO;
 
-    @Getter(onMethod=@__({@DynamoDbAttribute(COL_VIEWED_SEND)}))
-    private Integer viewedSEND;
+    @Getter(onMethod=@__({@DynamoDbAttribute(COL_VIEWED_WEB)}))
+    private Integer viewedWEB;
 
-    @Getter(onMethod=@__({@DynamoDbAttribute(COL_FIRST_VIEWED_COUNT)}))
-    private Integer firstViewedCount;
+    @Getter(onMethod=@__({@DynamoDbAttribute(COL_FIRST_VIEW)}))
+    private Integer firstView;
 
     @Getter(onMethod=@__({@DynamoDbAttribute(COL_PAID)}))
     private Integer paid;

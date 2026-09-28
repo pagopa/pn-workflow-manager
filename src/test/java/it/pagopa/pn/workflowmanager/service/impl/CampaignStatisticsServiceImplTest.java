@@ -48,7 +48,7 @@ class CampaignStatisticsServiceImplTest {
                 .totalAccepted(20)
                 .totalSent(15)
                 .viewedIO(3)
-                .viewedSEND(2)
+                .viewedWEB(2)
                 .lastCompletedTimestamp(timestamp)
                 .build();
         when(dao.get(SENDER_ID, CAMPAIGN_ID)).thenReturn(Optional.of(entity));
