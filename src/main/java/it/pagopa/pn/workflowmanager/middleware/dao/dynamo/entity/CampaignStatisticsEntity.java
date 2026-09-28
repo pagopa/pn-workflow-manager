@@ -40,8 +40,8 @@ public class CampaignStatisticsEntity {
     private static final String COL_RECEIVED_ANALOG = "receivedANALOG";
 
     private static final String COL_VIEWED_IO = "viewedIO";
-    private static final String COL_VIEWED_WEB = "viewedSEND";
-    private static final String COL_FIRST_VIEW = "firstViewedCount";
+    private static final String COL_VIEWED_WEB = "viewedWEB";
+    private static final String COL_FIRST_VIEW = "firstView";
     private static final String COL_PAID = "paid";
     private static final String COL_LAST_COMPLETED_TIMESTAMP = "lastCompletedTimestamp";
 
