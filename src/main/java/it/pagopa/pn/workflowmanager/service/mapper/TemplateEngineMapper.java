@@ -1,12 +1,10 @@
 package it.pagopa.pn.workflowmanager.service.mapper;
 
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
-import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
-import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationMessageInt;
-import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
-import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationSenderInt;
+import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.*;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.templateengine.model.*;
 import org.springframework.util.CollectionUtils;
+import java.util.List;
 
 public class TemplateEngineMapper {
     private TemplateEngineMapper() {
@@ -18,9 +16,19 @@ public class TemplateEngineMapper {
                 .subject(recipient.getMessage().getPrimaryMessage().getSubject())
                 .hasAttachment(!CollectionUtils.isEmpty(notification.getDocuments()))
                 .hasPayment(!CollectionUtils.isEmpty(recipient.getPayments()))
+                .paymentHasAttachment(checkIfPaymentHasAttachment(recipient.getPayments()))
                 .body(mapToInformalCommunicationBody(recipient.getMessage()))
                 .sender(mapToInformalCommunicationSender(notification.getSender(), campaign))
                 .recipient(mapToInformalCommunicationRecipient(recipient));
+    }
+
+    // Verifica presenza allegati controllando che tutta la lista abbia degli allegati presenti.
+    // Per le notifiche bonarie è atteso esattamente 1 elemento
+    private static boolean checkIfPaymentHasAttachment(List<NotificationPaymentInfoInt> payments) {
+        return !CollectionUtils.isEmpty(payments)
+                && payments.stream().allMatch(payment ->
+                (payment.getPagoPA() != null
+                        && payment.getPagoPA().getAttachment() != null));
     }
 
     private static InformalCommunicationBody mapToInformalCommunicationBody(NotificationMessageInt message) {

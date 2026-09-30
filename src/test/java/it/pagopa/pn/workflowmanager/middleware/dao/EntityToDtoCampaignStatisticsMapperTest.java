@@ -37,7 +37,7 @@ class EntityToDtoCampaignStatisticsMapperTest {
         entity.setReceivedAnalog(410);
 
         entity.setViewedIO(600);
-        entity.setViewedSEND(400);
+        entity.setViewedWEB(400);
 
         entity.setLastCompletedTimestamp(Instant.now());
 
@@ -92,7 +92,7 @@ class EntityToDtoCampaignStatisticsMapperTest {
         CampaignStatisticsEntity entity = new CampaignStatisticsEntity();
         entity.setCampaignId("CAMP-NULL-TEST");
         entity.setViewedIO(0);
-        entity.setViewedSEND(150);
+        entity.setViewedWEB(150);
 
         // When
         CampaignStatisticsResponse dto = EntityToDtoCampaignStatisticsMapper.entityToDto(entity);
@@ -101,7 +101,7 @@ class EntityToDtoCampaignStatisticsMapperTest {
         assertThat(dto).isNotNull();
         assertThat(dto.getStats()).isNotNull();
         assertThat(dto.getStats().getViewedCount()).isEqualTo(150);
-        assertThat(dto.getStats().getViewed().getIO()).isEqualTo(0);
+        assertThat(dto.getStats().getViewed().getIO()).isZero();
         assertThat(dto.getStats().getViewed().getSEND()).isEqualTo(150);
     }
 }
