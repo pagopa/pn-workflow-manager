@@ -1,5 +1,6 @@
 {
   "Parameters": {
-    "CampaignStatisticsGlueTableName": "pn_campaign_statistics"
+    "CampaignStatisticsGlueTableName": "pn_campaign_statistics",
+    "CampaignsGlueTableName": "pn_campaigns"
   }
 }

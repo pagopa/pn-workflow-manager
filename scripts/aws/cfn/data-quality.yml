@@ -32,6 +32,20 @@ Parameters:
       Glue table name for campaign statistics, accepts only lowercase letters and underscores.
     Default: pn_campaign_statistics
 
+  CampaignsTableName:
+    Type: String
+    Description: |
+      DynamoDB table name for campaigns, also used to identify the S3
+      directory where related CDC files are stored. Supply this value from the
+      CampaignsTableName output of the storage stack.
+
+  CampaignsGlueTableName:
+    Type: String
+    AllowedPattern: '^[a-z_]+$'
+    ConstraintDescription: |
+      Glue table name for campaigns, accepts only lowercase letters and underscores.
+    Default: pn_campaigns
+
 Resources:
   PnCampaignStatisticsDataQualityStack:
     Type: AWS::CloudFormation::Stack
@@ -73,4 +87,43 @@ Resources:
             viewedSEND:struct<NULL:boolean,N:string>,
             paid:struct<NULL:boolean,N:string>,
             lastCompletedTimestamp:struct<NULL:boolean,S:string>
+          >
+
+  PnCampaignsDataQualityStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub ${TemplateBucketBaseUrl}/fragments/cdc-glue.yaml
+      Parameters:
+        DynamoTableName: !Ref CampaignsTableName
+        GlueTableName: !Ref CampaignsGlueTableName
+        GlueServiceRoleArn: !Ref GlueServiceRoleArn
+        LogsBucketName: !Ref LogsBucketName
+        GlueDatabaseName: !Ref GlueDatabaseName
+        # Mapping Logico:
+        # pk = senderId
+        # sk = campaignId
+        DynamoDBKeysStructure: |
+          struct<senderId:struct<S:string>,campaignId:struct<S:string>>
+        DynamoDBNewImageStructure: |
+          struct<
+            campaignId:struct<S:string>,
+            senderId:struct<S:string>,
+            title:struct<S:string>,
+            descriptionScope:struct<S:string>,
+            startDate:struct<S:string>,
+            endDate:struct<S:string>,
+            status:struct<S:string>,
+            senderContact:struct<S:string>,
+            serviceName:struct<S:string>,
+            serviceId:struct<S:string>,
+            sensitiveContent:struct<BOOL:boolean>,
+            stopOnViewed:struct<BOOL:boolean>,
+            stopOnPayed:struct<BOOL:boolean>,
+            workflow:struct<L:array<struct<M:struct<
+              channel:struct<S:string>,
+              desiredFeedback:struct<L:array<struct<S:string>>>,
+              includeAttachment:struct<BOOL:boolean>,
+              recipientType:struct<S:string>,
+              timeout:struct<S:string>
+            >>>>
           >
