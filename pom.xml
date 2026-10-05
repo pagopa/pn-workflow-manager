@@ -428,7 +428,7 @@
 						<phase>generate-resources</phase>
 						<configuration>
 							<inputSpec>
-								https://raw.githubusercontent.com/pagopa/pn-national-registries/f5d7f44a10df484a3d075eaf7ddeb85e049a4f33/docs/openapi/PNT2Y-OpenAPI3_PN-NationalRegistries.yaml
+								https://raw.githubusercontent.com/pagopa/pn-national-registries/23a5970bfb502203c616587af48f724ff7e562ea/docs/openapi/PNT2Y-OpenAPI3_PN-NationalRegistries.yaml
 							</inputSpec>
 							<templateDirectory>${project.build.directory}/dependency-resources/scripts/openapi/templates/7.4.0/client</templateDirectory>
 							<generatorName>java</generatorName>
