@@ -1,6 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Data quality template, creates a nested stack for the campaign statistics Glue Table and Crawler
-
+Description: Data quality template, creates nested stacks for the campaign statistics and campaigns Glue Tables and Crawlers
 Parameters:
   TemplateBucketBaseUrl:
     Type: String
@@ -113,17 +112,17 @@ Resources:
             startDate:struct<S:string>,
             endDate:struct<S:string>,
             status:struct<S:string>,
-            senderContact:struct<S:string>,
-            serviceName:struct<S:string>,
+            senderContact:struct<NULL:boolean,S:string>,
+            serviceName:struct<NULL:boolean,S:string>,
             serviceId:struct<S:string>,
-            sensitiveContent:struct<BOOL:boolean>,
-            stopOnViewed:struct<BOOL:boolean>,
-            stopOnPayed:struct<BOOL:boolean>,
+            sensitiveContent:struct<NULL:boolean,BOOL:boolean>,
+            stopOnViewed:struct<NULL:boolean,BOOL:boolean>,
+            stopOnPayed:struct<NULL:boolean,BOOL:boolean>,
             workflow:struct<L:array<struct<M:struct<
-              channel:struct<S:string>,
-              desiredFeedback:struct<L:array<struct<S:string>>>,
-              includeAttachment:struct<BOOL:boolean>,
-              recipientType:struct<S:string>,
-              timeout:struct<S:string>
+              channel:struct<NULL:boolean,S:string>,
+              desiredFeedback:struct<NULL:boolean,L:array<struct<S:string>>>,
+              includeAttachment:struct<NULL:boolean,BOOL:boolean>,
+              recipientType:struct<NULL:boolean,S:string>,
+              timeout:struct<NULL:boolean,S:string>
             >>>>
           >
