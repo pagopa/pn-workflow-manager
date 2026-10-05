@@ -80,10 +80,10 @@ Resources:
             receivedIO:struct<NULL:boolean,N:string>,
             receivedEMAIL:struct<NULL:boolean,N:string>,
             receivedPEC:struct<NULL:boolean,N:string>,
-            receivedRS:struct<NULL:boolean,N:string>,
+            receivedANALOG:struct<NULL:boolean,N:string>,
             viewedIO:struct<NULL:boolean,N:string>,
-            firstViewedCount:struct<NULL:boolean,N:string>,
-            viewedSEND:struct<NULL:boolean,N:string>,
+            firstView:struct<NULL:boolean,N:string>,
+            viewedWEB:struct<NULL:boolean,N:string>,
             paid:struct<NULL:boolean,N:string>,
             lastCompletedTimestamp:struct<NULL:boolean,S:string>
           >
