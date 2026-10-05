@@ -87,7 +87,7 @@ Resources:
             paid:struct<NULL:boolean,N:string>,
             lastCompletedTimestamp:struct<NULL:boolean,S:string>
           >
-
+          
   PnCampaignsDataQualityStack:
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -117,12 +117,12 @@ Resources:
             serviceId:struct<S:string>,
             sensitiveContent:struct<NULL:boolean,BOOL:boolean>,
             stopOnViewed:struct<NULL:boolean,BOOL:boolean>,
-            stopOnPayed:struct<NULL:boolean,BOOL:boolean>,
+            taxonomyCode:struct<S:string>,
             workflow:struct<L:array<struct<M:struct<
-              channel:struct<NULL:boolean,S:string>,
+              channel:struct<S:string>,
               desiredFeedback:struct<NULL:boolean,L:array<struct<S:string>>>,
               includeAttachment:struct<NULL:boolean,BOOL:boolean>,
-              recipientType:struct<NULL:boolean,S:string>,
+              recipientType:struct<L:array<struct<S:string>>>,
               timeout:struct<NULL:boolean,S:string>
             >>>>
           >
