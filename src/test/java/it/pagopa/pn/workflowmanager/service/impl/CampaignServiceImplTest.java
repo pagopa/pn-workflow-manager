@@ -1,6 +1,6 @@
 package it.pagopa.pn.workflowmanager.service.impl;
 
-import it.pagopa.pn.commons.db.campaign.CampaignServiceCachedProvider;
+import it.pagopa.pn.commons.db.campaign.CampaignProvider;
 import it.pagopa.pn.commons.db.campaign.entity.*;
 import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.commons.utils.qr.models.RecipientTypeInt;
@@ -27,7 +27,7 @@ import static org.mockito.Mockito.*;
 class CampaignServiceImplTest {
 
     @Mock
-    private CampaignServiceCachedProvider campaignServiceCachedProvider;
+    private CampaignProvider campaignServiceCachedProvider;
 
     private CampaignServiceImpl service;
 

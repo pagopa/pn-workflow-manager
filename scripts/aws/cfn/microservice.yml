@@ -534,7 +534,10 @@ Resources:
         EcsLogGroup: !Ref EcsWorkflowLogGroup
         LogAlarmStrategyV1: !Ref LogAlarmStrategy
         CpuArchitecture: !Ref CpuArchitecture
-        JavaToolOptions: !Ref JavaToolOptions
+        JavaToolOptions: !Join
+          - ' '
+          - - '--add-modules=java.instrument --add-opens=java.base/java.lang=ALL-UNNAMED'
+            - !Ref JavaToolOptions
 
   ## Dashboard
   WorkflowManagerMicroserviceCloudWatchDashboard:
