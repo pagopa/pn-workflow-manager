@@ -1,6 +1,6 @@
 package it.pagopa.pn.workflowmanager.service.impl;
 
-import it.pagopa.pn.commons.db.campaign.CampaignServiceCachedProvider;
+import it.pagopa.pn.commons.db.campaign.CampaignProvider;
 import it.pagopa.pn.commons.db.campaign.entity.CampaignEntity;
 import it.pagopa.pn.workflowmanager.exceptions.PnCampaignNotFoundException;
 import it.pagopa.pn.workflowmanager.exceptions.PnCampaignStatisticsNotFoundException;
@@ -30,7 +30,7 @@ class CampaignStatisticsServiceImplTest {
     @Mock
     private CampaignStatisticsEntityDao dao;
     @Mock
-    private CampaignServiceCachedProvider campaignServiceCachedProvider;
+    private CampaignProvider campaignServiceCachedProvider;
 
     private CampaignStatisticsServiceImpl service;
 
