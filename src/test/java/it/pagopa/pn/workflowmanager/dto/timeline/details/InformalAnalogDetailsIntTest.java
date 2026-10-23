@@ -49,12 +49,14 @@ class InformalAnalogDetailsIntTest {
                 .prepareRequestId("prepareRequestId")
                 .f24Attachments(List.of("f24"))
                 .categorizedAttachmentsResult(CategorizedAttachmentsResultInt.builder().build())
+                .receiverAddressSourceType(ReceiverAddressSourceTypeInt.MITTENTE)
                 .vat(22)
                 .build();
 
         Assertions.assertEquals(
-                String.format("recIndex=%d serviceLevel=%s deliveryType=%s sentAttemptMade=%s relatedRequestId=%s foreignState=%s productType=%s analogCost=%s numberOfPages=%s envelopeWeight=%s prepareRequestId=%s f24Attachments=%s vat=%s physicalAddress=%s",
-                        3, serviceLevel, AnalogDeliveryTypeInt.RS, 4, "relatedRequestId", "FR", "AR", 100, 12, 50, "prepareRequestId", List.of("f24"), 22, AuditLogUtils.SENSITIVE),
+                String.format("recIndex=%d serviceLevel=%s deliveryType=%s sentAttemptMade=%s relatedRequestId=%s foreignState=%s productType=%s analogCost=%s numberOfPages=%s envelopeWeight=%s prepareRequestId=%s f24Attachments=%s receiverAddressSourceType=%s vat=%s physicalAddress=%s",
+
+                        3, serviceLevel, AnalogDeliveryTypeInt.RS, 4, "relatedRequestId", "FR", "AR", 100, 12, 50, "prepareRequestId", List.of("f24"), ReceiverAddressSourceTypeInt.MITTENTE, 22, AuditLogUtils.SENSITIVE),
                 details.toLog()
         );
         Assertions.assertEquals(3, details.getRecIndex());

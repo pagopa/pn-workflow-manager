@@ -3,6 +3,7 @@ package it.pagopa.pn.workflowmanager.dto.ext.paperchannel;
 import it.pagopa.pn.workflowmanager.dto.address.PhysicalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
+import it.pagopa.pn.workflowmanager.dto.timeline.details.ReceiverAddressSourceTypeInt;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,4 +23,5 @@ public class PaperChannelPrepareRequest {
     private final PhysicalAddressInt.ANALOG_TYPE analogType;
     private final List<String> attachments;
     private final String relatedRequestId;
+    private final ReceiverAddressSourceTypeInt receiverAddressSourceType;
 }

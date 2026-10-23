@@ -231,7 +231,7 @@
 						<phase>generate-resources</phase>
 						<configuration>
 							<inputSpec>
-								https://raw.githubusercontent.com/pagopa/pn-timeline-service/63d88695e433ff698f15b74fbb637b24685ca088/docs/openapi/pn-timeline-service-private.yaml
+								https://raw.githubusercontent.com/pagopa/pn-timeline-service/5c3ffdff801b81fb4962fe21dda3dd328a75b06d/docs/openapi/pn-timeline-service-private.yaml
 							</inputSpec>
 							<templateDirectory>${project.build.directory}/dependency-resources/scripts/openapi/templates/7.4.0/client</templateDirectory>
 							<generatorName>java</generatorName>
@@ -308,7 +308,7 @@
                         </goals>
                         <phase>generate-resources</phase>
                         <configuration>
-                            <inputSpec>https://raw.githubusercontent.com/pagopa/pn-paper-channel/2e75e268974f8773caf96385ea83dba1816383bc/docs/openapi/api-internal-v1.yaml</inputSpec>
+                            <inputSpec>https://raw.githubusercontent.com/pagopa/pn-paper-channel/6b58da5f5059851393827271be07483aa9b60694/docs/openapi/api-internal-v1.yaml</inputSpec>
                             <templateDirectory>${project.build.directory}/dependency-resources/scripts/openapi/templates/7.4.0/client</templateDirectory>
                             <generatorName>java</generatorName>
                             <library>resttemplate</library>
