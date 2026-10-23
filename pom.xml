@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>it.pagopa.pn</groupId>
 		<artifactId>pn-parent</artifactId>
-		<version>2.2.0-SPRINGBOOT3</version>
+		<version>2.3.1-SPRINGBOOT3</version>
 		<relativePath />
 	</parent>
 	<artifactId>pn-workflow-manager</artifactId>
@@ -18,7 +18,7 @@
 	  	<tag>HEAD</tag>
   	</scm>
 	<properties>
-		<java.version>21</java.version>
+		<java.version>25</java.version>
 		<awspring.version>3.4.0</awspring.version>
 	</properties>
 
@@ -38,7 +38,7 @@
 		<dependency>
 			<groupId>it.pagopa.pn</groupId>
 			<artifactId>pn-commons</artifactId>
-			<version>2.26.0-SPRINGBOOT3</version>
+			<version>2.28.0-SPRINGBOOT3</version>
 		</dependency>
 
 		<dependency>
@@ -122,6 +122,13 @@
 						</goals>
 					</execution>
 				</executions>
+				<configuration>
+					<image>
+						<env>
+							<JAVA_TOOL_OPTIONS>--add-modules=java.instrument --add-opens=java.base/java.lang=ALL-UNNAMED</JAVA_TOOL_OPTIONS>
+						</env>
+					</image>
+				</configuration>
 			</plugin>
 
 			<plugin>
@@ -375,8 +382,8 @@
 								<skipDefaultInterface>false</skipDefaultInterface>
 								<useTags>true</useTags>
 							</configOptions>
-							<modelPackage>it.pagopa.pn.workflowmanager.generated.openapi.msclient.templateengine.model</modelPackage>
-							<apiPackage>it.pagopa.pn.workflowmanager.generated.openapi.msclient.templateengine.api</apiPackage>
+							<modelPackage>${project.groupId}.workflowmanager.generated.openapi.msclient.templateengine.model</modelPackage>
+							<apiPackage>${project.groupId}.workflowmanager.generated.openapi.msclient.templateengine.api</apiPackage>
 						</configuration>
 					</execution>
 
@@ -414,8 +421,8 @@
 								<skipDefaultInterface>false</skipDefaultInterface>
 								<useTags>true</useTags>
 							</configOptions>
-							<modelPackage>it.pagopa.pn.workflowmanager.generated.openapi.msclient.ioconnector.model</modelPackage>
-							<apiPackage>it.pagopa.pn.workflowmanager.generated.openapi.msclient.ioconnector.api</apiPackage>
+							<modelPackage>${project.groupId}.workflowmanager.generated.openapi.msclient.ioconnector.model</modelPackage>
+							<apiPackage>${project.groupId}.workflowmanager.generated.openapi.msclient.ioconnector.api</apiPackage>
 						</configuration>
 					</execution>
 
@@ -454,8 +461,8 @@
 								<skipDefaultInterface>false</skipDefaultInterface>
 								<useTags>true</useTags>
 							</configOptions>
-							<modelPackage>it.pagopa.pn.workflowmanager.generated.openapi.msclient.nationalregistries.model</modelPackage>
-							<apiPackage>it.pagopa.pn.workflowmanager.generated.openapi.msclient.nationalregistries.api</apiPackage>
+							<modelPackage>${project.groupId}.workflowmanager.generated.openapi.msclient.nationalregistries.model</modelPackage>
+							<apiPackage>${project.groupId}.workflowmanager.generated.openapi.msclient.nationalregistries.api</apiPackage>
 						</configuration>
 					</execution>
 					<!-- OPEN API CLIENT PN-EXTERNAL-CHANNELS -->
@@ -491,8 +498,8 @@
 								<skipDefaultInterface>false</skipDefaultInterface>
 								<useTags>true</useTags>
 							</configOptions>
-							<modelPackage>it.pagopa.pn.workflowmanager.generated.openapi.msclient.externalchannels.model</modelPackage>
-							<apiPackage>it.pagopa.pn.workflowmanager.generated.openapi.msclient.externalchannels.api</apiPackage>
+							<modelPackage>${project.groupId}.workflowmanager.generated.openapi.msclient.externalchannels.model</modelPackage>
+							<apiPackage>${project.groupId}.workflowmanager.generated.openapi.msclient.externalchannels.api</apiPackage>
 						</configuration>
 					 </execution>
 					<!-- OPEN API CLIENT PN-SAFESTORAGE -->
@@ -528,8 +535,8 @@
 								<skipDefaultInterface>false</skipDefaultInterface>
 								<useTags>true</useTags>
 							</configOptions>
-							<modelPackage>it.pagopa.pn.workflowmanager.generated.openapi.msclient.safestorage.model</modelPackage>
-							<apiPackage>it.pagopa.pn.workflowmanager.generated.openapi.msclient.safestorage.api</apiPackage>
+							<modelPackage>${project.groupId}.workflowmanager.generated.openapi.msclient.safestorage.model</modelPackage>
+							<apiPackage>${project.groupId}.workflowmanager.generated.openapi.msclient.safestorage.api</apiPackage>
 						</configuration>
 					 </execution>
 
@@ -566,8 +573,8 @@
 								<skipDefaultInterface>false</skipDefaultInterface>
 								<useTags>true</useTags>
 							</configOptions>
-							<modelPackage>it.pagopa.pn.workflowmanager.generated.openapi.msclient.userattributes.addressbook.model</modelPackage>
-							<apiPackage>it.pagopa.pn.workflowmanager.generated.openapi.msclient.userattributes.addressbook.api</apiPackage>
+							<modelPackage>${project.groupId}.workflowmanager.generated.openapi.msclient.userattributes.addressbook.model</modelPackage>
+							<apiPackage>${project.groupId}.workflowmanager.generated.openapi.msclient.userattributes.addressbook.api</apiPackage>
 						</configuration>
 					</execution>
 
@@ -604,8 +611,8 @@
 								<skipDefaultInterface>false</skipDefaultInterface>
 								<useTags>true</useTags>
 							</configOptions>
-							<modelPackage>it.pagopa.pn.workflowmanager.generated.openapi.msclient.userattributes.consents.model</modelPackage>
-							<apiPackage>it.pagopa.pn.workflowmanager.generated.openapi.msclient.userattributes.consents.api</apiPackage>
+							<modelPackage>${project.groupId}.workflowmanager.generated.openapi.msclient.userattributes.consents.model</modelPackage>
+							<apiPackage>${project.groupId}.workflowmanager.generated.openapi.msclient.userattributes.consents.api</apiPackage>
 						</configuration>
 					</execution>
          </executions>
