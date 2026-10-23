@@ -31,12 +31,13 @@ public class SendAnalogMessageDetailsInt extends CategoryTypeTimelineElementDeta
     private String prepareRequestId;
     private List<String> f24Attachments;
     private CategorizedAttachmentsResultInt categorizedAttachmentsResult;
+    private ReceiverAddressSourceTypeInt receiverAddressSourceType;
     private Integer vat;
 
     @Override
     public String toLog() {
         return String.format(
-                "recIndex=%d serviceLevel=%s deliveryType=%s sentAttemptMade=%s relatedRequestId=%s foreignState=%s productType=%s analogCost=%s numberOfPages=%s envelopeWeight=%s prepareRequestId=%s f24Attachments=%s vat=%s physicalAddress=%s",
+                "recIndex=%d serviceLevel=%s deliveryType=%s sentAttemptMade=%s relatedRequestId=%s foreignState=%s productType=%s analogCost=%s numberOfPages=%s envelopeWeight=%s prepareRequestId=%s f24Attachments=%s receiverAddressSourceType=%s vat=%s physicalAddress=%s",
                 recIndex,
                 serviceLevel,
                 deliveryType,
@@ -49,6 +50,7 @@ public class SendAnalogMessageDetailsInt extends CategoryTypeTimelineElementDeta
                 envelopeWeight,
                 prepareRequestId,
                 f24Attachments,
+                receiverAddressSourceType,
                 vat,
                 AuditLogUtils.SENSITIVE
         );
