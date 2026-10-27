@@ -52,6 +52,7 @@ public class CampaignServiceImpl implements CampaignService {
                 .serviceName(entity.getServiceName())
                 .sensitiveContent(entity.getSensitiveContent())
                 .stopOnViewed(entity.getStopOnViewed())
+                .stopOnPaid(entity.getStopOnPaid())
                 .taxonomyCode(entity.getTaxonomyCode())
                 .workflow(mapWorkflow(entity.getWorkflow()))
                 .build();
