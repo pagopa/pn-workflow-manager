@@ -11,6 +11,7 @@ import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.AttachmentDetailsInt
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.CategorizedAttachmentsResultInt;
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.ResultFilterEnum;
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.ResultFilterInt;
+import it.pagopa.pn.workflowmanager.dto.timeline.details.ReceiverAddressSourceTypeInt;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.model.*;
 import it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.paperchannel.PaperMessagesClient;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.ChannelEventProcessor;
@@ -98,6 +99,12 @@ public class PaperChannelHandler {
                 .prepareRequestId(event.getRequestId())
                 .statusDateTime(event.getStatusDateTime())
                 .failureDetailCode(Optional.ofNullable(event.getFailureDetailCode()).map(FailureDetailCodeEnum::getValue).orElse(null))
+                .receiverAddressSourceType(
+                        event.getReceiverAddressSourceType() == null
+                                ? null
+                                : ReceiverAddressSourceTypeInt.valueOf(
+                                event.getReceiverAddressSourceType().getValue())
+                )
                 .productType(event.getProductType());
 
         if (event.getCategorizedAttachments() != null) {

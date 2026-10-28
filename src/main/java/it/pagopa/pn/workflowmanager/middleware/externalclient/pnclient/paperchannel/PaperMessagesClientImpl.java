@@ -40,7 +40,12 @@ public class PaperMessagesClientImpl implements PaperMessagesClient {
         prepareRequest.setReceiverType(paperChannelPrepareRequest.getRecipientInt().getRecipientType().getValue());
         prepareRequest.setNotificationSentAt(paperChannelPrepareRequest.getNotificationInt().getSentAt());
         prepareRequest.setSenderPaId(paperChannelPrepareRequest.getNotificationInt().getSender().getPaId());
-
+        prepareRequest.setReceiverAddressSourceType(
+                paperChannelPrepareRequest.getReceiverAddressSourceType() == null
+                        ? null
+                        : ReceiverAddressSourceTypeEnum.fromValue(
+                        paperChannelPrepareRequest.getReceiverAddressSourceType().name())
+        );
         informalMessagesApi.sendInformalPrepareRequest(prepareRequest, cfg.getCxId());
 
         log.debug("[exit] prepare iun={}  address={} recipient={} requestId={} attachments={} relatedRequestId={}",
