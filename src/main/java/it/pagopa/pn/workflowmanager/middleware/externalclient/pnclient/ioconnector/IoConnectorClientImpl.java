@@ -58,7 +58,9 @@ public class IoConnectorClientImpl implements IoConnectorClient {
             notDoc -> new Attachment()
                     .fileKey(notDoc.getRef().getKey())
                     .id(notDoc.getRef().getKey())
-                    .name(notDoc.getRef().getKey())
+                    .name(notDoc.getTitle() != null
+                            ? notDoc.getTitle()
+                            : notDoc.getRef().getKey())
             ).toList();
     }
 
