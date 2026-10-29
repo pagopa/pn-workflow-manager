@@ -79,7 +79,10 @@ class PaperChannelSendClientImplTest {
         InformalPrepareRequest sent = captor.getValue();
         assertEquals(TEST_REQUEST_ID, sent.getRequestId());
         assertEquals(TEST_IUN, sent.getIun());
-        assertEquals(PRINT_TYPE_BN_FRONTE_RETRO, sent.getPrintType());
+        assertEquals(
+                PRINT_TYPE_BN_FRONTE_RETRO,
+                sent.getPrintType().getValue()
+        );
         assertEquals(InformalProposalProductTypeEnum.RS, sent.getProposalProductType());
         assertNotNull(sent.getReceiverAddress());
         String maskedAddress = sent.getReceiverAddress().getAddress();
