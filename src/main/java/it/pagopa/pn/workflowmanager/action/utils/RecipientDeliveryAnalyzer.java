@@ -19,7 +19,6 @@ import java.util.Set;
 
 import static it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt.SEND_DIGITAL_MESSAGE;
 import static it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt.SEND_DIGITAL_MESSAGE_FEEDBACK;
-import static it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.io.IoEventClassification.FAILED_TO_SEND;
 import static it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.io.IoEventClassification.SENDER_NOT_ALLOWED;
 
 @Component
