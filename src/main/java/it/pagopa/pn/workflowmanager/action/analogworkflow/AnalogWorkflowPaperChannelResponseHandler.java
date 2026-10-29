@@ -10,6 +10,7 @@ import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.CategorizedAttachmen
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.AnalogDeliveryTypeInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.PrepareAnalogDeliveryDetailsInt;
+import it.pagopa.pn.workflowmanager.dto.timeline.details.ReceiverAddressSourceTypeInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.RecipientRelatedTimelineElementDetails;
 import it.pagopa.pn.workflowmanager.exceptions.PnPaperChannelChangedCostException;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.event.PrepareEventInt;
@@ -65,6 +66,7 @@ public class AnalogWorkflowPaperChannelResponseHandler {
         String productType = response.getProductType();
         List<String> replacedF24AttachmentUrls = response.getReplacedF24AttachmentUrls();
         CategorizedAttachmentsResultInt categorizedAttachmentsResult = response.getCategorizedAttachmentsResult();
+        ReceiverAddressSourceTypeInt receiverAddressSourceType = response.getReceiverAddressSourceType();
         //se era una prepare di un analog, procedo con la send della simpleregistered
         if (isSimpleRegisteredLetterDelivery(timelineElementInternal)) {
             log.info("paperChannelPrepareResponseHandler prepare response is for simple registered letter, now registered letter can be sent iun={} requestId={} statusCode={} statusDesc={} statusDate={}", response.getIun(), response.getPrepareRequestId(), response.getStatusCode(), response.getStatusDetail(), response.getStatusDateTime());
@@ -77,7 +79,8 @@ public class AnalogWorkflowPaperChannelResponseHandler {
                                 receiverAddress,
                                 productType,
                                 replacedF24AttachmentUrls,
-                                categorizedAttachmentsResult);
+                                categorizedAttachmentsResult,
+                                receiverAddressSourceType);
                 String auditlogmessage = timelineId == null ? "nothing send" : "generated timelineId=" + timelineId;
                 auditLogEvent.generateSuccess(auditlogmessage).log();
                 paperChannelUtils.scheduleTimeoutForAnalogChannel(notification, recIndex);

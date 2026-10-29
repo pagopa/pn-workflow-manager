@@ -10,6 +10,7 @@ import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.CategorizedAttachmen
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.AnalogDeliveryTypeInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.PrepareAnalogDeliveryDetailsInt;
+import it.pagopa.pn.workflowmanager.dto.timeline.details.ReceiverAddressSourceTypeInt;
 import it.pagopa.pn.workflowmanager.exceptions.PnPaperChannelChangedCostException;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.event.PrepareEventInt;
 import it.pagopa.pn.workflowmanager.service.AuditLogService;
@@ -19,6 +20,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.NullSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -60,10 +64,13 @@ class AnalogWorkflowPaperChannelHandlerTest {
         );
     }
 
-    @Test
-    void paperChannelPrepareResponseHandler_OK_Success() {
+    @ParameterizedTest
+    @EnumSource(ReceiverAddressSourceTypeInt.class)
+    @NullSource
+    void paperChannelPrepareResponseHandler_OK_Success(ReceiverAddressSourceTypeInt addressSource) {
         // GIVEN
-        PrepareEventInt prepareEvent = createPrepareEvent(PrepareEventInt.STATUS_CODE.OK.name());
+        PrepareEventInt prepareEvent = createPrepareEvent(PrepareEventInt.STATUS_CODE.OK.name())
+                .toBuilder().receiverAddressSourceType(addressSource).build();
         NotificationInt notification = mock(NotificationInt.class);
         TimelineElementInternal timelineElement = createTimelineElement();
         PnAuditLogEvent auditLogEvent = mock(PnAuditLogEvent.class);
@@ -76,7 +83,7 @@ class AnalogWorkflowPaperChannelHandlerTest {
                 .thenReturn(auditLogEvent);
         when(paperChannelService.sendSimpleRegisteredLetter(
                 eq(notification), eq(REC_INDEX), eq(TEST_REQUEST_ID), any(PhysicalAddressInt.class),
-                eq(PRODUCT_TYPE), anyList(), any(CategorizedAttachmentsResultInt.class)))
+                eq(PRODUCT_TYPE), anyList(), any(CategorizedAttachmentsResultInt.class), eq(addressSource)))
                 .thenReturn(TIMELINE_ID);
         when(auditLogEvent.generateSuccess(anyString())).thenReturn(auditLogEvent);
         when(auditLogEvent.log()).thenReturn(auditLogEvent);
@@ -89,7 +96,7 @@ class AnalogWorkflowPaperChannelHandlerTest {
         // THEN
         verify(paperChannelService).sendSimpleRegisteredLetter(
                 eq(notification), eq(REC_INDEX), eq(TEST_REQUEST_ID), any(PhysicalAddressInt.class),
-                eq(PRODUCT_TYPE), anyList(), any(CategorizedAttachmentsResultInt.class));
+                eq(PRODUCT_TYPE), anyList(), any(CategorizedAttachmentsResultInt.class), eq(addressSource));
         verify(auditLogEvent).generateSuccess(anyString());
         verify(auditLogEvent).log();
         verify(paperChannelUtils).scheduleTimeoutForAnalogChannel(notification, REC_INDEX);
@@ -118,7 +125,7 @@ class AnalogWorkflowPaperChannelHandlerTest {
         );
 
         verify(paperChannelService, never()).sendSimpleRegisteredLetter(
-                any(), anyInt(), anyString(), any(), anyString(), anyList(), any());
+                any(), anyInt(), anyString(), any(), anyString(), anyList(), any(), any());
         verify(auditLogEvent).generateFailure(anyString(), any());
         verify(auditLogEvent).log();
     }
@@ -141,7 +148,7 @@ class AnalogWorkflowPaperChannelHandlerTest {
                 .thenReturn(auditLogEvent);
         when(paperChannelService.sendSimpleRegisteredLetter(
                 eq(notification), eq(REC_INDEX), eq(TEST_REQUEST_ID), any(PhysicalAddressInt.class),
-                eq(PRODUCT_TYPE), anyList(), any(CategorizedAttachmentsResultInt.class)))
+                eq(PRODUCT_TYPE), anyList(), any(CategorizedAttachmentsResultInt.class), isNull()))
                 .thenThrow(exception);
         when(auditLogEvent.generateWarning(anyString())).thenReturn(auditLogEvent);
         when(auditLogEvent.log()).thenReturn(auditLogEvent);
@@ -154,7 +161,7 @@ class AnalogWorkflowPaperChannelHandlerTest {
         // THEN
         verify(paperChannelService).sendSimpleRegisteredLetter(
                 eq(notification), eq(REC_INDEX), eq(TEST_REQUEST_ID), any(PhysicalAddressInt.class),
-                eq(PRODUCT_TYPE), anyList(), any(CategorizedAttachmentsResultInt.class));
+                eq(PRODUCT_TYPE), anyList(), any(CategorizedAttachmentsResultInt.class), isNull());
         verify(paperChannelService).prepareSimpleRegisteredLetter(notification, REC_INDEX);
         verify(auditLogEvent).generateWarning(anyString());
         verify(auditLogEvent).log();

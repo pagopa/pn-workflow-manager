@@ -31,6 +31,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.NullSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -999,8 +1000,11 @@ class TimelineUtilsTest {
         );
     }
 
-    @Test
-    void buildSendAnalogNotificationTimelineElement_AndBuildSendAnalogTimelineEventId() {
+    @ParameterizedTest
+    @EnumSource(ReceiverAddressSourceTypeInt.class)
+    @NullSource
+    void buildSendAnalogNotificationTimelineElement_AndBuildSendAnalogTimelineEventId(
+            ReceiverAddressSourceTypeInt addressSource) {
         // Arrange
         NotificationInt notification = createNotification();
         PhysicalAddressInt physicalAddress = PhysicalAddressInt.builder()
@@ -1026,6 +1030,7 @@ class TimelineUtilsTest {
                 .sendResponse(sendResponse)
                 .relatedRequestId(relatedRequestId)
                 .productType(productType)
+                .receiverAddressSourceType(addressSource)
                 .prepareRequestId(prepareRequestId)
                 .build();
 
@@ -1070,6 +1075,7 @@ class TimelineUtilsTest {
                 () -> assertEquals(100, details.getEnvelopeWeight()),
                 () -> assertEquals(replacedF24AttachmentUrls, details.getF24Attachments()),
                 () -> assertEquals(categorizedAttachmentsResult, details.getCategorizedAttachmentsResult()),
+                () -> assertEquals(addressSource, details.getReceiverAddressSourceType()),
                 () -> assertNotNull(details.getPrepareRequestId()),
                 () -> assertEquals(AnalogDeliveryTypeInt.RS, details.getDeliveryType())
         );
