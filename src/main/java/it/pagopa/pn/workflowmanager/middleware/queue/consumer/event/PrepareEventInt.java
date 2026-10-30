@@ -2,6 +2,7 @@ package it.pagopa.pn.workflowmanager.middleware.queue.consumer.event;
 
 import it.pagopa.pn.workflowmanager.dto.address.PhysicalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.CategorizedAttachmentsResultInt;
+import it.pagopa.pn.workflowmanager.dto.timeline.details.ReceiverAddressSourceTypeInt;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
@@ -19,6 +20,7 @@ public class PrepareEventInt extends PaperEventInt {
     private CategorizedAttachmentsResultInt categorizedAttachmentsResult;
     private String productType;
     private String failureDetailCode;
+    private ReceiverAddressSourceTypeInt receiverAddressSourceType;
 
     public enum STATUS_CODE{
         OK,

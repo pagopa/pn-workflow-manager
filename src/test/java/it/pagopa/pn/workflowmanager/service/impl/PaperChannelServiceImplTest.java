@@ -10,12 +10,16 @@ import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationIn
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.CategorizedAttachmentsResultInt;
 import it.pagopa.pn.workflowmanager.dto.ext.paperchannel.PaperChannelPrepareRequest;
+import it.pagopa.pn.workflowmanager.dto.timeline.details.ReceiverAddressSourceTypeInt;
 import it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.paperchannel.PaperMessagesClient;
 import it.pagopa.pn.workflowmanager.service.AuditLogService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -56,9 +60,10 @@ class PaperChannelServiceImplTest {
         );
     }
 
-    @Test
+    @ParameterizedTest
+    @EnumSource(ReceiverAddressSourceTypeInt.class)
     @ExtendWith(SpringExtension.class)
-    void prepareSimpleRegisteredLetter_Success() {
+    void prepareSimpleRegisteredLetter_Success(ReceiverAddressSourceTypeInt addressSource) {
         // GIVEN
         String iun = "TEST-IUN-001";
         Integer recIndex = 0;
@@ -68,6 +73,7 @@ class PaperChannelServiceImplTest {
 
         when(paperChannelUtils.retrieveAttachmentsToSend(any(), eq(recIndex)))
                 .thenReturn(List.of("attachment1"));
+        when(paperChannelUtils.resolveAddressSource(iun, recIndex)).thenReturn(addressSource);
 
         when(auditLogService.buildAuditLogEvent(eq(iun), eq(recIndex), eq(PnAuditLogEventType.AUD_COM_PD_PREPARE),
                 anyString(), anyString()))
@@ -86,7 +92,10 @@ class PaperChannelServiceImplTest {
         );
 
         // THEN
-        verify(paperMessagesClient, times(1)).prepare(any(PaperChannelPrepareRequest.class));
+        ArgumentCaptor<PaperChannelPrepareRequest> captor = ArgumentCaptor.forClass(PaperChannelPrepareRequest.class);
+        verify(paperMessagesClient).prepare(captor.capture());
+        Assertions.assertEquals(addressSource, captor.getValue().getReceiverAddressSourceType());
+        verify(paperChannelUtils).resolveAddressSource(iun, recIndex);
         verify(channelSenderUtils, times(1)).savePrepareAnalogDeliveryElement(
                 anyInt(), any(), anyString(), any(), anyInt(), any(), any()
         );
@@ -165,7 +174,8 @@ class PaperChannelServiceImplTest {
         Assertions.assertThrows(RuntimeException.class, () ->
                 service.sendSimpleRegisteredLetter(
                         notification, recIndex, prepareRequestId, receiverAddress,
-                        productType, replacedF24AttachmentUrls, categorizedAttachmentsResult
+                        productType, replacedF24AttachmentUrls, categorizedAttachmentsResult,
+                        ReceiverAddressSourceTypeInt.ANPR
                 )
         );
 

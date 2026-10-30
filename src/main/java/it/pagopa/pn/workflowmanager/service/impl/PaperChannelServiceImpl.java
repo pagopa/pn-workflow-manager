@@ -13,6 +13,7 @@ import it.pagopa.pn.workflowmanager.dto.ext.paperchannel.AnalogDtoInt;
 import it.pagopa.pn.workflowmanager.dto.ext.paperchannel.PaperChannelPrepareRequest;
 import it.pagopa.pn.workflowmanager.dto.ext.paperchannel.PaperChannelSendRequest;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.AnalogDeliveryTypeInt;
+import it.pagopa.pn.workflowmanager.dto.timeline.details.ReceiverAddressSourceTypeInt;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.model.SendResponse;
 import it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.paperchannel.PaperMessagesClient;
 import it.pagopa.pn.workflowmanager.service.AuditLogService;
@@ -44,6 +45,8 @@ public class PaperChannelServiceImpl implements PaperChannelService {
         NotificationRecipientInt recipient = getRecipientFromIndex(notification, recIndex);
         PhysicalAddressInt physicalAddressInt = recipient.getPhysicalAddress();
         String requestId = ChannelSenderUtils.buildPrepareAnalogDeliveryTimelineElementId(recIndex, notification.getIun(), FIRST_ATTEMPT);// Per l'invio di una notifica bonaria si presuppone che ci sia un solo invio
+        // recupero la fonte dell'indirizzo
+        ReceiverAddressSourceTypeInt resolvedAddressSource = paperChannelUtils.resolveAddressSource( notification.getIun(), recIndex );
         PaperChannelPrepareRequest paperChannelPrepareRequest = PaperChannelPrepareRequest.builder()
                 .requestId(requestId)
                 .notificationInt(notification)
@@ -51,6 +54,7 @@ public class PaperChannelServiceImpl implements PaperChannelService {
                 .paAddress(physicalAddressInt)
                 .analogType(PhysicalAddressInt.ANALOG_TYPE.SIMPLE_REGISTERED_LETTER)
                 .attachments(paperChannelUtils.retrieveAttachmentsToSend(notification, recIndex))
+                .receiverAddressSourceType(resolvedAddressSource)
                 .build();
         String msg = "Preparing simple registered letter notification with requestId {}";
         PnAuditLogEvent auditLogEvent = buildAuditLogEvent(notification.getIun(), recIndex, requestId, PnAuditLogEventType.AUD_COM_PD_PREPARE, msg);
@@ -81,7 +85,8 @@ public class PaperChannelServiceImpl implements PaperChannelService {
                                              PhysicalAddressInt receiverAddress,
                                              String productType,
                                              List<String> replacedF24AttachmentUrls,
-                                             CategorizedAttachmentsResultInt categorizedAttachmentsResult
+                                             CategorizedAttachmentsResultInt categorizedAttachmentsResult,
+                                             ReceiverAddressSourceTypeInt receiverAddressSourceType
     ) {
         log.info("Start sendSimpleRegisteredLetter - iun={} recIndex={}", notification.getIun(), recIndex);
         String msg = "Sending simple registered letter notification with requestId {}";
@@ -100,7 +105,8 @@ public class PaperChannelServiceImpl implements PaperChannelService {
         try {
             log.info("Sending simple registered letter - iun={} recIndex={} requestId={}", notification.getIun(), recIndex, prepareRequestId);
             SendResponse sendResponse = paperMessagesClient.send(paperChannelSendRequest);
-            AnalogDtoInt analogDtoInfo = buildAnalogDto(prepareRequestId, productType, sendResponse);
+            AnalogDtoInt analogDtoInfo = buildAnalogDto(prepareRequestId, productType,
+                    sendResponse, receiverAddressSourceType);
             timelineId =
                     paperChannelUtils.addSendAnalogNotificationToTimeline(
                             notification,

@@ -7,6 +7,7 @@ import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationIn
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
 import it.pagopa.pn.workflowmanager.dto.ext.paperchannel.PaperChannelPrepareRequest;
 import it.pagopa.pn.workflowmanager.dto.ext.paperchannel.PaperChannelSendRequest;
+import it.pagopa.pn.workflowmanager.dto.timeline.details.ReceiverAddressSourceTypeInt;
 import it.pagopa.pn.workflowmanager.exceptions.PnPaperChannelChangedCostException;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.api.InformalMessagesApi;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.api.PaperMessagesApi;
@@ -16,6 +17,9 @@ import it.pagopa.pn.workflowmanager.utils.NotificationTestBuilder;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.NullSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -44,8 +48,11 @@ class PaperChannelSendClientImplTest {
     @InjectMocks
     private PaperMessagesClientImpl client;
 
-    @Test
-    void shouldBuildPrepareRequestForSimpleRegisteredLetterWithNotificationSentAt() {
+    @ParameterizedTest
+    @EnumSource(ReceiverAddressSourceTypeInt.class)
+    @NullSource
+    void shouldBuildPrepareRequestForSimpleRegisteredLetterWithNotificationSentAt(
+            ReceiverAddressSourceTypeInt addressSource) {
         when(cfg.getCxId()).thenReturn(TEST_CX_ID);
 
         String TEST_IUN = "iun_12345";
@@ -69,6 +76,7 @@ class PaperChannelSendClientImplTest {
                 .recipientInt(recipient)
                 .notificationInt(notificationInt)
                 .attachments(List.of("Att"))
+                .receiverAddressSourceType(addressSource)
                 .build();
 
         client.prepare(paperChannelPrepareRequest);
@@ -79,7 +87,10 @@ class PaperChannelSendClientImplTest {
         InformalPrepareRequest sent = captor.getValue();
         assertEquals(TEST_REQUEST_ID, sent.getRequestId());
         assertEquals(TEST_IUN, sent.getIun());
-        assertEquals(PRINT_TYPE_BN_FRONTE_RETRO, sent.getPrintType());
+        assertEquals(
+                PRINT_TYPE_BN_FRONTE_RETRO,
+                sent.getPrintType().getValue()
+        );
         assertEquals(InformalProposalProductTypeEnum.RS, sent.getProposalProductType());
         assertNotNull(sent.getReceiverAddress());
         String maskedAddress = sent.getReceiverAddress().getAddress();
@@ -88,6 +99,8 @@ class PaperChannelSendClientImplTest {
         assertEquals(recipient.getRecipientType().getValue(), sent.getReceiverType());
         assertEquals(notificationInt.getSender().getPaId(), sent.getSenderPaId());
         assertEquals(SENT_AT, sent.getNotificationSentAt());
+        assertEquals(addressSource == null ? null : ReceiverAddressSourceTypeEnum.fromValue(addressSource.getValue()),
+                sent.getReceiverAddressSourceType());
     }
 
     @Test
