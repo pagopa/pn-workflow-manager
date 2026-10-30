@@ -12,6 +12,7 @@ public class NotificationDocumentInt {
     private String contentType;
     private Digests digests;
     private Ref ref;
+    private String title;
 
     @NoArgsConstructor
     @AllArgsConstructor
