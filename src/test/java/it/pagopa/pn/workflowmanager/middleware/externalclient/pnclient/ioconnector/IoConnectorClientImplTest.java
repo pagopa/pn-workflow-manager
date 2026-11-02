@@ -62,7 +62,7 @@ class IoConnectorClientImplTest {
         assertEquals(1, sent.getAttachments().size());
         assertEquals("doc-key-1", sent.getAttachments().getFirst().getFileKey());
         assertEquals("doc-key-1", sent.getAttachments().getFirst().getId());
-        assertEquals("doc-key-1", sent.getAttachments().getFirst().getName());
+        assertEquals("doc-title-doc-key-1", sent.getAttachments().getFirst().getName());
 
         assertEquals("2026-01-31T00:00:00Z", sent.getDueDate());
         assertNotNull(sent.getPaymentData());
@@ -89,6 +89,25 @@ class IoConnectorClientImplTest {
         assertNull(sent.getAttachments());
         assertNull(sent.getDueDate());
         assertNull(sent.getPaymentData());
+    }
+
+    @Test
+    void shouldUseDocumentKeyAsAttachmentNameWhenTitleIsMissing() {
+        IoMessageRequest ioMessageRequest = buildIoMessageRequest(
+                List.of(buildNotificationDocument("doc-key-3", null)),
+                List.of()
+        );
+
+        ioConnectorClient.sendMessage(ioMessageRequest);
+
+        ArgumentCaptor<MessageRequest> captor = ArgumentCaptor.forClass(MessageRequest.class);
+        verify(ioConnectorApi).sendIOMessage(eq("cx-id"), captor.capture());
+
+        MessageRequest sent = captor.getValue();
+        assertNotNull(sent.getAttachments());
+        assertEquals(1, sent.getAttachments().size());
+        assertEquals("doc-key-3", sent.getAttachments().getFirst().getFileKey());
+        assertEquals("doc-key-3", sent.getAttachments().getFirst().getName());
     }
 
     @Test
@@ -147,7 +166,12 @@ class IoConnectorClientImplTest {
     }
 
     private NotificationDocumentInt buildNotificationDocument(String key) {
+        return buildNotificationDocument(key, "doc-title-" + key);
+    }
+
+    private NotificationDocumentInt buildNotificationDocument(String key, String title) {
         return NotificationDocumentInt.builder()
+                .title(title)
                 .ref(NotificationDocumentInt.Ref.builder()
                         .key(key)
                         .build())

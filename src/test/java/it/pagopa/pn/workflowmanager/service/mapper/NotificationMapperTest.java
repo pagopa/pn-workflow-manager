@@ -71,6 +71,7 @@ class NotificationMapperTest {
                                         .versionToken("v_doc_inf_01"))
                                 .digests(new NotificationAttachmentDigests()
                                         .sha256("sha256_doc_inf_01"))
+                                .title("Document title")
                 ));
 
         NotificationInt actual = NotificationMapper.externalToInternal(informal);
@@ -103,6 +104,7 @@ class NotificationMapperTest {
         Assertions.assertEquals("doc_inf_01", actual.getDocuments().getFirst().getRef().getKey());
         Assertions.assertEquals("v_doc_inf_01", actual.getDocuments().getFirst().getRef().getVersionToken());
         Assertions.assertEquals("sha256_doc_inf_01", actual.getDocuments().getFirst().getDigests().getSha256());
+        Assertions.assertEquals("Document title", actual.getDocuments().getFirst().getTitle());
         Assertions.assertEquals(CommunicationType.INFORMAL, actual.getCommunicationType());
     }
 
