@@ -281,6 +281,30 @@ public enum TimelineEventId {
                     .withSentAttemptMade(eventId.getSentAttemptMade())
                     .build();
         }
+    },
+
+    PAYMENT_NOTICE_PAID("PAYMENT_NOTICE_PAID") {
+        @Override
+        public String buildEventId(EventId eventId) {
+            return new TimelineEventIdBuilder()
+                    .withCategory(this.getValue())
+                    .withIun(eventId.getIun())
+                    .withPaymentCode(buildPaymentCode(eventId))
+                    .build();
+        }
+
+        private String buildPaymentCode(EventId eventId) {
+            String paymentCode;
+            //per pagamenti PagoPa
+            paymentCode = "PPA";
+            if (eventId.getNoticeCode() != null) {
+                paymentCode += eventId.getNoticeCode();
+            }
+            if (eventId.getCreditorTaxId() != null) {
+                paymentCode += eventId.getCreditorTaxId();
+            }
+            return paymentCode;
+        }
     };
 
     public String buildEventId(EventId eventId) {
