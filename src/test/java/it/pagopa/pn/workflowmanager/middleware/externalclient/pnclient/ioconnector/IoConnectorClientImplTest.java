@@ -62,7 +62,7 @@ class IoConnectorClientImplTest {
         assertEquals(1, sent.getAttachments().size());
         assertEquals("doc-key-1", sent.getAttachments().getFirst().getFileKey());
         assertEquals("doc-key-1", sent.getAttachments().getFirst().getId());
-        assertEquals("doc-title-doc-key-1", sent.getAttachments().getFirst().getName());
+        assertEquals("doc-title-doc-key-1.pdf", sent.getAttachments().getFirst().getName());
 
         assertEquals("2026-01-31T00:00:00Z", sent.getDueDate());
         assertNotNull(sent.getPaymentData());
