@@ -53,6 +53,7 @@ public class PnWorkflowManagerConfigs {
         private String safeStorageEvents;
         private String informalQueue;
         private String nationalRegistriesToWorkflowManager;
+        private String noticePayment;
     }
 
     @Data

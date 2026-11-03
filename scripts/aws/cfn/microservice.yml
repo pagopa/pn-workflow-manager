@@ -561,6 +561,7 @@ Resources:
         ContainerEnvEntry21: !Sub 'PN_WORKFLOWMANAGER_USERATTRIBUTESBASEURL=http://${ApplicationLoadBalancerDomain}:8080'
         ContainerEnvEntry22: !Sub 'PN_WORKFLOWMANAGER_NATIONALREGISTRIESBASEURL=http://${ApplicationLoadBalancerDomain}:8080'
         ContainerEnvEntry23: !Sub 'PN_WORKFLOWMANAGER_TOPICS_NATIONALREGISTRIESTOWORKFLOWMANAGER=${NationalRegistries2WorkflowManagerQueueName}'
+        ContainerEnvEntry24: !Sub 'PN_WORKFLOWMANAGER_TOPICS_NOTICEPAYMENT=${InformalPaymentsEventQueueName}'
         ApplicativeEnvFileChecksum: !Ref ApplicativeEnvFileChecksum
         MappedPaths: '/workflow-private/*'
         ECSClusterName: !Ref ECSClusterName
