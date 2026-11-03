@@ -150,6 +150,7 @@ public class TimelineUtils {
                 .prepareRequestId(analogDtoInfo.getPrepareRequestId())
                 .vat(notification.getVat())
                 .deliveryType(analogDeliveryType)
+                .receiverAddressSourceType(analogDtoInfo.getReceiverAddressSourceType())
                 .build();
 
         TimelineElementInternal.TimelineElementInternalBuilder timelineBuilder = TimelineElementInternal.builder();
