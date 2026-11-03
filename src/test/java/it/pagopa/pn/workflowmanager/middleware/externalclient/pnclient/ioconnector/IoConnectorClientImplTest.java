@@ -111,6 +111,44 @@ class IoConnectorClientImplTest {
     }
 
     @Test
+    void shouldUseDocumentTitleAsAttachmentNameAndAddExtension() {
+        IoMessageRequest ioMessageRequest = buildIoMessageRequest(
+                List.of(buildNotificationDocument("doc-key-3", "Document Title")),
+                List.of()
+        );
+
+        ioConnectorClient.sendMessage(ioMessageRequest);
+
+        ArgumentCaptor<MessageRequest> captor = ArgumentCaptor.forClass(MessageRequest.class);
+        verify(ioConnectorApi).sendIOMessage(eq("cx-id"), captor.capture());
+
+        MessageRequest sent = captor.getValue();
+        assertNotNull(sent.getAttachments());
+        assertEquals(1, sent.getAttachments().size());
+        assertEquals("doc-key-3", sent.getAttachments().getFirst().getFileKey());
+        assertEquals("Document Title.pdf", sent.getAttachments().getFirst().getName());
+    }
+
+    @Test
+    void shouldUseDocumentTitleAsAttachmentNameWithoutAddingExtension() {
+        IoMessageRequest ioMessageRequest = buildIoMessageRequest(
+                List.of(buildNotificationDocument("doc-key-3", "Document Title.pdf")),
+                List.of()
+        );
+
+        ioConnectorClient.sendMessage(ioMessageRequest);
+
+        ArgumentCaptor<MessageRequest> captor = ArgumentCaptor.forClass(MessageRequest.class);
+        verify(ioConnectorApi).sendIOMessage(eq("cx-id"), captor.capture());
+
+        MessageRequest sent = captor.getValue();
+        assertNotNull(sent.getAttachments());
+        assertEquals(1, sent.getAttachments().size());
+        assertEquals("doc-key-3", sent.getAttachments().getFirst().getFileKey());
+        assertEquals("Document Title.pdf", sent.getAttachments().getFirst().getName());
+    }
+
+    @Test
     void shouldUseFirstPaymentWhenRecipientHasMoreThanOnePayment() {
         IoMessageRequest ioMessageRequest = buildIoMessageRequest(
                 List.of(buildNotificationDocument("doc-key-2")),
