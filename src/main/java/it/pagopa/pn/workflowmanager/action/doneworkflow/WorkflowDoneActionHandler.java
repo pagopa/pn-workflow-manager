@@ -63,11 +63,13 @@ public class WorkflowDoneActionHandler {
         switch (status) {
             case REACHED:
                 addTimelineElement(timelineUtils.buildWorkflowDoneReachedTimelineElement(recIndex, notification,
-                        getWorkflowDoneReachedTimelineElementId(recIndex, notification.getIun()), sourceTimelineId, completionFeedback),notification);
+                        getWorkflowDoneReachedTimelineElementId(recIndex, notification.getIun()), sourceTimelineId, completionFeedback, null),notification);
+                //ToDo: i null verranno eliminati a partire dal task PN-22242
                 break;
             case UNREACHED:
                 addTimelineElement(timelineUtils.buildWorkflowDoneUnreachedTimelineElement(recIndex, notification,
-                        getWorkflowDoneUnreachedTimelineElementId(recIndex, notification.getIun()), sourceTimelineId, completionFeedback),notification);
+                        getWorkflowDoneUnreachedTimelineElementId(recIndex, notification.getIun()), sourceTimelineId, completionFeedback, null),notification);
+                //ToDo: i null verranno eliminati a partire dal task PN-22242
                 break;
 
             case UNDELIVERABLE:

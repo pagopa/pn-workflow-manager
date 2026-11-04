@@ -84,11 +84,12 @@ public class TimelineUtils {
     }
 
     public TimelineElementInternal buildWorkflowEndedUndeliverableTimelineElement(Integer recIndex, NotificationInt notification,
-                                                                              String eventId) {
+                                                                              String eventId, Integer notificationCost) {
         log.debug("buildWorkflowEndedUndeliverableTimelineElement - IUN={} and id={}", notification.getIun(), recIndex);
 
         WorkflowEndedUndeliverableDetailsInt details = WorkflowEndedUndeliverableDetailsInt.builder()
                 .recIndex(recIndex)
+                .notificationCost(notificationCost)
                 .build();
 
         return buildTimeline(notification, TimelineElementCategoryInt.WORKFLOW_ENDED_UNDELIVERABLE, eventId, details);
@@ -269,11 +270,12 @@ public class TimelineUtils {
     }
 
     public TimelineElementInternal buildWorkflowEndedUnreachedTimelineElement(Integer recIndex, NotificationInt notification,
-                                                                            String eventId) {
+                                                                            String eventId, Integer notificationCost) {
         log.debug("buildWorkflowEndedUnreachedTimelineElement - IUN={} and id={}", notification.getIun(), recIndex);
 
         WorkflowEndedUnreachedDetailsInt details = WorkflowEndedUnreachedDetailsInt.builder()
                 .recIndex(recIndex)
+                .notificationCost(notificationCost)
                 .build();
 
 
@@ -289,12 +291,14 @@ public class TimelineUtils {
     }
 
     public TimelineElementInternal buildWorkflowEndedReachedTimelineElement(Integer recIndex, NotificationInt notification,
-                                                                           String eventId, String sourceTimelineId) {
+                                                                           String eventId, String sourceTimelineId,
+                                                                            Integer notificationCost) {
         log.debug("buildWorkflowEndedReachedTimelineElement - IUN={} and id={}", notification.getIun(), recIndex);
 
         WorkflowEndedReachedDetailsInt details = WorkflowEndedReachedDetailsInt.builder()
                 .recIndex(recIndex)
                 .sourceElementId(sourceTimelineId)
+                .notificationCost(notificationCost)
                 .build();
 
 
@@ -310,13 +314,15 @@ public class TimelineUtils {
     }
 
     public TimelineElementInternal buildWorkflowDoneUnreachedTimelineElement(Integer recIndex, NotificationInt notification,
-                                                                             String eventId, String sourceTimelineId, DesiredFeedbackType completionFeedback) {
+                                                                             String eventId, String sourceTimelineId,
+                                                                             DesiredFeedbackType completionFeedback, Integer notificationCost) {
         log.debug("buildWorkflowDoneUnreachedTimelineElement - IUN={} and id={}", notification.getIun(), recIndex);
 
         WorkflowDoneUnreachedDetailsInt details = WorkflowDoneUnreachedDetailsInt.builder()
                 .recIndex(recIndex)
                 .sourceElementId(sourceTimelineId)
                 .completionFeedback(completionFeedback.name())
+                .notificationCost(notificationCost)
                 .build();
 
 
@@ -332,13 +338,15 @@ public class TimelineUtils {
     }
 
     public TimelineElementInternal buildWorkflowDoneReachedTimelineElement(Integer recIndex, NotificationInt notification,
-                                                                            String eventId, String sourceTimelineId, DesiredFeedbackType completionFeedback) {
+                                                                            String eventId, String sourceTimelineId,
+                                                                           DesiredFeedbackType completionFeedback, Integer notificationCost) {
         log.debug("buildWorkflowDoneReachedTimelineElement - IUN={} and id={}", notification.getIun(), recIndex);
 
         WorkflowDoneReachedDetailsInt details = WorkflowDoneReachedDetailsInt.builder()
                 .recIndex(recIndex)
                 .sourceElementId(sourceTimelineId)
                 .completionFeedback(completionFeedback.name())
+                .notificationCost(notificationCost)
                 .build();
 
 
@@ -549,8 +557,10 @@ public class TimelineUtils {
                     recIndex,
                     notificationInt,
                     getWorkflowEndedReachedTimelineElementId(recIndex, iun),
-                    sourceTimelineId
+                    sourceTimelineId,
+                    null
             );
+            //ToDo: i null verranno eliminati a partire dal task PN-22242
             timelineService.addTimelineElement(completedReachedTimelineElement, notificationInt);
         }
     }

@@ -54,17 +54,20 @@ public class EndWorkflowActionHandler {
         switch (status) {
             case REACHED:
                 addTimelineElement(timelineUtils.buildWorkflowEndedReachedTimelineElement(recIndex, notification,
-                        getWorkflowEndedReachedTimelineElementId(recIndex, notification.getIun()), sourceTimelineId),notification);
+                        getWorkflowEndedReachedTimelineElementId(recIndex, notification.getIun()), sourceTimelineId, null),notification);
+                //ToDo: i null verranno eliminati a partire dal task PN-22242
                 break;
 
             case UNREACHED:
                 addTimelineElement(timelineUtils.buildWorkflowEndedUnreachedTimelineElement(recIndex, notification,
-                        getWorkflowEndedUnreachedTimelineElementId(recIndex, notification.getIun())),notification);
+                        getWorkflowEndedUnreachedTimelineElementId(recIndex, notification.getIun()),null),notification);
+                //ToDo: i null verranno eliminati a partire dal task PN-22242
                 break;
 
             case UNDELIVERABLE:
                 addTimelineElement(timelineUtils.buildWorkflowEndedUndeliverableTimelineElement(recIndex, notification,
-                        getWorkflowEndedUndeliverableTimelineElementId(recIndex, notification.getIun())),notification);
+                        getWorkflowEndedUndeliverableTimelineElementId(recIndex, notification.getIun()),null),notification);
+                //ToDo: i null verranno eliminati a partire dal task PN-22242
                 break;
         }
     }

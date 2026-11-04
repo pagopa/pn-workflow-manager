@@ -55,9 +55,10 @@ class InformalWorkflowDetailsIntTest {
                 .recIndex(4)
                 .sourceElementId("sourceElementId")
                 .completionFeedback("SENT")
+                .notificationCost(100)
                 .build();
 
-        Assertions.assertEquals("recIndex=4 sourceElementId=sourceElementId completionFeedback=SENT", details.toLog());
+        Assertions.assertEquals("recIndex=4 sourceElementId=sourceElementId completionFeedback=SENT notificationCost=100", details.toLog());
     }
 
     @Test
@@ -66,9 +67,10 @@ class InformalWorkflowDetailsIntTest {
                 .recIndex(4)
                 .sourceElementId("sourceElementId")
                 .completionFeedback("SENT")
+                .notificationCost(100)
                 .build();
 
-        Assertions.assertEquals("recIndex=4 sourceElementId=sourceElementId completionFeedback=SENT", details.toLog());
+        Assertions.assertEquals("recIndex=4 sourceElementId=sourceElementId completionFeedback=SENT notificationCost=100", details.toLog());
     }
 
     @Test
@@ -76,11 +78,12 @@ class InformalWorkflowDetailsIntTest {
         WorkflowEndedReachedDetailsInt details = WorkflowEndedReachedDetailsInt.builder()
                 .recIndex(5)
                 .sourceElementId("elementId")
+                .notificationCost(100)
                 .build();
 
         Assertions.assertEquals(
-                String.format("recIndex=%d sourceElementId=%s",
-                        5, "elementId"),
+                String.format("recIndex=%d sourceElementId=%s notificationCost=%d",
+                        5, "elementId", 100),
                 details.toLog()
         );
     }
@@ -89,17 +92,19 @@ class InformalWorkflowDetailsIntTest {
     void workflowEndedUndeliverableToLog() {
         WorkflowEndedUndeliverableDetailsInt details = WorkflowEndedUndeliverableDetailsInt.builder()
                 .recIndex(6)
+                .notificationCost(100)
                 .build();
 
-        Assertions.assertEquals("recIndex=6", details.toLog());
+        Assertions.assertEquals("recIndex=6 notificationCost=100", details.toLog());
     }
 
     @Test
     void workflowEndedUnreachedToLog() {
         WorkflowEndedUnreachedDetailsInt details = WorkflowEndedUnreachedDetailsInt.builder()
                 .recIndex(7)
+                .notificationCost(100)
                 .build();
 
-        Assertions.assertEquals("recIndex=7", details.toLog());
+        Assertions.assertEquals("recIndex=7 notificationCost=100", details.toLog());
     }
 }
