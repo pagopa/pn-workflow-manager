@@ -81,7 +81,8 @@ class WorkflowDoneActionHandlerTest {
         when(recipientDeliveryAnalyzer.getDeliveryInfo(eq(List.of(timelineElement)), eq(campaign), eq(TEST_REC_INDEX),
                 eq(RecipientTypeInt.PF))).thenReturn(new RecipientDeliveryInfo(RecipientDeliveryStatus.REACHED, TEST_TIMELINE_ID));
         when(timelineUtils.buildWorkflowDoneReachedTimelineElement(eq(TEST_REC_INDEX), eq(notification), 
-                anyString(), eq(TEST_TIMELINE_ID), eq(TEST_COMPLETION_FEEDBACK))).thenReturn(timelineElement);
+                anyString(), eq(TEST_TIMELINE_ID), eq(TEST_COMPLETION_FEEDBACK),isNull())).thenReturn(timelineElement);
+        //ToDo: i null verranno eliminati a partire dal task PN-22242
 
         // Act
         handler.doneWorkflowAction(List.of(timelineElement), TEST_IUN, TEST_REC_INDEX, TEST_TIMELINE_ID, workflowDoneDetails);
@@ -92,7 +93,8 @@ class WorkflowDoneActionHandlerTest {
         verify(recipientDeliveryAnalyzer).getDeliveryInfo(eq(List.of(timelineElement)),eq(campaign), eq(TEST_REC_INDEX),
                 eq(RecipientTypeInt.PF));
         verify(timelineUtils).buildWorkflowDoneReachedTimelineElement(eq(TEST_REC_INDEX), eq(notification), 
-                anyString(), eq(TEST_TIMELINE_ID), eq(TEST_COMPLETION_FEEDBACK));
+                anyString(), eq(TEST_TIMELINE_ID), eq(TEST_COMPLETION_FEEDBACK),isNull());
+        //ToDo: i null verranno eliminati a partire dal task PN-22242
         verify(timelineService).addTimelineElement(timelineElement, notification);
         verifyNoMoreInteractions(timelineUtils);
     }
@@ -110,7 +112,8 @@ class WorkflowDoneActionHandlerTest {
         when(recipientDeliveryAnalyzer.getDeliveryInfo(eq(List.of(timelineElement)),eq(campaign), eq(TEST_REC_INDEX),
                 eq(RecipientTypeInt.PF))).thenReturn(new RecipientDeliveryInfo(RecipientDeliveryStatus.UNREACHED));
         when(timelineUtils.buildWorkflowDoneUnreachedTimelineElement(eq(TEST_REC_INDEX), eq(notification), 
-                anyString(), eq(TEST_TIMELINE_ID), eq(TEST_COMPLETION_FEEDBACK))).thenReturn(timelineElement);
+                anyString(), eq(TEST_TIMELINE_ID), eq(TEST_COMPLETION_FEEDBACK),isNull())).thenReturn(timelineElement);
+        //ToDo: i null verranno eliminati a partire dal task PN-22242
 
         // Act
         handler.doneWorkflowAction(List.of(timelineElement), TEST_IUN, TEST_REC_INDEX, TEST_TIMELINE_ID, workflowDoneDetails);
@@ -121,7 +124,8 @@ class WorkflowDoneActionHandlerTest {
         verify(recipientDeliveryAnalyzer).getDeliveryInfo(eq(List.of(timelineElement)),eq(campaign), eq(TEST_REC_INDEX),
                 eq(RecipientTypeInt.PF));
         verify(timelineUtils).buildWorkflowDoneUnreachedTimelineElement(eq(TEST_REC_INDEX), eq(notification), 
-                anyString(), eq(TEST_TIMELINE_ID), eq(TEST_COMPLETION_FEEDBACK));
+                anyString(), eq(TEST_TIMELINE_ID), eq(TEST_COMPLETION_FEEDBACK),isNull());
+        //ToDo: i null verranno eliminati a partire dal task PN-22242
         verify(timelineService).addTimelineElement(timelineElement, notification);
         verifyNoMoreInteractions(timelineUtils);
     }
