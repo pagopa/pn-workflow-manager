@@ -1,7 +1,7 @@
 package it.pagopa.pn.workflowmanager.service.mapper;
 
+import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.*;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.CommunicationType;
-import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.StatusInfoInternal;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt;
@@ -10,6 +10,8 @@ import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.m
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Slf4j
 @Component
@@ -22,6 +24,34 @@ public class TimelineServiceMapper {
         return new NewTimelineElement()
                 .timelineElement(toTimelineElement(timelineElementInternal))
                 .notificationInfo(toNotificationInfo(notificationInt));
+    }
+
+    public NotificationHistoryResponseInt toNotificationHistoryResponseInt(NotificationHistoryResponse response) {
+        if (response == null) {
+            return null;
+        }
+        return NotificationHistoryResponseInt.builder()
+                .notificationStatus(toNotificationStatusInt(response.getNotificationStatus()))
+                .notificationStatusHistory(response.getNotificationStatusHistory() == null ? List.of()
+                        : response.getNotificationStatusHistory().stream()
+                        .map(this::toNotificationStatusHistoryElementInt).toList())
+                .timeline(response.getTimeline() == null ? List.of()
+                        : response.getTimeline().stream()
+                        .filter(element -> TimelineElementCategoryInt.isKnownCategory(element.getCategory().getValue()))
+                        .map(this::toTimelineElementInternal).toList())
+                .build();
+    }
+
+    private NotificationStatusHistoryElementInt toNotificationStatusHistoryElementInt(NotificationStatusHistoryElement element) {
+        return NotificationStatusHistoryElementInt.builder()
+                .status(toNotificationStatusInt(element.getStatus()))
+                .activeFrom(element.getActiveFrom())
+                .relatedTimelineElements(element.getRelatedTimelineElements())
+                .build();
+    }
+
+    private NotificationStatusInt toNotificationStatusInt(NotificationStatus status) {
+        return status == null ? null : NotificationStatusInt.valueOf(status.getValue());
     }
 
     public TimelineElementInternal toTimelineElementInternal(TimelineElement timelineElement) {
