@@ -4,7 +4,6 @@ import it.pagopa.pn.workflowmanager.dto.address.DigitalAddressSourceInt;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
 import jakarta.annotation.PostConstruct;
 import lombok.AllArgsConstructor;
-import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.util.Comparator;
@@ -12,11 +11,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-@Component
 @AllArgsConstructor
 public class ChannelAddressSourceConfigResolver {
 
-    private final SearchDigitalDomicileParameterConsumer parameterConsumer;
+    private final SearchDigitalDomicileConfigProvider parameterConsumer;
     private final AddressSearchRegistry addressSearchRegistry;
 
     @PostConstruct

@@ -1,6 +1,6 @@
 package it.pagopa.pn.workflowmanager.service.impl;
 
-import it.pagopa.pn.commons.db.campaign.CampaignServiceCachedProvider;
+import it.pagopa.pn.commons.db.campaign.CampaignProvider;
 import it.pagopa.pn.commons.db.campaign.entity.CampaignEntity;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.CampaignStatus;
@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 @Service
 public class CampaignServiceImpl implements CampaignService {
-    private final CampaignServiceCachedProvider campaignServiceCachedProvider;
+    private final CampaignProvider campaignServiceCachedProvider;
 
     @Override
     public Campaign getCampaignByCampaignIdAndSenderId(String campaignId, String senderId) {

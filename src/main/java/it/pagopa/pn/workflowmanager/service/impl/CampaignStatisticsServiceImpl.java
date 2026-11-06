@@ -1,6 +1,6 @@
 package it.pagopa.pn.workflowmanager.service.impl;
 
-import it.pagopa.pn.commons.db.campaign.CampaignServiceCachedProvider;
+import it.pagopa.pn.commons.db.campaign.CampaignProvider;
 import it.pagopa.pn.workflowmanager.exceptions.PnCampaignNotFoundException;
 import it.pagopa.pn.workflowmanager.exceptions.PnCampaignStatisticsNotFoundException;
 import it.pagopa.pn.workflowmanager.generated.openapi.server.v1.dto.CampaignStatisticsResponse;
@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service;
 public class CampaignStatisticsServiceImpl implements CampaignStatisticsService {
 
     private final CampaignStatisticsEntityDao campaignStatisticsEntityDao;
-    private final CampaignServiceCachedProvider campaignServiceCachedProvider;
+    private final CampaignProvider campaignServiceCachedProvider;
 
     @Override
     public CampaignStatisticsResponse getCampaignStatistics(
