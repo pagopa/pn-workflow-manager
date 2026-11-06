@@ -29,6 +29,7 @@ public class Campaign {
     private Boolean sensitiveContent;
     private Boolean stopOnViewed;
     private String taxonomyCode;
+    private Boolean stopOnPaid;
     private List<WorkFlowEntity> workflow;
 
     public WorkFlowEntity getWorkflowByChannel(ChannelType channelType) {
