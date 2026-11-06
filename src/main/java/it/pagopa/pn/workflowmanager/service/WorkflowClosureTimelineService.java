@@ -16,4 +16,6 @@ public interface WorkflowClosureTimelineService {
     void saveWorkflowEndedUnreachedTimelineElement(int recIndex, NotificationInt notification, List<TimelineElementInternal> timelineElements);
 
     void saveWorkflowEndedUndeliverableTimelineElement(int recIndex, NotificationInt notification, List<TimelineElementInternal> timelineElements);
+
+    void handleTransitionToReachedStatusIfNecessary(NotificationInt notificationInt, int recIndex, String sourceTimelineId);
 }

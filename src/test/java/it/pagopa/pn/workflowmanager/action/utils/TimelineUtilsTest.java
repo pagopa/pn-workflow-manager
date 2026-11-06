@@ -7,7 +7,10 @@ import it.pagopa.pn.workflowmanager.dto.address.PhysicalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.event.NotificationPaidInt;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.DesiredFeedbackType;
-import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.*;
+import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
+import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
+import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationSenderInt;
+import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.RecipientTypeInt;
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.AttachmentDetailsInt;
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.CategorizedAttachmentsResultInt;
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.ResponseStatusInt;
@@ -17,11 +20,9 @@ import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineEventId;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.*;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.model.SendResponse;
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.model.NotificationStatus;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.model.SendingReceipt;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.event.SendEventInt;
 import it.pagopa.pn.workflowmanager.service.TimelineService;
-import it.pagopa.pn.workflowmanager.service.WorkflowClosureTimelineService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -46,8 +47,6 @@ class TimelineUtilsTest {
 
     @Mock
     private TimelineService timelineService;
-    @Mock
-    private WorkflowClosureTimelineService workflowClosureTimelineService;
 
     private TimelineUtils timelineUtils;
 
@@ -60,7 +59,7 @@ class TimelineUtilsTest {
 
     @BeforeEach
     void setup() {
-        timelineUtils = new TimelineUtils(timelineService, workflowClosureTimelineService);
+        timelineUtils = new TimelineUtils(timelineService);
     }
 
     @Test
@@ -703,46 +702,6 @@ class TimelineUtilsTest {
         Assertions.assertEquals(ChannelType.IO.name(), detailsInt.getChannel());
         Assertions.assertEquals(sourceId, detailsInt.getSourceElementId());
         Assertions.assertEquals(notificationDate, detailsInt.getNotificationDate());
-    }
-
-    @ParameterizedTest
-    @EnumSource(value = NotificationStatus.class, names = {"COMPLETED_UNREACHED", "UNDELIVERABLE"})
-    void handleTransitionToReachedStatusIfNecessaryPersistWorkflowEndedReachedElement(NotificationStatus status) {
-        NotificationInt notification = createNotification();
-        int recIndex = 0;
-        String sourceId = "source_001";
-
-        NotificationHistoryResponseInt historyResponse = NotificationHistoryResponseInt.builder()
-                .notificationStatus(NotificationStatusInt.valueOf(status.getValue()))
-                .notificationStatusHistory(List.of())
-                .timeline(List.of())
-                .build();
-        when(timelineService.getTimelineAndStatusHistory(notification.getIun(), notification.getRecipients().size(), notification.getSentAt()))
-                        .thenReturn(historyResponse);
-
-        timelineUtils.handleTransitionToReachedStatusIfNecessary(notification, recIndex, sourceId);
-
-        verify(workflowClosureTimelineService).saveWorkflowEndedReachedTimelineElement(recIndex, sourceId, notification, List.of());
-    }
-
-    @Test
-    void handleTransitionToReachedStatusIfNecessaryDoesntPersistWorkflowEndedReachedElement() {
-        NotificationInt notification = createNotification();
-        int recIndex = 0;
-        String sourceId = "source_001";
-
-        NotificationHistoryResponseInt historyResponse = NotificationHistoryResponseInt.builder()
-                .notificationStatus(NotificationStatusInt.PROCESSING)
-                .notificationStatusHistory(List.of())
-                .timeline(List.of())
-                .build();
-        when(timelineService.getTimelineAndStatusHistory(notification.getIun(), notification.getRecipients().size(), notification.getSentAt()))
-                .thenReturn(historyResponse);
-
-        timelineUtils.handleTransitionToReachedStatusIfNecessary(notification, recIndex, sourceId);
-
-        verify(timelineService).getTimelineAndStatusHistory(notification.getIun(), notification.getRecipients().size(), notification.getSentAt());
-        verifyNoInteractions(workflowClosureTimelineService);
     }
 
     @Test

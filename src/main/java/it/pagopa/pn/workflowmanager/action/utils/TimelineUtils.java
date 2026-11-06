@@ -8,10 +8,8 @@ import it.pagopa.pn.workflowmanager.dto.address.PhysicalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.event.NotificationPaidInt;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.DesiredFeedbackType;
-import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationHistoryResponseInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
-import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationStatusInt;
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.CategorizedAttachmentsResultInt;
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.ResponseStatusInt;
 import it.pagopa.pn.workflowmanager.dto.ext.paperchannel.AnalogDtoInt;
@@ -23,7 +21,6 @@ import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.mode
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.model.SendingReceipt;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.event.SendEventInt;
 import it.pagopa.pn.workflowmanager.service.TimelineService;
-import it.pagopa.pn.workflowmanager.service.WorkflowClosureTimelineService;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,7 +40,6 @@ import static it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCo
 @RequiredArgsConstructor
 public class TimelineUtils {
     private final TimelineService timelineService;
-    private final WorkflowClosureTimelineService workflowClosureTimelineService;
 
     public TimelineElementInternal buildTimeline(NotificationInt notification,
                                                  TimelineElementCategoryInt category,
@@ -545,22 +541,6 @@ public class TimelineUtils {
         );
         log.error(msg);
         return new PnInternalException(msg, ERROR_CODE_TIMELINESERVICE_TIMELINE_ELEMENT_NOT_PRESENT);
-    }
-
-    public void handleTransitionToReachedStatusIfNecessary(NotificationInt notificationInt, int recIndex, String sourceTimelineId) {
-        String iun = notificationInt.getIun();
-        int numOfRecipients = notificationInt.getRecipients().size();
-        Instant sentAt = notificationInt.getSentAt();
-        NotificationHistoryResponseInt history = timelineService.getTimelineAndStatusHistory(iun, numOfRecipients, sentAt);
-        NotificationStatusInt currentStatus = history.getNotificationStatus();
-        if (currentStatus == NotificationStatusInt.COMPLETED_UNREACHED || currentStatus == NotificationStatusInt.UNDELIVERABLE) {
-            log.info("Notification {} is in COMPLETED_UNREACHED status, saving element with category WORKFLOW_ENDED_REACHED for recIndex {}", iun, recIndex);
-            workflowClosureTimelineService.saveWorkflowEndedReachedTimelineElement(recIndex,
-                    sourceTimelineId,
-                    notificationInt,
-                    history.getTimeline()
-            );
-        }
     }
 
     public TimelineElementInternal buildSendDigitalMessageProgress(
