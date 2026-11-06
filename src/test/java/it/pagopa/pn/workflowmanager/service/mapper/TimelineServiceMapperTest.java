@@ -2,11 +2,13 @@ package it.pagopa.pn.workflowmanager.service.mapper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.pagopa.pn.workflowmanager.dto.address.InformalDigitalAddressInt;
-import it.pagopa.pn.workflowmanager.dto.timeline.details.*;
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.model.*;
+import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationHistoryResponseInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
+import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationStatusInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
+import it.pagopa.pn.workflowmanager.dto.timeline.details.*;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.model.*;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
@@ -167,6 +169,38 @@ class TimelineServiceMapperTest {
         assertEquals(TimelineElementCategoryInt.INFORMAL_NOTIFICATION_VIEWED, result.getCategory());
         assertNotNull(result.getDetails());
         assertNotNull(result.getStatusInfo());
+    }
+
+    @Test
+    void toNotificationHistoryResponseInt_mapsStatusHistoryAndKnownTimelineElements() {
+        Instant activeFrom = Instant.parse("2026-01-02T03:04:05Z");
+        NotificationStatusHistoryElement statusHistoryElement = new NotificationStatusHistoryElement();
+        statusHistoryElement.setStatus(NotificationStatus.COMPLETED_UNREACHED);
+        statusHistoryElement.setActiveFrom(activeFrom);
+        statusHistoryElement.setRelatedTimelineElements(List.of("SOURCE_ELEMENT"));
+
+        TimelineElement knownElement = new TimelineElement()
+                .iun("IUN_TEST")
+                .elementId("KNOWN_ELEMENT")
+                .category(TimelineCategory.INFORMAL_NOTIFICATION_VIEWED);
+        TimelineElement unknownElement = new TimelineElement()
+                .iun("IUN_TEST")
+                .elementId("UNKNOWN_ELEMENT")
+                .category(TimelineCategory.AAR_GENERATION);
+
+        NotificationHistoryResponse response = new NotificationHistoryResponse();
+        response.setNotificationStatus(NotificationStatus.COMPLETED_UNREACHED);
+        response.setNotificationStatusHistory(List.of(statusHistoryElement));
+        response.setTimeline(List.of(knownElement, unknownElement));
+
+        NotificationHistoryResponseInt result = timelineServiceMapper.toNotificationHistoryResponseInt(response);
+
+        assertEquals(NotificationStatusInt.COMPLETED_UNREACHED, result.getNotificationStatus());
+        assertEquals(NotificationStatusInt.COMPLETED_UNREACHED, result.getNotificationStatusHistory().getFirst().getStatus());
+        assertEquals(activeFrom, result.getNotificationStatusHistory().getFirst().getActiveFrom());
+        assertEquals(List.of("SOURCE_ELEMENT"), result.getNotificationStatusHistory().getFirst().getRelatedTimelineElements());
+        assertEquals(1, result.getTimeline().size());
+        assertEquals("KNOWN_ELEMENT", result.getTimeline().getFirst().getElementId());
     }
 
 }

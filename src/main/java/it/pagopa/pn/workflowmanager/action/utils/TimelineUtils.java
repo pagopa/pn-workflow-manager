@@ -18,8 +18,6 @@ import it.pagopa.pn.workflowmanager.dto.io.IoSendMessageResultInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.*;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.*;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.model.SendResponse;
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.model.NotificationHistoryResponse;
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.model.NotificationStatus;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.model.SendingReceipt;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.event.SendEventInt;
 import it.pagopa.pn.workflowmanager.service.TimelineService;
@@ -543,26 +541,6 @@ public class TimelineUtils {
         );
         log.error(msg);
         return new PnInternalException(msg, ERROR_CODE_TIMELINESERVICE_TIMELINE_ELEMENT_NOT_PRESENT);
-    }
-
-    public void handleTransitionToReachedStatusIfNecessary(NotificationInt notificationInt, int recIndex, String sourceTimelineId) {
-        String iun = notificationInt.getIun();
-        int numOfRecipients = notificationInt.getRecipients().size();
-        Instant sentAt = notificationInt.getSentAt();
-        NotificationHistoryResponse history = timelineService.getTimelineAndStatusHistory(iun, numOfRecipients, sentAt);
-        NotificationStatus currentStatus = history.getNotificationStatus();
-        if(currentStatus == NotificationStatus.COMPLETED_UNREACHED || currentStatus == NotificationStatus.UNDELIVERABLE) {
-            log.info("Notification {} is in COMPLETED_UNREACHED status, saving element with category WORKFLOW_ENDED_REACHED for recIndex {}", iun, recIndex);
-            TimelineElementInternal completedReachedTimelineElement = buildWorkflowEndedReachedTimelineElement(
-                    recIndex,
-                    notificationInt,
-                    getWorkflowEndedReachedTimelineElementId(recIndex, iun),
-                    sourceTimelineId,
-                    null
-            );
-            //ToDo: i null verranno eliminati a partire dal task PN-22242
-            timelineService.addTimelineElement(completedReachedTimelineElement, notificationInt);
-        }
     }
 
     public TimelineElementInternal buildSendDigitalMessageProgress(

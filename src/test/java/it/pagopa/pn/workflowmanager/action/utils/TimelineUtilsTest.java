@@ -20,8 +20,6 @@ import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineEventId;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.*;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.model.SendResponse;
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.model.NotificationHistoryResponse;
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.model.NotificationStatus;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.model.SendingReceipt;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.event.SendEventInt;
 import it.pagopa.pn.workflowmanager.service.TimelineService;
@@ -32,7 +30,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.NullSource;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -43,7 +40,6 @@ import java.util.Set;
 
 import static it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt.*;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -706,46 +702,6 @@ class TimelineUtilsTest {
         Assertions.assertEquals(ChannelType.IO.name(), detailsInt.getChannel());
         Assertions.assertEquals(sourceId, detailsInt.getSourceElementId());
         Assertions.assertEquals(notificationDate, detailsInt.getNotificationDate());
-    }
-
-    @ParameterizedTest
-    @EnumSource(value = NotificationStatus.class, names = {"COMPLETED_UNREACHED", "UNDELIVERABLE"})
-    void handleTransitionToReachedStatusIfNecessaryPersistWorkflowEndedReachedElement(NotificationStatus status) {
-        NotificationInt notification = createNotification();
-        int recIndex = 0;
-        String sourceId = "source_001";
-
-        NotificationHistoryResponse historyResponse = new NotificationHistoryResponse();
-        historyResponse.setNotificationStatus(status);
-        when(timelineService.getTimelineAndStatusHistory(notification.getIun(), notification.getRecipients().size(), notification.getSentAt()))
-                        .thenReturn(historyResponse);
-
-        timelineUtils.handleTransitionToReachedStatusIfNecessary(notification, recIndex, sourceId);
-
-        ArgumentCaptor<TimelineElementInternal> elementCaptor = ArgumentCaptor.forClass(TimelineElementInternal.class);
-        verify(timelineService).addTimelineElement(elementCaptor.capture(), eq(notification));
-        TimelineElementInternal capturedElement = elementCaptor.getValue();
-        assertEquals(WORKFLOW_ENDED_REACHED, capturedElement.getCategory());
-        WorkflowEndedReachedDetailsInt details = (WorkflowEndedReachedDetailsInt) capturedElement.getDetails();
-        assertEquals(recIndex, details.getRecIndex());
-        assertEquals(sourceId, details.getSourceElementId());
-    }
-
-    @Test
-    void handleTransitionToReachedStatusIfNecessaryDoesntPersistWorkflowEndedReachedElement() {
-        NotificationInt notification = createNotification();
-        int recIndex = 0;
-        String sourceId = "source_001";
-
-        NotificationHistoryResponse historyResponse = new NotificationHistoryResponse();
-        historyResponse.setNotificationStatus(NotificationStatus.PROCESSING);
-        when(timelineService.getTimelineAndStatusHistory(notification.getIun(), notification.getRecipients().size(), notification.getSentAt()))
-                .thenReturn(historyResponse);
-
-        timelineUtils.handleTransitionToReachedStatusIfNecessary(notification, recIndex, sourceId);
-
-        verify(timelineService).getTimelineAndStatusHistory(notification.getIun(), notification.getRecipients().size(), notification.getSentAt());
-        verify(timelineService, never()).addTimelineElement(org.mockito.Mockito.any(), org.mockito.Mockito.eq(notification));
     }
 
     @Test

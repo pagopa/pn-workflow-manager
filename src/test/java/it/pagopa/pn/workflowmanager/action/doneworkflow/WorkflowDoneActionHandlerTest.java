@@ -3,8 +3,9 @@ package it.pagopa.pn.workflowmanager.action.doneworkflow;
 import it.pagopa.pn.workflowmanager.action.utils.RecipientDeliveryAnalyzer;
 import it.pagopa.pn.workflowmanager.action.utils.RecipientDeliveryInfo;
 import it.pagopa.pn.workflowmanager.action.utils.RecipientDeliveryStatus;
-import it.pagopa.pn.workflowmanager.action.utils.TimelineUtils;
 import it.pagopa.pn.workflowmanager.dto.action.details.WorkflowDoneDetails;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.DesiredFeedbackType;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationSenderInt;
@@ -12,11 +13,9 @@ import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.RecipientTypeI
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt;
 import it.pagopa.pn.workflowmanager.exceptions.PnEventRouterException;
-import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
-import it.pagopa.pn.workflowmanager.dto.ext.campaign.DesiredFeedbackType;
 import it.pagopa.pn.workflowmanager.service.CampaignService;
 import it.pagopa.pn.workflowmanager.service.NotificationService;
-import it.pagopa.pn.workflowmanager.service.TimelineService;
+import it.pagopa.pn.workflowmanager.service.WorkflowClosureTimelineService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,7 +25,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
@@ -40,13 +38,10 @@ class WorkflowDoneActionHandlerTest {
     private CampaignService campaignService;
 
     @Mock
-    private TimelineUtils timelineUtils;
-
-    @Mock
     private RecipientDeliveryAnalyzer recipientDeliveryAnalyzer;
 
     @Mock
-    private TimelineService timelineService;
+    private WorkflowClosureTimelineService workflowClosureTimelineService;
 
     private WorkflowDoneActionHandler handler;
 
@@ -62,9 +57,8 @@ class WorkflowDoneActionHandlerTest {
         handler = new WorkflowDoneActionHandler(
                 notificationService,
                 campaignService,
-                timelineUtils,
                 recipientDeliveryAnalyzer,
-                timelineService
+                workflowClosureTimelineService
         );
     }
 
@@ -80,10 +74,6 @@ class WorkflowDoneActionHandlerTest {
         when(campaignService.getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_PA_ID)).thenReturn(campaign);
         when(recipientDeliveryAnalyzer.getDeliveryInfo(eq(List.of(timelineElement)), eq(campaign), eq(TEST_REC_INDEX),
                 eq(RecipientTypeInt.PF))).thenReturn(new RecipientDeliveryInfo(RecipientDeliveryStatus.REACHED, TEST_TIMELINE_ID));
-        when(timelineUtils.buildWorkflowDoneReachedTimelineElement(eq(TEST_REC_INDEX), eq(notification), 
-                anyString(), eq(TEST_TIMELINE_ID), eq(TEST_COMPLETION_FEEDBACK),isNull())).thenReturn(timelineElement);
-        //ToDo: i null verranno eliminati a partire dal task PN-22242
-
         // Act
         handler.doneWorkflowAction(List.of(timelineElement), TEST_IUN, TEST_REC_INDEX, TEST_TIMELINE_ID, workflowDoneDetails);
 
@@ -92,11 +82,8 @@ class WorkflowDoneActionHandlerTest {
         verify(campaignService).getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_PA_ID);
         verify(recipientDeliveryAnalyzer).getDeliveryInfo(eq(List.of(timelineElement)),eq(campaign), eq(TEST_REC_INDEX),
                 eq(RecipientTypeInt.PF));
-        verify(timelineUtils).buildWorkflowDoneReachedTimelineElement(eq(TEST_REC_INDEX), eq(notification), 
-                anyString(), eq(TEST_TIMELINE_ID), eq(TEST_COMPLETION_FEEDBACK),isNull());
-        //ToDo: i null verranno eliminati a partire dal task PN-22242
-        verify(timelineService).addTimelineElement(timelineElement, notification);
-        verifyNoMoreInteractions(timelineUtils);
+        verify(workflowClosureTimelineService).saveWorkflowDoneReachedTimelineElement(
+                TEST_REC_INDEX, TEST_TIMELINE_ID, notification, TEST_COMPLETION_FEEDBACK, List.of(timelineElement));
     }
 
     @Test
@@ -111,10 +98,6 @@ class WorkflowDoneActionHandlerTest {
         when(campaignService.getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_PA_ID)).thenReturn(campaign);
         when(recipientDeliveryAnalyzer.getDeliveryInfo(eq(List.of(timelineElement)),eq(campaign), eq(TEST_REC_INDEX),
                 eq(RecipientTypeInt.PF))).thenReturn(new RecipientDeliveryInfo(RecipientDeliveryStatus.UNREACHED));
-        when(timelineUtils.buildWorkflowDoneUnreachedTimelineElement(eq(TEST_REC_INDEX), eq(notification), 
-                anyString(), eq(TEST_TIMELINE_ID), eq(TEST_COMPLETION_FEEDBACK),isNull())).thenReturn(timelineElement);
-        //ToDo: i null verranno eliminati a partire dal task PN-22242
-
         // Act
         handler.doneWorkflowAction(List.of(timelineElement), TEST_IUN, TEST_REC_INDEX, TEST_TIMELINE_ID, workflowDoneDetails);
 
@@ -123,11 +106,8 @@ class WorkflowDoneActionHandlerTest {
         verify(campaignService).getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_PA_ID);
         verify(recipientDeliveryAnalyzer).getDeliveryInfo(eq(List.of(timelineElement)),eq(campaign), eq(TEST_REC_INDEX),
                 eq(RecipientTypeInt.PF));
-        verify(timelineUtils).buildWorkflowDoneUnreachedTimelineElement(eq(TEST_REC_INDEX), eq(notification), 
-                anyString(), eq(TEST_TIMELINE_ID), eq(TEST_COMPLETION_FEEDBACK),isNull());
-        //ToDo: i null verranno eliminati a partire dal task PN-22242
-        verify(timelineService).addTimelineElement(timelineElement, notification);
-        verifyNoMoreInteractions(timelineUtils);
+        verify(workflowClosureTimelineService).saveWorkflowDoneUnreachedTimelineElement(
+                TEST_REC_INDEX, TEST_TIMELINE_ID, notification, TEST_COMPLETION_FEEDBACK, List.of(timelineElement));
     }
 
     @Test
@@ -151,8 +131,7 @@ class WorkflowDoneActionHandlerTest {
         verify(campaignService).getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_PA_ID);
         verify(recipientDeliveryAnalyzer).getDeliveryInfo(eq(List.of()), eq(campaign), eq(TEST_REC_INDEX),
                 eq(RecipientTypeInt.PF));
-        verifyNoInteractions(timelineService);
-        verifyNoInteractions(timelineUtils);
+        verifyNoInteractions(workflowClosureTimelineService);
     }
 
     private NotificationInt createMockNotification() {

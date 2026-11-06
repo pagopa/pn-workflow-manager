@@ -11,7 +11,7 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder(toBuilder = true)
 @EqualsAndHashCode(callSuper = true)
 @ToString
-public class WorkflowEndedReachedDetailsInt extends CategoryTypeTimelineElementDetailsInt implements RecipientRelatedTimelineElementDetails, InvoiceableTimelineElement {
+public class WorkflowEndedReachedDetailsInt extends CategoryTypeTimelineElementDetailsInt implements InvoiceableTimelineElement {
     private int recIndex;
     private String sourceElementId;
     private Integer notificationCost;

@@ -3,21 +3,18 @@ package it.pagopa.pn.workflowmanager.action.endworkflow;
 import it.pagopa.pn.workflowmanager.action.utils.RecipientDeliveryAnalyzer;
 import it.pagopa.pn.workflowmanager.action.utils.RecipientDeliveryInfo;
 import it.pagopa.pn.workflowmanager.action.utils.RecipientDeliveryStatus;
-import it.pagopa.pn.workflowmanager.action.utils.TimelineUtils;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.RecipientTypeInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.service.CampaignService;
 import it.pagopa.pn.workflowmanager.service.NotificationService;
-import it.pagopa.pn.workflowmanager.service.TimelineService;
+import it.pagopa.pn.workflowmanager.service.WorkflowClosureTimelineService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-
-import static it.pagopa.pn.workflowmanager.action.utils.TimelineUtils.*;
 
 @Component
 @AllArgsConstructor
@@ -26,9 +23,8 @@ public class EndWorkflowActionHandler {
 
     private final NotificationService notificationService;
     private final CampaignService campaignService;
-    private final TimelineUtils timelineUtils;
     private final RecipientDeliveryAnalyzer recipientDeliveryAnalyzer;
-    private final TimelineService timelineService;
+    private final WorkflowClosureTimelineService workflowClosureTimelineService;
 
     public void endWorkflowAction(List<TimelineElementInternal> timelineElements, String iun, int recIndex) {
         log.info("End informal notification workflow for recipient - iun {} id {}", iun, recIndex);
@@ -46,34 +42,24 @@ public class EndWorkflowActionHandler {
                 timelineElements,campaign, recIndex, currentRecipientType);
 
         log.info("Recipient delivery info for iun {} recIndex {}: {}", notificationInt.getIun(), recIndex, recipientDeliveryInfo);
-        createAndPersistTimelineElement(recIndex, recipientDeliveryInfo.status(), recipientDeliveryInfo.sourceElementId(), notificationInt);
+        createAndPersistTimelineElement(recIndex, recipientDeliveryInfo.status(), recipientDeliveryInfo.sourceElementId(), notificationInt,timelineElements);
     }
 
     private void createAndPersistTimelineElement(int recIndex, RecipientDeliveryStatus status,
-                                                 String sourceTimelineId, NotificationInt notification) {
+                                                 String sourceTimelineId, NotificationInt notification,
+                                                 List<TimelineElementInternal> timelineElements) {
         switch (status) {
             case REACHED:
-                addTimelineElement(timelineUtils.buildWorkflowEndedReachedTimelineElement(recIndex, notification,
-                        getWorkflowEndedReachedTimelineElementId(recIndex, notification.getIun()), sourceTimelineId, null),notification);
-                //ToDo: i null verranno eliminati a partire dal task PN-22242
+                workflowClosureTimelineService.saveWorkflowEndedReachedTimelineElement(recIndex, sourceTimelineId, notification, timelineElements);
                 break;
 
             case UNREACHED:
-                addTimelineElement(timelineUtils.buildWorkflowEndedUnreachedTimelineElement(recIndex, notification,
-                        getWorkflowEndedUnreachedTimelineElementId(recIndex, notification.getIun()),null),notification);
-                //ToDo: i null verranno eliminati a partire dal task PN-22242
+                workflowClosureTimelineService.saveWorkflowEndedUnreachedTimelineElement(recIndex, notification, timelineElements);
                 break;
 
             case UNDELIVERABLE:
-                addTimelineElement(timelineUtils.buildWorkflowEndedUndeliverableTimelineElement(recIndex, notification,
-                        getWorkflowEndedUndeliverableTimelineElementId(recIndex, notification.getIun()),null),notification);
-                //ToDo: i null verranno eliminati a partire dal task PN-22242
+                workflowClosureTimelineService.saveWorkflowEndedUndeliverableTimelineElement(recIndex, notification, timelineElements);
                 break;
         }
-    }
-
-    private void addTimelineElement(TimelineElementInternal element, NotificationInt notification) {
-        log.info("Creating timeline element with category {} for iun {}", element.getCategory(), element.getIun());
-        timelineService.addTimelineElement(element, notification);
     }
 }
