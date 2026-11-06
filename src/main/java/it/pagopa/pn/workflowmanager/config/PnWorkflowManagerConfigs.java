@@ -44,6 +44,7 @@ public class PnWorkflowManagerConfigs {
     private CourtesyRetry courtesyRetry;
     private Boolean emailCourtesyRequiresAttachments;
 
+    private Integer pagoPaInformalNotificationBaseCost;
     @Data
     public static class Topics {
         private String actionQueue;

@@ -7,10 +7,7 @@ import it.pagopa.pn.workflowmanager.dto.address.PhysicalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.event.NotificationPaidInt;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.DesiredFeedbackType;
-import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
-import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
-import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationSenderInt;
-import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.RecipientTypeInt;
+import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.*;
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.AttachmentDetailsInt;
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.CategorizedAttachmentsResultInt;
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.ResponseStatusInt;
@@ -20,11 +17,11 @@ import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineEventId;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.*;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.model.SendResponse;
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.model.NotificationHistoryResponse;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.model.NotificationStatus;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.model.SendingReceipt;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.event.SendEventInt;
 import it.pagopa.pn.workflowmanager.service.TimelineService;
+import it.pagopa.pn.workflowmanager.service.WorkflowClosureTimelineService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,7 +29,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.NullSource;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -43,7 +39,6 @@ import java.util.Set;
 
 import static it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt.*;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -51,6 +46,8 @@ class TimelineUtilsTest {
 
     @Mock
     private TimelineService timelineService;
+    @Mock
+    private WorkflowClosureTimelineService workflowClosureTimelineService;
 
     private TimelineUtils timelineUtils;
 
@@ -63,7 +60,7 @@ class TimelineUtilsTest {
 
     @BeforeEach
     void setup() {
-        timelineUtils = new TimelineUtils(timelineService);
+        timelineUtils = new TimelineUtils(timelineService, workflowClosureTimelineService);
     }
 
     @Test
@@ -715,20 +712,17 @@ class TimelineUtilsTest {
         int recIndex = 0;
         String sourceId = "source_001";
 
-        NotificationHistoryResponse historyResponse = new NotificationHistoryResponse();
-        historyResponse.setNotificationStatus(status);
+        NotificationHistoryResponseInt historyResponse = NotificationHistoryResponseInt.builder()
+                .notificationStatus(NotificationStatusInt.valueOf(status.getValue()))
+                .notificationStatusHistory(List.of())
+                .timeline(List.of())
+                .build();
         when(timelineService.getTimelineAndStatusHistory(notification.getIun(), notification.getRecipients().size(), notification.getSentAt()))
                         .thenReturn(historyResponse);
 
         timelineUtils.handleTransitionToReachedStatusIfNecessary(notification, recIndex, sourceId);
 
-        ArgumentCaptor<TimelineElementInternal> elementCaptor = ArgumentCaptor.forClass(TimelineElementInternal.class);
-        verify(timelineService).addTimelineElement(elementCaptor.capture(), eq(notification));
-        TimelineElementInternal capturedElement = elementCaptor.getValue();
-        assertEquals(WORKFLOW_ENDED_REACHED, capturedElement.getCategory());
-        WorkflowEndedReachedDetailsInt details = (WorkflowEndedReachedDetailsInt) capturedElement.getDetails();
-        assertEquals(recIndex, details.getRecIndex());
-        assertEquals(sourceId, details.getSourceElementId());
+        verify(workflowClosureTimelineService).saveWorkflowEndedReachedTimelineElement(recIndex, sourceId, notification, List.of());
     }
 
     @Test
@@ -737,15 +731,18 @@ class TimelineUtilsTest {
         int recIndex = 0;
         String sourceId = "source_001";
 
-        NotificationHistoryResponse historyResponse = new NotificationHistoryResponse();
-        historyResponse.setNotificationStatus(NotificationStatus.PROCESSING);
+        NotificationHistoryResponseInt historyResponse = NotificationHistoryResponseInt.builder()
+                .notificationStatus(NotificationStatusInt.PROCESSING)
+                .notificationStatusHistory(List.of())
+                .timeline(List.of())
+                .build();
         when(timelineService.getTimelineAndStatusHistory(notification.getIun(), notification.getRecipients().size(), notification.getSentAt()))
                 .thenReturn(historyResponse);
 
         timelineUtils.handleTransitionToReachedStatusIfNecessary(notification, recIndex, sourceId);
 
         verify(timelineService).getTimelineAndStatusHistory(notification.getIun(), notification.getRecipients().size(), notification.getSentAt());
-        verify(timelineService, never()).addTimelineElement(org.mockito.Mockito.any(), org.mockito.Mockito.eq(notification));
+        verifyNoInteractions(workflowClosureTimelineService);
     }
 
     @Test

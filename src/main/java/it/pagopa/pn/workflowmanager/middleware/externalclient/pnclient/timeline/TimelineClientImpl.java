@@ -1,6 +1,7 @@
 package it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.timeline;
 
 import it.pagopa.pn.commons.exceptions.PnHttpResponseException;
+import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationHistoryResponseInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.AddTimelineElementResponse;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
@@ -98,9 +99,8 @@ public class TimelineClientImpl implements TimelineClient {
     }
 
     @Override
-    public NotificationHistoryResponse getTimelineAndStatusHistory(String iun, int recipients, Instant createdAt) {
+    public NotificationHistoryResponseInt getTimelineAndStatusHistory(String iun, int recipients, Instant createdAt) {
         log.logInvokingExternalService(CLIENT_NAME, GET_TIMELINE_AND_STATUS_HISTORY);
-
-        return timelineControllerApi.getTimelineAndStatusHistory(iun, recipients, createdAt);
+        return timelineServiceMapper.toNotificationHistoryResponseInt(timelineControllerApi.getTimelineAndStatusHistory(iun, recipients, createdAt));
     }
 }
