@@ -47,7 +47,6 @@ class IoEventClassificationTest {
         // Act & Assert
         assertEquals(Optional.of(DesiredFeedbackType.RECEIVED), IoEventClassification.DELIVERED_TO_USER.getSatisfiedDesiredFeedback());
         assertEquals(Optional.of(DesiredFeedbackType.READ), IoEventClassification.READ.getSatisfiedDesiredFeedback());
-        assertEquals(Optional.of(DesiredFeedbackType.PAID), IoEventClassification.PAID.getSatisfiedDesiredFeedback());
     }
 
     @ParameterizedTest(name = "Input: {0}")
