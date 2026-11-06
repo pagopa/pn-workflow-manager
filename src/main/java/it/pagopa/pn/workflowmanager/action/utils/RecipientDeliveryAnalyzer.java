@@ -19,6 +19,7 @@ import java.util.Set;
 
 import static it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt.SEND_DIGITAL_MESSAGE;
 import static it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt.SEND_DIGITAL_MESSAGE_FEEDBACK;
+import static it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.io.IoEventClassification.SENDER_NOT_ALLOWED;
 
 @Component
 @AllArgsConstructor
@@ -95,7 +96,7 @@ public class RecipientDeliveryAnalyzer {
                 .map(TimelineElementInternal::getDetails)
                 .filter(SendDigitalMessageFeedbackDetailsInt.class::isInstance)
                 .map(SendDigitalMessageFeedbackDetailsInt.class::cast)
-                .anyMatch(d -> d.getRecIndex() == recIndex && DigitalChannelsInt.IO.equals(d.getChannel()));
+                .anyMatch(d -> d.getRecIndex() == recIndex && DigitalChannelsInt.IO.equals(d.getChannel()) && d.getDeliveryDetail().getCode().equals(SENDER_NOT_ALLOWED.name()));
     }
 
     private static boolean missingSendDigitalMessageInTimeline(
