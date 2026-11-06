@@ -36,6 +36,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -1292,6 +1293,57 @@ class TimelineUtilsTest {
         assertEquals(paymentSourceChannel, details.getPaymentSourceChannel());
         assertFalse(details.isUncertainPaymentDate());
         assertEquals(eventTimestamp, details.getEventTimestamp());
+    }
+
+    @Test
+    void buildNoticePaymentPaidTimelineElement() {
+        NotificationInt notification = createNotification();
+        Instant paymentDateTime = Instant.parse("2026-10-28T12:00:00Z");
+        Instant dueDate = Instant.parse("2026-11-30T23:00:00Z");
+        String elementId = "PAYMENT_NOTICE_PAID.IUN_TEST-IUN-001.RECINDEX_0";
+        NoticePaymentInt event = NoticePaymentInt.builder()
+                .iun(notification.getIun())
+                .recIndex(TEST_REC_INDEX)
+                .iuv("IUV-001")
+                .noticeCode("NOTICE-001")
+                .creditorTaxId("TAX-ID")
+                .creditorCompanyName("Company")
+                .paymentDateTime(paymentDateTime)
+                .dueDate(dueDate)
+                .paymentSourceChannel("PPA")
+                .amount(1200)
+                .fee("100")
+                .paymentId("PAYMENT-001")
+                .pagopaPersistedTimestamp(paymentDateTime.plusSeconds(1))
+                .pagopaPublishedTimestamp(paymentDateTime.plusSeconds(2))
+                .sendIngestionTimestamp(paymentDateTime.plusSeconds(3))
+                .build();
+
+        TimelineElementInternal actual = timelineUtils.buildNoticePaymentPaidTimelineElement(
+                notification, event, elementId);
+
+        assertEquals(notification.getIun(), actual.getIun());
+        assertEquals(elementId, actual.getElementId());
+        assertEquals(PAYMENT_NOTICE_PAID, actual.getCategory());
+        assertEquals(TEST_PA_ID, actual.getPaId());
+        assertNotNull(actual.getTimestamp());
+        PaymentNoticePaidDetailsInt details = assertInstanceOf(
+                PaymentNoticePaidDetailsInt.class, actual.getDetails());
+        assertEquals(TEST_REC_INDEX, details.getRecIndex());
+        assertEquals(RecipientTypeInt.PF.name(), details.getRecipientType());
+        assertEquals("IUV-001", details.getIuv());
+        assertEquals("NOTICE-001", details.getNoticeCode());
+        assertEquals("TAX-ID", details.getCreditorTaxId());
+        assertEquals("Company", details.getCompanyName());
+        assertEquals(paymentDateTime, details.getEventTimestamp());
+        assertEquals(dueDate.atZone(ZoneOffset.UTC).toLocalDate(), details.getDueDate());
+        assertEquals("PPA", details.getPaymentSourceChannel());
+        assertEquals(1200, details.getAmount());
+        assertEquals(100, details.getFee());
+        assertEquals("PAYMENT-001", details.getEventId());
+        assertEquals(paymentDateTime.plusSeconds(1), details.getPagopaPersistedTimestamp());
+        assertEquals(paymentDateTime.plusSeconds(2), details.getPagopaPublishedTimestamp());
+        assertEquals(paymentDateTime.plusSeconds(3), details.getSendIngestionTimestamp());
     }
 
     @Test

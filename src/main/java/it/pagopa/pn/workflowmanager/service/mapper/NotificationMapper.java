@@ -58,6 +58,7 @@ public class NotificationMapper {
                                     .versionToken(document.getRef().getVersionToken())
                                     .build()
                     )
+                    .title(document.getTitle())
                     .build();
 
             list.add(notificationDocumentInt);
