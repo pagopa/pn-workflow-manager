@@ -22,12 +22,9 @@ public class NotificationCostUtils {
      */
     public Integer getNotificationCostToApply(List<TimelineElementInternal> timelineElements, int recIndex) {
         if (containsInvoiceableElement(timelineElements, recIndex)) {
-            log.info("Invoiceable timeline element already present, notification cost set to null");
             return null;
         }
-        Integer notificationCost = pnWorkflowManagerConfigs.getPagoPaInformalNotificationBaseCost();
-        log.info("No invoiceable timeline element found, applying base notification cost {}", notificationCost);
-        return notificationCost;
+        return pnWorkflowManagerConfigs.getPagoPaInformalNotificationBaseCost();
     }
 
     private static boolean containsInvoiceableElement(List<TimelineElementInternal> timelineElements, int recIndex) {
