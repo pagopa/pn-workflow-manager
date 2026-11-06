@@ -215,6 +215,20 @@ Resources:
         MaxReceiveCount: 10
         AlarmSNSTopicName: !Ref AlarmSNSTopicName
 
+  # Internal queues
+  InformalPaymentsEventQueue:
+    Type: AWS::CloudFormation::Stack
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/sqs-queue.yaml"
+      Parameters:
+        QueueName: !Sub '${ProjectName}-informal-payments-event'
+        AlarmSNSTopicName: !Ref AlarmSNSTopicName
+        VisibilityTimeout: 60
+        MaxReceiveCount: 10
+        DelaySeconds: 1
+
 
 Outputs:
   # DynamoDB tables
@@ -356,6 +370,25 @@ Outputs:
   NationalRegistries2WorkflowManagerQueueAgeAlarmARN:
     Value: !GetAtt NationalRegistries2WorkflowManagerQueue.Outputs.SqsAgeAlarmArn
     Description: workflow-manager analog-event queue age alarm ARN
+
+  # Informal payments event
+  InformalPaymentsEventQueueName:
+    Value: !GetAtt InformalPaymentsEventQueue.Outputs.QueueName
+    Description: Informal payments event queue name
+  InformalPaymentsEventQueueURL:
+    Value: !GetAtt InformalPaymentsEventQueue.Outputs.QueueURL
+    Description: Informal payments event queue URL
+  InformalPaymentsEventQueueARN:
+    Value: !GetAtt InformalPaymentsEventQueue.Outputs.QueueARN
+    Description: Informal payments event queue ARN
+  InformalPaymentsEventQueueAlarmARN:
+    Value: !GetAtt InformalPaymentsEventQueue.Outputs.SqsDLQAlarmArn
+    Description: Informal payments event queue DLQ alarm ARN
+  InformalPaymentsEventQueueAgeAlarmARN:
+    Value: !GetAtt InformalPaymentsEventQueue.Outputs.SqsAgeAlarmArn
+    Description: Informal payments event queue age alarm ARN
+
+
   # Lambda names
   CampaignEventsCollectorLambdaName:
     Value: !Sub "${ProjectName}-campaign-events-collector"
