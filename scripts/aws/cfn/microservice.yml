@@ -538,6 +538,7 @@ Resources:
           - ' '
           - - '--add-modules=java.instrument --add-opens=java.base/java.lang=ALL-UNNAMED'
             - !Ref JavaToolOptions
+        JavaVersion: '25'
 
   ## Dashboard
   WorkflowManagerMicroserviceCloudWatchDashboard:
