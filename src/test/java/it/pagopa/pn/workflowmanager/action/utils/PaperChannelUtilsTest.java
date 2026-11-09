@@ -2,6 +2,9 @@ package it.pagopa.pn.workflowmanager.action.utils;
 
 import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.AnalogDeliveryTypeInt;
+import it.pagopa.pn.workflowmanager.dto.timeline.details.PublicRegistryValidationResponseDetailsInt;
+import it.pagopa.pn.workflowmanager.dto.timeline.details.ReceiverAddressSourceTypeInt;
+import it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.SendAnalogMessageDetailsInt;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.model.SendResponse;
 import it.pagopa.pn.workflowmanager.config.PnWorkflowManagerConfigs;
@@ -20,6 +23,9 @@ import it.pagopa.pn.workflowmanager.service.TimelineService;
 import it.pagopa.pn.workflowmanager.utils.SendAttachmentMode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.NullSource;
 
 import java.util.List;
 import java.util.Optional;
@@ -116,12 +122,15 @@ class PaperChannelUtilsTest {
         assertEquals("file2.pdf", result.get(1));
     }
 
-    @Test
-    void buildAnalogDto_Success() {
+    @ParameterizedTest
+    @EnumSource(ReceiverAddressSourceTypeInt.class)
+    @NullSource
+    void buildAnalogDto_Success(ReceiverAddressSourceTypeInt addressSource) {
         String productType = "AR_REGISTERED_LETTER";
         SendResponse sendResponse = mock(SendResponse.class);
 
-        AnalogDtoInt result = PaperChannelUtils.buildAnalogDto(PREPARE_REQUEST_ID, productType, sendResponse);
+        AnalogDtoInt result = PaperChannelUtils.buildAnalogDto(
+                PREPARE_REQUEST_ID, productType, sendResponse, addressSource);
 
         assertNotNull(result);
         assertEquals(0, result.getSentAttemptMade());
@@ -129,6 +138,31 @@ class PaperChannelUtilsTest {
         assertEquals(productType, result.getProductType());
         assertEquals(PREPARE_REQUEST_ID, result.getPrepareRequestId());
         assertNull(result.getRelatedRequestId());
+        assertEquals(addressSource, result.getReceiverAddressSourceType());
+    }
+
+    @ParameterizedTest
+    @EnumSource(ReceiverAddressSourceTypeInt.class)
+    @NullSource
+    void resolveAddressSource_UsesRegistryOrDefaultsToMittente(ReceiverAddressSourceTypeInt registrySource) {
+        Optional<TimelineElementInternal> validationResponse = Optional.ofNullable(registrySource)
+                .map(source -> TimelineElementInternal.builder()
+                        .iun(IUN)
+                        .category(TimelineElementCategoryInt.PUBLIC_REGISTRY_VALIDATION_RESPONSE)
+                        .details(PublicRegistryValidationResponseDetailsInt.builder()
+                                .recIndex(REC_INDEX)
+                                .registry(source.getValue())
+                                .build())
+                        .build());
+        when(timelineService.getTimelineElementForSpecificRecipient(
+                IUN, REC_INDEX, TimelineElementCategoryInt.PUBLIC_REGISTRY_VALIDATION_RESPONSE))
+                .thenReturn(validationResponse);
+
+        ReceiverAddressSourceTypeInt result = paperChannelUtils.resolveAddressSource(IUN, REC_INDEX);
+
+        assertEquals(registrySource == null ? ReceiverAddressSourceTypeInt.MITTENTE : registrySource, result);
+        verify(timelineService).getTimelineElementForSpecificRecipient(
+                IUN, REC_INDEX, TimelineElementCategoryInt.PUBLIC_REGISTRY_VALIDATION_RESPONSE);
     }
 
     @Test

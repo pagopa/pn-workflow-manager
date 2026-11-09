@@ -20,8 +20,6 @@ import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineEventId;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.*;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.model.SendResponse;
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.model.NotificationHistoryResponse;
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.model.NotificationStatus;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.model.SendingReceipt;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.event.SendEventInt;
 import it.pagopa.pn.workflowmanager.service.TimelineService;
@@ -31,7 +29,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
-import org.mockito.ArgumentCaptor;
+import org.junit.jupiter.params.provider.NullSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -43,7 +41,6 @@ import java.util.Set;
 
 import static it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt.*;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -59,6 +56,7 @@ class TimelineUtilsTest {
     private static final String TEST_PA_ID = "PA-001";
     private static final String TEST_EVENT_ID = "EVENT-001";
     private static final String TEST_SOURCE_TIMELINE_ID = "SOURCE-TIMELINE-001";
+    private static final Integer NOTIFICATION_COST_INFORMAL = 100;
 
     @BeforeEach
     void setup() {
@@ -72,7 +70,7 @@ class TimelineUtilsTest {
 
         // Act
         TimelineElementInternal actual = timelineUtils.buildWorkflowEndedUndeliverableTimelineElement(
-                TEST_REC_INDEX, notification, TEST_EVENT_ID);
+                TEST_REC_INDEX, notification, TEST_EVENT_ID,NOTIFICATION_COST_INFORMAL);
 
         // Assert
         Assertions.assertAll(
@@ -87,6 +85,7 @@ class TimelineUtilsTest {
 
         WorkflowEndedUndeliverableDetailsInt details = (WorkflowEndedUndeliverableDetailsInt) actual.getDetails();
         Assertions.assertEquals(TEST_REC_INDEX, details.getRecIndex());
+        Assertions.assertEquals(NOTIFICATION_COST_INFORMAL, details.getNotificationCost());
     }
 
     @Test
@@ -108,7 +107,7 @@ class TimelineUtilsTest {
 
         // Act
         TimelineElementInternal actual = timelineUtils.buildWorkflowEndedUnreachedTimelineElement(
-                TEST_REC_INDEX, notification, TEST_EVENT_ID);
+                TEST_REC_INDEX, notification, TEST_EVENT_ID, NOTIFICATION_COST_INFORMAL);
 
         // Assert
         Assertions.assertAll(
@@ -123,7 +122,9 @@ class TimelineUtilsTest {
 
         WorkflowEndedUnreachedDetailsInt details = (WorkflowEndedUnreachedDetailsInt) actual.getDetails();
         Assertions.assertAll(
-                () -> Assertions.assertEquals(TEST_REC_INDEX, details.getRecIndex())
+                () -> Assertions.assertEquals(TEST_REC_INDEX, details.getRecIndex()),
+                () -> Assertions.assertEquals(NOTIFICATION_COST_INFORMAL, details.getNotificationCost())
+
         );
     }
 
@@ -146,7 +147,7 @@ class TimelineUtilsTest {
 
         // Act
         TimelineElementInternal actual = timelineUtils.buildWorkflowEndedReachedTimelineElement(
-                TEST_REC_INDEX, notification, TEST_EVENT_ID, TEST_SOURCE_TIMELINE_ID);
+                TEST_REC_INDEX, notification, TEST_EVENT_ID, TEST_SOURCE_TIMELINE_ID,NOTIFICATION_COST_INFORMAL);
 
         // Assert
         Assertions.assertAll(
@@ -162,7 +163,8 @@ class TimelineUtilsTest {
         WorkflowEndedReachedDetailsInt details = (WorkflowEndedReachedDetailsInt) actual.getDetails();
         Assertions.assertAll(
                 () -> Assertions.assertEquals(TEST_REC_INDEX, details.getRecIndex()),
-                () -> Assertions.assertEquals(TEST_SOURCE_TIMELINE_ID, details.getSourceElementId())
+                () -> Assertions.assertEquals(TEST_SOURCE_TIMELINE_ID, details.getSourceElementId()),
+                () -> Assertions.assertEquals(NOTIFICATION_COST_INFORMAL,details.getNotificationCost())
         );
     }
 
@@ -223,7 +225,7 @@ class TimelineUtilsTest {
 
         // Act
         TimelineElementInternal actual = timelineUtils.buildWorkflowDoneReachedTimelineElement(
-                TEST_REC_INDEX, notification, TEST_EVENT_ID, TEST_SOURCE_TIMELINE_ID, DesiredFeedbackType.SENT);
+                TEST_REC_INDEX, notification, TEST_EVENT_ID, TEST_SOURCE_TIMELINE_ID, DesiredFeedbackType.SENT, NOTIFICATION_COST_INFORMAL);
 
         // Assert
         Assertions.assertEquals("TEST-IUN-001", actual.getIun());
@@ -234,6 +236,7 @@ class TimelineUtilsTest {
         Assertions.assertEquals(TEST_REC_INDEX, detailsInt.getRecIndex());
         Assertions.assertEquals(TEST_SOURCE_TIMELINE_ID, detailsInt.getSourceElementId());
         Assertions.assertEquals(DesiredFeedbackType.SENT.name(), detailsInt.getCompletionFeedback());
+        Assertions.assertEquals(NOTIFICATION_COST_INFORMAL, detailsInt.getNotificationCost());
     }
 
     @Test
@@ -533,11 +536,12 @@ class TimelineUtilsTest {
 
         // Act
         TimelineElementInternal result = timelineUtils.buildWorkflowEndedUndeliverableTimelineElement(
-                recIndex2, notification, TEST_EVENT_ID);
+                recIndex2, notification, TEST_EVENT_ID, NOTIFICATION_COST_INFORMAL);
 
         // Assert
         WorkflowEndedUndeliverableDetailsInt details = (WorkflowEndedUndeliverableDetailsInt) result.getDetails();
         Assertions.assertEquals(recIndex2, details.getRecIndex());
+        Assertions.assertEquals(NOTIFICATION_COST_INFORMAL, details.getNotificationCost());
     }
 
     @Test
@@ -548,7 +552,7 @@ class TimelineUtilsTest {
 
         // Act
         TimelineElementInternal actual = timelineUtils.buildWorkflowDoneUnreachedTimelineElement(
-                TEST_REC_INDEX, notification, TEST_EVENT_ID, customSourceId, DesiredFeedbackType.SENT);
+                TEST_REC_INDEX, notification, TEST_EVENT_ID, customSourceId, DesiredFeedbackType.SENT, NOTIFICATION_COST_INFORMAL);
 
         // Assert
         Assertions.assertEquals("TEST-IUN-001", actual.getIun());
@@ -559,6 +563,7 @@ class TimelineUtilsTest {
         Assertions.assertEquals(TEST_REC_INDEX, detailsInt.getRecIndex());
         Assertions.assertEquals(customSourceId, detailsInt.getSourceElementId());
         Assertions.assertEquals(DesiredFeedbackType.SENT.name(), detailsInt.getCompletionFeedback());
+        Assertions.assertEquals(NOTIFICATION_COST_INFORMAL,detailsInt.getNotificationCost());
     }
 
     @Test
@@ -698,46 +703,6 @@ class TimelineUtilsTest {
         Assertions.assertEquals(ChannelType.IO.name(), detailsInt.getChannel());
         Assertions.assertEquals(sourceId, detailsInt.getSourceElementId());
         Assertions.assertEquals(notificationDate, detailsInt.getNotificationDate());
-    }
-
-    @ParameterizedTest
-    @EnumSource(value = NotificationStatus.class, names = {"COMPLETED_UNREACHED", "UNDELIVERABLE"})
-    void handleTransitionToReachedStatusIfNecessaryPersistWorkflowEndedReachedElement(NotificationStatus status) {
-        NotificationInt notification = createNotification();
-        int recIndex = 0;
-        String sourceId = "source_001";
-
-        NotificationHistoryResponse historyResponse = new NotificationHistoryResponse();
-        historyResponse.setNotificationStatus(status);
-        when(timelineService.getTimelineAndStatusHistory(notification.getIun(), notification.getRecipients().size(), notification.getSentAt()))
-                        .thenReturn(historyResponse);
-
-        timelineUtils.handleTransitionToReachedStatusIfNecessary(notification, recIndex, sourceId);
-
-        ArgumentCaptor<TimelineElementInternal> elementCaptor = ArgumentCaptor.forClass(TimelineElementInternal.class);
-        verify(timelineService).addTimelineElement(elementCaptor.capture(), eq(notification));
-        TimelineElementInternal capturedElement = elementCaptor.getValue();
-        assertEquals(WORKFLOW_ENDED_REACHED, capturedElement.getCategory());
-        WorkflowEndedReachedDetailsInt details = (WorkflowEndedReachedDetailsInt) capturedElement.getDetails();
-        assertEquals(recIndex, details.getRecIndex());
-        assertEquals(sourceId, details.getSourceElementId());
-    }
-
-    @Test
-    void handleTransitionToReachedStatusIfNecessaryDoesntPersistWorkflowEndedReachedElement() {
-        NotificationInt notification = createNotification();
-        int recIndex = 0;
-        String sourceId = "source_001";
-
-        NotificationHistoryResponse historyResponse = new NotificationHistoryResponse();
-        historyResponse.setNotificationStatus(NotificationStatus.PROCESSING);
-        when(timelineService.getTimelineAndStatusHistory(notification.getIun(), notification.getRecipients().size(), notification.getSentAt()))
-                .thenReturn(historyResponse);
-
-        timelineUtils.handleTransitionToReachedStatusIfNecessary(notification, recIndex, sourceId);
-
-        verify(timelineService).getTimelineAndStatusHistory(notification.getIun(), notification.getRecipients().size(), notification.getSentAt());
-        verify(timelineService, never()).addTimelineElement(org.mockito.Mockito.any(), org.mockito.Mockito.eq(notification));
     }
 
     @Test
@@ -1000,8 +965,11 @@ class TimelineUtilsTest {
         );
     }
 
-    @Test
-    void buildSendAnalogNotificationTimelineElement_AndBuildSendAnalogTimelineEventId() {
+    @ParameterizedTest
+    @EnumSource(ReceiverAddressSourceTypeInt.class)
+    @NullSource
+    void buildSendAnalogNotificationTimelineElement_AndBuildSendAnalogTimelineEventId(
+            ReceiverAddressSourceTypeInt addressSource) {
         // Arrange
         NotificationInt notification = createNotification();
         PhysicalAddressInt physicalAddress = PhysicalAddressInt.builder()
@@ -1027,6 +995,7 @@ class TimelineUtilsTest {
                 .sendResponse(sendResponse)
                 .relatedRequestId(relatedRequestId)
                 .productType(productType)
+                .receiverAddressSourceType(addressSource)
                 .prepareRequestId(prepareRequestId)
                 .build();
 
@@ -1071,6 +1040,7 @@ class TimelineUtilsTest {
                 () -> assertEquals(100, details.getEnvelopeWeight()),
                 () -> assertEquals(replacedF24AttachmentUrls, details.getF24Attachments()),
                 () -> assertEquals(categorizedAttachmentsResult, details.getCategorizedAttachmentsResult()),
+                () -> assertEquals(addressSource, details.getReceiverAddressSourceType()),
                 () -> assertNotNull(details.getPrepareRequestId()),
                 () -> assertEquals(AnalogDeliveryTypeInt.RS, details.getDeliveryType())
         );

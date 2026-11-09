@@ -1,7 +1,7 @@
 package it.pagopa.pn.workflowmanager.service.impl;
 
-import it.pagopa.pn.commons.db.campaign.CampaignServiceCachedProvider;
 import it.pagopa.pn.commons.db.campaign.entity.*;
+import it.pagopa.pn.commons.db.campaign.provider.CampaignServiceCachedProvider;
 import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.commons.utils.qr.models.RecipientTypeInt;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;

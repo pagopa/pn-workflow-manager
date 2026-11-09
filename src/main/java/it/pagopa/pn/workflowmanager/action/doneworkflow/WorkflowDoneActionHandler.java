@@ -3,7 +3,6 @@ package it.pagopa.pn.workflowmanager.action.doneworkflow;
 import it.pagopa.pn.workflowmanager.action.utils.RecipientDeliveryAnalyzer;
 import it.pagopa.pn.workflowmanager.action.utils.RecipientDeliveryInfo;
 import it.pagopa.pn.workflowmanager.action.utils.RecipientDeliveryStatus;
-import it.pagopa.pn.workflowmanager.action.utils.TimelineUtils;
 import it.pagopa.pn.workflowmanager.dto.action.details.WorkflowDoneDetails;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.DesiredFeedbackType;
@@ -13,15 +12,12 @@ import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.exceptions.PnEventRouterException;
 import it.pagopa.pn.workflowmanager.service.CampaignService;
 import it.pagopa.pn.workflowmanager.service.NotificationService;
-import it.pagopa.pn.workflowmanager.service.TimelineService;
+import it.pagopa.pn.workflowmanager.service.WorkflowClosureTimelineService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-
-import static it.pagopa.pn.workflowmanager.action.utils.TimelineUtils.getWorkflowDoneReachedTimelineElementId;
-import static it.pagopa.pn.workflowmanager.action.utils.TimelineUtils.getWorkflowDoneUnreachedTimelineElementId;
 import static it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCodes.ERROR_CODE_WORKFLOWMANAGER_ROUTER_EVENT_TYPE_NOT_SUPPORTED;
 
 @Component
@@ -30,9 +26,8 @@ import static it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCo
 public class WorkflowDoneActionHandler {
     private final NotificationService notificationService;
     private final CampaignService campaignService;
-    private final TimelineUtils timelineUtils;
     private final RecipientDeliveryAnalyzer recipientDeliveryAnalyzer;
-    private final TimelineService timelineService;
+    private final WorkflowClosureTimelineService workflowClosureTimelineService;
 
     public void doneWorkflowAction(List<TimelineElementInternal> timelineElements, String iun, int recIndex, String timelineId, WorkflowDoneDetails details) {
         log.info("Done informal notification workflow for recipient - iun {} id {}", iun, recIndex);
@@ -50,7 +45,7 @@ public class WorkflowDoneActionHandler {
                 campaign, recIndex, currentRecipientType);
 
         log.info("Recipient delivery info for iun {} recIndex {}: {}", notificationInt.getIun(), recIndex, recipientDeliveryInfo);
-        createAndPersistTimelineElement(recIndex, recipientDeliveryInfo.status(), timelineId, notificationInt, details.getCompletionFeedback());
+        createAndPersistTimelineElement(recIndex, recipientDeliveryInfo.status(), timelineId, notificationInt, details.getCompletionFeedback(), timelineElements);
     }
 
     private void createAndPersistTimelineElement(
@@ -58,16 +53,15 @@ public class WorkflowDoneActionHandler {
             RecipientDeliveryStatus status,
             String sourceTimelineId,
             NotificationInt notification,
-            DesiredFeedbackType completionFeedback
+            DesiredFeedbackType completionFeedback,
+            List<TimelineElementInternal> timelineElements
     ) {
         switch (status) {
             case REACHED:
-                addTimelineElement(timelineUtils.buildWorkflowDoneReachedTimelineElement(recIndex, notification,
-                        getWorkflowDoneReachedTimelineElementId(recIndex, notification.getIun()), sourceTimelineId, completionFeedback),notification);
+                workflowClosureTimelineService.saveWorkflowDoneReachedTimelineElement(recIndex, sourceTimelineId, notification, completionFeedback, timelineElements);
                 break;
             case UNREACHED:
-                addTimelineElement(timelineUtils.buildWorkflowDoneUnreachedTimelineElement(recIndex, notification,
-                        getWorkflowDoneUnreachedTimelineElementId(recIndex, notification.getIun()), sourceTimelineId, completionFeedback),notification);
+                workflowClosureTimelineService.saveWorkflowDoneUnreachedTimelineElement(recIndex, sourceTimelineId, notification, completionFeedback, timelineElements);
                 break;
 
             case UNDELIVERABLE:
@@ -77,10 +71,5 @@ public class WorkflowDoneActionHandler {
                         ERROR_CODE_WORKFLOWMANAGER_ROUTER_EVENT_TYPE_NOT_SUPPORTED
                 );
         }
-    }
-
-    private void addTimelineElement(TimelineElementInternal element, NotificationInt notification) {
-        log.info("Creating timeline element with category {} for iun {}", element.getCategory(), element.getIun());
-        timelineService.addTimelineElement(element, notification);
     }
 }

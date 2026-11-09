@@ -10,11 +10,12 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder(toBuilder = true)
 @EqualsAndHashCode(callSuper = true)
 @ToString
-public class WorkflowEndedUndeliverableDetailsInt extends CategoryTypeTimelineElementDetailsInt implements RecipientRelatedTimelineElementDetails {
+public class WorkflowEndedUndeliverableDetailsInt extends CategoryTypeTimelineElementDetailsInt implements InvoiceableTimelineElement {
     private int recIndex;
+    private Integer notificationCost;
 
     @Override
     public String toLog() {
-        return String.format("recIndex=%d", recIndex);
+        return String.format("recIndex=%d notificationCost=%d", recIndex, notificationCost);
     }
 }

@@ -9,12 +9,16 @@ import it.pagopa.pn.workflowmanager.action.utils.TimelineUtils;
 import it.pagopa.pn.workflowmanager.dto.address.PhysicalAddressInt;
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.CategorizedAttachmentsResultInt;
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.ResultFilterInt;
+import it.pagopa.pn.workflowmanager.dto.timeline.details.ReceiverAddressSourceTypeInt;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.ChannelEventProcessor;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.analog.AnalogEventNormalizer;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.event.PrepareEventInt;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.NullSource;
 import org.mockito.Mockito;
 
 import java.time.Instant;
@@ -54,13 +58,16 @@ class PaperChannelHandlerTest {
         );
     }
 
-    @Test
-    void prepareUpdateTest_OK() {
+    @ParameterizedTest
+    @EnumSource(ReceiverAddressSourceTypeEnum.class)
+    @NullSource
+    void prepareUpdateTest_OK(ReceiverAddressSourceTypeEnum addressSource) {
 
         Instant instant = Instant.parse("2022-08-30T16:04:13.913859900Z");
 
         PrepareEvent prepareEvent = new PrepareEvent();
         prepareEvent.setStatusCode(StatusCodeEnum.OK);
+        prepareEvent.setReceiverAddressSourceType(addressSource);
         prepareEvent.setStatusDateTime(instant);
         prepareEvent.setRequestId("iun_event_idx_0");
         prepareEvent.setStatusDetail("ok");
@@ -87,6 +94,8 @@ class PaperChannelHandlerTest {
                 .iun("iun_event_idx_0")
                 .prepareRequestId("iun_event_idx_0")
                 .statusCode("OK")
+                .receiverAddressSourceType(addressSource == null
+                        ? null : ReceiverAddressSourceTypeInt.valueOf(addressSource.getValue()))
                 .statusDateTime(instant)
                 .statusDetail("ok")
                 .replacedF24AttachmentUrls(List.of("replacedF24Urls"))

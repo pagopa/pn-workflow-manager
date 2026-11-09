@@ -3,21 +3,9 @@ package it.pagopa.pn.workflowmanager.dto.timeline.details;
 import it.pagopa.pn.workflowmanager.utils.AuditLogUtils;
 import org.junit.jupiter.api.Test;
 
-import java.time.Instant;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 class PaymentNoticePaidDetailsIntTest {
-
-    @Test
-    void getElementTimestampReturnsEventTimestamp() {
-        Instant eventTimestamp = Instant.parse("2026-10-28T12:00:00Z");
-        PaymentNoticePaidDetailsInt details = PaymentNoticePaidDetailsInt.builder()
-                .eventTimestamp(eventTimestamp)
-                .build();
-
-        assertEquals(eventTimestamp, details.getElementTimestamp());
-    }
 
     @Test
     void categoryUsesPaymentNoticePaidDetailsAndVersion29() {

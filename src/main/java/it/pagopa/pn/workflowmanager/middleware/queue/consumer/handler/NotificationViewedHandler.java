@@ -10,10 +10,7 @@ import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationIn
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.InformalNotificationViewedDetailsInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt;
-import it.pagopa.pn.workflowmanager.service.AuditLogService;
-import it.pagopa.pn.workflowmanager.service.CampaignService;
-import it.pagopa.pn.workflowmanager.service.NotificationService;
-import it.pagopa.pn.workflowmanager.service.TimelineService;
+import it.pagopa.pn.workflowmanager.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -32,6 +29,7 @@ public class NotificationViewedHandler {
 
     private final TimelineService timelineService;
     private final TimelineUtils timelineUtils;
+    private final WorkflowClosureTimelineService workflowClosureTimelineService;
     private final WorkflowUtils workflowUtils;
     private final NotificationService notificationService;
     private final CampaignService campaignService;
@@ -76,7 +74,7 @@ public class NotificationViewedHandler {
 
         addInformalNotificationViewedTimelineElement(notificationViewed, notification, recIndex, viewedTimelineElementId,isFirstViewForRecipient);
 
-        timelineUtils.handleTransitionToReachedStatusIfNecessary(notification, recIndex, viewedTimelineElementId);
+        workflowClosureTimelineService.handleTransitionToReachedStatusIfNecessary(notification, recIndex, viewedTimelineElementId);
 
         if (isWebViewWithStopOnViewed(notificationViewed, campaign)) {
             workflowUtils.scheduleWorkflowDone(iun, recIndex, viewedTimelineElementId, DesiredFeedbackType.READ);

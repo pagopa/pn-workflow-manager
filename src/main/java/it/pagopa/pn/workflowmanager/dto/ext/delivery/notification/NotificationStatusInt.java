@@ -1,0 +1,20 @@
+package it.pagopa.pn.workflowmanager.dto.ext.delivery.notification;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.ToString;
+
+@Getter
+@AllArgsConstructor
+@ToString
+public enum NotificationStatusInt {
+    IN_VALIDATION("IN_VALIDATION"),
+    ACCEPTED("ACCEPTED"),
+    REFUSED("REFUSED"),
+    PROCESSING("PROCESSING"),
+    COMPLETED_REACHED("COMPLETED_REACHED"),
+    COMPLETED_UNREACHED("COMPLETED_UNREACHED"),
+    UNDELIVERABLE("UNDELIVERABLE");
+
+    private final String value;
+}
