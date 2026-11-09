@@ -33,14 +33,19 @@ public class PaperMessagesClientImpl implements PaperMessagesClient {
         InformalPrepareRequest prepareRequest = new InformalPrepareRequest();
         prepareRequest.setRequestId(paperChannelPrepareRequest.getRequestId());
         prepareRequest.setIun(paperChannelPrepareRequest.getNotificationInt().getIun());
-        prepareRequest.setPrintType(PRINT_TYPE_BN_FRONTE_RETRO);
+        prepareRequest.setPrintType(InformalPrepareRequest.PrintTypeEnum.valueOf(PRINT_TYPE_BN_FRONTE_RETRO));
         prepareRequest.setProposalProductType(getProductType(paperChannelPrepareRequest.getAnalogType()));
         prepareRequest.setReceiverAddress(mapInternalToExternal(paperChannelPrepareRequest.getPaAddress()));
         prepareRequest.setAttachmentUrls(paperChannelPrepareRequest.getAttachments());
         prepareRequest.setReceiverType(paperChannelPrepareRequest.getRecipientInt().getRecipientType().getValue());
         prepareRequest.setNotificationSentAt(paperChannelPrepareRequest.getNotificationInt().getSentAt());
         prepareRequest.setSenderPaId(paperChannelPrepareRequest.getNotificationInt().getSender().getPaId());
-
+        prepareRequest.setReceiverAddressSourceType(
+                paperChannelPrepareRequest.getReceiverAddressSourceType() == null
+                        ? null
+                        : ReceiverAddressSourceTypeEnum.fromValue(
+                        paperChannelPrepareRequest.getReceiverAddressSourceType().name())
+        );
         informalMessagesApi.sendInformalPrepareRequest(prepareRequest, cfg.getCxId());
 
         log.debug("[exit] prepare iun={}  address={} recipient={} requestId={} attachments={} relatedRequestId={}",

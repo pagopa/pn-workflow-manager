@@ -1,13 +1,14 @@
 package it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.timeline;
 
 import it.pagopa.pn.commons.exceptions.PnHttpResponseException;
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.api.TimelineControllerApi;
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.model.*;
+import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationHistoryResponseInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.AddTimelineElementResponse;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementDetailsInt;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.api.TimelineControllerApi;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.model.*;
 import it.pagopa.pn.workflowmanager.service.mapper.TimelineServiceMapper;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.Assertions;
@@ -276,15 +277,18 @@ class TimelineClientImplTest {
         String iun = "iun123";
         int recipients = 2;
         Instant createdAt = Instant.now();
-        NotificationHistoryResponse expectedResponse = new NotificationHistoryResponse();
+        NotificationHistoryResponse response = new NotificationHistoryResponse();
+        NotificationHistoryResponseInt expectedResponse = NotificationHistoryResponseInt.builder().build();
 
         when(timelineControllerApi.getTimelineAndStatusHistory(iun, recipients, createdAt))
-                .thenReturn(expectedResponse);
+                .thenReturn(response);
+        when(timelineServiceMapper.toNotificationHistoryResponseInt(response)).thenReturn(expectedResponse);
 
-        NotificationHistoryResponse result = timelineServiceClient.getTimelineAndStatusHistory(iun, recipients, createdAt);
+        NotificationHistoryResponseInt result = timelineServiceClient.getTimelineAndStatusHistory(iun, recipients, createdAt);
 
         assertEquals(expectedResponse, result);
         Mockito.verify(timelineControllerApi).getTimelineAndStatusHistory(iun, recipients, createdAt);
+        Mockito.verify(timelineServiceMapper).toNotificationHistoryResponseInt(response);
     }
 
     @Test

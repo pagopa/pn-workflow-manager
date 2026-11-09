@@ -10,6 +10,7 @@ import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.RecipientTypeI
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.trigger.ChannelEventTriggerDispatcher;
 import it.pagopa.pn.workflowmanager.service.TimelineService;
+import it.pagopa.pn.workflowmanager.service.WorkflowClosureTimelineService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -20,6 +21,7 @@ import org.springframework.util.CollectionUtils;
 @Slf4j
 public class ChannelOutcomeHandler {
     private final TimelineUtils timelineUtils;
+    private final WorkflowClosureTimelineService workflowClosureTimelineService;
     private final TimelineService timelineService;
     private final ChannelEventTriggerDispatcher channelEventTriggerDispatcher;
     private final WorkflowUtils workflowUtils;
@@ -66,7 +68,7 @@ public class ChannelOutcomeHandler {
         );
         timelineService.addTimelineElement(reachedElement, notificationInt);
 
-        timelineUtils.handleTransitionToReachedStatusIfNecessary(
+        workflowClosureTimelineService.handleTransitionToReachedStatusIfNecessary(
                 notificationInt,
                 normalizedChannelOutcome.getRecIndex(),
                 normalizedChannelOutcome.getTimelineElementInternal().getElementId()

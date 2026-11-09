@@ -10,9 +10,7 @@ import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.CategorizedAttachmen
 import it.pagopa.pn.workflowmanager.dto.ext.externalchannel.ResultFilterInt;
 import it.pagopa.pn.workflowmanager.dto.ext.paperchannel.AnalogDtoInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
-import it.pagopa.pn.workflowmanager.dto.timeline.details.AnalogDeliveryTypeInt;
-import it.pagopa.pn.workflowmanager.dto.timeline.details.SendAnalogMessageDetailsInt;
-import it.pagopa.pn.workflowmanager.dto.timeline.details.ServiceLevelInt;
+import it.pagopa.pn.workflowmanager.dto.timeline.details.*;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.model.SendResponse;
 import it.pagopa.pn.workflowmanager.service.CampaignService;
 import it.pagopa.pn.workflowmanager.service.TimelineService;
@@ -70,13 +68,16 @@ public class PaperChannelUtils {
                 .toList();
     }
 
-    public static AnalogDtoInt buildAnalogDto(String prepareRequestId, String productType, SendResponse sendResponse) {
+    public static AnalogDtoInt buildAnalogDto(String prepareRequestId, String productType,
+                                              SendResponse sendResponse,
+                                              ReceiverAddressSourceTypeInt receiverAddressSourceType) {
         return AnalogDtoInt.builder()
                 .sentAttemptMade(FIRST_ATTEMPT)
                 .sendResponse(sendResponse)
                 .relatedRequestId(null) // Per l'invio di una notifica bonaria si presuppone che ci sia un solo invio
                 .productType(productType)
                 .prepareRequestId(prepareRequestId)
+                .receiverAddressSourceType(receiverAddressSourceType)
                 .build();
     }
 
@@ -113,5 +114,34 @@ public class PaperChannelUtils {
                 .map(TimelineElementInternal::getElementId)
                 .findFirst()
                 .orElseThrow(() -> new PnInternalException("SendRequestId is not present for iun=" + iun + " prepareRequestId=" + prepareRequestId, ERROR_CODE_TIMELINESERVICE_TIMELINE_ELEMENT_NOT_PRESENT));
+    }
+
+    /**
+     * Determina la fonte dell'indirizzo della validazione VAS,
+     * se presente; altrimenti restituisce MITTENTE.
+     */
+    public ReceiverAddressSourceTypeInt resolveAddressSource(String iun, int recIndex) {
+        Optional<TimelineElementInternal> addressValidationEvent = findPublicRegistryValidationEvent(iun, recIndex);
+
+        ReceiverAddressSourceTypeInt resolvedAddressSource;
+        if (addressValidationEvent.isPresent()) {
+            PublicRegistryValidationResponseDetailsInt details = (PublicRegistryValidationResponseDetailsInt) addressValidationEvent.get().getDetails();
+            resolvedAddressSource = ReceiverAddressSourceTypeInt.valueOf(details.getRegistry());
+        } else {
+            resolvedAddressSource = ReceiverAddressSourceTypeInt.MITTENTE;
+        }
+        log.debug("Receiver address source for iun {} and recIndex {}: {}", iun, recIndex, resolvedAddressSource);
+        return resolvedAddressSource;
+    }
+
+    /**
+     * Verifica la presenza dell'elemento di timeline PUBLIC_REGISTRY_VALIDATION_RESPONSE
+     */
+    private Optional<TimelineElementInternal> findPublicRegistryValidationEvent(String iun, int recIndex) {
+        return timelineService.getTimelineElementForSpecificRecipient(
+                iun,
+                recIndex,
+                TimelineElementCategoryInt.PUBLIC_REGISTRY_VALIDATION_RESPONSE
+        );
     }
 }

@@ -18,8 +18,6 @@ import it.pagopa.pn.workflowmanager.dto.io.IoSendMessageResultInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.*;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.*;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.paperchannel.model.SendResponse;
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.model.NotificationHistoryResponse;
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.model.NotificationStatus;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.model.SendingReceipt;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.event.SendEventInt;
 import it.pagopa.pn.workflowmanager.service.TimelineService;
@@ -84,11 +82,12 @@ public class TimelineUtils {
     }
 
     public TimelineElementInternal buildWorkflowEndedUndeliverableTimelineElement(Integer recIndex, NotificationInt notification,
-                                                                              String eventId) {
+                                                                              String eventId, Integer notificationCost) {
         log.debug("buildWorkflowEndedUndeliverableTimelineElement - IUN={} and id={}", notification.getIun(), recIndex);
 
         WorkflowEndedUndeliverableDetailsInt details = WorkflowEndedUndeliverableDetailsInt.builder()
                 .recIndex(recIndex)
+                .notificationCost(notificationCost)
                 .build();
 
         return buildTimeline(notification, TimelineElementCategoryInt.WORKFLOW_ENDED_UNDELIVERABLE, eventId, details);
@@ -150,6 +149,7 @@ public class TimelineUtils {
                 .prepareRequestId(analogDtoInfo.getPrepareRequestId())
                 .vat(notification.getVat())
                 .deliveryType(analogDeliveryType)
+                .receiverAddressSourceType(analogDtoInfo.getReceiverAddressSourceType())
                 .build();
 
         TimelineElementInternal.TimelineElementInternalBuilder timelineBuilder = TimelineElementInternal.builder();
@@ -268,11 +268,12 @@ public class TimelineUtils {
     }
 
     public TimelineElementInternal buildWorkflowEndedUnreachedTimelineElement(Integer recIndex, NotificationInt notification,
-                                                                            String eventId) {
+                                                                            String eventId, Integer notificationCost) {
         log.debug("buildWorkflowEndedUnreachedTimelineElement - IUN={} and id={}", notification.getIun(), recIndex);
 
         WorkflowEndedUnreachedDetailsInt details = WorkflowEndedUnreachedDetailsInt.builder()
                 .recIndex(recIndex)
+                .notificationCost(notificationCost)
                 .build();
 
 
@@ -288,12 +289,14 @@ public class TimelineUtils {
     }
 
     public TimelineElementInternal buildWorkflowEndedReachedTimelineElement(Integer recIndex, NotificationInt notification,
-                                                                           String eventId, String sourceTimelineId) {
+                                                                           String eventId, String sourceTimelineId,
+                                                                            Integer notificationCost) {
         log.debug("buildWorkflowEndedReachedTimelineElement - IUN={} and id={}", notification.getIun(), recIndex);
 
         WorkflowEndedReachedDetailsInt details = WorkflowEndedReachedDetailsInt.builder()
                 .recIndex(recIndex)
                 .sourceElementId(sourceTimelineId)
+                .notificationCost(notificationCost)
                 .build();
 
 
@@ -309,13 +312,15 @@ public class TimelineUtils {
     }
 
     public TimelineElementInternal buildWorkflowDoneUnreachedTimelineElement(Integer recIndex, NotificationInt notification,
-                                                                             String eventId, String sourceTimelineId, DesiredFeedbackType completionFeedback) {
+                                                                             String eventId, String sourceTimelineId,
+                                                                             DesiredFeedbackType completionFeedback, Integer notificationCost) {
         log.debug("buildWorkflowDoneUnreachedTimelineElement - IUN={} and id={}", notification.getIun(), recIndex);
 
         WorkflowDoneUnreachedDetailsInt details = WorkflowDoneUnreachedDetailsInt.builder()
                 .recIndex(recIndex)
                 .sourceElementId(sourceTimelineId)
                 .completionFeedback(completionFeedback.name())
+                .notificationCost(notificationCost)
                 .build();
 
 
@@ -331,13 +336,15 @@ public class TimelineUtils {
     }
 
     public TimelineElementInternal buildWorkflowDoneReachedTimelineElement(Integer recIndex, NotificationInt notification,
-                                                                            String eventId, String sourceTimelineId, DesiredFeedbackType completionFeedback) {
+                                                                            String eventId, String sourceTimelineId,
+                                                                           DesiredFeedbackType completionFeedback, Integer notificationCost) {
         log.debug("buildWorkflowDoneReachedTimelineElement - IUN={} and id={}", notification.getIun(), recIndex);
 
         WorkflowDoneReachedDetailsInt details = WorkflowDoneReachedDetailsInt.builder()
                 .recIndex(recIndex)
                 .sourceElementId(sourceTimelineId)
                 .completionFeedback(completionFeedback.name())
+                .notificationCost(notificationCost)
                 .build();
 
 
@@ -534,24 +541,6 @@ public class TimelineUtils {
         );
         log.error(msg);
         return new PnInternalException(msg, ERROR_CODE_TIMELINESERVICE_TIMELINE_ELEMENT_NOT_PRESENT);
-    }
-
-    public void handleTransitionToReachedStatusIfNecessary(NotificationInt notificationInt, int recIndex, String sourceTimelineId) {
-        String iun = notificationInt.getIun();
-        int numOfRecipients = notificationInt.getRecipients().size();
-        Instant sentAt = notificationInt.getSentAt();
-        NotificationHistoryResponse history = timelineService.getTimelineAndStatusHistory(iun, numOfRecipients, sentAt);
-        NotificationStatus currentStatus = history.getNotificationStatus();
-        if(currentStatus == NotificationStatus.COMPLETED_UNREACHED || currentStatus == NotificationStatus.UNDELIVERABLE) {
-            log.info("Notification {} is in COMPLETED_UNREACHED status, saving element with category WORKFLOW_ENDED_REACHED for recIndex {}", iun, recIndex);
-            TimelineElementInternal completedReachedTimelineElement = buildWorkflowEndedReachedTimelineElement(
-                    recIndex,
-                    notificationInt,
-                    getWorkflowEndedReachedTimelineElementId(recIndex, iun),
-                    sourceTimelineId
-            );
-            timelineService.addTimelineElement(completedReachedTimelineElement, notificationInt);
-        }
     }
 
     public TimelineElementInternal buildSendDigitalMessageProgress(
