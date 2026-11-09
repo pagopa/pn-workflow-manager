@@ -7,9 +7,6 @@ import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.DesiredFeedbackType;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.AddTimelineElementResponse;
-import it.pagopa.pn.workflowmanager.dto.timeline.EventId;
-import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
-import it.pagopa.pn.workflowmanager.dto.timeline.TimelineEventId;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.NoticePaymentInt;
 import it.pagopa.pn.workflowmanager.service.CampaignService;
 import it.pagopa.pn.workflowmanager.service.NotificationService;
@@ -44,7 +41,7 @@ public class NoticePaymentEventHandler {
     private void handleScheduleWorkflowDone(NoticePaymentInt event, NotificationInt notificationInt, String noticePaymentPaidElementId) {
         log.debug("Start handleScheduleWorkflowDone for notification: {} and recIndex: {}", event.getIun(), event.getRecIndex());
         Campaign campaign = campaignService.getCampaignByCampaignIdAndSenderId(notificationInt.getCampaignId(), notificationInt.getSender().getPaId());
-        if (campaign.getStopOnPaid()) {
+        if (Boolean.TRUE.equals(campaign.getStopOnPaid())) {
             workflowUtils.scheduleWorkflowDone(event.getIun(), event.getRecIndex(), noticePaymentPaidElementId, DesiredFeedbackType.PAID);
         }
     }
