@@ -466,26 +466,6 @@ Parameters:
     Type: String
     Description: workflow-manager national-registries queue age alarm ARN
 
-  LegalPaymentsEventQueueName:
-    Type: String
-    Description: 'LegalPaymentsEvent queue name'
-
-  LegalPaymentsEventQueueURL:
-    Type: String
-    Description: 'LegalPaymentsEvent queue URL'
-
-  LegalPaymentsEventQueueARN:
-    Type: String
-    Description: 'LegalPaymentsEvent queue ARN'
-
-  LegalPaymentsEventQueueAlarmARN:
-    Type: String
-    Description: 'LegalPaymentsEvent queue DLQ alarm ARN'
-
-  LegalPaymentsEventQueueAgeAlarmARN:
-    Type: String
-    Description: 'LegalPaymentsEvent queue age alarm ARN'
-
   InformalPaymentsEventQueueName:
     Type: String
     Description: 'InformalPaymentsEvent queue name'
@@ -1272,7 +1252,7 @@ Resources:
       EventPattern:
         detail-type: [ "NoticePaymentsPaidEvent" ]
         detail:
-          communicationType: "INFORMAL"
+          communicationType: [ !Ref InformalCommunicationType ]
       Targets:
         - Id: !Sub '${ProjectName}-CoreEventBus-InformalPaymentsEvent'
           Arn: !Ref InformalPaymentsEventQueueARN
