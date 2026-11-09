@@ -1,12 +1,12 @@
 package it.pagopa.pn.workflowmanager.service.impl;
 
 
+import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationHistoryResponseInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.AddTimelineElementResponse;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementDetailsInt;
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.model.NotificationHistoryResponse;
 import it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.timeline.TimelineClient;
 import it.pagopa.pn.workflowmanager.service.TimelineService;
 import lombok.RequiredArgsConstructor;
@@ -110,7 +110,7 @@ public class TimelineServiceHttpImpl implements TimelineService {
     }
 
     @Override
-    public NotificationHistoryResponse getTimelineAndStatusHistory(String iun, int recipients, Instant createdAt) {
+    public NotificationHistoryResponseInt getTimelineAndStatusHistory(String iun, int recipients, Instant createdAt) {
         log.debug("getTimelineAndStatusHistory - IUN={}, recipients={}, createdAt={}", iun, recipients, createdAt);
 
         return timelineClient.getTimelineAndStatusHistory(iun, recipients, createdAt);

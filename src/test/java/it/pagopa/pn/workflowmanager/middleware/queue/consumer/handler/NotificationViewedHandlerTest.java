@@ -4,18 +4,15 @@ import it.pagopa.pn.commons.log.PnAuditLogEventType;
 import it.pagopa.pn.workflowmanager.action.utils.TimelineUtils;
 import it.pagopa.pn.workflowmanager.action.utils.WorkflowUtils;
 import it.pagopa.pn.workflowmanager.dto.event.NotificationViewedInt;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.DesiredFeedbackType;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationSenderInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
-import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
-import it.pagopa.pn.workflowmanager.dto.ext.campaign.DesiredFeedbackType;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.InformalNotificationViewedDetailsInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt;
-import it.pagopa.pn.workflowmanager.service.AuditLogService;
-import it.pagopa.pn.workflowmanager.service.CampaignService;
-import it.pagopa.pn.workflowmanager.service.NotificationService;
-import it.pagopa.pn.workflowmanager.service.TimelineService;
+import it.pagopa.pn.workflowmanager.service.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -27,14 +24,8 @@ import java.util.List;
 import java.util.Set;
 
 import static it.pagopa.pn.workflowmanager.action.utils.TimelineUtils.getInformalNotificationViewedTimelineElementId;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class NotificationViewedHandlerTest {
@@ -51,6 +42,8 @@ class NotificationViewedHandlerTest {
     private AuditLogService auditLogService;
     @Mock
     private WorkflowUtils workflowUtils;
+    @Mock
+    private WorkflowClosureTimelineService workflowClosureTimelineService;
 
     @InjectMocks
     private NotificationViewedHandler handler;
@@ -128,7 +121,7 @@ class NotificationViewedHandlerTest {
         handler.handleViewNotification(payload);
 
         verify(timelineService).addTimelineElement(viewedElement, notification);
-        verify(timelineUtils).handleTransitionToReachedStatusIfNecessary(notification, 1, viewedTimelineId);
+        verify(workflowClosureTimelineService).handleTransitionToReachedStatusIfNecessary(notification, 1, viewedTimelineId);
         verify(auditLogService).buildAuditLogEvent(
                 eq("IUN_2"),
                 eq(1),

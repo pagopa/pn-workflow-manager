@@ -5,10 +5,7 @@ import it.pagopa.pn.workflowmanager.dto.ext.campaign.ChannelType;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.WorkFlowEntity;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.RecipientTypeInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
-import it.pagopa.pn.workflowmanager.dto.timeline.details.DigitalChannelsInt;
-import it.pagopa.pn.workflowmanager.dto.timeline.details.SendDigitalMessageDetailsInt;
-import it.pagopa.pn.workflowmanager.dto.timeline.details.SendDigitalMessageFeedbackDetailsInt;
-import it.pagopa.pn.workflowmanager.dto.timeline.details.SendDigitalMessageSkipDetailsInt;
+import it.pagopa.pn.workflowmanager.dto.timeline.details.*;
 import it.pagopa.pn.workflowmanager.exceptions.PnWorkflowException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,6 +20,8 @@ import java.util.Set;
 
 import static it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt.*;
 import static it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCodes.ERROR_CODE_WORKFLOWMANAGER_GENERIC_WORKFLOW_ERROR;
+import static it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.io.IoEventClassification.FAILED_TO_SEND;
+import static it.pagopa.pn.workflowmanager.middleware.queue.consumer.channel_outcome.io.IoEventClassification.SENDER_NOT_ALLOWED;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
@@ -95,6 +94,24 @@ class RecipientDeliveryAnalyzerTest {
 
         // Assert
         assertEquals(RecipientDeliveryStatus.UNDELIVERABLE, result.status());
+        assertNull(result.sourceElementId());
+    }
+
+    @Test
+    void getDeliveryInfo_shouldReturnUnreached_whenOnlyIoChannelAndHasNegativeFeedback() {
+        // Arrange
+        Campaign campaign = createCampaign(List.of(ChannelType.IO));
+        List<TimelineElementInternal> timelineElements = createTimelineWithAppIoNegativeFeedback();
+
+        when(timelineUtils.findFirstReachedElementId(anyList(), eq(TEST_REC_INDEX)))
+                .thenReturn(Optional.empty());
+
+        // Act
+        RecipientDeliveryInfo result = analyzer.getDeliveryInfo(
+                timelineElements, campaign, TEST_REC_INDEX, RecipientTypeInt.PF);
+
+        // Assert
+        assertEquals(RecipientDeliveryStatus.UNREACHED, result.status());
         assertNull(result.sourceElementId());
     }
 
@@ -173,6 +190,10 @@ class RecipientDeliveryAnalyzerTest {
     }
 
     @Test
+    /*
+    * Campagna con canale IO ed EMAIL
+    * IO: Esiste feedback
+    * */
     void getDeliveryInfo_shouldReturnUnreached_whenNoChannelConditionsMet() {
         // Arrange
         Campaign campaign = createCampaign(List.of(ChannelType.IO, ChannelType.EMAIL));
@@ -219,6 +240,22 @@ class RecipientDeliveryAnalyzerTest {
         SendDigitalMessageFeedbackDetailsInt details = SendDigitalMessageFeedbackDetailsInt.builder()
                 .recIndex(TEST_REC_INDEX)
                 .channel(DigitalChannelsInt.IO)
+                .deliveryDetail(DigitalDeliveryDetailsInt.builder().code(SENDER_NOT_ALLOWED.name()).build())
+                .build();
+
+        TimelineElementInternal element = TimelineElementInternal.builder()
+                .category(SEND_DIGITAL_MESSAGE_FEEDBACK)
+                .details(details)
+                .build();
+
+        return List.of(element);
+    }
+
+    private List<TimelineElementInternal> createTimelineWithAppIoNegativeFeedback() {
+        SendDigitalMessageFeedbackDetailsInt details = SendDigitalMessageFeedbackDetailsInt.builder()
+                .recIndex(TEST_REC_INDEX)
+                .channel(DigitalChannelsInt.IO)
+                .deliveryDetail(DigitalDeliveryDetailsInt.builder().code(FAILED_TO_SEND.name()).build())
                 .build();
 
         TimelineElementInternal element = TimelineElementInternal.builder()
@@ -233,6 +270,7 @@ class RecipientDeliveryAnalyzerTest {
         SendDigitalMessageFeedbackDetailsInt details = SendDigitalMessageFeedbackDetailsInt.builder()
                 .recIndex(TEST_REC_INDEX)
                 .channel(DigitalChannelsInt.IO)
+                .deliveryDetail(DigitalDeliveryDetailsInt.builder().code(SENDER_NOT_ALLOWED.name()).build())
                 .build();
 
         TimelineElementInternal element = TimelineElementInternal.builder()

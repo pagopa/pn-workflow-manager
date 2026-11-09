@@ -1,10 +1,10 @@
 package it.pagopa.pn.workflowmanager.service;
 
+import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationHistoryResponseInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.AddTimelineElementResponse;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt;
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.timelineservice.model.NotificationHistoryResponse;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -72,5 +72,5 @@ public interface TimelineService {
      */
     Set<TimelineElementInternal> getTimelineByIunTimelineId(String iun, String timelineId, boolean confidentialInfoRequired);
 
-    NotificationHistoryResponse getTimelineAndStatusHistory(String iun, int recipients, Instant createdAt);
+    NotificationHistoryResponseInt getTimelineAndStatusHistory(String iun, int recipients, Instant createdAt);
 }

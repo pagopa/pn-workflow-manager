@@ -3,17 +3,15 @@ package it.pagopa.pn.workflowmanager.action.endworkflow;
 import it.pagopa.pn.workflowmanager.action.utils.RecipientDeliveryAnalyzer;
 import it.pagopa.pn.workflowmanager.action.utils.RecipientDeliveryInfo;
 import it.pagopa.pn.workflowmanager.action.utils.RecipientDeliveryStatus;
-import it.pagopa.pn.workflowmanager.action.utils.TimelineUtils;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationSenderInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.RecipientTypeInt;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
-import it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt;
 import it.pagopa.pn.workflowmanager.service.CampaignService;
 import it.pagopa.pn.workflowmanager.service.NotificationService;
-import it.pagopa.pn.workflowmanager.service.TimelineService;
+import it.pagopa.pn.workflowmanager.service.WorkflowClosureTimelineService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,9 +20,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 
-import static it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class EndWorkflowActionHandlerTest {
@@ -36,13 +35,10 @@ class EndWorkflowActionHandlerTest {
     private CampaignService campaignService;
 
     @Mock
-    private TimelineUtils timelineUtils;
-
-    @Mock
     private RecipientDeliveryAnalyzer recipientDeliveryAnalyzer;
 
     @Mock
-    private TimelineService timelineService;
+    private WorkflowClosureTimelineService workflowClosureTimelineService;
 
     private EndWorkflowActionHandler handler;
 
@@ -57,9 +53,8 @@ class EndWorkflowActionHandlerTest {
         handler = new EndWorkflowActionHandler(
                 notificationService,
                 campaignService,
-                timelineUtils,
                 recipientDeliveryAnalyzer,
-                timelineService
+                workflowClosureTimelineService
         );
     }
 
@@ -68,16 +63,12 @@ class EndWorkflowActionHandlerTest {
         // Arrange
         NotificationInt notification = createMockNotification();
         Campaign campaign = createMockCampaign();
-        TimelineElementInternal timelineElement = createMockTimelineElement(WORKFLOW_ENDED_REACHED);
         List<TimelineElementInternal> timelineElements = List.of();
 
         when(notificationService.getInformalNotificationByIun(TEST_IUN)).thenReturn(notification);
         when(campaignService.getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_PA_ID)).thenReturn(campaign);
         when(recipientDeliveryAnalyzer.getDeliveryInfo(anyList(), eq(campaign), eq(TEST_REC_INDEX),
                 eq(RecipientTypeInt.PF))).thenReturn(new RecipientDeliveryInfo(RecipientDeliveryStatus.REACHED, TEST_TIMELINE_ID));
-        when(timelineUtils.buildWorkflowEndedReachedTimelineElement(eq(TEST_REC_INDEX), eq(notification),
-                anyString(), eq(TEST_TIMELINE_ID))).thenReturn(timelineElement);
-
         // Act
         handler.endWorkflowAction(timelineElements, TEST_IUN, TEST_REC_INDEX);
 
@@ -86,10 +77,8 @@ class EndWorkflowActionHandlerTest {
         verify(campaignService).getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_PA_ID);
         verify(recipientDeliveryAnalyzer).getDeliveryInfo(eq(timelineElements), eq(campaign), eq(TEST_REC_INDEX),
                 eq(RecipientTypeInt.PF));
-        verify(timelineUtils).buildWorkflowEndedReachedTimelineElement(eq(TEST_REC_INDEX), eq(notification),
-                anyString(), eq(TEST_TIMELINE_ID));
-        verify(timelineService).addTimelineElement(timelineElement, notification);
-        verifyNoMoreInteractions(timelineUtils);
+        verify(workflowClosureTimelineService).saveWorkflowEndedReachedTimelineElement(
+                TEST_REC_INDEX, TEST_TIMELINE_ID, notification, timelineElements);
     }
 
     @Test
@@ -97,15 +86,12 @@ class EndWorkflowActionHandlerTest {
         // Arrange
         NotificationInt notification = createMockNotification();
         Campaign campaign = createMockCampaign();
-        TimelineElementInternal timelineElement = createMockTimelineElement(WORKFLOW_ENDED_UNREACHED);
         List<TimelineElementInternal> timelineElements = List.of();
 
         when(notificationService.getInformalNotificationByIun(TEST_IUN)).thenReturn(notification);
         when(campaignService.getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_PA_ID)).thenReturn(campaign);
         when(recipientDeliveryAnalyzer.getDeliveryInfo(anyList(), eq(campaign), eq(TEST_REC_INDEX),
                 eq(RecipientTypeInt.PF))).thenReturn(new RecipientDeliveryInfo(RecipientDeliveryStatus.UNREACHED));
-        when(timelineUtils.buildWorkflowEndedUnreachedTimelineElement(eq(TEST_REC_INDEX), eq(notification),
-                anyString())).thenReturn(timelineElement);
 
         // Act
         handler.endWorkflowAction(timelineElements, TEST_IUN, TEST_REC_INDEX);
@@ -115,10 +101,8 @@ class EndWorkflowActionHandlerTest {
         verify(campaignService).getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_PA_ID);
         verify(recipientDeliveryAnalyzer).getDeliveryInfo(eq(timelineElements), eq(campaign), eq(TEST_REC_INDEX),
                 eq(RecipientTypeInt.PF));
-        verify(timelineUtils).buildWorkflowEndedUnreachedTimelineElement(eq(TEST_REC_INDEX), eq(notification),
-                anyString());
-        verify(timelineService).addTimelineElement(timelineElement, notification);
-        verifyNoMoreInteractions(timelineUtils);
+        verify(workflowClosureTimelineService).saveWorkflowEndedUnreachedTimelineElement(
+                TEST_REC_INDEX, notification, timelineElements);
     }
 
     @Test
@@ -126,16 +110,12 @@ class EndWorkflowActionHandlerTest {
         // Arrange
         NotificationInt notification = createMockNotification();
         Campaign campaign = createMockCampaign();
-        TimelineElementInternal timelineElement = createMockTimelineElement(WORKFLOW_ENDED_UNDELIVERABLE);
         List<TimelineElementInternal> timelineElements = List.of();
 
         when(notificationService.getInformalNotificationByIun(TEST_IUN)).thenReturn(notification);
         when(campaignService.getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_PA_ID)).thenReturn(campaign);
         when(recipientDeliveryAnalyzer.getDeliveryInfo(anyList(), eq(campaign), eq(TEST_REC_INDEX),
                 eq(RecipientTypeInt.PF))).thenReturn(new RecipientDeliveryInfo(RecipientDeliveryStatus.UNDELIVERABLE));
-        when(timelineUtils.buildWorkflowEndedUndeliverableTimelineElement(eq(TEST_REC_INDEX), eq(notification),
-                anyString())).thenReturn(timelineElement);
-
         // Act
         handler.endWorkflowAction(timelineElements, TEST_IUN, TEST_REC_INDEX);
 
@@ -144,10 +124,8 @@ class EndWorkflowActionHandlerTest {
         verify(campaignService).getCampaignByCampaignIdAndSenderId(TEST_CAMPAIGN_ID, TEST_PA_ID);
         verify(recipientDeliveryAnalyzer).getDeliveryInfo(eq(timelineElements), eq(campaign), eq(TEST_REC_INDEX),
                 eq(RecipientTypeInt.PF));
-        verify(timelineUtils).buildWorkflowEndedUndeliverableTimelineElement(eq(TEST_REC_INDEX), eq(notification),
-                anyString());
-        verify(timelineService).addTimelineElement(timelineElement, notification);
-        verifyNoMoreInteractions(timelineUtils);
+        verify(workflowClosureTimelineService).saveWorkflowEndedUndeliverableTimelineElement(
+                TEST_REC_INDEX, notification, timelineElements);
     }
 
 
@@ -174,10 +152,4 @@ class EndWorkflowActionHandlerTest {
                 .build();
     }
 
-    private TimelineElementInternal createMockTimelineElement(TimelineElementCategoryInt category) {
-        return TimelineElementInternal.builder()
-                .iun(TEST_IUN)
-                .category(category)
-                .build();
-    }
 }

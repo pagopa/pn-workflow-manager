@@ -5,6 +5,7 @@ import it.pagopa.pn.workflowmanager.dto.client.IoMessageRequest;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationDocumentInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.PagoPaInt;
+import it.pagopa.pn.workflowmanager.generated.openapi.msclient.delivery.model.NotificationDocument;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.ioconnector.api.IoConnectorApi;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.ioconnector.model.Attachment;
 import it.pagopa.pn.workflowmanager.generated.openapi.msclient.ioconnector.model.MessageRequest;
@@ -21,6 +22,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Component
 public class IoConnectorClientImpl implements IoConnectorClient {
+    private static final String ATTACHMENT_EXTENSION_PDF = ".pdf";
     private final IoConnectorApi ioConnectorApi;
     private final PnWorkflowManagerConfigs cfg;
 
@@ -58,9 +60,22 @@ public class IoConnectorClientImpl implements IoConnectorClient {
             notDoc -> new Attachment()
                     .fileKey(notDoc.getRef().getKey())
                     .id(notDoc.getRef().getKey())
-                    .name(notDoc.getRef().getKey())
+                    .name(makeFileName(notDoc))
             ).toList();
     }
+
+    private String makeFileName(NotificationDocumentInt document) {
+        String fileName = document.getTitle();
+        if(document.getTitle() == null) {
+            return document.getRef().getKey();
+        }
+
+        if (fileName.endsWith(ATTACHMENT_EXTENSION_PDF)) {
+            return fileName;
+        }
+        return fileName + ATTACHMENT_EXTENSION_PDF;
+    }
+
 
     private Optional<PagoPaInt> getPaymentInfoFromNotification(NotificationRecipientInt notificationRecipientInt) {
         if(CollectionUtils.isEmpty(notificationRecipientInt.getPayments())) {
