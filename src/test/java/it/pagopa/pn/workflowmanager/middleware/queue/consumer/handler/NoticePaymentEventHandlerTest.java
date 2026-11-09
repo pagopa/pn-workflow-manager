@@ -2,132 +2,256 @@ package it.pagopa.pn.workflowmanager.middleware.queue.consumer.handler;
 
 import it.pagopa.pn.workflowmanager.action.utils.TimelineUtils;
 import it.pagopa.pn.workflowmanager.action.utils.WorkflowUtils;
+import it.pagopa.pn.workflowmanager.dto.event.NotificationPaidInt;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.DesiredFeedbackType;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationSenderInt;
-import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.RecipientTypeInt;
-import it.pagopa.pn.workflowmanager.dto.timeline.EventId;
+import it.pagopa.pn.workflowmanager.dto.timeline.AddTimelineElementResponse;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
-import it.pagopa.pn.workflowmanager.dto.timeline.TimelineEventId;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.NoticePaymentInt;
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.delivery.model.InformalSentNotificationV1;
-import it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.delivery.PnDeliveryClient;
+import it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt;
 import it.pagopa.pn.workflowmanager.service.CampaignService;
 import it.pagopa.pn.workflowmanager.service.NotificationService;
 import it.pagopa.pn.workflowmanager.service.TimelineService;
-import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.slf4j.MDC;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InOrder;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.Instant;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
+
+@ExtendWith(MockitoExtension.class)
 class NoticePaymentEventHandlerTest {
 
-    private final PnDeliveryClient deliveryClient = mock(PnDeliveryClient.class);
-    private final CampaignService campaignService = mock(CampaignService.class);
-    private final NotificationService notificationService = mock(NotificationService.class);
-    private final TimelineService timelineService = mock(TimelineService.class);
-    private final TimelineUtils timelineUtils = mock(TimelineUtils.class);
-    private final WorkflowUtils workflowUtils = mock(WorkflowUtils.class);
-    private final NoticePaymentEventHandler handler = new NoticePaymentEventHandler(
-            deliveryClient, campaignService, notificationService, timelineService, timelineUtils, workflowUtils);
+    @Mock
+    private CampaignService campaignService;
 
-    @AfterEach
-    void clearMdc() {
-        MDC.clear();
+    @Mock
+    private NotificationService notificationService;
+
+    @Mock
+    private TimelineService timelineService;
+
+    @Mock
+    private TimelineUtils timelineUtils;
+
+    @Mock
+    private WorkflowUtils workflowUtils;
+
+    @InjectMocks
+    private NoticePaymentEventHandler handler;
+
+    private NoticePaymentInt event;
+    private NotificationInt notification;
+    private Campaign campaign;
+    private NotificationRecipientInt recipient;
+
+    private static final String IUN = "IUN-123456";
+    private static final String CAMPAIGN_ID = "CAMPAIGN-123";
+    private static final String PA_ID = "PA-123";
+    private static final String CREDITOR_TAX_ID = "12345678901";
+    private static final String NOTICE_CODE = "302000100000019421";
+    private static final int REC_INDEX = 0;
+
+    @BeforeEach
+    void setUp() {
+        event = NoticePaymentInt.builder()
+                .iun(IUN)
+                .recIndex(REC_INDEX)
+                .creditorTaxId(CREDITOR_TAX_ID)
+                .noticeCode(NOTICE_CODE)
+                .amount(1000)
+                .build();
+
+        NotificationSenderInt sender = NotificationSenderInt.builder()
+                .paId(PA_ID)
+                .build();
+
+        recipient = NotificationRecipientInt.builder()
+                .build();
+
+        notification = NotificationInt.builder()
+                .campaignId(CAMPAIGN_ID)
+                .sender(sender)
+                .recipients(List.of(recipient))
+                .build();
+
+        campaign = Campaign.builder()
+                .campaignId(CAMPAIGN_ID)
+                .stopOnPaid(false)
+                .build();
     }
 
     @Test
-    void handleResponseAddsBothPaymentTimelineElementsAndSchedulesDoneWhenCampaignStopsOnPaid() {
-        NoticePaymentInt event = event();
-        NotificationInt notification = notification();
-        TimelineElementInternal paymentNoticeTimelineElement = TimelineElementInternal.builder()
-                .iun("IUN-001")
-                .elementId("PAYMENT_NOTICE_PAID")
-                .build();
-        InformalSentNotificationV1 sentNotification = mock(InformalSentNotificationV1.class);
-        Campaign campaign = Campaign.builder().stopOnPaid(true).build();
-        when(notificationService.getInformalNotificationByIun("IUN-001")).thenReturn(notification);
-        when(timelineUtils.buildNoticePaymentPaidTimelineElement(eq(notification), eq(event), anyString()))
-                .thenReturn(paymentNoticeTimelineElement);
-        when(deliveryClient.getSentInformalNotification("IUN-001")).thenReturn(sentNotification);
-        when(sentNotification.getCampaignId()).thenReturn("CAMPAIGN-001");
-        when(sentNotification.getSenderTaxId()).thenReturn("SENDER-001");
-        when(campaignService.getCampaignByCampaignIdAndSenderId("CAMPAIGN-001", "SENDER-001"))
+    void handleResponse_shouldPersistTimelineElements_andScheduleWorkflowDoneWhenCampaignStopOnPaidIsTrue() {
+        // Given
+        when(notificationService.getInformalNotificationByIun(IUN))
+                .thenReturn(notification);
+
+        when(campaignService.getCampaignByCampaignIdAndSenderId(CAMPAIGN_ID, PA_ID))
                 .thenReturn(campaign);
 
+        campaign.setStopOnPaid(true);
+
+        String paymentNoticeTimelineId = "payment-notice-paid-element-id";
+        TimelineElementInternal paymentNoticePaidElement = TimelineElementInternal.builder()
+                .elementId(paymentNoticeTimelineId)
+                .category(TimelineElementCategoryInt.PAYMENT_NOTICE_PAID)
+                .build();
+
+        String legacyPaymentTimelineId = "legacy-payment-element-id";
+        TimelineElementInternal legacyPaymentElement = TimelineElementInternal.builder()
+                .elementId(legacyPaymentTimelineId)
+                .category(TimelineElementCategoryInt.PAYMENT)
+                .build();
+
+        when(timelineUtils.buildNoticePaymentPaidTimelineElement(notification, event))
+                .thenReturn(paymentNoticePaidElement);
+
+        AddTimelineElementResponse addPaymentNoticePaidResponse = new AddTimelineElementResponse(paymentNoticeTimelineId, false);
+
+        when(timelineService.addTimelineElement(paymentNoticePaidElement, notification))
+                .thenReturn(addPaymentNoticePaidResponse);
+
+        when(timelineUtils.buildPaymentTimelineElement(
+                eq(notification),
+                any(NotificationPaidInt.class),
+                eq(recipient)))
+            .thenReturn(legacyPaymentElement);
+
+        AddTimelineElementResponse addLegacyPaymentResponse = new AddTimelineElementResponse(legacyPaymentTimelineId, false);
+
+        when(timelineService.addTimelineElement(legacyPaymentElement, notification))
+                .thenReturn(addLegacyPaymentResponse);
+
+        // When
         handler.handleResponse(event);
 
-        verify(timelineUtils).buildNoticePaymentPaidTimelineElement(
-                notification, event, handler.buildTimelineEventIdForNoticePaymentPaid(event));
-        verify(timelineService).addTimelineElement(paymentNoticeTimelineElement, notification);
-        verify(timelineUtils).buildPaymentTimelineElement(eq(notification), argThat(payment ->
-                payment.getIun().equals("IUN-001")
-                        && payment.getRecIndex() == 0
-                        && payment.getNoticeCode().equals("NOTICE-001")
-                        && payment.getCreditorTaxId().equals("TAX-ID")
-                        && payment.getAmount() == 1200
-        ), eq(notification.getRecipients().getFirst()));
-        verify(workflowUtils).scheduleWorkflowDone("IUN-001", 0, "TAX-ID", DesiredFeedbackType.PAID);
+        // Then
+        verify(notificationService, times(1))
+                .getInformalNotificationByIun(IUN);
+
+        verify(timelineUtils, times(1))
+                .buildNoticePaymentPaidTimelineElement(notification, event);
+
+        verify(timelineUtils, times(1))
+                .buildPaymentTimelineElement(
+                        eq(notification),
+                        any(NotificationPaidInt.class),
+                        eq(recipient));
+
+        verify(timelineService).addTimelineElement(
+                paymentNoticePaidElement, notification);
+
+        verify(timelineService).addTimelineElement(
+                legacyPaymentElement, notification);
+
+        verify(campaignService).getCampaignByCampaignIdAndSenderId(
+                CAMPAIGN_ID, PA_ID);
+
+        verify(workflowUtils).scheduleWorkflowDone(
+                IUN,
+                REC_INDEX,
+                paymentNoticeTimelineId,
+                DesiredFeedbackType.PAID
+        );
+
+        InOrder inOrder = inOrder(
+                notificationService,
+                timelineUtils,
+                timelineService,
+                campaignService,
+                workflowUtils
+        );
+
+        inOrder.verify(notificationService)
+                .getInformalNotificationByIun(IUN);
+
+        inOrder.verify(timelineUtils)
+                .buildNoticePaymentPaidTimelineElement(notification, event);
+
+        inOrder.verify(timelineService).addTimelineElement(paymentNoticePaidElement, notification);
+
+        inOrder.verify(timelineUtils).buildPaymentTimelineElement(
+            eq(notification),
+            any(NotificationPaidInt.class),
+            eq(recipient)
+        );
+
+        inOrder.verify(timelineService).addTimelineElement(legacyPaymentElement, notification);
+
+        inOrder.verify(campaignService).getCampaignByCampaignIdAndSenderId(CAMPAIGN_ID, PA_ID);
+
+        inOrder.verify(workflowUtils).scheduleWorkflowDone(IUN, REC_INDEX, paymentNoticeTimelineId, DesiredFeedbackType.PAID);
     }
 
     @Test
-    void handleResponseDoesNotScheduleDoneWhenCampaignDoesNotStopOnPaid() {
-        NoticePaymentInt event = event();
-        NotificationInt notification = notification();
-        InformalSentNotificationV1 sentNotification = mock(InformalSentNotificationV1.class);
-        when(notificationService.getInformalNotificationByIun("IUN-001")).thenReturn(notification);
-        when(deliveryClient.getSentInformalNotification("IUN-001")).thenReturn(sentNotification);
-        when(sentNotification.getCampaignId()).thenReturn("CAMPAIGN-001");
-        when(sentNotification.getSenderTaxId()).thenReturn("SENDER-001");
-        when(campaignService.getCampaignByCampaignIdAndSenderId(anyString(), anyString()))
-                .thenReturn(Campaign.builder().stopOnPaid(false).build());
+    void handleResponse_shouldNotScheduleWorkflowDone_whenCampaignStopOnPaidIsFalse() {
+        // Given
+        when(notificationService.getInformalNotificationByIun(IUN))
+                .thenReturn(notification);
 
+        when(campaignService.getCampaignByCampaignIdAndSenderId(CAMPAIGN_ID, PA_ID))
+                .thenReturn(campaign);
+
+        String paymentNoticeTimelineId = "payment-notice-paid-element-id";
+        TimelineElementInternal paymentNoticePaidElement = TimelineElementInternal.builder()
+                .elementId(paymentNoticeTimelineId)
+                .category(TimelineElementCategoryInt.PAYMENT_NOTICE_PAID)
+                .build();
+
+        String legacyPaymentTimelineId = "legacy-payment-element-id";
+        TimelineElementInternal legacyPaymentElement = TimelineElementInternal.builder()
+                .elementId(legacyPaymentTimelineId)
+                .category(TimelineElementCategoryInt.PAYMENT)
+                .build();
+
+        when(timelineUtils.buildNoticePaymentPaidTimelineElement(notification, event))
+                .thenReturn(paymentNoticePaidElement);
+
+        AddTimelineElementResponse addPaymentNoticePaidResponse = new AddTimelineElementResponse(legacyPaymentTimelineId, false);
+
+        when(timelineService.addTimelineElement(paymentNoticePaidElement, notification))
+                .thenReturn(addPaymentNoticePaidResponse);
+
+        when(timelineUtils.buildPaymentTimelineElement(
+                eq(notification),
+                any(NotificationPaidInt.class),
+                eq(recipient)))
+                .thenReturn(legacyPaymentElement);
+
+        AddTimelineElementResponse addLegacyPaymentResponse = new AddTimelineElementResponse(paymentNoticeTimelineId, false);
+
+        when(timelineService.addTimelineElement(legacyPaymentElement, notification))
+                .thenReturn(addLegacyPaymentResponse);
+
+        // When
         handler.handleResponse(event);
 
-        verifyNoInteractions(workflowUtils);
-    }
+        // Then
+        verify(timelineService).addTimelineElement(
+                paymentNoticePaidElement, notification);
 
-    @Test
-    void buildTimelineEventIdUsesNoticePaymentIdentityFields() {
-        NoticePaymentInt event = event();
+        verify(timelineService).addTimelineElement(
+                legacyPaymentElement, notification);
 
-        String eventId = handler.buildTimelineEventIdForNoticePaymentPaid(event);
+        verify(campaignService).getCampaignByCampaignIdAndSenderId(
+                CAMPAIGN_ID, PA_ID);
 
-        assertEquals(TimelineEventId.PAYMENT_NOTICE_PAID.buildEventId(
-                EventId.builder()
-                        .iun("IUN-001")
-                        .recIndex(0)
-                        .creditorTaxId("TAX-ID")
-                        .noticeCode("NOTICE-001")
-                        .build()), eventId);
-    }
-
-    private NoticePaymentInt event() {
-        return NoticePaymentInt.builder()
-                .iun("IUN-001")
-                .recIndex(0)
-                .noticeCode("NOTICE-001")
-                .creditorTaxId("TAX-ID")
-                .iuv("IUV-001")
-                .amount(1200)
-                .paymentDateTime(Instant.parse("2026-10-28T12:00:00Z"))
-                .build();
-    }
-
-    private NotificationInt notification() {
-        return NotificationInt.builder()
-                .iun("IUN-001")
-                .campaignId("CAMPAIGN-001")
-                .sender(NotificationSenderInt.builder().paId("SENDER-001").build())
-                .recipients(List.of(NotificationRecipientInt.builder().recipientType(RecipientTypeInt.PF).build()))
-                .build();
+        verify(workflowUtils, never()).scheduleWorkflowDone(
+                anyString(),
+                anyInt(),
+                anyString(),
+                any(DesiredFeedbackType.class)
+        );
     }
 }

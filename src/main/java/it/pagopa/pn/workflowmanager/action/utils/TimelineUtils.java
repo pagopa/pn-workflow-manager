@@ -753,8 +753,16 @@ public class TimelineUtils {
         return buildTimeline(notification, TimelineElementCategoryInt.COURTESY_CHANNEL_FAILED, eventId, details);
     }
 
-    public TimelineElementInternal buildNoticePaymentPaidTimelineElement(NotificationInt notification, NoticePaymentInt event, String elementId) {
+    public TimelineElementInternal buildNoticePaymentPaidTimelineElement(NotificationInt notification, NoticePaymentInt event) {
         log.debug("buildNoticePaymentPaidTimelineElement: iun={} recIndex={}", event.getIun(), event.getRecIndex());
+
+        String elementId = TimelineEventId.PAYMENT_NOTICE_PAID.buildEventId(
+                EventId.builder()
+                        .iun(event.getIun())
+                        .recIndex(event.getRecIndex())
+                        .creditorTaxId(event.getCreditorTaxId())
+                        .noticeCode(event.getNoticeCode())
+                        .build());
 
         PaymentNoticePaidDetailsInt details = PaymentNoticePaidDetailsInt.builder()
                 .recIndex(event.getRecIndex())
@@ -764,7 +772,7 @@ public class TimelineUtils {
                 .creditorTaxId(event.getCreditorTaxId())
                 .companyName(event.getCreditorCompanyName())
                 .eventTimestamp(event.getPaymentDateTime())
-                .dueDate(event.getDueDate() == null ? null : event.getDueDate().atZone(ZoneOffset.UTC).toLocalDate())
+                .dueDate(event.getDueDate())
                 .paymentSourceChannel(event.getPaymentSourceChannel())
                 .amount(event.getAmount())
                 .fee(event.getFee() == null ? null : Integer.valueOf(event.getFee()))

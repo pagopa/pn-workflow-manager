@@ -2,6 +2,7 @@ package it.pagopa.pn.workflowmanager.service.mapper;
 
 import it.pagopa.pn.api.dto.events.PnNoticePaymentPaidEvent;
 import it.pagopa.pn.workflowmanager.dto.event.NotificationPaidInt;
+import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.CommunicationType;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.NoticePaymentInt;
 
 public class NoticePaymentMapper {
@@ -30,7 +31,7 @@ public class NoticePaymentMapper {
                 .pagopaPublishedTimestamp(payload.getPagopaPublishedTimestamp())
                 .sendIngestionTimestamp(payload.getSendIngestionTimestamp())
                 .kafkaPartition(payload.getKafkaPartition())
-                .communicationType(payload.getCommunicationType())
+                .communicationType(CommunicationType.valueOf(payload.getCommunicationType()))
                 .iun(payload.getIun())
                 .recIndex(payload.getRecIndex())
                 .build();
@@ -41,6 +42,7 @@ public class NoticePaymentMapper {
                 .eventTimestamp(event.getPaymentDateTime())
                 .paymentSourceChannel(event.getPaymentSourceChannel())
                 .iun(event.getIun())
+                .recIndex(event.getRecIndex())
                 .noticeCode(event.getNoticeCode())
                 .creditorTaxId(event.getCreditorTaxId())
                 .amount(event.getAmount())

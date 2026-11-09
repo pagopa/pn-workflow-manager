@@ -1,6 +1,7 @@
 package it.pagopa.pn.workflowmanager.middleware.queue.consumer;
 
 import it.pagopa.pn.api.dto.events.PnNoticePaymentPaidEvent;
+import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.workflowmanager.config.PnWorkflowManagerConfigs;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.NoticePaymentInt;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.handler.NoticePaymentEventHandler;
@@ -50,7 +51,7 @@ class NoticePaymentEventConsumerTest {
                 .payload(PnNoticePaymentPaidEvent.Payload.builder().iun("IUN-001").recIndex(-1).build())
                 .build();
 
-        consumer.noticePaymentEventConsumer(message(invalidEvent));
+        assertThrows(PnInternalException.class, () -> consumer.noticePaymentEventConsumer(message(invalidEvent)));
 
         verifyNoInteractions(handler);
     }
@@ -78,6 +79,7 @@ class NoticePaymentEventConsumerTest {
                         .iuv("IUV-001")
                         .amount(1200)
                         .paymentDateTime(Instant.parse("2026-10-28T12:00:00Z"))
+                        .communicationType("INFORMAL")
                         .build())
                 .build();
     }

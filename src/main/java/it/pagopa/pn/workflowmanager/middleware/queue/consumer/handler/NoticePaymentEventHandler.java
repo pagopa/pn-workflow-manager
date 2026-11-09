@@ -6,13 +6,11 @@ import it.pagopa.pn.workflowmanager.dto.event.NotificationPaidInt;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.DesiredFeedbackType;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
+import it.pagopa.pn.workflowmanager.dto.timeline.AddTimelineElementResponse;
 import it.pagopa.pn.workflowmanager.dto.timeline.EventId;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineEventId;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.NoticePaymentInt;
-import it.pagopa.pn.workflowmanager.generated.openapi.msclient.delivery.model.InformalSentNotificationV1;
-import it.pagopa.pn.workflowmanager.middleware.externalclient.pnclient.delivery.PnDeliveryClient;
-import it.pagopa.pn.workflowmanager.middleware.queue.consumer.utils.HandleEventUtils;
 import it.pagopa.pn.workflowmanager.service.CampaignService;
 import it.pagopa.pn.workflowmanager.service.NotificationService;
 import it.pagopa.pn.workflowmanager.service.TimelineService;
@@ -25,8 +23,6 @@ import org.springframework.stereotype.Component;
 @AllArgsConstructor
 @CustomLog
 public class NoticePaymentEventHandler {
-
-    private final PnDeliveryClient pnDeliveryClient;
     private final CampaignService campaignService;
     private final NotificationService notificationService;
     private final TimelineService timelineService;
@@ -34,44 +30,39 @@ public class NoticePaymentEventHandler {
     private final WorkflowUtils workflowUtils;
 
     public void handleResponse(NoticePaymentInt event) {
-        HandleEventUtils.addIunToMdc(event.getIun());
-        NotificationInt notification = notificationService.getInformalNotificationByIun(event.getIun());
+        String iun = event.getIun();
+        log.info("New event PAYMENT, start process to insert on notification: {} for recIndex: {}, noticeCode: {} and creditorTaxId: {}", iun, event.getRecIndex(), event.getNoticeCode(), event.getCreditorTaxId());
 
-        handleInsertNotificationPaidTimelineElement(event, notification);
-        handleInsertPaymentTimelineElement(event, notification);
-        handleScheduleWorkflowDone(event);
+        NotificationInt notification = notificationService.getInformalNotificationByIun(iun);
+
+        String noticePaymentPaidElementId = insertNoticePaymentPaidTimelineElement(event, notification);
+        insertLegacyPaymentTimelineElement(event, notification);
+        handleScheduleWorkflowDone(event, notification, noticePaymentPaidElementId);
+        log.info("Payment process completed for notification: {} and recIndex: {}", iun, event.getRecIndex());
     }
 
-    private void handleScheduleWorkflowDone(NoticePaymentInt event) {
-        InformalSentNotificationV1 informalNotification = pnDeliveryClient.getSentInformalNotification(event.getIun());
-        Campaign campaign = campaignService.getCampaignByCampaignIdAndSenderId(informalNotification.getCampaignId(), informalNotification.getSenderTaxId());
+    private void handleScheduleWorkflowDone(NoticePaymentInt event, NotificationInt notificationInt, String noticePaymentPaidElementId) {
+        log.debug("Start handleScheduleWorkflowDone for notification: {} and recIndex: {}", event.getIun(), event.getRecIndex());
+        Campaign campaign = campaignService.getCampaignByCampaignIdAndSenderId(notificationInt.getCampaignId(), notificationInt.getSender().getPaId());
         if (campaign.getStopOnPaid()) {
-            workflowUtils.scheduleWorkflowDone(event.getIun(), event.getRecIndex(), event.getCreditorTaxId(), DesiredFeedbackType.PAID);
+            workflowUtils.scheduleWorkflowDone(event.getIun(), event.getRecIndex(), noticePaymentPaidElementId, DesiredFeedbackType.PAID);
         }
     }
 
-    private void handleInsertPaymentTimelineElement(NoticePaymentInt event, NotificationInt notification) {
+    private void insertLegacyPaymentTimelineElement(NoticePaymentInt event, NotificationInt notification) {
         NotificationPaidInt notificationPaid = NoticePaymentMapper.mapToNotificationPaidInt(event);
-        timelineUtils.buildPaymentTimelineElement(notification, notificationPaid, notification.getRecipients().get(event.getRecIndex()));
+        timelineService.addTimelineElement(
+            timelineUtils.buildPaymentTimelineElement(notification, notificationPaid, notification.getRecipients().get(event.getRecIndex())),
+            notification
+        );
     }
 
-    private void handleInsertNotificationPaidTimelineElement(NoticePaymentInt event, NotificationInt notification) {
-        log.info("New event PAYMENT, start process to insert: {} ", event.getIuv());
-
-        String elementId = buildTimelineEventIdForNoticePaymentPaid(event);
-        TimelineElementInternal timelineElementInternal = timelineUtils.buildNoticePaymentPaidTimelineElement(notification, event, elementId);
-        timelineService.addTimelineElement(timelineElementInternal, notification);
-        log.info("Payment process complete: {}", event.getIuv());
-    }
-
-    public String buildTimelineEventIdForNoticePaymentPaid(NoticePaymentInt element) {
-        return TimelineEventId.PAYMENT_NOTICE_PAID.buildEventId(
-                EventId.builder()
-                        .iun(element.getIun())
-                        .recIndex(element.getRecIndex())
-                        .creditorTaxId(element.getCreditorTaxId())
-                        .noticeCode(element.getNoticeCode())
-                        .build());
+    private String insertNoticePaymentPaidTimelineElement(NoticePaymentInt event, NotificationInt notification) {
+        AddTimelineElementResponse persistedTimelineElement = timelineService.addTimelineElement(
+                timelineUtils.buildNoticePaymentPaidTimelineElement(notification, event),
+                notification
+        );
+        return persistedTimelineElement.getTimelineElementId();
     }
 
 }

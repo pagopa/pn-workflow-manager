@@ -2,10 +2,12 @@ package it.pagopa.pn.workflowmanager.service.mapper;
 
 import it.pagopa.pn.api.dto.events.PnNoticePaymentPaidEvent;
 import it.pagopa.pn.workflowmanager.dto.event.NotificationPaidInt;
+import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.CommunicationType;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.NoticePaymentInt;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
+import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -14,7 +16,7 @@ class NoticePaymentMapperTest {
     @Test
     void messageToInternalCopiesPaymentEventFields() {
         Instant paymentDateTime = Instant.parse("2026-10-28T12:00:00Z");
-        Instant dueDate = Instant.parse("2026-11-30T00:00:00Z");
+        LocalDate dueDate = LocalDate.parse("2026-11-30");
         Instant persistedTimestamp = Instant.parse("2026-10-28T12:01:00Z");
         PnNoticePaymentPaidEvent event = PnNoticePaymentPaidEvent.builder()
                 .payload(PnNoticePaymentPaidEvent.Payload.builder()
@@ -38,6 +40,7 @@ class NoticePaymentMapperTest {
                         .kafkaPartition("partition-1")
                         .iun("IUN-001")
                         .recIndex(0)
+                        .communicationType("INFORMAL")
                         .build())
                 .build();
 
@@ -63,6 +66,7 @@ class NoticePaymentMapperTest {
         assertEquals("partition-1", actual.getKafkaPartition());
         assertEquals("IUN-001", actual.getIun());
         assertEquals(0, actual.getRecIndex());
+        assertEquals(CommunicationType.INFORMAL, actual.getCommunicationType());
     }
 
     @Test
@@ -70,6 +74,7 @@ class NoticePaymentMapperTest {
         Instant paymentDateTime = Instant.parse("2026-10-28T12:00:00Z");
         NoticePaymentInt event = NoticePaymentInt.builder()
                 .iun("IUN-001")
+                .recIndex(0)
                 .noticeCode("NOTICE-001")
                 .creditorTaxId("TAX-ID")
                 .amount(1200)
@@ -80,6 +85,7 @@ class NoticePaymentMapperTest {
         NotificationPaidInt actual = NoticePaymentMapper.mapToNotificationPaidInt(event);
 
         assertEquals("IUN-001", actual.getIun());
+        assertEquals(0, actual.getRecIndex());
         assertEquals("NOTICE-001", actual.getNoticeCode());
         assertEquals("TAX-ID", actual.getCreditorTaxId());
         assertEquals(1200, actual.getAmount());

@@ -2,6 +2,7 @@ package it.pagopa.pn.workflowmanager.middleware.queue.consumer;
 
 import io.awspring.cloud.sqs.annotation.SqsListener;
 import it.pagopa.pn.api.dto.events.PnNoticePaymentPaidEvent;
+import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.workflowmanager.config.PnWorkflowManagerConfigs;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.NoticePaymentInt;
 import it.pagopa.pn.workflowmanager.middleware.queue.consumer.handler.NoticePaymentEventHandler;
@@ -15,6 +16,7 @@ import org.springframework.messaging.Message;
 
 import java.util.List;
 
+import static it.pagopa.pn.workflowmanager.exceptions.WorkflowManagerExceptionCodes.ERROR_CODE_WORKFLOWMANAGER_INVALID_EVENT_RECEIVED;
 import static it.pagopa.pn.workflowmanager.middleware.queue.consumer.utils.MdcUtils.setMdc;
 
 @Configuration
@@ -37,9 +39,10 @@ public class NoticePaymentEventConsumer {
             if (!validationErrors.isEmpty()) {
                 log.error("{} validationErrors={}", VALIDATION_ERROR, validationErrors);
                 log.logEndingProcess(PROCESS_NAME);
-                return;
+                throw new PnInternalException("Validation errors: " + validationErrors, ERROR_CODE_WORKFLOWMANAGER_INVALID_EVENT_RECEIVED);
             }
             NoticePaymentInt response = NoticePaymentMapper.messageToInternal(message.getPayload());
+            HandleEventUtils.addIunToMdc(response.getIun());
             noticePaymentEventHandler.handleResponse(response);
 
         } catch (Exception ex) {
