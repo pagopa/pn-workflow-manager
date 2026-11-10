@@ -66,13 +66,18 @@ class NotificationPaidHandlerTest {
                 .recipients(List.of(
                         NotificationRecipientInt.builder()
                                 .recipientType(RecipientTypeInt.PF)
+                                .taxId("FIRST_RECIPIENT")
+                                .build(),
+                        NotificationRecipientInt.builder()
+                                .recipientType(RecipientTypeInt.PF)
+                                .taxId("SECOND_RECIPIENT")
                                 .build()
                 ))
                 .build();
 
         payment = NotificationPaidInt.builder()
                 .iun("IUN_TEST")
-                .recIndex(0)
+                .recIndex(1)
                 .noticeCode("NOTICE_123")
                 .creditorTaxId("CREDITOR_456")
                 .paymentSourceChannel("IO")
@@ -87,7 +92,7 @@ class NotificationPaidHandlerTest {
                 .build();
 
         when(notificationService.getInformalNotificationByIun("IUN_TEST")).thenReturn(notification);
-        when(timelineUtils.buildPaymentTimelineElement(eq(notification), eq(payment), eq(notification.getRecipients().getFirst())))
+        when(timelineUtils.buildPaymentTimelineElement(eq(notification), eq(payment), eq(notification.getRecipients().get(1))))
                 .thenReturn(builtTimelineElement);
     }
 
@@ -105,7 +110,7 @@ class NotificationPaidHandlerTest {
 
         verify(campaignService).getCampaignByCampaignIdAndSenderId("CAMPAIGN_ID", "PA_ID");
         verify(workflowUtils).scheduleWorkflowDone(
-                notification.getIun(), payment.getRecIndex(), persistedTimelineId, DesiredFeedbackType.PAID);
+                notification.getIun(), 1, persistedTimelineId, DesiredFeedbackType.PAID);
         verify(timelineService).addTimelineElement(builtTimelineElement, notification);
     }
 
