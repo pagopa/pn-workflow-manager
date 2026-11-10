@@ -31,6 +31,10 @@ public class PaymentNoticePaidDetailsInt extends CategoryTypeTimelineElementDeta
     private Instant pagopaPublishedTimestamp;
     private Instant sendIngestionTimestamp;
 
+    public Instant getElementTimestamp() {
+        return eventTimestamp;
+    }
+
     @Override
     public String toLog() {
         return String.format(

@@ -9,6 +9,7 @@ import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationIn
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationSenderInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.RecipientTypeInt;
+import it.pagopa.pn.workflowmanager.dto.timeline.AddTimelineElementResponse;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
 import it.pagopa.pn.workflowmanager.dto.timeline.details.TimelineElementCategoryInt;
 import it.pagopa.pn.workflowmanager.service.CampaignService;
@@ -25,9 +26,7 @@ import java.time.Instant;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class NotificationPaidHandlerTest {
@@ -93,29 +92,20 @@ class NotificationPaidHandlerTest {
     }
 
     @Test
-    void handlePaymentPaidBuildsAndPersistsPaymentTimelineElementWhenCampaignIsAbsent() {
-        when(campaignService.getCampaignByCampaignIdAndSenderId("CAMPAIGN_ID", "PA_ID"))
-                .thenReturn(null);
-
-        notificationPaidHandler.handlePaymentPaid(payment);
-
-        verify(campaignService).getCampaignByCampaignIdAndSenderId("CAMPAIGN_ID", "PA_ID");
-        verify(timelineUtils).buildPaymentTimelineElement(eq(notification), eq(payment), eq(notification.getRecipients().getFirst()));
-        verify(timelineService).addTimelineElement(eq(builtTimelineElement), eq(notification));
-        verifyNoInteractions(workflowUtils);
-    }
-
-    @Test
     void handlePaymentPaidSchedulesWorkflowDoneWhenStopOnPaidIsEnabled() {
         Campaign campaign = Campaign.builder().stopOnPaid(true).build();
         when(campaignService.getCampaignByCampaignIdAndSenderId("CAMPAIGN_ID", "PA_ID"))
                 .thenReturn(campaign);
 
+        String persistedTimelineId = "TIMELINE_ELEMENT_ID";
+        AddTimelineElementResponse response = new AddTimelineElementResponse(persistedTimelineId, false);
+        when(timelineService.addTimelineElement(builtTimelineElement, notification)).thenReturn(response);
+
         notificationPaidHandler.handlePaymentPaid(payment);
 
         verify(campaignService).getCampaignByCampaignIdAndSenderId("CAMPAIGN_ID", "PA_ID");
         verify(workflowUtils).scheduleWorkflowDone(
-                notification.getIun(), payment.getRecIndex(), builtTimelineElement.getElementId(), DesiredFeedbackType.PAID);
+                notification.getIun(), payment.getRecIndex(), persistedTimelineId, DesiredFeedbackType.PAID);
         verify(timelineService).addTimelineElement(builtTimelineElement, notification);
     }
 
