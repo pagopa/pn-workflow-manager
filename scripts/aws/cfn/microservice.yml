@@ -1253,7 +1253,7 @@ Resources:
       EventPattern:
         detail-type: [ "NoticePaymentsPaidEvent" ]
         detail:
-          communicationType: [ !Ref InformalCommunicationType ]
+          communicationType: !Ref InformalCommunicationType
       Targets:
         - Id: !Sub '${ProjectName}-CoreEventBus-InformalPaymentsEvent'
           Arn: !Ref InformalPaymentsEventQueueARN
