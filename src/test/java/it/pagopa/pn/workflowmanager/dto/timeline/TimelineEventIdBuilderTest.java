@@ -447,5 +447,30 @@ class TimelineEventIdBuilderTest {
 
     }
 
+    @Test
+    void buildPAYMENT_NOTICE_PAIDTest() {
+        String noticeCode = "302000100000019421";
+        String creditorTaxId = "77777777777";
+        String expected = "PAYMENT_NOTICE_PAID.IUN_" + IUN + ".CODE_PPA" + noticeCode + creditorTaxId;
+
+        String actual = TimelineEventId.PAYMENT_NOTICE_PAID.buildEventId(EventId.builder()
+                .iun(IUN)
+                .noticeCode(noticeCode)
+                .creditorTaxId(creditorTaxId)
+                .build());
+
+        assertThat(actual).isEqualTo(expected);
+    }
+
+    @Test
+    void buildPAYMENT_NOTICE_PAIDWithoutPaymentIdentifiersTest() {
+        String expected = "PAYMENT_NOTICE_PAID.IUN_" + IUN + ".CODE_PPA";
+
+        String actual = TimelineEventId.PAYMENT_NOTICE_PAID.buildEventId(EventId.builder()
+                .iun(IUN)
+                .build());
+
+        assertThat(actual).isEqualTo(expected);
+    }
 
 }
