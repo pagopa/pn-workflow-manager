@@ -13,7 +13,7 @@ class NoticePaymentPaidEventValidatorTest {
 
     @Test
     void validateReturnsRequiredErrorsWhenPayloadIsMissing() {
-        PnNoticePaymentPaidEvent event = PnNoticePaymentPaidEvent.builder().build();
+        PnNoticePaymentPaidEvent.Payload event = PnNoticePaymentPaidEvent.Payload.builder().build();
 
         assertEquals(List.of("payload is required"), validator.validate(event));
     }
@@ -32,7 +32,7 @@ class NoticePaymentPaidEventValidatorTest {
                 "recIndex is required",
                 "noticeCode is required",
                 "creditorTaxId is required"
-        ), validator.validate(PnNoticePaymentPaidEvent.builder().payload(payload).build()));
+        ), validator.validate(PnNoticePaymentPaidEvent.Payload.builder().build()));
     }
 
     @Test
@@ -40,14 +40,14 @@ class NoticePaymentPaidEventValidatorTest {
         PnNoticePaymentPaidEvent.Payload payload = validPayload().recIndex(-1).build();
 
         assertEquals(List.of("recIndex must be non-negative"),
-                validator.validate(PnNoticePaymentPaidEvent.builder().payload(payload).build()));
+                validator.validate(payload));
     }
 
     @Test
     void validateAcceptsCompletePayloadWithZeroRecipientIndex() {
         PnNoticePaymentPaidEvent.Payload payload = validPayload().recIndex(0).build();
 
-        assertEquals(List.of(), validator.validate(PnNoticePaymentPaidEvent.builder().payload(payload).build()));
+        assertEquals(List.of(), validator.validate(payload));
     }
 
     private PnNoticePaymentPaidEvent.Payload.PayloadBuilder validPayload() {

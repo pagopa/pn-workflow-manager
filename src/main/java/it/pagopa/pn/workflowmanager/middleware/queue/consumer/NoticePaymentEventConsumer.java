@@ -31,7 +31,7 @@ public class NoticePaymentEventConsumer {
     private final NoticePaymentEventHandler noticePaymentEventHandler;
 
     @SqsListener(queueNames = "#{@pnWorkflowManagerConfigs.topics.noticePayment}")
-    public void noticePaymentEventConsumer(Message<PnNoticePaymentPaidEvent> message) {
+    public void noticePaymentEventConsumer(Message<PnNoticePaymentPaidEvent.Payload> message) {
         setMdc(message);
         try {
             log.info("Handle message from {} with content {}", "pn-informal-payments-event", message);
