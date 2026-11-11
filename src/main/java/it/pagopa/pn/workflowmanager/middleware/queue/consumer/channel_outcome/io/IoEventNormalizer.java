@@ -80,6 +80,7 @@ public class IoEventNormalizer implements ChannelOutcomeNormalizer<IoOutcomeEven
             triggers.add(
                     NotificationPaidInt.builder()
                             .iun(notification.getIun())
+                            .recIndex(recIndex)
                             .noticeCode(ioEvent.getNoticeCode())
                             .creditorTaxId(pagoPaInt.getCreditorTaxId())
                             .eventTimestamp(ioEvent.getEventTimestamp())

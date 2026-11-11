@@ -2,6 +2,7 @@ package it.pagopa.pn.workflowmanager.service.impl;
 
 import it.pagopa.pn.commons.db.campaign.CampaignProvider;
 import it.pagopa.pn.commons.db.campaign.entity.CampaignEntity;
+import it.pagopa.pn.commons.db.campaign.provider.CampaignServiceCachedProvider;
 import it.pagopa.pn.workflowmanager.exceptions.PnCampaignNotFoundException;
 import it.pagopa.pn.workflowmanager.exceptions.PnCampaignStatisticsNotFoundException;
 import it.pagopa.pn.workflowmanager.generated.openapi.server.v1.dto.CampaignStatisticsResponse;

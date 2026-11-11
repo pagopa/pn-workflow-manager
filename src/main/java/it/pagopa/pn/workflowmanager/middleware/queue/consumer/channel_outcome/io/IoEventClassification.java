@@ -16,7 +16,7 @@ public enum IoEventClassification implements ChannelOutcomeClassification {
     FAILED_TO_SEND(false, ChannelOutcomeCategory.negativeFeedback(),null),
     SENT_TO_IO(false, ChannelOutcomeCategory.progress(), null),
     READ(true, ChannelOutcomeCategory.progress(), DesiredFeedbackType.READ),
-    PAID(true, ChannelOutcomeCategory.progress(), DesiredFeedbackType.PAID);
+    PAID(true, ChannelOutcomeCategory.progress(), null);
 
     private final boolean recipientReached;
     private final ChannelOutcomeCategory category;

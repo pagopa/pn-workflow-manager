@@ -27,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -750,5 +751,37 @@ public class TimelineUtils {
                 .build();
 
         return buildTimeline(notification, TimelineElementCategoryInt.COURTESY_CHANNEL_FAILED, eventId, details);
+    }
+
+    public TimelineElementInternal buildNoticePaymentPaidTimelineElement(NotificationInt notification, NoticePaymentInt event) {
+        log.debug("buildNoticePaymentPaidTimelineElement: iun={} recIndex={}", event.getIun(), event.getRecIndex());
+
+        String elementId = TimelineEventId.PAYMENT_NOTICE_PAID.buildEventId(
+                EventId.builder()
+                        .iun(event.getIun())
+                        .recIndex(event.getRecIndex())
+                        .creditorTaxId(event.getCreditorTaxId())
+                        .noticeCode(event.getNoticeCode())
+                        .build());
+
+        PaymentNoticePaidDetailsInt details = PaymentNoticePaidDetailsInt.builder()
+                .recIndex(event.getRecIndex())
+                .recipientType(notification.getRecipients().get(event.getRecIndex()).getRecipientType().getValue())
+                .iuv(event.getIuv())
+                .noticeCode(event.getNoticeCode())
+                .creditorTaxId(event.getCreditorTaxId())
+                .companyName(event.getCreditorCompanyName())
+                .eventTimestamp(event.getPaymentDateTime())
+                .dueDate(event.getDueDate())
+                .paymentSourceChannel(event.getPaymentSourceChannel())
+                .amount(event.getAmount())
+                .fee(event.getFee() == null ? null : Integer.valueOf(event.getFee()))
+                .eventId(event.getPaymentId())
+                .pagopaPersistedTimestamp(event.getPagopaPersistedTimestamp())
+                .pagopaPublishedTimestamp(event.getPagopaPublishedTimestamp())
+                .sendIngestionTimestamp(event.getSendIngestionTimestamp())
+                .build();
+
+        return buildTimeline(notification, TimelineElementCategoryInt.PAYMENT_NOTICE_PAID, elementId, details);
     }
 }
