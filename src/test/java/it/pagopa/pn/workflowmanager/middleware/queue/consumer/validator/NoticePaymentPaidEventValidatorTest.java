@@ -13,7 +13,7 @@ class NoticePaymentPaidEventValidatorTest {
 
     @Test
     void validateReturnsRequiredErrorsWhenPayloadIsMissing() {
-        PnNoticePaymentPaidEvent.Payload event = PnNoticePaymentPaidEvent.Payload.builder().build();
+        PnNoticePaymentPaidEvent.Payload event = null;
 
         assertEquals(List.of("payload is required"), validator.validate(event));
     }
