@@ -32,7 +32,7 @@ class NoticePaymentPaidEventValidatorTest {
                 "recIndex is required",
                 "noticeCode is required",
                 "creditorTaxId is required"
-        ), validator.validate(PnNoticePaymentPaidEvent.Payload.builder().build()));
+        ), validator.validate(payload));
     }
 
     @Test
