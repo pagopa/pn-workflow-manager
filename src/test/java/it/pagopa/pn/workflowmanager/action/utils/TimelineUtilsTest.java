@@ -1279,7 +1279,7 @@ class TimelineUtilsTest {
                 .creditorTaxId("TAX-ID")
                 .creditorCompanyName("Company")
                 .paymentDateTime(paymentDateTime)
-                .dueDate("2026-11-30")
+                .dueDate(LocalDate.parse("2026-11-30"))
                 .paymentSourceChannel("PPA")
                 .amount(1200)
                 .fee("100")
