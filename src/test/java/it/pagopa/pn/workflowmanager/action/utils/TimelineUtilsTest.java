@@ -35,6 +35,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -1306,7 +1307,7 @@ class TimelineUtilsTest {
         assertEquals("TAX-ID", details.getCreditorTaxId());
         assertEquals("Company", details.getCompanyName());
         assertEquals(paymentDateTime, details.getEventTimestamp());
-        assertEquals(dueDate, details.getDueDate());
+        assertEquals(dueDate.atStartOfDay().toInstant(ZoneOffset.UTC), details.getDueDate());
         assertEquals("PPA", details.getPaymentSourceChannel());
         assertEquals(1200, details.getAmount());
         assertEquals(100, details.getFee());
