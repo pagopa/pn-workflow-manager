@@ -60,7 +60,7 @@ class IoEventNormalizerTest {
     private MockedStatic<NotificationPaymentUtils> paymentUtilsMockedStatic;
 
     private final String iun = "IUN-TEST-999";
-    private final int recIndex = 0;
+    private final int recIndex = 1;
     private final String userTaxId = "tax-user-01";
     private final SendDigitalMessageDetailsInt sendDigitalMessageDetails = SendDigitalMessageDetailsInt.builder()
             .recIndex(recIndex)
@@ -205,6 +205,7 @@ class IoEventNormalizerTest {
 
         NotificationPaidInt paidTrigger = (NotificationPaidInt) trigger;
         assertEquals(iun, paidTrigger.getIun());
+        assertEquals(recIndex, paidTrigger.getRecIndex());
         assertEquals(noticeCode, paidTrigger.getNoticeCode());
         assertEquals(paTaxId, paidTrigger.getCreditorTaxId());
         assertEquals(now, paidTrigger.getEventTimestamp());

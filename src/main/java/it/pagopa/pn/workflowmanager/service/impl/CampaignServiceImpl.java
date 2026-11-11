@@ -1,7 +1,7 @@
 package it.pagopa.pn.workflowmanager.service.impl;
 
-import it.pagopa.pn.commons.db.campaign.CampaignServiceCachedProvider;
 import it.pagopa.pn.commons.db.campaign.entity.CampaignEntity;
+import it.pagopa.pn.commons.db.campaign.provider.CampaignServiceCachedProvider;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.CampaignStatus;
 import it.pagopa.pn.workflowmanager.dto.ext.campaign.WorkFlowEntity;
@@ -52,6 +52,7 @@ public class CampaignServiceImpl implements CampaignService {
                 .serviceName(entity.getServiceName())
                 .sensitiveContent(entity.getSensitiveContent())
                 .stopOnViewed(entity.getStopOnViewed())
+                .stopOnPaid(entity.getStopOnPaid())
                 .taxonomyCode(entity.getTaxonomyCode())
                 .workflow(mapWorkflow(entity.getWorkflow()))
                 .build();

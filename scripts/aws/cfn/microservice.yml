@@ -466,6 +466,26 @@ Parameters:
     Type: String
     Description: workflow-manager national-registries queue age alarm ARN
 
+  InformalPaymentsEventQueueName:
+    Type: String
+    Description: 'InformalPaymentsEvent queue name'
+
+  InformalPaymentsEventQueueURL:
+    Type: String
+    Description: 'InformalPaymentsEvent queue URL'
+
+  InformalPaymentsEventQueueARN:
+    Type: String
+    Description: 'InformalPaymentsEvent queue ARN'
+
+  InformalPaymentsEventQueueAlarmARN:
+    Type: String
+    Description: 'InformalPaymentsEvent queue DLQ alarm ARN'
+
+  InformalPaymentsEventQueueAgeAlarmARN:
+    Type: String
+    Description: 'InformalPaymentsEvent queue age alarm ARN'
+
 Conditions:
   UseExternalChannelMock: !Equals [ !Ref ExternalChannelBaseUrl, "Mock" ]
 
@@ -521,6 +541,7 @@ Resources:
         ContainerEnvEntry21: !Sub 'PN_WORKFLOWMANAGER_USERATTRIBUTESBASEURL=http://${ApplicationLoadBalancerDomain}:8080'
         ContainerEnvEntry22: !Sub 'PN_WORKFLOWMANAGER_NATIONALREGISTRIESBASEURL=http://${ApplicationLoadBalancerDomain}:8080'
         ContainerEnvEntry23: !Sub 'PN_WORKFLOWMANAGER_TOPICS_NATIONALREGISTRIESTOWORKFLOWMANAGER=${NationalRegistries2WorkflowManagerQueueName}'
+        ContainerEnvEntry24: !Sub 'PN_WORKFLOWMANAGER_TOPICS_NOTICEPAYMENT=${InformalPaymentsEventQueueName}'
         ApplicativeEnvFileChecksum: !Ref ApplicativeEnvFileChecksum
         MappedPaths: '/workflow-private/*'
         ECSClusterName: !Ref ECSClusterName
@@ -560,6 +581,8 @@ Resources:
             - !Ref WorkflowManagerInputsQueueAgeAlarmARN
             - !Ref NationalRegistries2WorkflowManagerQueueAlarmARN
             - !Ref NationalRegistries2WorkflowManagerQueueAgeAlarmARN
+            - !Ref InformalPaymentsEventQueueAlarmARN
+            - !Ref InformalPaymentsEventQueueAgeAlarmARN
         QueueArns: !Join
           - ','
           - - !Ref WorkflowManagerActionQueueARN
@@ -569,6 +592,7 @@ Resources:
             - !Ref SafeStorageToWorkflowManagerQueueARN
             - !Ref WorkflowManagerInputsQueueARN
             - !Ref NationalRegistries2WorkflowManagerQueueARN
+            - !Ref InformalPaymentsEventQueueARN
         DynamoDBTableNames: !Join
           - ','
           - - !Ref CampaignStatisticsTableName
@@ -609,6 +633,7 @@ Resources:
               - !Ref SafeStorageToWorkflowManagerQueueARN
               - !Ref WorkflowManagerInputsQueueARN
               - !Ref NationalRegistries2WorkflowManagerQueueARN
+              - !Ref InformalPaymentsEventQueueARN
           - Effect: Allow
             Action:
               - 'ssm:GetParameter'
@@ -651,6 +676,7 @@ Resources:
                   - !Ref SafeStorageToWorkflowManagerQueueARN
                   - !Ref WorkflowManagerInputsQueueARN
                   - !Ref NationalRegistries2WorkflowManagerQueueARN
+                  - !Ref InformalPaymentsEventQueueARN
 
   PnCoreEventBusToWorkflowManagerActionQueueRule:
     Type: AWS::Events::Rule
@@ -1217,3 +1243,37 @@ Resources:
             Condition:
               ArnEquals:
                 aws:SourceArn: !GetAtt PnCoreEventBusToNationalRegistries2WorkflowManager.Arn
+
+  InformalPaymentsEventQueueRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: Route ActionManager events to InformalPaymentsEvent queue
+      RoleArn: !GetAtt "EventBusEnqueueRole.Arn"
+      EventBusName: !Sub '${ProjectName}-CoreEventBus'
+      EventPattern:
+        detail-type: [ "NoticePaymentsPaidEvent" ]
+        detail:
+          communicationType: !Ref InformalCommunicationType
+      Targets:
+        - Id: !Sub '${ProjectName}-CoreEventBus-InformalPaymentsEvent'
+          Arn: !Ref InformalPaymentsEventQueueARN
+          InputPath: $.detail.body
+          DeadLetterConfig:
+            Arn: !Sub arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:pn-CoreEventBus-DLQ
+
+  InformalPaymentsEventQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues:
+        - !Ref InformalPaymentsEventQueueURL
+      PolicyDocument:
+        Statement:
+          - Sid: AllowEventBridgeToSendInformalPaymentsEvent
+            Effect: Allow
+            Principal:
+              Service: events.amazonaws.com
+            Action: sqs:SendMessage
+            Resource: !Ref InformalPaymentsEventQueueARN
+            Condition:
+              ArnEquals:
+                aws:SourceArn: !GetAtt InformalPaymentsEventQueueRule.Arn

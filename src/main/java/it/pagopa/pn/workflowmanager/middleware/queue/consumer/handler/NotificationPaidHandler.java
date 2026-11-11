@@ -1,10 +1,15 @@
 package it.pagopa.pn.workflowmanager.middleware.queue.consumer.handler;
 
 import it.pagopa.pn.workflowmanager.action.utils.TimelineUtils;
+import it.pagopa.pn.workflowmanager.action.utils.WorkflowUtils;
 import it.pagopa.pn.workflowmanager.dto.event.NotificationPaidInt;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.Campaign;
+import it.pagopa.pn.workflowmanager.dto.ext.campaign.DesiredFeedbackType;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationInt;
 import it.pagopa.pn.workflowmanager.dto.ext.delivery.notification.NotificationRecipientInt;
+import it.pagopa.pn.workflowmanager.dto.timeline.AddTimelineElementResponse;
 import it.pagopa.pn.workflowmanager.dto.timeline.TimelineElementInternal;
+import it.pagopa.pn.workflowmanager.service.CampaignService;
 import it.pagopa.pn.workflowmanager.service.NotificationService;
 import it.pagopa.pn.workflowmanager.service.TimelineService;
 import lombok.RequiredArgsConstructor;
@@ -19,15 +24,23 @@ public class NotificationPaidHandler {
     private final NotificationService notificationService;
     private final TimelineService timelineService;
     private final TimelineUtils timelineUtils;
+    private final WorkflowUtils workflowUtils;
+    private final CampaignService campaignService;
 
     public void handlePaymentPaid(NotificationPaidInt payment) {
         log.info("Handling payment for iun={} recIndex={} noticeCode={} creditorTaxId={}",
                 payment.getIun(), payment.getRecIndex(), payment.getNoticeCode(), payment.getCreditorTaxId());
         NotificationInt notification = notificationService.getInformalNotificationByIun(payment.getIun());
+        Campaign campaign = campaignService.getCampaignByCampaignIdAndSenderId(
+                notification.getCampaignId(),
+                notification.getSender().getPaId());
         NotificationRecipientInt recipient = notification.getRecipients().get(payment.getRecIndex());
 
         TimelineElementInternal timelineElement = timelineUtils.buildPaymentTimelineElement(notification, payment, recipient);
+        AddTimelineElementResponse persistedTimelineElement = timelineService.addTimelineElement(timelineElement, notification);
 
-        timelineService.addTimelineElement(timelineElement, notification);
+        if (Boolean.TRUE.equals(campaign.getStopOnPaid())) {
+            workflowUtils.scheduleWorkflowDone(notification.getIun(), payment.getRecIndex(), persistedTimelineElement.getTimelineElementId(), DesiredFeedbackType.PAID);
+        }
     }
 }
