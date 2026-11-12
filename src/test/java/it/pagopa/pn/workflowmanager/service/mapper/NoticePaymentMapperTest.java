@@ -18,8 +18,7 @@ class NoticePaymentMapperTest {
         Instant paymentDateTime = Instant.parse("2026-10-28T12:00:00Z");
         LocalDate dueDate = LocalDate.parse("2026-11-30");
         Instant persistedTimestamp = Instant.parse("2026-10-28T12:01:00Z");
-        PnNoticePaymentPaidEvent event = PnNoticePaymentPaidEvent.builder()
-                .payload(PnNoticePaymentPaidEvent.Payload.builder()
+        PnNoticePaymentPaidEvent.Payload event = PnNoticePaymentPaidEvent.Payload.builder()
                         .modelType("MODEL")
                         .iuv("IUV-001")
                         .iur("IUR-001")
@@ -41,8 +40,7 @@ class NoticePaymentMapperTest {
                         .iun("IUN-001")
                         .recIndex(0)
                         .communicationType("INFORMAL")
-                        .build())
-                .build();
+                        .build();
 
         NoticePaymentInt actual = NoticePaymentMapper.messageToInternal(event);
 

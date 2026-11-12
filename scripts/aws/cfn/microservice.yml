@@ -1255,13 +1255,13 @@ Resources:
       RoleArn: !GetAtt "EventBusEnqueueRole.Arn"
       EventBusName: !Sub '${ProjectName}-CoreEventBus'
       EventPattern:
-        detail-type: [ "NoticePaymentsPaidEvent" ]
+        detail-type: [ "NoticePaymentPaidEvent" ]
         detail:
           communicationType: !Ref InformalCommunicationType
       Targets:
         - Id: !Sub '${ProjectName}-CoreEventBus-InformalPaymentsEvent'
           Arn: !Ref InformalPaymentsEventQueueARN
-          InputPath: $.detail.body
+          InputPath: $.detail
           DeadLetterConfig:
             Arn: !Sub arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:pn-CoreEventBus-DLQ
 

@@ -35,6 +35,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -1269,7 +1270,6 @@ class TimelineUtilsTest {
     void buildNoticePaymentPaidTimelineElement() {
         NotificationInt notification = createNotification();
         Instant paymentDateTime = Instant.parse("2026-10-28T12:00:00Z");
-        LocalDate dueDate = LocalDate.parse("2026-11-30");
         String elementId = "PAYMENT_NOTICE_PAID.IUN_TEST-IUN-001.CODE_PPANOTICE-001TAX-ID";
         NoticePaymentInt event = NoticePaymentInt.builder()
                 .iun(notification.getIun())
@@ -1279,7 +1279,7 @@ class TimelineUtilsTest {
                 .creditorTaxId("TAX-ID")
                 .creditorCompanyName("Company")
                 .paymentDateTime(paymentDateTime)
-                .dueDate(dueDate)
+                .dueDate(LocalDate.parse("2026-11-30"))
                 .paymentSourceChannel("PPA")
                 .amount(1200)
                 .fee("100")
@@ -1306,7 +1306,7 @@ class TimelineUtilsTest {
         assertEquals("TAX-ID", details.getCreditorTaxId());
         assertEquals("Company", details.getCompanyName());
         assertEquals(paymentDateTime, details.getEventTimestamp());
-        assertEquals(dueDate, details.getDueDate());
+        assertEquals("2026-11-30", details.getDueDate());
         assertEquals("PPA", details.getPaymentSourceChannel());
         assertEquals(1200, details.getAmount());
         assertEquals(100, details.getFee());

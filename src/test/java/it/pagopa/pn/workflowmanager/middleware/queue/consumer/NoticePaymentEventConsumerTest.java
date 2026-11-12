@@ -47,9 +47,7 @@ class NoticePaymentEventConsumerTest {
 
     @Test
     void noticePaymentEventConsumerDoesNotCallHandlerForInvalidEvent() {
-        PnNoticePaymentPaidEvent invalidEvent = PnNoticePaymentPaidEvent.builder()
-                .payload(PnNoticePaymentPaidEvent.Payload.builder().iun("IUN-001").recIndex(-1).build())
-                .build();
+        PnNoticePaymentPaidEvent.Payload invalidEvent = PnNoticePaymentPaidEvent.Payload.builder().iun("IUN-001").recIndex(-1).build();
 
         assertThrows(PnInternalException.class, () -> consumer.noticePaymentEventConsumer(message(invalidEvent)));
 
@@ -65,13 +63,12 @@ class NoticePaymentEventConsumerTest {
         verify(handler).handleResponse(any(NoticePaymentInt.class));
     }
 
-    private Message<PnNoticePaymentPaidEvent> message(PnNoticePaymentPaidEvent event) {
+    private Message<PnNoticePaymentPaidEvent.Payload> message(PnNoticePaymentPaidEvent.Payload event) {
         return MessageBuilder.withPayload(event).build();
     }
 
-    private PnNoticePaymentPaidEvent validEvent() {
-        return PnNoticePaymentPaidEvent.builder()
-                .payload(PnNoticePaymentPaidEvent.Payload.builder()
+    private PnNoticePaymentPaidEvent.Payload validEvent() {
+        return PnNoticePaymentPaidEvent.Payload.builder()
                         .iun("IUN-001")
                         .recIndex(0)
                         .noticeCode("NOTICE-001")
@@ -80,7 +77,6 @@ class NoticePaymentEventConsumerTest {
                         .amount(1200)
                         .paymentDateTime(Instant.parse("2026-10-28T12:00:00Z"))
                         .communicationType("INFORMAL")
-                        .build())
-                .build();
+                        .build();
     }
 }
