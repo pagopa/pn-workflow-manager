@@ -80,6 +80,7 @@ public class AwsDependentProvidersConfiguration {
         @Bean
         SearchDigitalDomicileConfigProvider searchDigitalDomicileConfigProvider(
                 ParameterConsumer parameterConsumer, List<SearchDigitalDomicileConfig> searchDigitalDomicileConfigs) {
+            log.info("Instantiating bean 'searchDigitalDomicileConfigProvider'");
             return new SearchDigitalDomicileParameterConsumer(parameterConsumer, searchDigitalDomicileConfigs);
         }
 
@@ -87,6 +88,7 @@ public class AwsDependentProvidersConfiguration {
         ChannelAddressSourceConfigResolver channelAddressSourceConfigResolver(
                 SearchDigitalDomicileConfigProvider configProvider,
                 AddressSearchRegistry addressSearchRegistry) {
+            log.info("Instantiating bean 'channelAddressSourceConfigResolver'");
             return new ChannelAddressSourceConfigResolver(configProvider, addressSearchRegistry);
         }
 
@@ -94,6 +96,7 @@ public class AwsDependentProvidersConfiguration {
         CampaignProvider campaignProvider(
                 DynamoDbEnhancedClient dynamoDbEnhancedClient,
                 @Value("${campaign.table-name}") String tableName) {
+            log.info("Instantiating bean 'campaignProvider'");
             return new CampaignServiceCachedProvider(dynamoDbEnhancedClient, tableName);
         }
     }
