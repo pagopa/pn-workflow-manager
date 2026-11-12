@@ -396,7 +396,7 @@
 						<phase>generate-resources</phase>
 						<configuration>
 							<inputSpec>
-								https://raw.githubusercontent.com/pagopa/pn-io-connector/6b32891d5540d44a6f5271f1b164262d88ba0ef2/docs/openapi/pn-io-connector-internal.yaml
+								https://raw.githubusercontent.com/pagopa/pn-io-connector/f7a2e5f803758c33176e822444d869c87b3d1fc9/docs/openapi/pn-io-connector-internal.yaml
 							</inputSpec>
 							<templateDirectory>${project.build.directory}/dependency-resources/scripts/openapi/templates/7.4.0/client</templateDirectory>
 							<generatorName>java</generatorName>
