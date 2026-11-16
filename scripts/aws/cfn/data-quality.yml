@@ -117,6 +117,7 @@ Resources:
             serviceId:struct<S:string>,
             sensitiveContent:struct<NULL:boolean,BOOL:boolean>,
             stopOnViewed:struct<NULL:boolean,BOOL:boolean>,
+            stopOnPaid:struct<NULL:boolean,BOOL:boolean>,
             taxonomyCode:struct<S:string>,
             workflow:struct<L:array<struct<M:struct<
               channel:struct<S:string>,
